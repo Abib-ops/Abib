@@ -6,6 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="f8ebe9d2-cd11-49fc-8a55-c19a55024ea6" name="Changes" comment="Removed __pycache__/">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Abib.py" beforeDir="false" afterPath="$PROJECT_DIR$/Abib.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HELP.txt" beforeDir="false" afterPath="$PROJECT_DIR$/HELP.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.txt" beforeDir="false" afterPath="$PROJECT_DIR$/README.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
