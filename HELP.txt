@@ -20,7 +20,7 @@
 ABIB HELP:
 **********
 
-Abib Bible Reader v410
+Abib Bible Reader v410.1
 
 Installing Abib on Windows.
 ---------------------------
