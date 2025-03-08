@@ -63,6 +63,7 @@ from sys import exit, argv
 # Suppress pygame welcome message
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
 
+# Pygame is solely used for an error sound.
 from pygame import mixer
 
 from copy import deepcopy
@@ -94,7 +95,7 @@ from find import Ui_Dialog
 try:
     from ctypes import windll  # Only exists on Windows.
 except ImportError:
-    windll = None  # Linux if here, this satisfies PyCharm's fastidiousness.
+    windll = None  # Linux or Mac if here.
     pass
 
 try:
