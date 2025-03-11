@@ -21,6 +21,18 @@ While there are plans to add more features in the future,
 Abib Bible Reader is fully functional and ready to use as it is. 
 (By GPT-4o)
 
+**Discover the Abib Bible Reader** – a powerful, user-friendly tool designed to enhance your Bible reading experience. 
+Effortlessly navigate to any Bible reference in seconds, 
+making it a perfect companion for online sermons or personal study. 
+Its compact, 
+adjustable interface ensures it fits seamlessly into your workflow without taking up unnecessary screen space.
+Enjoy the convenience of a comprehensive search feature to quickly locate specific verses or passages. 
+Plus, deepen your spiritual journey with included readings from Spurgeon's uplifting _Morning and Evening_ devotionals.
+Fully operational and ready for use, Abib Bible Reader is continually improving with exciting features on the horizon. 
+Start using it today and transform the way you read, study, and engage with the Bible!
+(Also GPT-4o in less humble mode)
+
+
 Installing the Abib Bible App.
 ------------------------------
 
