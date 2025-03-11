@@ -233,7 +233,6 @@ def iterate_list(keywords: list[str], r_list: list) -> None:
 
     #  global w ----- Probably unnecessary!
     w.occurring = 0
-    print(f'w.occurring = {w.occurring}')
     w.occur = []
     for i in w.occurs:
         coordinates = []
