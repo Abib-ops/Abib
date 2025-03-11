@@ -52,7 +52,7 @@ Additional Bible-based resources are available at www.spurgeongems.org.
 
 Abib Bible Reader אביב
 Version 410.1 using PySide6.8.2.1 and python3.13.2 (64-bit).
-08/03/2025
+11/03/2025
 
 """
 import re
