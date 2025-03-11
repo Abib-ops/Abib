@@ -2,18 +2,41 @@
 ABIB README:
 ************
 
+Description.
+------------
+
+Abib Bible Reader is a Bible reading tool which allows you to quickly move to different Bible references, 
+useful when following an online sermon, the screen footprint is low and fully adjustable. 
+There is a comprehensive 'Find' facility, and Spurgeon's Morning and Evening Readings is included.
+Although further features are being planned, it is fully operational in its current state. 
+(By Donna and me)
+
+The Abib Bible Reader is a simple tool designed to make Bible reading easier and more convenient. 
+It allows you to quickly move between different Bible references, 
+which can be particularly helpful when following along with an online sermon. 
+The interface is compact and adjustable, so it can fit neatly on your screen without taking up too much space.
+It also includes a handy search feature to help you find specific passages quickly, 
+as well as Spurgeon's _Morning and Evening_ readings for daily inspiration. 
+While there are plans to add more features in the future, 
+Abib Bible Reader is fully functional and ready to use as it is. 
+(By GPT-4o)
+
 Installing the Abib Bible App.
 ------------------------------
 
 If you have Windows, the installer provided will simply install everything, just double-click on it, and follow the instructions.
 
-For Linux, copy the whole C:\Program Files\Abib410 folder to a USB key and then do the following:
+There will be a Linux executable soon, but for the present, please use the source code to run from Python. 
 
-Suppose your username is andrew, your USB key will most likely be mounted under /media/andrew/a_volume_name. So first, you need to get this full path. You can store it in a shell variable to make it easy:
+So, on Linux, if you have Windows, copy the whole 'C:\Program Files\Abib' folder to a USB key and then do the following:
+
+Suppose your username is andrew, your USB key may be mounted under '/media/andrew/a_volume_name'. 
+So first, you need to get this full path. 
+You can store it in a shell variable to make it easy:
 
 ls /media/andrew
 
-The usb mount point is variable and /media is deprecated in many modern Linux distributions.
+The usb mount point is variable and '/media' is deprecated in many modern Linux distributions.
 
 Run mount to find the mount point.
 
@@ -34,7 +57,10 @@ $ python Abib.py
 ------------------
 Cascadia Mono font
 ------------------
-Please ensure that the Cascadia Mono font is installed on your device.  This will provide for the designed output to occur. (You can do this before or after you install Abib.)
+
+Please ensure that the Cascadia Mono font is installed on your device. 
+This will provide the designed appearance. 
+(You can do this before or after you install Abib.)
 
 You will find it in the 'C:\Program Files\Abib\font' folder. It is called CascadiaMono and is a Truetype Microsoft Windows font.
 
@@ -47,7 +73,8 @@ Click on Font settings.
 
 Under Add fonts, there is a Drag and Drop to install box.
 
-So, using File Explorer go to C:\Program Files\Abib\font and there you will see the file CascadiaMono.ttf. Drag the CascadiaMono file, from inside the font folder, into the box, and it will install automatically.
+So, using File Explorer, go to 'C:\Program Files\Abib\font' and there you will see the file CascadiaMono.ttf. 
+Drag the CascadiaMono file, from inside the font folder, into the box, and it will install automatically.
 
 If the font is installed already, you will do no harm, you will be warned with a message and can cancel.
 
@@ -55,7 +82,8 @@ For Windows 11: Do nothing, the CascadiaMono font is built in.
 
 For arch-based linux distros.
 -----------------------------
-Do:
+
+Do this:
 
 $ sudo pacman -S ttf-cascadia-code
 
@@ -63,13 +91,20 @@ For other distributions, you can find the Cascadia Code font as a standard .ttf 
 
 https://github.com/microsoft/cascadia-code/releases
 
-The file above can be installed on almost every modern operating system, including Ubuntu. For the latter, just double-click on the .ttf file to open the font manager/preview tool. Hit ‘install’ to install it on your system.  Thanks to Hal.
+The file above can be installed on most modern operating systems, including Ubuntu. 
+For the latter, just double-click on the .ttf file to open the font manager/preview tool. 
+Hit ‘install’ to install on your Ubuntu system. 
+Thanks to Hal.
 
 
 God Bless you.
 
 
 Photo Credit: Abibofgod.com for the splash screen.
+
+Spurgeon's Morning and Evening Readings Obtained from www.spurgeon.org.
+Reformatted by Eternal Life Ministries.
+Additional Bible-based resources are available at www.spurgeongems.org.
 
 Copyright 2025 Andrew Kingston
 
