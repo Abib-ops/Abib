@@ -25,14 +25,22 @@ ABIB README:
 Please note I am not planning any major revisions or new platforms.
 Just trying to keep it going; improve it, and find bugs and glitches.
 
-Abib v410.1
+Abib v410.2
 -----------
 
 Changelog.
-Abib v410
+----------
+
+Abib v410.2
+Bug fixed concerning incorrect behaviour when entering integer values for verses,
+that is just the verse number is entered, and you should go to that verse in the
+chapter you are in. This was broken because of the addition of the possibility of
+using negative numbers, which are interpreted as going back that number of verses,
+e.g. if you are at verse 20, and you enter -5, you will go to verse 15.
+
+Abib v410.1
 Commentary removed because not ready yet.
 First version on GitHub.
-
 
 Abib409
 Two extra arguments allowed for window width and window height.

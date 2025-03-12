@@ -51,8 +51,8 @@ Additional Bible-based resources are available at www.spurgeongems.org.
 
 
 Abib Bible Reader אביב
-Version 410.1 using PySide6.8.2.1 and python3.13.2 (64-bit).
-11/03/2025
+Version 410.2 using PySide6.8.2.1 and python3.13.2 (64-bit).
+12/03/2025
 
 """
 import re
@@ -2466,25 +2466,32 @@ class MainWindow(QtWidgets.QMainWindow):
         # print(f"2474 current_chapter: {current_chapter}")
         current_verse = inf[2]
         # print(f"2475 current_verse: {current_verse}")
+        # print(f"2476 current_line: {current_line}")
+        # print(f"new_verse: {new_verse}")
 
-        if new_verse > 0:
+        if new_verse >= 0:
             new_line: int = current_line - current_verse + new_verse
         else:
             new_line = current_line + new_verse + 1
+            new_verse = current_verse + new_verse + 1
 
         # print(f"2477 new_line: {new_line}")
 
+        message = f"Out of bounds. No verse {new_verse + 1} here!"
         try:
             new_chapter: int = Info[new_line][1]
+            # print(f"2484 new_chapter: {new_chapter}")
         except IndexError:
-            return_value = current_line
-            message = f"The verse is out of bounds. No {new_verse + 1} here!"
+            # print(">>>>>>>>>>>>>>>")
             w.on_error(message, 750, True)
+            return_value = current_line
         else:
-            if new_chapter == current_chapter:
-                return_value = new_line
-            else:
+            if new_chapter != current_chapter:
+                # print("<<<<<<<<<<<<<<")
+                w.on_error(message, 750, True)
                 return_value = current_line
+            else:
+                return_value = new_line
 
         # print(f"2476 return_value: {return_value}")
 
