@@ -51,7 +51,7 @@ Additional Bible-based resources are available at www.spurgeongems.org.
 
 
 Abib Bible Reader אביב
-Version 410.2 using PySide6.8.2.1 and python3.13.2 (64-bit).
+Version 410.3 using PySide6.8.2.1 and python3.13.2 (64-bit).
 12/03/2025
 
 """
@@ -100,7 +100,7 @@ except ImportError:
 
 try:
     # Included in try/except block for Mac/Linux
-    myappid = 'Abib Bible Reader.410.1'
+    myappid = 'Abib Bible Reader.410.3'
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except Exception as e:
     print(f"Error setting APP ID: {e}")
@@ -2829,7 +2829,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def update_title(self) -> None:
         """Title update routine."""
 
-        self.setWindowTitle(f"{Path(self.path1).stem if self.path1 else ''}  -  Abib Bible v410.1")
+        self.setWindowTitle(f"{Path(self.path1).stem if self.path1 else ''}  -  Abib Bible v410.3")
 
     def open_settings_dialog(self):
         """

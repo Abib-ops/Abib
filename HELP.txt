@@ -20,7 +20,7 @@
 ABIB HELP:
 **********
 
-Abib Bible Reader v410.1
+Abib Bible Reader v410.3
 
 Installing Abib on Windows.
 ---------------------------
@@ -487,21 +487,21 @@ text in the "Find ?:" box.
 Installing Abib on Linux.
 -------------------------
 
-Get the "Abib_linux_410.tar.bz2" file from the author.
+Get the "Abib_linux_410.3.tar.bz2" file from the author.
 Move it to your home folder or desired location and navigate there.
-Expand the compressed archive with: tar -jxvf Abib_linux_410.tar.bz2
+Expand the compressed archive with: tar -jxvf Abib_linux_410.3.tar.bz2
 
-$ chmod +x Abib410 will make sure that the executable flag is set.
+$ chmod +x Abib will make sure that the executable flag is set.
 
-The command "./Abib410 11" will now start the program; however, it
+The command "./Abib" will now start the program; however, it
 needs to be in the same folder as all of its dependencies.
-The 11 after ./Abib410 is for the default starting font size
-(which you can change to suit).
 
 Alternatively, if you have the Windows version installed, go to
-C:\Program Files\ and copy the Abib410 folder onto a USB pen drive.
-Copy the Abib410 folder from the USB drive to your home directory.
-Now run Abib410 from the python script within the folder.
+C:\Program Files\ and copy the Abib folder onto a USB pen drive.
+Copy the Abib folder from the USB drive to your home directory.
+Now run Abib.py the python script within the folder, with:
+
+$ python Abib.py.
 
 ======================================================================= 
 Concerning the Bible text:

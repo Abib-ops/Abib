@@ -25,11 +25,23 @@ ABIB README:
 Please note I am not planning any major revisions or new platforms.
 Just trying to keep it going; improve it, and find bugs and glitches.
 
-Abib v410.2
+Abib v410.3
 -----------
 
 Changelog.
 ----------
+Abib v410.3
+Bug fixed regards installation.
+About.txt changed for cross-platform compatibility.
+
+NOTE: If you want to use the arguments by right-clicking on the Abib icon,
+go to Properties and in the Target box add 3 numbers (three).
+
+"C:\Program Files\Abib\Abib.exe" 14 480 810
+
+Those three numbers are the font-size the width and height in pixels, those I
+have shown are the defaults, you can have none of them or all three if you want
+to change them.
 
 Abib v410.2
 Bug fixed concerning incorrect behaviour when entering integer values for verses,
@@ -155,19 +167,26 @@ Some adjustments made to improve search highlighting.
 Abib3.8.4b
 Change of sound for 'Not found'
 Bug removed around AE and Æ in searches.
-Program altered to allow a single command line argument, which will be
-interpreted as the default font size for the Bible. 
+
+Program altered to allow the first or only command line argument,
+which will be interpreted as the default font size for the Bible.
 
 This is how to use it (The default font size is 14):
 
     1) Right-click on the Abib desktop shortcut icon and click on
        Properties.
+
     2) In the Target text box, leave what is there unchanged, except
-       after it put a space then the default font size that want.
-       Like this "C:\Program Files\Abib410\Abib410.exe" 11 width height
+       after it put a space then the default font size that you want.
+       Like this:
+
+        "C:\Program Files\Abib\Abib.exe" 11 width height
+
        Here width and height can be adjusted from default values.
+
     3) Click on Apply, then Continue for Administrative permission and
        then OK.
+
     4) If you have another shortcut in the taskbar, you will need to
        unpin it and drag another one there, or Abib will not start up
        with the new default font size.
@@ -224,7 +243,7 @@ Please ensure that the Cascadia Mono font is installed on your device.
 This will provide for the designed output to occur. (You can do this
 before or after you install Abib.)
 
-You will find it here in the 'C:\Program Files\Abib410\font' folder.
+You will find it here in the 'C:\Program Files\Abib\font' folder.
 It is called CascadiaMono and is a Truetype font which works with
 Microsoft Windows.
 
@@ -237,7 +256,7 @@ Click on Font settings.
 
 Under Add fonts, there is a Drag and Drop to install box.
 
-So, using File Explorer navigate to C:\Program Files\Abib410\font and
+So, using File Explorer navigate to C:\Program Files\Abib\font and
 there you will see the file CascadiaMono.ttf. Drag the CascadiaMono
 file, from inside the font folder, into the box, and it will install
 automatically.
@@ -269,7 +288,7 @@ Installing the Abib Bible App.
 If you have Windows, the installer provided will simply install
 everything, just double-click on it, and follow the instructions.
 
-For Linux, copy the whole C:\Program Files\Abib410 folder to a
+For Linux, copy the whole C:\Program Files\Abib folder to a
 USB key and then do the following:
 
 Suppose your username is Andrew or rather andrew, your USB key will most
@@ -289,14 +308,14 @@ s_dir=/media/andrew/my_usb_drive
 Of course, replace my_usb_drive with the right name. Once you have this,
 enter this command:
 
-cp -r "$s_dir"/Abib410 /home/andrew/.Abib410
+cp -r "$s_dir"/Abib /home/andrew/.Abib
 
-Possibly /home/username/.Abib410 where username is replaced with your
+Possibly /home/username/.Abib where username is replaced with your
 linux username.
 
 Now you can run it by navigating to that folder and doing:
 
-$ python Abib410.py
+$ python Abib.py
 
 
 God Bless you.
