@@ -51,13 +51,17 @@ Additional Bible-based resources are available at www.spurgeongems.org.
 
 
 Abib Bible Reader אביב
-Version 410.3 using PySide6.8.2.1 and python3.13.2 (64-bit).
-12/03/2025
 
+Using PySide6.8.2.1 and python3.13.2 (64-bit).
+
+14/03/2025
 """
+
+CURRENT_VERSION = "411.1"
+
 import re
 import time
-from os import environ
+from os import environ, path, remove, getenv
 from sys import exit, argv
 
 # Suppress pygame welcome message
@@ -70,7 +74,6 @@ from copy import deepcopy
 from io import open
 from itertools import chain
 from json import load, loads, dump, JSONDecodeError
-from os import path, getenv
 from pathlib import Path
 from platform import system
 from shutil import copy2
@@ -89,6 +92,8 @@ from PySide6.QtPrintSupport import QPrintDialog
 from PySide6.QtWidgets import (QDialogButtonBox, QApplication, QPlainTextEdit, QLineEdit, QComboBox,
                                QGridLayout, QWidget, QMessageBox, QSplashScreen, QPushButton, QDialog,
                                QSizePolicy, QSpacerItem)
+import requests
+import subprocess
 
 from find import Ui_Dialog
 
@@ -100,7 +105,7 @@ except ImportError:
 
 try:
     # Included in try/except block for Mac/Linux
-    myappid = 'Abib Bible Reader.410.3'
+    myappid = f'Abib Bible Reader.{CURRENT_VERSION}'
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except Exception as e:
     print(f"Error setting APP ID: {e}")
@@ -1120,9 +1125,9 @@ def resolve_reference(bits: list) -> tuple:
 class AboutWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("")
+        self.setWindowTitle(f"Abib {CURRENT_VERSION}")
 
-        self.resize(480, 800)  # Set initial window size
+        self.resize(480, 810)  # Set initial window size
         self.content = None
         self.about_window = None
 
@@ -1158,7 +1163,7 @@ class AboutWindow(QtWidgets.QMainWindow):
             self.content = "Error: Unable to decode ABOUT.txt. Please make sure the file encoding is UTF-8."
 
         winwidth: int = 480
-        winheight: int = 800
+        winheight: int = 810
 
         # Allow for small screen sizes
         winheight, winwidth = sizer(winheight, winwidth)
@@ -1168,6 +1173,40 @@ class AboutWindow(QtWidgets.QMainWindow):
         # w.otherFileFlag = True
 
         return self.content
+
+
+def compare_versions(version1, version2):
+    """
+    Compares two version numbers and determines which one is newer.
+
+    Args:
+        version1 (str): The first version number (e.g. "1.0.0").
+        version2 (str): The second version number (e.g. "2.3.6").
+
+    Returns:
+        int:
+        -1 if version1 < version2,
+         0 if version1 == version2,
+         1 if version1 > version2.
+    """
+    # Split the version strings into lists of integers
+    v1_parts = list(map(int, version1.split(".")))
+    v2_parts = list(map(int, version2.split(".")))
+
+    # Compare each part (major, minor, patch) in sequence
+    for v1, v2 in zip(v1_parts, v2_parts):
+        if v1 < v2:
+            return -1  # version1 is older
+        elif v1 > v2:
+            return 1  # version1 is newer
+
+    # If we run out of parts to compare, handle different lengths (e.g. 1.0 vs 1.0.1)
+    if len(v1_parts) < len(v2_parts) and any(part > 0 for part in v2_parts[len(v1_parts):]):
+        return -1  # version1 is older
+    elif len(v1_parts) > len(v2_parts) and any(part > 0 for part in v1_parts[len(v2_parts):]):
+        return 1  # version1 is newer
+
+    return 0  # versions are equal
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -1505,17 +1544,123 @@ class MainWindow(QtWidgets.QMainWindow):
         settings_action.triggered.connect(self.open_settings_dialog)
         help_menu.addAction(settings_action)
 
+        # Adding "Check for Updates" option
+        help_menu.addSeparator()
+        icon11_path = Path('images') / 'update.png'
+        update_action = QtGui.QAction(QtGui.QIcon(str(icon11_path)), "Check for Updates", self)
+        update_action.setStatusTip("Check for the latest updates")
+        update_action.triggered.connect(self.check_for_updates)
+        help_menu.addAction(update_action)
+
         self.secondary_window = SecondaryWindow("Text to display", self.geometry())
         self.secondary_window.text_display = QtWidgets.QPlainTextEdit()
 
         # Apply theme from settings during initialisation.
         self.set_theme(self.settings)
 
-        self.update_title()
+        # self.update_title()
         self.show()
 
         # Placeholder for the AboutWindow (lazy-loaded)
         self.about_window = None
+
+    def check_for_updates(self):
+        """
+        Check for updates, download the latest installer, and install it silently if a new version is available.
+        """
+        GITHUB_API_URL = "https://api.github.com/repos/Abib-ops/Abib/releases/latest"
+
+        try:
+            # Step 1: Fetch latest release information from GitHub
+            response = requests.get(GITHUB_API_URL)
+            response.raise_for_status()
+            data = response.json()
+
+            # Fetch the latest version and download URL
+            latest_version = data.get("tag_name", "").strip()
+            print(f"Latest version: {latest_version}")
+            print(f"CURRENT_VERSION: {CURRENT_VERSION}")
+            assets = data.get("assets", [])
+            exe_url = None
+
+            for asset in assets:
+                if asset.get("name", "").endswith(".exe"):  # Look for the Windows installer
+                    exe_url = asset.get("browser_download_url")
+                    break
+
+            # Step 2: Compare CURRENT_VERSION with latest_version
+            if latest_version and exe_url:
+                output: int = compare_versions(CURRENT_VERSION, latest_version)
+                if output == -1:  # A newer version is available
+                    reply = QtWidgets.QMessageBox.question(
+                        self,
+                        "Update Available",
+                        f"A new version ({latest_version}) is available. Do you want to download and install it?",
+                        QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
+                        # Set both Yes and No buttons explicitly
+                        QtWidgets.QMessageBox.StandardButton.No  # Default button is No
+                    )
+                    if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+                        self.download_and_install_update(exe_url, latest_version)
+                elif output >= 0:  # The current version is up to date.
+                    # Notify the user via a message box
+                    msg_box = QtWidgets.QMessageBox(self)  # Create QMessageBox instance
+                    msg_box.setIcon(QtWidgets.QMessageBox.Icon.Information)  # Set icon to Information
+                    msg_box.setWindowTitle("No Updates")  # Set window title
+                    msg_box.setText("You are already using the latest version.")  # Set the message text
+                    msg_box.addButton(QtWidgets.QMessageBox.StandardButton.Ok)  # Add an OK button
+                    msg_box.exec()  # Display the message box
+            else:
+                QtWidgets.QMessageBox.warning(self, "Error", "Failed to fetch the latest version details.")
+        except requests.exceptions.RequestException as ere:
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to check for updates: {str(ere)}")
+
+    def download_and_install_update(self, url, latest_version):
+        """
+        Download the newest installer and run it silently.
+        """
+        try:
+            # Step 1: Determine the filename and temporary directory
+            temp_dir = getenv("TEMP", "/tmp")  # Cross-platform support; default to '/tmp' for non-Windows systems
+            local_file = path.join(temp_dir, f"Abib_update_{latest_version}.exe")  # Include the version in filename
+
+            # Step 2: Check if the file already exists; delete it if necessary
+            if path.exists(local_file):
+                remove(local_file)  # Remove the old file to avoid conflicts
+
+            # Step 3: Download the installer
+            response = requests.get(url, stream=True)
+            response.raise_for_status()  # Raise an exception for HTTP errors
+            with open(local_file, "wb") as file_up:
+                for chunk in response.iter_content(chunk_size=1024):
+                    if chunk:
+                        file_up.write(chunk)
+
+            # Step 4: Run the installer silently
+            subprocess.run([local_file, "/VERYSILENT", "/NORESTART"], check=True)
+
+            # Step 5: Notify the user of successful installation and restart the app
+            msg_box = QtWidgets.QMessageBox(self)  # Create QMessageBox instance
+            msg_box.setIcon(QtWidgets.QMessageBox.Icon.Information)  # Set icon to Information
+            msg_box.setWindowTitle("Update Installed")  # Set window title
+            msg_box.setText("The update has been installed. The application will now restart.")  # Set the message text
+            msg_box.addButton(QtWidgets.QMessageBox.StandardButton.Ok)  # Add an OK button
+            msg_box.exec()  # Display the message box
+
+            QtWidgets.QApplication.quit()  # Quit the application for the update to take effect
+
+            # Step 6: Clean up the installer file
+            if path.exists(local_file):
+                remove(local_file)
+        except requests.exceptions.RequestException as err:
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to download the installer: {str(err)}")
+            print(f"Download Error: {str(err)}")  # Log for debugging
+        except subprocess.CalledProcessError as err:
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to run the installer: {str(err)}")
+            print(f"Install Error: {str(err)}")  # Log for debugging
+        except Exception as err:
+            QtWidgets.QMessageBox.critical(self, "Error", f"An unexpected error occurred: {str(err)}")
+            print(f"Unexpected Error: {str(err)}")  # Log for debugging
 
     def show_about_dialog(self):
         """Show the About window when Help -> About is clicked."""
@@ -2829,7 +2974,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def update_title(self) -> None:
         """Title update routine."""
 
-        self.setWindowTitle(f"{Path(self.path1).stem if self.path1 else ''}  -  Abib Bible v410.3")
+        if Path(self.path1).stem == 'KJB_PCE':
+            self.setWindowTitle(f"  THE HOLY BIBLE      Authorized King James Version")
+        else:
+            title: str = f"{Path(self.path1).stem if self.path1 else ''}"
+            title = title.replace("Pilgrims-Progress", "The Pilgrim's Progress by John Bunyan.")
+            self.setWindowTitle(title)
 
     def open_settings_dialog(self):
         """

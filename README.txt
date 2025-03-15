@@ -1,47 +1,39 @@
-# Copyright 2025 Andrew Kingston
-#
-# This file is part of Abib Bible Reader.
-#
-# Abib is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# any later version.
-#
-# Abib is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Abib.  If not, see <https://www.gnu.org/licenses/>.
-#
-
-Photo Credit: Abibofgod.com for the splash screen.
-
 ************
 ABIB README:
 ************
 
-Please note I am not planning any major revisions or new platforms.
-Just trying to keep it going; improve it, and find bugs and glitches.
-
-Abib v410.3
+Abib v411.1
 -----------
 
 Changelog.
 ----------
+Abib v411.1
+
+
 Abib v410.3
-Bug fixed regards installation.
+Bug fixed regarding installation.
 About.txt changed for cross-platform compatibility.
 
-NOTE: If you want to use the arguments by right-clicking on the Abib icon,
-go to Properties and in the Target box add 3 numbers (three).
+Argument issue resolved: In that for the present, there must be either no arguments
+or three arguments. The arguments are, in order, font-size, width and height.
+They are by default 14 480 810 respectively, therefore, to have them to change
+just the font-size, you would need to have, for example, 12 480 810 or 11 480 810.
+You must have all three arguments present, I believe, and this will allow for a large
+choice of window sizes to suit different screens.
 
-"C:\Program Files\Abib\Abib.exe" 14 480 810
+The place to put the arguments:
+Right-click on the Windows Abib icon;
+click on Properties;
+in the Target text box you will see "C:\Program Files\Abib\Abib.exe".
+It is after this that you can put your three arguments e.g.
+"C:\Program Files\Abib\Abib.exe" 12 400 600
 
-Those three numbers are the font-size the width and height in pixels, those I
-have shown are the defaults, you can have none of them or all three if you want
-to change them.
+Apply Changes:
+- Click Apply and OK to save the changes.
+
+This Bible serves as a valuable companion when viewing a Christian sermon on your PC,
+conveniently positioned to one side of the screen, allowing you to read the scriptures
+alongside the minister's message.
 
 Abib v410.2
 Bug fixed concerning incorrect behaviour when entering integer values for verses,
@@ -317,5 +309,28 @@ Now you can run it by navigating to that folder and doing:
 
 $ python Abib.py
 
-
 God Bless you.
+
+Photo Credit: Abibofgod.com for the splash screen.
+
+Spurgeon's Morning and Evening Readings obtained from www.spurgeon.org.
+Reformatted by Eternal Life Ministries.
+Additional Bible-based resources are available at www.spurgeongems.org.
+
+# Copyright 2025 Andrew Kingston
+#
+# This file is part of Abib Bible Reader.
+#
+# Abib is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# Abib is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Abib.  If not, see <https://www.gnu.org/licenses/>.
+#
