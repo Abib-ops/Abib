@@ -1,21 +1,3 @@
-# Copyright 2025 Andrew Kingston
-#
-# This file is part of Abib Bible Reader.
-#
-# Abib is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# any later version.
-#
-# Abib is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Abib.  If not, see <https://www.gnu.org/licenses/>.
-#
-
 **********
 ABIB HELP:
 **********
@@ -27,12 +9,12 @@ Installing Abib on Windows.
 
 First uninstall any previous version of this program.
 
-Get the "Abib_setup_410_win.zip" file from the author.
+Get the "Abib_setup_410.3_win.zip" file from the author.
 
 Right-click the downloaded file and select Extract All, then in the
 next window click Extract.
 
-Next double click the "Abib_setup_410_win" installer and follow
+Next double click the "Abib_setup_410.3_win" installer and follow
 the instructions, mostly click Next a few times, agree to the
 licence, and Abib will install. Please ignore any negative windows that
 claim that Abib is not safe to install, this is because it is not yet
@@ -41,7 +23,6 @@ digitally signed, but don't worry it is OK.
 Please read the README file at C:\Program Files\Abib\README.txt for the
 latest information, and for some things that are not mentioned in this
 Help.txt.
-
 
 I hope that this Bible program will encourage you to read from God's
 Word, daily; it has me, so please, delight in His word.
@@ -501,7 +482,25 @@ C:\Program Files\ and copy the Abib folder onto a USB pen drive.
 Copy the Abib folder from the USB drive to your home directory.
 Now run Abib.py the python script within the folder, with:
 
-$ python Abib.py.
+$ python Abib.py
+
+# Copyright 2025 Andrew Kingston
+#
+# This file is part of Abib Bible Reader.
+#
+# Abib is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# Abib is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Abib.  If not, see <https://www.gnu.org/licenses/>.
+#
 
 ======================================================================= 
 Concerning the Bible text:
