@@ -2,13 +2,16 @@
 ABIB README:
 ************
 
-Abib v411.1
+Abib v411.2
 -----------
 
 Changelog.
 ----------
-Abib v411.1
+Abib v411.2
+Rudimentary command history on passage entry text box introduced.
 
+Abib v411.1
+First "Check for updates" version
 
 Abib v410.3
 Bug fixed regarding installation.
