@@ -54,10 +54,10 @@ Abib Bible Reader אביב
 
 Using PySide6.8.2.1 and python3.13.2 (64-bit).
 
-14/03/2025
+16/03/2025
 """
 
-CURRENT_VERSION = "411.1"
+CURRENT_VERSION = "411.2"
 
 import re
 import time
@@ -1217,6 +1217,8 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
 
         # Load saved settings or initialise default ones.
+        self.history_index = None
+        self.command_history = None
         self.about_window = None
         self.is_dark_mode: None = None
         # Use the already-loaded settings
@@ -1300,8 +1302,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.display_verse_input: QLineEdit = QtWidgets.QLineEdit()
         self.display_verse_input.setToolTip("F2 Enter or OK to search for a verse.")
-        # self.display_verse_input.returnPressed.connect(self.goto_line)
+        # self.display_verse_input.returnPressed.connect(self.submitAction)
         self.display_verse_input.setGeometry(QtCore.QRect(50, 50, 200, 25))  # Reduce the width to 200
+        self.display_verse_input.installEventFilter(self)  # Install event filter for custom key handling
+
+        # Store command history and variables
+        self.command_history = []
+        self.history_index = -1
 
         self.comboBox_1: QComboBox = QtWidgets.QComboBox()
         self.comboBox_1.addItems(self.nwin)
@@ -1564,6 +1571,42 @@ class MainWindow(QtWidgets.QMainWindow):
         # Placeholder for the AboutWindow (lazy-loaded)
         self.about_window = None
 
+    # noinspection PyUnresolvedReferences
+    def eventFilter(self, source, event):
+        """Custom event filter to handle key events on QLineEdit."""
+
+        if source == self.display_verse_input and event.type() == QtCore.QEvent.KeyPress:
+            if event.key() == QtCore.Qt.Key_Up:  # Handle Up Arrow
+                if self.command_history and self.history_index > 0:
+                    self.history_index -= 1
+                    self.display_verse_input.setText(self.command_history[self.history_index])
+                elif self.command_history and self.history_index == -1:
+                    self.history_index = len(self.command_history) - 1
+                    self.display_verse_input.setText(self.command_history[self.history_index])
+                return True
+
+            elif event.key() == QtCore.Qt.Key_Down:  # Handle Down Arrow
+                if self.command_history and self.history_index < len(self.command_history) - 1:
+                    self.history_index += 1
+                    self.display_verse_input.setText(self.command_history[self.history_index])
+                elif self.history_index == len(self.command_history) - 1:
+                    self.history_index += 1
+                    self.display_verse_input.clear()  # Clear input when navigating below last command
+                return True
+
+            elif event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:  # Handle Enter
+                current_text = self.display_verse_input.text().strip()
+                if current_text:
+                    self.command_history.append(current_text)  # Add current text to history
+                    self.history_index = -1  # Reset history index
+                    # print(f"Executed: {current_text}")  # Simulate command execution
+                    # print("Return key intercepted in eventFilter")  # Debugging
+                    self.submitAction()  # Trigger submitAction manually
+                    self.display_verse_input.clear()  # Clear input field after submission
+                return True
+
+        return super().eventFilter(source, event)
+
     def check_for_updates(self):
         """
         Check for updates, download the latest installer, and install it silently if a new version is available.
@@ -1578,8 +1621,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
             # Fetch the latest version and download URL
             latest_version = data.get("tag_name", "").strip()
-            print(f"Latest version: {latest_version}")
-            print(f"CURRENT_VERSION: {CURRENT_VERSION}")
+            # print(f"Latest version: {latest_version}")
+            # print(f"CURRENT_VERSION: {CURRENT_VERSION}")
             assets = data.get("assets", [])
             exe_url = None
 
@@ -1677,6 +1720,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """Action to perform when OK button or Enter key is pressed."""
         # user_input = self.display_verse_input.text()  # Get text from lineEdit
         # print(f"You typed: {user_input}")
+        # print("submitAction called!")  # Debugging
         self.goto_line()
 
     def helper(self) -> None:
@@ -2359,7 +2403,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statusBar.repaint()
 
     # ENTRY POINT FOR F2 DISPLAY VERSE.
-    def goto_line(self, ref: str ='') -> None:
+    def goto_line(self, ref: str = '') -> None:
         """Move display to line requested."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
@@ -2369,6 +2413,7 @@ class MainWindow(QtWidgets.QMainWindow):
         back_push(x_)
         if not ref:
             ref = self.display_verse_input.text()
+            # print(f"ref: {ref}")
         ref = remove_junk(ref)
         if ref in ('q', 'Q'):
             self.display_verse_input.clear()
