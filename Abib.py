@@ -57,7 +57,7 @@ Using PySide6.8.2.1 and python3.13.2 (64-bit).
 17/03/2025
 """
 
-CURRENT_VERSION = "411.3"
+CURRENT_VERSION = "411.4"
 
 import re
 import time
