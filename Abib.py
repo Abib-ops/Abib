@@ -54,14 +54,14 @@ Abib Bible Reader אביב
 
 Using PySide6.8.2.1 and python3.13.2 (64-bit).
 
-16/03/2025
+17/03/2025
 """
 
-CURRENT_VERSION = "411.2"
+CURRENT_VERSION = "411.3"
 
 import re
 import time
-from os import environ, path, remove, getenv
+from os import environ, path, getenv
 from sys import exit, argv
 
 # Suppress pygame welcome message
@@ -71,10 +71,10 @@ environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
 from pygame import mixer
 
 from copy import deepcopy
+from pathlib import Path
 from io import open
 from itertools import chain
 from json import load, loads, dump, JSONDecodeError
-from pathlib import Path
 from platform import system
 from shutil import copy2
 from string import ascii_letters, digits
@@ -92,8 +92,10 @@ from PySide6.QtPrintSupport import QPrintDialog
 from PySide6.QtWidgets import (QDialogButtonBox, QApplication, QPlainTextEdit, QLineEdit, QComboBox,
                                QGridLayout, QWidget, QMessageBox, QSplashScreen, QPushButton, QDialog,
                                QSizePolicy, QSpacerItem)
+
 import requests
 import subprocess
+import ctypes
 
 from find import Ui_Dialog
 
@@ -1209,6 +1211,176 @@ def compare_versions(version1, version2):
     return 0  # versions are equal
 
 
+# Paths (can be dynamically defined within Abib at runtime)
+uninstaller_path = r"C:\Program Files\Abib\unins000.exe"
+upgrade_installer_path = Path.home() / "Downloads"
+new_version_path = r"C:\Program Files\Abib\Abib.exe"
+GITHUB_API_URL = "https://api.github.com/repos/Abib-ops/Abib/releases/latest"
+
+
+def check_for_updates(parent=None):
+    """
+    Check for updates, download the latest installer, and install it silently if a new version is available.
+    """
+    try:
+        # Step 1: Fetch latest release information from GitHub
+        response = requests.get(GITHUB_API_URL)
+        response.raise_for_status()
+        data = response.json()
+
+        # Fetch the latest version and download URL
+        latest_version = data.get("tag_name", "").strip()
+        assets = data.get("assets", [])
+        exe_url = None
+
+        for asset in assets:
+            if asset.get("name", "").endswith(".exe"):  # Look for the Windows installer
+                exe_url = asset.get("browser_download_url")
+                break
+
+        # Step 2: Compare CURRENT_VERSION with latest_version
+        if latest_version and exe_url:
+            output: int = compare_versions(CURRENT_VERSION, latest_version)
+            if output == -1:  # A newer version is available
+                reply = QtWidgets.QMessageBox.question(parent,
+                                                       "Update Available",
+                                                       f"A new version ({latest_version}) is available. Do you want to download and install it?",
+                                                       QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
+                                                       QtWidgets.QMessageBox.StandardButton.No
+                                                       )
+                if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+                    return True, latest_version, exe_url
+                else:
+                    return False, "", ""
+            elif output >= 0:  # The current version is up to date.
+                # msg_box = QtWidgets.QMessageBox(parent)
+                # msg_box.setIcon(QtWidgets.QMessageBox.Icon.Information)
+                # msg_box.setWindowTitle("No Updates")
+                # msg_box.setText("You are already using the latest version.")
+                # msg_box.addButton(QtWidgets.QMessageBox.StandardButton.Ok)
+                # msg_box.exec()
+                return False, "", ""
+        else:
+            QtWidgets.QMessageBox.warning(parent, "Error", "Failed to fetch the latest version details.")
+    except requests.exceptions.RequestException as ere:
+        QtWidgets.QMessageBox.critical(parent, "Error", f"Failed to check for updates: {str(ere)}")
+
+
+# Step 1: Download upgrade installer
+def download_upgrade(version, exe_url):
+    """
+    Download the upgrade installer from the provided URL and save it to the Downloads folder.
+
+    :param version: The latest version number (for naming the installer file).
+    :param exe_url: The URL of the installer executable file to download.
+    :return: True if the download was successful, False otherwise.
+    """
+    try:
+        print(f"Downloading the upgrade (version: {version}) from {exe_url}...")
+
+        # Make the GET request to download the file
+        response = requests.get(exe_url, stream=True)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            # Define the download path in the user's Downloads folder
+            download_path = Path.home() / "Downloads" / f"Abib_setup_{version}_win.exe"
+
+            # Save the file to the local Downloads folder
+            with open(download_path, "wb") as download_file:
+                for chunk in response.iter_content(chunk_size=1024):  # Stream chunks
+                    download_file.write(chunk)
+
+            print(f"Download complete. Installer saved to {download_path}")
+            return True
+
+        else:
+            print(f"Download failed. Status code: {response.status_code}")
+            return False
+
+    except requests.exceptions.RequestException as ee:
+        print(f"An error occurred while downloading the upgrade: {str(ee)}")
+        return False
+
+
+# Step 2: Initiate uninstaller
+def run_uninstaller():
+    print("Running Abib uninstaller...")
+    uninstall_process = subprocess.Popen([uninstaller_path, "/SILENT", "/VERYSILENT"])
+    uninstall_process.wait()
+    if uninstall_process.returncode == 0:
+        print("Uninstalled successfully.")
+    else:
+        print(f"Uninstallation failed with return code {uninstall_process.returncode}")
+        return False
+    return True
+
+
+# Step 3: Install the upgrade
+def run_installer(installer_path: str) -> bool:
+    """
+        Run the installer with elevated privileges using ShellExecute.
+        """
+    try:
+        # Request elevated privileges to execute the installer
+        result = ctypes.windll.shell32.ShellExecuteW(
+            None,  # No parent window
+            "runas",  # Verb to request elevation
+            installer_path,  # Path to the installer
+            "/SILENT, /VERYSILENT, /NORESTART, /SUPPRESSMSGBOXES",  # Arguments for the installer (silent mode)
+            None,  # Default working directory
+            0  # Show the installer window (SW_SHOWNORMAL)
+        )
+        if result <= 32:
+            print(f"Failed to run the installer. Error code: {result}")
+            return False
+        print("Installer is running...")
+        return True
+    except Exception as ee:
+        print(f"An error occurred while running the installer: {ee}")
+        return False
+
+
+#     print("Running upgrade installer...")
+#     installer_process = subprocess.Popen([upgrade_installer_path, "/SILENT", "/VERYSILENT"])
+#     installer_process.wait()
+#     if installer_process.returncode == 0:
+#         print("Upgrade installed successfully.")
+#     else:
+#         print(f"Installation failed with return code {installer_process.returncode}")
+#         return False
+#     return True
+
+
+# # Step 4: Restart Abib
+# def restart_abib():
+#     print("Restarting Abib...")
+#     subprocess.Popen([new_version_path])
+#     print("Abib restarted.")
+
+
+# Main update process
+def update_abib():
+    print("Checking for updates...")
+    update_available, version, exe_url = check_for_updates()
+    if not update_available:
+        return
+    path_to_setup_exe = str(Path.home() / "Downloads" / f"Abib_setup_{version}_win.exe")
+    print("Update process started...")
+    if not download_upgrade(version, exe_url):
+        print("Update aborted: Could not download upgrade.")
+        return
+    if not run_uninstaller():
+        print("Update aborted: Could not uninstall current version.")
+        return
+    if not run_installer(path_to_setup_exe):
+        print("Update aborted: Could not run the installer.")
+        return
+    print("Update completing. Installing New Version of Abib.")
+    # restart_abib()
+    exit(0)  # Exit the old instance of the application
+
+
 class MainWindow(QtWidgets.QMainWindow):
     """MainWindow class."""
 
@@ -1302,7 +1474,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.display_verse_input: QLineEdit = QtWidgets.QLineEdit()
         self.display_verse_input.setToolTip("F2 Enter or OK to search for a verse.")
-        # self.display_verse_input.returnPressed.connect(self.submitAction)
+        # self.display_verse_input.returnPressed.connect(self.goto_line)
         self.display_verse_input.setGeometry(QtCore.QRect(50, 50, 200, 25))  # Reduce the width to 200
         self.display_verse_input.installEventFilter(self)  # Install event filter for custom key handling
 
@@ -1351,8 +1523,8 @@ class MainWindow(QtWidgets.QMainWindow):
         grid.addWidget(self.okButton, 2, 1)
         self.okButton.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         self.okButton.setToolTip("Enter")
-        self.display_verse_input.returnPressed.connect(self.submitAction)
-        self.okButton.clicked.connect(self.submitAction)
+        self.display_verse_input.returnPressed.connect(self.goto_line)
+        self.okButton.clicked.connect(self.goto_line)
 
         self.buttonQ = QtWidgets.QPushButton("Quit")
         self.buttonQ.setStyleSheet("QPushButton { text-align: left; }")
@@ -1551,14 +1723,6 @@ class MainWindow(QtWidgets.QMainWindow):
         settings_action.triggered.connect(self.open_settings_dialog)
         help_menu.addAction(settings_action)
 
-        # Adding "Check for Updates" option
-        help_menu.addSeparator()
-        icon11_path = Path('images') / 'update.png'
-        update_action = QtGui.QAction(QtGui.QIcon(str(icon11_path)), "Check for Updates", self)
-        update_action.setStatusTip("Check for the latest updates")
-        update_action.triggered.connect(self.check_for_updates)
-        help_menu.addAction(update_action)
-
         self.secondary_window = SecondaryWindow("Text to display", self.geometry())
         self.secondary_window.text_display = QtWidgets.QPlainTextEdit()
 
@@ -1601,109 +1765,11 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.history_index = -1  # Reset history index
                     # print(f"Executed: {current_text}")  # Simulate command execution
                     # print("Return key intercepted in eventFilter")  # Debugging
-                    self.submitAction()  # Trigger submitAction manually
+                    self.goto_line()  # Trigger goto_line manually
                     self.display_verse_input.clear()  # Clear input field after submission
                 return True
 
         return super().eventFilter(source, event)
-
-    def check_for_updates(self):
-        """
-        Check for updates, download the latest installer, and install it silently if a new version is available.
-        """
-        GITHUB_API_URL = "https://api.github.com/repos/Abib-ops/Abib/releases/latest"
-
-        try:
-            # Step 1: Fetch latest release information from GitHub
-            response = requests.get(GITHUB_API_URL)
-            response.raise_for_status()
-            data = response.json()
-
-            # Fetch the latest version and download URL
-            latest_version = data.get("tag_name", "").strip()
-            # print(f"Latest version: {latest_version}")
-            # print(f"CURRENT_VERSION: {CURRENT_VERSION}")
-            assets = data.get("assets", [])
-            exe_url = None
-
-            for asset in assets:
-                if asset.get("name", "").endswith(".exe"):  # Look for the Windows installer
-                    exe_url = asset.get("browser_download_url")
-                    break
-
-            # Step 2: Compare CURRENT_VERSION with latest_version
-            if latest_version and exe_url:
-                output: int = compare_versions(CURRENT_VERSION, latest_version)
-                if output == -1:  # A newer version is available
-                    reply = QtWidgets.QMessageBox.question(
-                        self,
-                        "Update Available",
-                        f"A new version ({latest_version}) is available. Do you want to download and install it?",
-                        QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
-                        # Set both Yes and No buttons explicitly
-                        QtWidgets.QMessageBox.StandardButton.No  # Default button is No
-                    )
-                    if reply == QtWidgets.QMessageBox.StandardButton.Yes:
-                        self.download_and_install_update(exe_url, latest_version)
-                elif output >= 0:  # The current version is up to date.
-                    # Notify the user via a message box
-                    msg_box = QtWidgets.QMessageBox(self)  # Create QMessageBox instance
-                    msg_box.setIcon(QtWidgets.QMessageBox.Icon.Information)  # Set icon to Information
-                    msg_box.setWindowTitle("No Updates")  # Set window title
-                    msg_box.setText("You are already using the latest version.")  # Set the message text
-                    msg_box.addButton(QtWidgets.QMessageBox.StandardButton.Ok)  # Add an OK button
-                    msg_box.exec()  # Display the message box
-            else:
-                QtWidgets.QMessageBox.warning(self, "Error", "Failed to fetch the latest version details.")
-        except requests.exceptions.RequestException as ere:
-            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to check for updates: {str(ere)}")
-
-    def download_and_install_update(self, url, latest_version):
-        """
-        Download the newest installer and run it silently.
-        """
-        try:
-            # Step 1: Determine the filename and temporary directory
-            temp_dir = getenv("TEMP", "/tmp")  # Cross-platform support; default to '/tmp' for non-Windows systems
-            local_file = path.join(temp_dir, f"Abib_update_{latest_version}.exe")  # Include the version in filename
-
-            # Step 2: Check if the file already exists; delete it if necessary
-            if path.exists(local_file):
-                remove(local_file)  # Remove the old file to avoid conflicts
-
-            # Step 3: Download the installer
-            response = requests.get(url, stream=True)
-            response.raise_for_status()  # Raise an exception for HTTP errors
-            with open(local_file, "wb") as file_up:
-                for chunk in response.iter_content(chunk_size=1024):
-                    if chunk:
-                        file_up.write(chunk)
-
-            # Step 4: Run the installer silently
-            subprocess.run([local_file, "/VERYSILENT", "/NORESTART"], check=True)
-
-            # Step 5: Notify the user of successful installation and restart the app
-            msg_box = QtWidgets.QMessageBox(self)  # Create QMessageBox instance
-            msg_box.setIcon(QtWidgets.QMessageBox.Icon.Information)  # Set icon to Information
-            msg_box.setWindowTitle("Update Installed")  # Set window title
-            msg_box.setText("The update has been installed. The application will now restart.")  # Set the message text
-            msg_box.addButton(QtWidgets.QMessageBox.StandardButton.Ok)  # Add an OK button
-            msg_box.exec()  # Display the message box
-
-            QtWidgets.QApplication.quit()  # Quit the application for the update to take effect
-
-            # Step 6: Clean up the installer file
-            if path.exists(local_file):
-                remove(local_file)
-        except requests.exceptions.RequestException as err:
-            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to download the installer: {str(err)}")
-            print(f"Download Error: {str(err)}")  # Log for debugging
-        except subprocess.CalledProcessError as err:
-            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to run the installer: {str(err)}")
-            print(f"Install Error: {str(err)}")  # Log for debugging
-        except Exception as err:
-            QtWidgets.QMessageBox.critical(self, "Error", f"An unexpected error occurred: {str(err)}")
-            print(f"Unexpected Error: {str(err)}")  # Log for debugging
 
     def show_about_dialog(self):
         """Show the About window when Help -> About is clicked."""
@@ -1715,13 +1781,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.about_window.show()
         self.about_window.raise_()  # Bring the "About" window to the front
         self.about_window.activateWindow()  # Give the "About" window focus
-
-    def submitAction(self):
-        """Action to perform when OK button or Enter key is pressed."""
-        # user_input = self.display_verse_input.text()  # Get text from lineEdit
-        # print(f"You typed: {user_input}")
-        # print("submitAction called!")  # Debugging
-        self.goto_line()
 
     def helper(self) -> None:
         """Help section."""
@@ -3551,7 +3610,8 @@ if __name__ == '__main__':
         splash = QSplashScreen(QPixmap(splash_path))
         splash.show()
 
-    app.processEvents()
+    if system() == 'Windows':
+        app.processEvents()
 
     width, height = app.primaryScreen().size().toTuple()
     half_width = width / 2
@@ -3597,6 +3657,8 @@ if __name__ == '__main__':
 
     linehighlightcolor: QColor = QtGui.QColor("#0138b7")
     linetextcolor: QColor = QtGui.QColor("#ffffff")
+
+    update_abib()
 
     bibledict: dict[str, int] = {
         'genesis': 1, 'ge': 1, 'gen': 1, 'g': 1, 'gene': 1, 'ot': 1,

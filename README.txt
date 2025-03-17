@@ -2,11 +2,14 @@
 ABIB README:
 ************
 
-Abib v411.2
+Abib v411.3
 -----------
 
 Changelog.
 ----------
+Abib v411.3
+Possibly working upgrade, checks on start-up.
+
 Abib v411.2
 Rudimentary command history on passage entry text box introduced.
 
