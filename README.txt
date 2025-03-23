@@ -2,11 +2,14 @@
 ABIB README:
 ************
 
-Abib v411.4
+Abib v412.1
 -----------
 
 Changelog.
-----------
+-----------
+Abib v412.1
+Further test to ensure stability.
+
 Abib v411.4
 Same as v411.3 for testing purposes.
 
