@@ -54,10 +54,10 @@ Abib Bible Reader אביב
 
 Using PySide6.8.2.1 and python3.13.2 (64-bit).
 
-17/03/2025
+23/03/2025
 """
 
-CURRENT_VERSION = "411.4"
+CURRENT_VERSION = "412.1"
 
 import re
 import time
@@ -1253,12 +1253,6 @@ def check_for_updates(parent=None):
                 else:
                     return False, "", ""
             elif output >= 0:  # The current version is up to date.
-                # msg_box = QtWidgets.QMessageBox(parent)
-                # msg_box.setIcon(QtWidgets.QMessageBox.Icon.Information)
-                # msg_box.setWindowTitle("No Updates")
-                # msg_box.setText("You are already using the latest version.")
-                # msg_box.addButton(QtWidgets.QMessageBox.StandardButton.Ok)
-                # msg_box.exec()
                 return False, "", ""
         else:
             QtWidgets.QMessageBox.warning(parent, "Error", "Failed to fetch the latest version details.")
@@ -1341,24 +1335,6 @@ def run_installer(installer_path: str) -> bool:
         return False
 
 
-#     print("Running upgrade installer...")
-#     installer_process = subprocess.Popen([upgrade_installer_path, "/SILENT", "/VERYSILENT"])
-#     installer_process.wait()
-#     if installer_process.returncode == 0:
-#         print("Upgrade installed successfully.")
-#     else:
-#         print(f"Installation failed with return code {installer_process.returncode}")
-#         return False
-#     return True
-
-
-# # Step 4: Restart Abib
-# def restart_abib():
-#     print("Restarting Abib...")
-#     subprocess.Popen([new_version_path])
-#     print("Abib restarted.")
-
-
 # Main update process
 def update_abib():
     print("Checking for updates...")
@@ -1377,7 +1353,7 @@ def update_abib():
         print("Update aborted: Could not run the installer.")
         return
     print("Update completing. Installing New Version of Abib.")
-    # restart_abib()
+    print("Closing down the old version of Abib...")
     exit(0)  # Exit the old instance of the application
 
 

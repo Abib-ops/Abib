@@ -2,16 +2,16 @@
 ABIB HELP:
 **********
 
-Abib Bible Reader v411.4
+Abib Bible Reader v412.1
 
 Installing Abib on Windows.
 ---------------------------
 
 First uninstall any previous version of this program.
 
-Get the "Abib_setup_411.4_win.exe" file from the Abib-ops on GitHub.
+Get the "Abib_setup_412.1_win.exe" file from the Abib-ops on GitHub.
 
-Next double click the "Abib_setup_411.4_win.exe" installer and follow
+Next double click the "Abib_setup_412.1_win.exe" installer and follow
 the instructions, mostly click Next a few times, agree to the
 licence, and Abib will install. Please ignore any negative windows that
 claim that Abib is from an unknown author.
@@ -464,9 +464,9 @@ text in the "Find ?:" box.
 Installing Abib on Linux.
 -------------------------
 
-Get the "Abib_linux_411.4.tar.bz2" file from the author.
+Get the "Abib_linux_412.1.tar.bz2" file from the author.
 Move it to your home folder or desired location and navigate there.
-Expand the compressed archive with: tar -jxvf Abib_linux_411.4.tar.bz2
+Expand the compressed archive with: tar -jxvf Abib_linux_412.1.tar.bz2
 
 $ chmod +x Abib will make sure that the executable flag is set.
 
