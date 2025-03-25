@@ -54,10 +54,10 @@ Abib Bible Reader אביב
 
 Using PySide6.8.2.1 and python3.13.2 (64-bit).
 
-23/03/2025
+25/03/2025
 """
 
-CURRENT_VERSION = "412.1"
+CURRENT_VERSION = "412.2"
 
 import re
 import time
@@ -77,9 +77,8 @@ from itertools import chain
 from json import load, loads, dump, JSONDecodeError
 from platform import system
 from shutil import copy2
-from string import ascii_letters, digits
 
-from roman import fromRoman, InvalidRomanNumeralError
+from roman import fromRoman
 from typing import Any
 from datetime import datetime, timedelta
 
@@ -96,6 +95,7 @@ from PySide6.QtWidgets import (QDialogButtonBox, QApplication, QPlainTextEdit, Q
 import requests
 import subprocess
 import ctypes
+import functions as fcs
 
 from find import Ui_Dialog
 
@@ -120,54 +120,19 @@ date_index: int = 0  # Hours relative to today's date.
 
 mixer.init()
 
-def readfile(input_path: str, input_filename: str, file_length: int) -> list:
-    """File reading routine — reads a text file into a list."""
 
-    # print('readio ', input_filename)
-    err = "Abib is not in the same directory as its files and folders.\n"
-    output_listname = []
-    try:
-        with open(f'{input_path}{input_filename}', 'r') as f_read:
-            for _ in range(file_length):
-                x5 = f_read.readline()
-                try:
-                    i_line = int(x5.splitlines()[0])  # Convert to int if possible
-                except ValueError:
-                    i_line = x5.splitlines()[0]  # Keep as string if conversion fails
-                output_listname.append(i_line)
-    except FileNotFoundError:
-        exit(err)  # Exit program with an error message
-
-    return output_listname
-
-
-def split_strip(_key: str) -> tuple[int, str]:
-    """Remove whitespace from '_key' entered as passage reference."""
-
-    p = " ()[];:'!<>,.-?"       # Characters to strip ’ not needed.
-
-    # Split the string into words, strip the unwanted characters from each word,
-    # and filter out any resulting empty words.
-    word_list = [word.strip(p) for word in _key.split(' ') if word.strip(p)]
-
-    num = len(word_list)        # Count the number of words
-    _key = ' '.join(word_list)  # Join words back into a single string
-
-    return num, _key
-
-
-def back_push(x_) -> None:
+def back_push(current_position) -> None:
     """Push onto the back stack."""
 
     if len(back) == 0:
-        saving = (x_, w.y, w.hiLita.lineinc, w.hiLita.keyinc, w.hiLita.fmt,
+        saving = (current_position, w.y, w.hiLita.lineinc, w.hiLita.keyinc, w.hiLita.fmt,
                   w.hiLita.length, w.no_f3_yet, w.occurring, w.key, w.dlg)
         back.append(saving)
     else:
-        if back[-1][0] == x_ and back[-1][1] == w.y:
+        if back[-1][0] == current_position and back[-1][1] == w.y:
             pass
         else:
-            saving = (x_, w.y, w.hiLita.lineinc, w.hiLita.keyinc,
+            saving = (current_position, w.y, w.hiLita.lineinc, w.hiLita.keyinc,
                       w.hiLita.fmt, w.hiLita.length, w.no_f3_yet,
                       w.occurring, w.key, w.dlg)
             back.append(saving)
@@ -176,10 +141,10 @@ def back_push(x_) -> None:
 def back_pop() -> int:
     """Pop from the back stack."""
 
-    x_ = 0
+    current_position = 0
     if back:
         saving = back.pop()
-        x_ = saving[0]
+        current_position = saving[0]
         w.y = saving[1]
         w.hiLita.lineinc = saving[2]
         w.hiLita.keyinc = saving[3]
@@ -190,21 +155,21 @@ def back_pop() -> int:
         w.key = saving[8]
         w.dlg = saving[9]
 
-    return x_
+    return current_position
 
 
-def forward_push(x_) -> None:
+def forward_push(current_position) -> None:
     """Push onto the forward stack."""
 
     if len(forward) == 0:
-        saving = (x_, w.y, w.hiLita.lineinc, w.hiLita.keyinc, w.hiLita.fmt,
+        saving = (current_position, w.y, w.hiLita.lineinc, w.hiLita.keyinc, w.hiLita.fmt,
                   w.hiLita.length, w.no_f3_yet, w.occurring, w.key, w.dlg)
         forward.append(saving)
     else:
-        if forward[-1][0] == x_ and forward[-1][1] == w.y:
+        if forward[-1][0] == current_position and forward[-1][1] == w.y:
             pass
         else:
-            saving = (x_, w.y, w.hiLita.lineinc, w.hiLita.keyinc,
+            saving = (current_position, w.y, w.hiLita.lineinc, w.hiLita.keyinc,
                       w.hiLita.fmt, w.hiLita.length, w.no_f3_yet,
                       w.occurring, w.key, w.dlg)
             forward.append(saving)
@@ -213,10 +178,10 @@ def forward_push(x_) -> None:
 def forward_pop() -> int:
     """Pop from the forward stack."""
 
-    x_ = 0
+    current_position = 0
     if len(forward) > 0:
         saving = forward.pop()
-        x_ = saving[0]
+        current_position = saving[0]
         w.y = saving[1]
         w.hiLita.lineinc = saving[2]
         w.hiLita.keyinc = saving[3]
@@ -227,12 +192,7 @@ def forward_pop() -> int:
         w.key = saving[8]
         w.dlg = saving[9]
 
-    return x_
-
-
-def create_pattern(key):
-    """Create a regex pattern based on the given key."""
-    return rf"\b{key[:-2]}[s’][s’]" if key[-2:] == "s’" else rf"\b{key}\b"
+    return current_position
 
 
 def iterate_list(keywords: list[str], r_list: list) -> None:
@@ -244,7 +204,7 @@ def iterate_list(keywords: list[str], r_list: list) -> None:
     for i in w.occurs:
         coordinates = []
         for key in keywords:
-            pattern = create_pattern(key)
+            pattern = fcs.create_pattern(key)
             for m in re.finditer(pattern, r_list[i]):
                 w.occurring += 1
                 coordinates.append((m.start(), m.end()))
@@ -380,9 +340,9 @@ def prep_statusbar_message(index: int):
 
 
 def occurrent1() -> int:
-    """Count occurrence(s) of w.key and give x_ and w.y values.
+    """Count occurrence(s) of w.key and give current_position and w.y values.
 
-    w.occurs is a list of all the x_ values in the search results.
+    w.occurs is a list of all the current_position values in the search results.
     w.occur is a corresponding list which gives the start w.y and finish w.yend of
     the searched for item in the particular verse.
     w.occurring is the total number of times the search key was found.
@@ -391,86 +351,31 @@ def occurrent1() -> int:
     w.finding is the number of items found within the verse.
     """
 
-    x_ = w.occurs[-1]  # Workaround for PyCharm linter.
+    current_position = w.occurs[-1]  # Workaround for PyCharm linter.
 
     if w.verse < len(w.occurs):
         w.finding += 1
-        x_ = w.occurs[w.verse]  # Aligns with w.occur(w.verse)
+        current_position = w.occurs[w.verse]  # Aligns with w.occur(w.verse)
         if w.finding + 1 <= len(w.occur[w.verse]):
             w.y = w.occur[w.verse][w.finding][0]
             w.yend = w.occur[w.verse][w.finding][1]
             w.occurrence += 1
-            prep_statusbar_message(x_)
+            prep_statusbar_message(current_position)
         elif w.verse + 1 < len(w.occurs):
             w.verse += 1
             w.finding = 0
             w.y = w.occur[w.verse][w.finding][0]
             w.yend = w.occur[w.verse][w.finding][1]
             w.occurrence += 1
-            x_ = w.occurs[w.verse]
-            prep_statusbar_message(x_)
+            current_position = w.occurs[w.verse]
+            prep_statusbar_message(current_position)
     elif w.verse >= len(w.occurs):
-        x_ = w.occurs[-1]  # Last item
+        current_position = w.occurs[-1]  # Last item
 
     # print(f'len(w.occurs = {len(w.occurs)})')
     # print(f'w.occurring = {w.occurring}')
 
-    return x_
-
-
-def punctuation_counter(text: str) -> int:
-    """Count the number of punctuation characters in text."""
-
-    p = "()[];:!<>,.-?"  # ’ not needed because in the search file.
-    num: int = 0
-    for _ in p:
-        k = text.count(_)
-        num += k
-
-    return num
-
-
-def repeat_find(rx: str, start: int, end: int) -> int:
-    """Repeat find of lengthening text.
-
-    rx is the verse from the PCE-find.txt file
-    or a similar file without italics.
-    """
-
-    flag: bool = True
-    numb: int
-    sumb: int = 0
-    repeats: int = 0
-    while flag is True:
-        text: str = rx[start:end + sumb]
-        numb = punctuation_counter(text)
-        sumb += numb
-        start = end + sumb - numb
-        repeats += 1
-        if repeats > 15 or numb == 0:
-            flag = False
-
-    return sumb
-
-
-def repeat_find_keyinc(rx: str, start: int, end: int) -> int:
-    """Repeat find of lengthening text.
-
-    rx is the verse from the PCE-find.txt file
-    or a similar file without italics."""
-
-    numb: int
-    sumb = 0
-    while True:
-        text: str = rx[start:end]
-        numb = punctuation_counter(text)
-        sumb += numb
-        if numb == 0:
-            break
-        start = end
-        end += numb
-
-    return sumb
+    return current_position
 
 
 def findf3_ww_any(x1: int, x2: int, numwords: int, _set: dict[str, set], r_list: list) -> None:
@@ -536,85 +441,6 @@ def reset_attributes() -> None:
     w.occur = []
 
 
-def readio(input_path: str, input_filename: str, file_length: int) -> list:
-    """Read Bible files."""
-
-    # print('readio ', input_filename)
-    output_listname: list = []
-    f_readio = open(f'{input_path}{input_filename}', 'r', encoding="utf-8")
-    for _ in range(file_length):
-        x5: str = f_readio.readline()
-        i = f'{x5.splitlines()[0]}\n'
-        output_listname.append(i)
-    f_readio.close()
-
-    return output_listname
-
-
-def load_json_dict(file_dict: Any) -> Any:
-    """Load a dictionary with JSON."""
-
-    # print('load_json_dict ', file_dict)
-    with open(file_dict, "r", encoding='utf-8') as read_file:
-        file1 = load(read_file)
-
-    return file1
-
-
-def load_list_set_dict(input_filename: str, ref_dict: Any) -> dict[Any, set]:
-    """Load a list_dict.txt/json file that is a dictionary of Bible words.
-
-    As keys and values, lists of verse numbers of the Bible.
-
-    The lists are converted to sets after reading, to return them to the
-    format required for use. The ref_dict is used to get the relevant keys.
-
-    The reason for this is that apparently JSON cannot deal with sets.
-
-    The input_filename will be of the form 'list_[name].txt/json'.
-    The receiving files name should be of the form 'set_[name]'.
-    """
-
-    # print('load_list_set_dict ', input_filename)
-    setdict: dict[Any, set] = {}
-    listdict: Any = load_json_dict(input_filename)
-    sd: list = list(ref_dict)
-    lsd: int = len(sd)
-    for n in range(lsd):
-        setdict[sd[n]] = set(listdict[sd[n]])
-
-    return setdict
-
-
-def is_float_re(string_: str) -> bool:
-    """Take a string and determine if it represents a float.
-
-    Many thanks to:
-    https://stackoverflow.com/users/1399279/sethmmorton.
-    """
-    pattern = r"^[-+]?(?:\b[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][-+]?[0-9]+\b)?$"
-    m = re.match(pattern, string_)  # Use re.match directly
-
-    return m is not None  # More Pythonic than `return True if m else False`
-
-
-def any_of_the_words_lookup(_key: str, _set: dict[str, set]) -> tuple[int, str]:
-    """Takes _key and splits it into separate words in liszt,
-    which are then looked up in the set of Bible words.
-    Returns modified _key and count in num of occurrences of the words in it."""
-
-    liszt: list[str] = _key.split(' ')
-
-    # use a set to eliminate duplicates, keep words found in _set
-    unique_words = set(word for word in liszt if word in _set)
-
-    _key = ' '.join(unique_words)  # join the set into a string
-
-    num = len(unique_words)  # count the number of unique words
-
-    return num, _key
-
-
 def centerer(widt: int, heigh: int) -> tuple:
     """Provide central screen origin points for windows"""
 
@@ -643,93 +469,6 @@ def sizer(window_height: int, window_width: int) -> tuple[int, int]:
 
     return window_height, window_width
 
-def squeeze(char: str, s: str) -> str:
-    """Remove duplicate characters. For example, '.....' is replaced with '.'."""
-
-    while char * 2 in s:
-        s = s.replace(char * 2, char)
-
-    return s
-
-def remove_junk(text: str) -> str:
-    """Remove junk characters from text.  Junk characters are any non-alphabetic characters,
-       numbers or any of the normal punctuation characters.
-       Plus, the text must start and finish with a letter or a number."""
-
-    # print(f"remove_junk: {text}")
-    # Define allowed characters using a set for fast membership checks.
-    allowed_set = set(ascii_letters + digits + "():,’;-?[].!<> ")
-    # Filter out characters not in the allowed set.
-    rex: str = "".join(ch for ch in text if ch in allowed_set)
-
-    if text.lstrip('-').isdigit():
-        return text  # Return the number as-is if it's valid
-    else:
-        #  Remove any junk from the beginning of a reference.
-        try:
-            m: int = re.search("[a-zA-Z0-9]+", rex).start()
-            rex: str = rex[m:]
-        except AttributeError:
-            pass
-
-        #  Remove any junk from the end of a reference.
-        try:
-            k: int = re.search("[a-zA-Z0-9]+", rex[::-1]).start()
-            if k > 0:
-                rex = rex[:-k]
-        except AttributeError:
-            pass
-
-        #  Remove possible duplicate '.' or ':' chapter verse seperator.
-        rex = squeeze('.', rex)
-        rex = squeeze(':', rex)
-
-        #  Remove possible KJV ending.
-        if rex.endswith(' KJV'):
-            rex = rex[:-4]
-
-    return rex
-
-def load_settings_from_file(filename="settings.json"):
-    """
-    Load the settings dictionary from a JSON file.
-    If the file is missing, empty, malformed, or has partial settings, return defaults.
-    """
-    # Default settings
-    default_settings = {
-        "theme": "Light",
-        "show_splash": False
-    }
-
-    # Check if the file exists
-    if not path.exists(filename):
-        print("Settings file does not exist. Using default settings.")
-        return default_settings
-
-    # Attempt to read the file
-    try:
-        with open(filename, "r") as file1:
-            # Read and parse the JSON
-            content = file1.read().strip()  # Handle an empty file gracefully
-            if not content:  # File is empty
-                print("Settings file is empty. Falling back to default settings.")
-                return default_settings
-
-            settings_here = loads(content)  # Try to parse JSON
-
-            # Add missing keys with their default values
-            for key, value in default_settings.items():
-                settings_here.setdefault(key, value)
-
-            # print("Loaded settings:", settings_here)
-            return settings_here
-
-    except JSONDecodeError:
-        print("Settings file is malformed. Overwriting with default settings.")
-        return default_settings
-    except Exception as err:
-        print(f"Error loading settings: {err}. Using default settings.")
-        return default_settings
 
 def save_settings_to_file(the_settings, filename="settings.json"):
     """
@@ -762,14 +501,6 @@ def setup_Abib_settings(abib_directory: Path) -> None:
             print(f"Copied settings.json to {abib_directory}")
         else:
             print(f"Abib settings.json was found: {abib_directory} ... Skipping copy.")
-
-
-def isRoman(s: str) -> bool:
-    """Regular expression to match valid Roman numerals"""
-
-    roman_pattern = r"^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$"
-    s = s.upper()
-    return bool(re.match(roman_pattern, s))
 
 
 def commentary() -> None:
@@ -825,28 +556,6 @@ def get_date_file(adjustment: int = 0) -> tuple:
     return date_file1
 
 
-def convert_roman_to_numeric(reference_text):
-    """
-    Converts all Roman numeral occurrences in the reference text to numeric values.
-    Roman numerals are case-insensitive (e.g. IV == iv == 4).
-    """
-    # Regex to match Roman numerals (case-insensitive)
-    pattern = re.compile(r'\b(IV|IX|XL|XC|L|C|D|M|I|V|X)+\b', re.IGNORECASE)
-
-    def replacer(matched):
-        # Extract the matched Roman numeral
-        roman_numeral = matched.group(0)
-        try:
-            # Use `fromRoman` to convert Roman numeral to an integer
-            return str(fromRoman(roman_numeral))
-        except InvalidRomanNumeralError:
-            # In case of invalid Roman numerals, return the original text
-            return roman_numeral
-
-    # Replace all valid Roman numerals in the reference text with their numeric equivalents
-    return pattern.sub(replacer, reference_text)
-
-
 def attach_book_name(reference_text: str, current_line: int) -> str:
     """Attach a book name to the floating-point reference."""
 
@@ -865,7 +574,7 @@ def split_reference(reference_text: str) -> list:
     intermediate_parts = re.split(r'[ .:]+', reference_text)
     # print(f"865 Split reference: {reference_text} into {intermediate_parts}")
 
-    final_parts = []
+    parts_list = []
 
     # Further split parts with mixed letters and numbers (e.g., 'g2' -> ['g', '2'])
     part_number: int = -1
@@ -873,24 +582,24 @@ def split_reference(reference_text: str) -> list:
         part_number += 1
         # Use regex to separate letters and digits if mixed
         if part_number == 0 and part in bibledict:
-            final_parts.append(part)
+            parts_list.append(part)
             # print(f"876 Part: {part} is a book name")
         else:
             match = re.findall(r'[a-zA-Z]+|\d+', part)
-            final_parts.extend(match)
+            parts_list.extend(match)
 
-    if len(final_parts) > 1:
+    if len(parts_list) > 1:
         try:
-            if int(final_parts[0]):
-                final_parts[1] = f"{final_parts[0]}{final_parts[1]}"
-                del final_parts[0]
+            if int(parts_list[0]):
+                parts_list[1] = f"{parts_list[0]}{parts_list[1]}"
+                del parts_list[0]
         except ValueError:
             pass
 
-    if len(final_parts) == 4:
-        final_parts = final_parts[:-1]
+    if len(parts_list) == 4:
+        parts_list = parts_list[:-1]
 
-    return final_parts
+    return parts_list
 
 
 def tidy(text: str, parts: list) ->  str:
@@ -947,7 +656,7 @@ def check_roman_chapter_adjacent(reference_text: str) -> str:
     len_ref: int = len(ref)
     # print(f"962 Reference text length: {len_ref} ref = {ref}")
 
-    if (ref in bibledict or isRoman(ref)) and ref != 'mi':
+    if (ref in bibledict or fcs.isRoman(ref)) and ref != 'mi':
         # print(f"965 ref: {ref} no need to split further.")
         return reference_text
     else:
@@ -956,7 +665,7 @@ def check_roman_chapter_adjacent(reference_text: str) -> str:
 
         # Find the start of the roman numeral.
         for i in range(len_ref, 0, -1):
-            if isRoman(ref[i:]):
+            if fcs.isRoman(ref[i:]):
                 div = i
             else:
                 break
@@ -1076,7 +785,7 @@ def clean_chapter_prefix(reference_text: str) -> str:
     return reference_text
 
 def resolve_reference(bits: list) -> tuple:
-    """Resolve the book, chapter, and verse using isRoman."""
+    """Resolve the book, chapter, and verse using fcs.isRoman."""
 
     # Debugging: Show the split bits
     # print(f"Resolving reference bits: {bits}")
@@ -1090,7 +799,7 @@ def resolve_reference(bits: list) -> tuple:
     # Step 2: Resolve chapter (bits[1])
     chapter = '1'
     if len(bits) > 1:
-        if isRoman(bits[1]):  # If it's a Roman numeral
+        if fcs.isRoman(bits[1]):  # If it's a Roman numeral
             # print(f"Chapter is Roman: {bits[1]}")
             chapter = fromRoman(bits[1].upper())  # Convert Roman numeral
         else:  # Otherwise, try parsing it as an integer
@@ -1106,7 +815,7 @@ def resolve_reference(bits: list) -> tuple:
     # Step 3: Resolve verse (bits[2])
     verse = '1'
     if len(bits) > 2:
-        if isRoman(bits[2]):  # If it's a Roman numeral
+        if fcs.isRoman(bits[2]):  # If it's a Roman numeral
             # print(f"Verse is Roman: {bits[2]}")
             verse = fromRoman(bits[2].upper())  # Convert Roman numeral
         else:  # Otherwise, try parsing it as an integer
@@ -1869,7 +1578,7 @@ class MainWindow(QtWidgets.QMainWindow):
         Return the number of whole words in _key.
         """
 
-        numstart, _key = split_strip(_key)
+        numstart, _key = fcs.split_strip(_key)
         words: list = _key.split()
         words = [item for item in words if item in _dict]
         _key = ''
@@ -1930,14 +1639,14 @@ class MainWindow(QtWidgets.QMainWindow):
         """Find function."""
 
         #self.display_verse_input.setFocus()
-        x_ = self.get_line_number()
-        savedx = x_
+        current_position = self.get_line_number()
+        savedx = current_position
         error_flag = False
 
         self.prepare_key_for_find()
         x1 = book_bounds[x_start]
         x2 = book_bounds[x_end + 1] - 1
-        x_ = x1
+        current_position = x1
 
         w.no_f3_yet = 1
 
@@ -1962,19 +1671,19 @@ class MainWindow(QtWidgets.QMainWindow):
                     w.occurrence = 0
                     w.verse = 0
                     w.finding = -1
-                    x_ = occurrent1()
+                    current_position = occurrent1()
                     self.statusBar.showMessage(w.message)
                     self.statusBar.repaint()
             else:
                 tv = self.dlg.checks[0] == 1   # Raw
                 if tv is not True:
-                    x_ = self.findf3_ww(x1, x2)
+                    current_position = self.findf3_ww(x1, x2)
                 elif tv is True:
                     # Raw.
-                    x_ = self.findf3_raw(x_, x1, x2, keylow)
+                    current_position = self.findf3_raw(current_position, x1, x2, keylow)
 
         if w.occurring == 0:
-            x_ = savedx
+            current_position = savedx
             self.on_error('Not found...', 2000, True)
             error_flag = True
 
@@ -1982,7 +1691,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.display_verse_input.clear()
             exit()
         if error_flag is not True:
-            self.goto_line_find(x_)
+            self.goto_line_find(current_position)
 
     def iterate_regex(self, r: list, x1: int, x2: int) -> None:
         """Iterate over R and find all the occurrences of key(s) in liszt."""
@@ -2010,7 +1719,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 w.occur.append(coordinate)
                 w.occurs.append(_)
 
-    def findf3_raw(self, x_: int, x1: int, x2: int, keylow: str) -> int:
+    def findf3_raw(self, current_position: int, x1: int, x2: int, keylow: str) -> int:
         """Find Raw."""
 
         if self.dlg.checks[1] == 1:  # Match case
@@ -2020,11 +1729,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if w.occurring != 0:
             w.occurrence = 0
-            x_ = self.occurrent(x1, x2)
+            current_position = self.occurrent(x1, x2)
             self.statusBar.showMessage(w.message)
             self.statusBar.repaint()
 
-        return x_
+        return current_position
 
     def assign_values(self) -> Any:
         """Can't remember what this does."""
@@ -2054,14 +1763,14 @@ class MainWindow(QtWidgets.QMainWindow):
         """Find Whole Words."""
 
         numwords, set_, r_list = self.assign_values()
-        x_: int = 0  # Pointer to the first verse with the searched for key.
+        current_position: int = 0  # Pointer to the first verse with the searched for key.
         if numwords == 1:
             self.findf3_ww_1(x1, x2, set_, r_list)   # Match the whole single word.
             if w.occurring != 0:
                 w.occurrence = 0
                 w.verse = 0
                 w.finding = -1
-                x_ = occurrent1()
+                current_position = occurrent1()
                 self.statusBar.showMessage(w.message)
                 self.statusBar.repaint()
         elif numwords > 1:
@@ -2070,24 +1779,24 @@ class MainWindow(QtWidgets.QMainWindow):
             elif self.dlg.checks[0] == 3:
                 findf3_ww_all(x1, x2, numwords, set_, r_list)
             elif self.dlg.checks[0] == 4:
-                numwords, w.key = any_of_the_words_lookup(w.key, set_)
+                numwords, w.key = fcs.any_of_the_words_lookup(w.key, set_)
                 findf3_ww_any(x1, x2, numwords, set_, r_list)
             if w.occurring != 0:
                 if self.dlg.checks[0] != 2:     # Not whole words
-                    x_ = w.occurs[0]
+                    current_position = w.occurs[0]
                     w.occurrence = 1
-                    prep_statusbar_message(x_)
+                    prep_statusbar_message(current_position)
                 elif self.dlg.checks[0] == 2:   # Whole words
                     w.occurrence = 0
                     w.verse = 0
                     w.finding = -1
-                    x_ = occurrent1()
+                    current_position = occurrent1()
                 self.statusBar.showMessage(w.message)
                 self.statusBar.repaint()
         else:
             w.occurring = 0
 
-        return x_
+        return current_position
 
     def findf3_ww_1(self, x1: int, x2: int, _set: dict[str, set], r_list: list) -> None:
         """Match the whole single word."""
@@ -2129,25 +1838,25 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if w.occurrence == 0:
             self.gent = self.gen(w.key, x1, x2)
-        x_, w.y, w.occurrence = next(self.gent)
-        prep_statusbar_message(x_)
+        current_position, w.y, w.occurrence = next(self.gent)
+        prep_statusbar_message(current_position)
 
-        return x_
+        return current_position
 
     def find_f4(self) -> None:
         """Repeat find frontend for raw search."""
 
         if w.occurrence < w.occurring:
-            x_ = self.get_line_number()
+            current_position = self.get_line_number()
 
             if forward:
-                back_push(x_)
+                back_push(current_position)
                 while forward:
                     b_ = forward.pop()
                     back.append(b_)
             else:
                 forward.clear()
-                back_push(x_)
+                back_push(current_position)
 
             # Ensure self.gent is a valid generator
             if self.gent is None:
@@ -2155,50 +1864,50 @@ class MainWindow(QtWidgets.QMainWindow):
                     "self.gent has not been initialized. It must be assigned a valid generator before calling find_f4.")
 
             try:
-                x_, w.y, w.occurrence = next(self.gent)
+                current_position, w.y, w.occurrence = next(self.gent)
             except StopIteration:
                 # Handle generator exhaustion if needed
                 self.statusBar.showMessage("Search completed: no more matches.")
                 return
 
             # Set status bar message and other UI updates.
-            prep_statusbar_message(x_)
+            prep_statusbar_message(current_position)
             self.statusBar.showMessage(w.message)
             self.statusBar.repaint()
-            self.goto_line_find(x_)
+            self.goto_line_find(current_position)
 
     def find_f4_alt(self) -> None:
         """Repeat find frontend for Match whole words."""
 
         if len(w.occurs) > 0 and w.occurrence < w.occurring:
-            x_ = self.get_line_number()
+            current_position = self.get_line_number()
             if forward:
-                back_push(x_)
+                back_push(current_position)
                 while forward:
                     b_ = forward.pop()
                     back.append(b_)
             else:
-                x_ = w.occurs[w.verse]
+                current_position = w.occurs[w.verse]
                 forward.clear()
-                back_push(x_)
+                back_push(current_position)
 
             if self.dlg.checks[0] == 2 or self.dlg.checks[2] == 6:
-                x_ = occurrent1()
+                current_position = occurrent1()
             elif self.dlg.checks[0] == 3 or self.dlg.checks[0] == 4:
                 if w.verse < len(w.occurs) - 1:
                     w.verse += 1
-                    x_ = w.occurs[w.verse]
+                    current_position = w.occurs[w.verse]
                     w.occurrence += 1
-                    prep_statusbar_message(x_)
+                    prep_statusbar_message(current_position)
 
             self.statusBar.showMessage(w.message)
             self.statusBar.repaint()
-            self.goto_line_find(x_)
+            self.goto_line_find(current_position)
 
     def gen(self, key: str, x1: int, x2: int):
         """Return next position of the searched for key."""
 
-        x_ = -1
+        current_position = -1
         d1 = 0
         if self.dlg.checks[1] == 1:
             files_path = Path(current_directory) / "PCE-find.txt"
@@ -2223,12 +1932,12 @@ class MainWindow(QtWidgets.QMainWindow):
             raise
 
         while True:
-            x_ += 1
+            current_position += 1
             yt = 0
-            if x_ > x2:
+            if current_position > x2:
                 break
             a = next(line)
-            if x_ < x1:
+            if current_position < x1:
                 continue
             while key in a:
                 d1 += 1
@@ -2237,16 +1946,16 @@ class MainWindow(QtWidgets.QMainWindow):
                     yt = yt + w.y + 1        #  Expected int got '() -> int' instead
                     a = a[w.y + 1:]
                     w.y = yt - 1
-                    yield x_, w.y, d1
+                    yield current_position, w.y, d1
 
-    def goto_line_find(self, x_: int) -> None:
+    def goto_line_find(self, current_position: int) -> None:
         """Find function - prepare for output."""
 
-        ln: int = Amap[x_]
-        self.adjust_highlighting(ln, x_)
+        ln: int = Amap[current_position]
+        self.adjust_highlighting(ln, current_position)
         self.move_to_line(ln)
 
-    def stripped_punctuation_adjust(self, ln: int, x_: int, start: int, end: int, truth: bool) -> int:
+    def stripped_punctuation_adjust(self, ln: int, current_position: int, start: int, end: int, truth: bool) -> int:
         """Addition for 'Match whole words only'.
 
         This adjustment allows for no punctuation in the stripped search text.
@@ -2257,12 +1966,12 @@ class MainWindow(QtWidgets.QMainWindow):
             w.y += 2
             end = w.y
         if self.dlg.checks[1] == 0:
-            add = repeat_find(Ldic[x_], start, end)
+            add = fcs.repeat_find(Ldic[current_position], start, end)
         else:
-            add = repeat_find(Rdic[x_], start, end)
+            add = fcs.repeat_find(Rdic[current_position], start, end)
         return add
 
-    def stripped_punctuation_adjust_ki(self, x_: int, start: int, end: int) -> int:
+    def stripped_punctuation_adjust_ki(self, current_position: int, start: int, end: int) -> int:
         """Addition for 'Match whole words only'.
 
         This adjustment allows for no punctuation in the stripped search text.
@@ -2270,9 +1979,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         add: int
         if self.dlg.checks[1] == 0:
-            add = repeat_find_keyinc(Ldic[x_], start, end)
+            add = fcs.repeat_find_keyinc(Ldic[current_position], start, end)
         else:
-            add = repeat_find_keyinc(Rdic[x_], start, end)
+            add = fcs.repeat_find_keyinc(Rdic[current_position], start, end)
 
         return add
 
@@ -2319,7 +2028,7 @@ class MainWindow(QtWidgets.QMainWindow):
         w.hiLita.lineinc = lineinc
         self.keyinc_section(endof, add, ln, _x)
 
-    def keyinc_section(self, endof: int, add: int, ln: int, x_: int) -> None:
+    def keyinc_section(self, endof: int, add: int, ln: int, current_position: int) -> None:
         """keyinc section."""
 
         unich = 32
@@ -2330,7 +2039,7 @@ class MainWindow(QtWidgets.QMainWindow):
         start = w.y + add
         if self.dlg.checks[0] != 1:  # Not Raw
             end = start + len(w.key)  # change w.yend
-            num = self.stripped_punctuation_adjust_ki(x_, start, end)
+            num = self.stripped_punctuation_adjust_ki(current_position, start, end)
         lav = len(KJV[ln])
         if start > lav or endof > lav:
             pass
@@ -2347,19 +2056,19 @@ class MainWindow(QtWidgets.QMainWindow):
         keyinc = len(litz) + num
         w.hiLita.keyinc = keyinc
 
-    def display_verse(self, x_: int) -> None:
+    def display_verse(self, current_position: int) -> None:
         """Display Bible text in textEditor."""
 
         # print('display_verse')
-        ln: int = Amap[x_]
-        if x_ in starts_with_italics:  # Verses that start with italics.
+        ln: int = Amap[current_position]
+        if current_position in starts_with_italics:  # Verses that start with italics.
             w.hiLita.keyinc = 1
         else:
             w.hiLita.keyinc = 0
         self.move_to_line(ln)
         self.display_verse_input.clear()
         if w.message == '':
-            self.ref_to_statusbar(x_)
+            self.ref_to_statusbar(current_position)
 
     def move_to_line(self, ln: int) -> None:
         """Display engine."""
@@ -2394,22 +2103,22 @@ class MainWindow(QtWidgets.QMainWindow):
                     w.store = w.key
                     w.hiLita.clear = False
                     keys = sorted(w.occur[w.verse])
-                    x_ = Amap.index(ln)
+                    current_position = Amap.index(ln)
                     for i in keys:
                         w.key = '+' * (i[1] - i[0])
                         w.y = i[0]
-                        self.adjust_highlighting(ln, x_)
+                        self.adjust_highlighting(ln, current_position)
 
             w.hiLita.setFormat(w.hiLita.position, w.hiLita.length, fmt)
             w.hiLita.highlight_line(ln, fmt)
         except ValueError:
             pass
 
-    def se_display_verse(self, x_: int) -> None:
+    def se_display_verse(self, current_position: int) -> None:
         """Display Bible text in textEditor after back or forward pop."""
 
-        ln: int = Amap[x_]
-        if x_ in starts_with_italics:  # Verses that start with italics.
+        ln: int = Amap[current_position]
+        if current_position in starts_with_italics:  # Verses that start with italics.
             w.hiLita.keyinc = 1
 
         self.textEditor.setLineWrapMode(QtWidgets.QPlainTextEdit.LineWrapMode.NoWrap)
@@ -2426,12 +2135,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.textEditor.moveCursor(QtGui.QTextCursor.MoveOperation.End)
         self.textEditor.setTextCursor(linecursor)
         self.textEditor.setLineWrapMode(QtWidgets.QPlainTextEdit.LineWrapMode.WidgetWidth)
-        self.ref_to_statusbar(x_)
+        self.ref_to_statusbar(current_position)
 
-    def ref_to_statusbar(self, x_: int) -> None:
+    def ref_to_statusbar(self, current_position: int) -> None:
         """Display messages in the status bar."""
 
-        q1, q2, q3 = Info[x_][0], Info[x_][1] + 1, Info[x_][2] + 1
+        q1, q2, q3 = Info[current_position][0], Info[current_position][1] + 1, Info[current_position][2] + 1
         message = w.message if w.message else format_status_message(q1, q2, q3)
 
         self.statusBar.showMessage(message)
@@ -2443,35 +2152,35 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         reset_attributes()
-        x_: int = self.get_line_number()
+        current_position: int = self.get_line_number()
         forward.clear()
-        back_push(x_)
+        back_push(current_position)
         if not ref:
             ref = self.display_verse_input.text()
             # print(f"ref: {ref}")
-        ref = remove_junk(ref)
+        ref = fcs.remove_junk(ref)
         if ref in ('q', 'Q'):
             self.display_verse_input.clear()
             exit()
         # print(f"ref in goto_line: {ref}")
-        x_ = self.reference_to_line_number(ref)
-        if x_ == -1:
+        current_position = self.reference_to_line_number(ref)
+        if current_position == -1:
             self.display_verse_input.clear()
         else:
-            if x_ < 0:
-                x_ = 0
-            if x_ > LAST_VERSE_IN_BIBLE:
-                x_ = LAST_VERSE_IN_BIBLE
-            self.display_verse(x_)
+            if current_position < 0:
+                current_position = 0
+            if current_position > LAST_VERSE_IN_BIBLE:
+                current_position = LAST_VERSE_IN_BIBLE
+            self.display_verse(current_position)
 
     def goto_book(self, _index: int) -> None:
         """Move display to line requested by comboBox_1."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         reset_attributes()
-        x_ = self.get_line_number()
+        current_position = self.get_line_number()
         forward.clear()
-        back_push(x_)
+        back_push(current_position)
         book: int = self.comboBox_1.currentIndex()
         # book is an index 0-65
         if book == BOOKS_IN_THE_BIBLE - 1:
@@ -2490,12 +2199,12 @@ class MainWindow(QtWidgets.QMainWindow):
         ref = w.nwin[book]
         ref = ref.replace(' ', '')
         # print(f"ref in goto_book: {ref}")
-        x_ = self.reference_to_line_number(ref, book)
-        if x_ < 0:
-            x_ = 0
-        if x_ > LAST_VERSE_IN_BIBLE:
-            x_ = LAST_VERSE_IN_BIBLE
-        self.display_verse(x_)
+        current_position = self.reference_to_line_number(ref, book)
+        if current_position < 0:
+            current_position = 0
+        if current_position > LAST_VERSE_IN_BIBLE:
+            current_position = LAST_VERSE_IN_BIBLE
+        self.display_verse(current_position)
         self.goto_chapter(_index)
 
     def goto_chapter(self, _index: int) -> None:
@@ -2529,12 +2238,12 @@ class MainWindow(QtWidgets.QMainWindow):
         ref = f"{ref} {str(chapter + 1)}"
 
         # print(f"ref in goto_chapter: {ref}")
-        x_ = self.reference_to_line_number(ref, book, chapter)
-        if x_ < 0:
-            x_ = 0
-        if x_ > LAST_VERSE_IN_BIBLE:
-            x_ = LAST_VERSE_IN_BIBLE
-        self.display_verse(x_)
+        current_position = self.reference_to_line_number(ref, book, chapter)
+        if current_position < 0:
+            current_position = 0
+        if current_position > LAST_VERSE_IN_BIBLE:
+            current_position = LAST_VERSE_IN_BIBLE
+        self.display_verse(current_position)
 
     def goto_verse(self, _index: int) -> None:
         """Move display to line requested by comboBox_3."""
@@ -2549,13 +2258,13 @@ class MainWindow(QtWidgets.QMainWindow):
         ref = ref.replace(' ', '')
         ref = f"{ref} {str(chapter + 1)}.{verse + 1}"
         # print(f"ref in goto_verse: {ref}")
-        x_ = self.reference_to_line_number(ref, book, chapter)
-        if x_ < 0:
-            x_ = 0
-        if x_ > LAST_VERSE_IN_BIBLE:
-            x_ = LAST_VERSE_IN_BIBLE
-        # print(f"x_ in goto_verse: {x_}")
-        self.display_verse(x_)
+        current_position = self.reference_to_line_number(ref, book, chapter)
+        if current_position < 0:
+            current_position = 0
+        if current_position > LAST_VERSE_IN_BIBLE:
+            current_position = LAST_VERSE_IN_BIBLE
+        # print(f"current_position in goto_verse: {current_position}")
+        self.display_verse(current_position)
 
     def reference_to_line_number(self, reference_text: str, book: int = 0, chapter: int = 0) -> int:
         """Convert reference text to a line number in the Bible."""
@@ -2581,7 +2290,7 @@ class MainWindow(QtWidgets.QMainWindow):
             pass  # Here if a single letter that must not be converted to numeric.
         else:
             # Convert Roman numerals to numeric values
-            reference_text = convert_roman_to_numeric(reference_text)
+            reference_text = fcs.convert_roman_to_integer(reference_text)
             reference_text = reference_text.replace(' ', '')
         # print(f"2389 After converting Roman numerals: {reference_text}")
 
@@ -2592,7 +2301,7 @@ class MainWindow(QtWidgets.QMainWindow):
         reference_text = reference_text.replace(' ', '.')
         # print(f"2396 Reference Text: '{reference_text}'")
 
-        if (re.match(r"^[1-4]?[a-zA-Z]+\.\d+\.\d+(,\d+)*$", reference_text)) or is_float_re(reference_text):
+        if (re.match(r"^[1-4]?[a-zA-Z]+\.\d+\.\d+(,\d+)*$", reference_text)) or fcs.is_float_re(reference_text):
 
             # Input is preformatted, skip additional processing
             # print(f"2401 Input appears to be preformatted: {reference_text}")
@@ -2654,7 +2363,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Handle floating point-style references (e.g., "23.7")
         reference_text = reference_text.replace(":", ".")
-        if is_float_re(reference_text):
+        if fcs.is_float_re(reference_text):
             reference_text = attach_book_name(reference_text, current_line)
 
         # Split the reference into parts for resolving
@@ -2752,12 +2461,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.textEditor.moveCursor(QtGui.QTextCursor.MoveOperation.StartOfLine)
         linenumber: int = self.textEditor.textCursor().blockNumber()
         if linenumber in Amap:
-            x_: int = Amap.index(linenumber)
+            current_position: int = Amap.index(linenumber)
         else:
             if linenumber < Amap[0]:
-                x_ = 0
+                current_position = 0
             elif linenumber > KJB_PCE_LASTLINE - 118:
-                x_ = LAST_VERSE_IN_BIBLE
+                current_position = LAST_VERSE_IN_BIBLE
             else:
                 for _ in range(10):
                     if linenumber + _ in Amap:
@@ -2765,23 +2474,23 @@ class MainWindow(QtWidgets.QMainWindow):
                         break
                 else:
                     return LAST_VERSE_IN_BIBLE
-                x_ = Amap.index(linenumber)
+                current_position = Amap.index(linenumber)
 
-        return x_
+        return current_position
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         """Mouse trapping routine."""
 
         if event.buttons() == QtCore.Qt.MouseButton.LeftButton:
-            x_: int = self.get_line_number()
-            self.ref_to_statusbar(x_)
+            current_position: int = self.get_line_number()
+            self.ref_to_statusbar(current_position)
         elif event.buttons() == QtCore.Qt.MouseButton.RightButton:
             pass
         elif event.buttons() == QtCore.Qt.MouseButton.MiddleButton and w.no_f3_yet == 1:
             self.f4()
         elif event.buttons() == QtCore.Qt.MouseButton.MiddleButton and w.no_f3_yet == 0:
-            x_ = self.get_line_number()
-            self.ref_to_statusbar(x_)
+            current_position = self.get_line_number()
+            self.ref_to_statusbar(current_position)
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         """Key trapping routine."""
@@ -2821,9 +2530,9 @@ class MainWindow(QtWidgets.QMainWindow):
         """F3 key for find key entry."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        x_: int = self.get_line_number()
+        current_position: int = self.get_line_number()
         forward.clear()
-        back_push(x_)
+        back_push(current_position)
         self.onFindBtnClicked()
 
     def f4(self) -> None:
@@ -2842,20 +2551,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         w.message = ''
         if len(back) > 0:
-            x_: int = self.get_line_number()
-            forward_push(x_)
-            x_ = back_pop()
-            self.se_display_verse(x_)
+            current_position: int = self.get_line_number()
+            forward_push(current_position)
+            current_position = back_pop()
+            self.se_display_verse(current_position)
 
     def f6(self) -> None:
         """Forward key."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         if len(forward) > 0:
-            x_: int = self.get_line_number()
-            back_push(x_)
-            x_ = forward_pop()
-            self.se_display_verse(x_)
+            current_position: int = self.get_line_number()
+            back_push(current_position)
+            current_position = forward_pop()
+            self.se_display_verse(current_position)
 
     def f9(self) -> None:
         """F9 Fullscreen toggle key."""
@@ -2882,41 +2591,41 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         reset_attributes()
-        x_: int = self.get_line_number()
-        book: int = Info[x_][0]
+        current_position: int = self.get_line_number()
+        book: int = Info[current_position][0]
         newbook: int = book - 1
         if newbook < 0:
             self.on_error('No earlier book!', 3000, True)
         else:
-            x_ = Info.index([newbook, 0, 0])
+            current_position = Info.index([newbook, 0, 0])
             forward.clear()
-            back_push(x_)
-            self.display_verse(x_)
+            back_push(current_position)
+            self.display_verse(current_position)
 
     def later_book(self) -> None:
         """Move to the later book."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         reset_attributes()
-        x_: int = self.get_line_number()
-        book: int = Info[x_][0]
+        current_position: int = self.get_line_number()
+        book: int = Info[current_position][0]
         newbook: int = book + 1
         if newbook > BOOKS_IN_THE_BIBLE - 1:
             self.on_error('No later book!', 3000, True)
         else:
-            x_ = Info.index([newbook, 0, 0])
+            current_position = Info.index([newbook, 0, 0])
             forward.clear()
-            back_push(x_)
-            self.display_verse(x_)
+            back_push(current_position)
+            self.display_verse(current_position)
 
     def earlier_chapter(self) -> None:
         """Move to the earlier chapter."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         reset_attributes()
-        x_: int = self.get_line_number()
-        book: int = Info[x_][0]
-        chapter: int = Info[x_][1]
+        current_position: int = self.get_line_number()
+        book: int = Info[current_position][0]
+        chapter: int = Info[current_position][1]
         newchapter: int = chapter - 1
         if newchapter < 0:
             newbook: int = book - 1
@@ -2924,60 +2633,60 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.on_error('No earlier chapter!', 3000, True)
                 return
             while True:
-                if Info[x_][0] == book:
-                    x_ -= 1
+                if Info[current_position][0] == book:
+                    current_position -= 1
                 else:
                     break
-            newchapter = Info[x_][1]
+            newchapter = Info[current_position][1]
             book = newbook
-        x_ = Info.index([book, newchapter, 0])
+        current_position = Info.index([book, newchapter, 0])
         forward.clear()
-        back_push(x_)
-        self.display_verse(x_)
+        back_push(current_position)
+        self.display_verse(current_position)
 
     def later_chapter(self) -> None:
         """Move to the later chapter."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         reset_attributes()
-        x_: int = self.get_line_number()
-        book: int = Info[x_][0]
-        chapter: int = Info[x_][1]
+        current_position: int = self.get_line_number()
+        book: int = Info[current_position][0]
+        chapter: int = Info[current_position][1]
         newchapter: int = chapter + 1
         try:
-            x_ = Info.index([book, newchapter, 0])
+            current_position = Info.index([book, newchapter, 0])
         except ValueError:
             newbook: int = book + 1
             if newbook > BOOKS_IN_THE_BIBLE - 1:
                 self.on_error('No later chapter!', 3000, True)
                 return
             while True:
-                if Info[x_][0] == book:
-                    x_ += 1
+                if Info[current_position][0] == book:
+                    current_position += 1
                 else:
                     break
-            newchapter = Info[x_][1]
+            newchapter = Info[current_position][1]
             book = newbook
-        x_ = Info.index([book, newchapter, 0])
+        current_position = Info.index([book, newchapter, 0])
         forward.clear()
-        back_push(x_)
-        self.display_verse(x_)
+        back_push(current_position)
+        self.display_verse(current_position)
 
     def on_error(self, message: str, millisecond_delay: int, clearbool: bool) -> None:
         """Error message handler."""
 
-        x_: int = self.get_line_number()
+        current_position: int = self.get_line_number()
         self.statusBar.showMessage(message)
         self.statusBar.repaint()
 
         lm: float = millisecond_delay / 1000 + len(message) / 25
-        self.beep(x_, lm)
+        self.beep(current_position, lm)
 
         if clearbool:
             self.statusBar.clearMessage()
             w.message = ''
 
-    def beep(self, x_: int, lm: float) -> None:
+    def beep(self, current_position: int, lm: float) -> None:
         """Makes a beep sound, and clears the message."""
 
         # Initialize Pygame's mixer
@@ -2996,7 +2705,7 @@ class MainWindow(QtWidgets.QMainWindow):
         time.sleep(lm)
 
         w.message = ''
-        self.ref_to_statusbar(x_)
+        self.ref_to_statusbar(current_position)
         self.statusBar.repaint()
 
     def dialog_critical(self, exception_text: str) -> None:
@@ -3570,7 +3279,7 @@ if __name__ == '__main__':
     user_settings_path: str = str(user_settings_file)
 
     # Load settings if the file is found (default if not).
-    settings: dict = load_settings_from_file(user_settings_path)
+    settings: dict = fcs.load_settings_from_file(user_settings_path)
 
     # Construct the path to the icon regardless of the operating system.
     icon_path: Path = current_directory / "images" / "abib_icon0.ico"
@@ -3765,8 +3474,8 @@ if __name__ == '__main__':
 
     # Construct full file path using pathlib
     file_path = str(Path(str_cwd) / "KJB_PCE.txt")
-    # Pass the constructed path to readio
-    KJV = readio('', file_path, KJB_PCE_LASTLINE)
+    # Pass the constructed path to fcs.readio
+    KJV = fcs.readio('', file_path, KJB_PCE_LASTLINE)
 
     EOTNOC: str = '****END OF THE NOTICE OF COPYRIGHT****\n'
 
@@ -3786,7 +3495,7 @@ if __name__ == '__main__':
     file_path = str(Path(str_cwd) / "Amap.txt")
 
     # Pass the constructed path to the function
-    Amap: list = readfile('', file_path, EOF_AMAP)
+    Amap: list = fcs.readfile('', file_path, EOF_AMAP)
 
     Amap = Amap[17:]
 
@@ -3804,7 +3513,7 @@ if __name__ == '__main__':
 
     # Read Info.txt
     Info = []
-    Inf: list = readfile('', str(Path(base_dir / "Info.txt")), EOF_INFO)
+    Inf: list = fcs.readfile('', str(Path(base_dir / "Info.txt")), EOF_INFO)
     Inf = Inf[17:]  # Skip the first 17 elements
     for _ in range(LAST_VERSE_IN_BIBLE + 1):
         Info.append(loads(Inf[_]))
@@ -3821,26 +3530,26 @@ if __name__ == '__main__':
     with open("strpd_low_dict.txt", encoding="utf-8") as f:
         strpd_low_dict: Any = load(f)
 
-    # Load dictionaries using load_list_set_dict
-    set_dict: dict[Any, set] = load_list_set_dict("list_dict.json", stripped_dict)
-    set_lowdict: dict[Any, set] = load_list_set_dict("list_lowdict.json", strpd_low_dict)
+    # Load dictionaries using fcs.load_list_set_dict
+    set_dict: dict[Any, set] = fcs.load_list_set_dict("list_dict.json", stripped_dict)
+    set_lowdict: dict[Any, set] = fcs.load_list_set_dict("list_lowdict.json", strpd_low_dict)
 
     # Read and process PCE-find.txt
-    Rnew = readio('', str(Path(base_dir / "PCE-find.txt")), EOF_BIBLE_TEXT)
+    Rnew = fcs.readio('', str(Path(base_dir / "PCE-find.txt")), EOF_BIBLE_TEXT)
     Rnew = tuple(Rnew)
     Rdic: dict[int, Any] = dict(enumerate(Rnew))  # Convert Rnew to dictionary.
 
     # Read and process PCE-lower.txt
-    Rlow = readio('', str(Path(base_dir / "PCE-lower.txt")), EOF_BIBLE_TEXT)
+    Rlow = fcs.readio('', str(Path(base_dir / "PCE-lower.txt")), EOF_BIBLE_TEXT)
     Rlow = tuple(Rlow)
     Ldic: dict[int, Any] = dict(enumerate(Rlow))  # Convert Rlow to dictionary.
 
     # Read PCE-stripped.txt
-    Rstp = readio('', str(Path(base_dir / "PCE-stripped.txt")), EOF_BIBLE_TEXT)
+    Rstp = fcs.readio('', str(Path(base_dir / "PCE-stripped.txt")), EOF_BIBLE_TEXT)
     Rstp = tuple(Rstp)
 
     # Read PCE-stripped_lower.txt
-    Rlsp = readio('', str(Path(base_dir / "PCE-stripped_lower.txt")), EOF_BIBLE_TEXT)
+    Rlsp = fcs.readio('', str(Path(base_dir / "PCE-stripped_lower.txt")), EOF_BIBLE_TEXT)
     Rlsp = tuple(Rlsp)
 
     try:
