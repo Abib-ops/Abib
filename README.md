@@ -38,7 +38,7 @@ Installing the Abib Bible App.
 
 If you have Windows, the installer provided will simply install everything, just double-click on it, and follow the instructions.
 
-There will be a Linux executable soon, but for the present, please use the source code to run from Python. 
+There may be a Linux executable available soon, but for the present, please use the source code to run with Python. 
 
 So, on Linux, if you have Windows, copy the whole 'C:\Program Files\Abib' folder to a USB key and then do the following:
 
