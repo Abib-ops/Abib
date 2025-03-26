@@ -8,7 +8,8 @@ Abib v412.2
 Changelog.
 -----------
 Abib v412.2
-
+New module fcs.py created to reduce the size of Abib.py.
+Module shared.py created to prevent circular references.
 
 Abib v412.1
 Further test to ensure stability.

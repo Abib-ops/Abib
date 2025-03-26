@@ -54,14 +54,14 @@ Abib Bible Reader אביב
 
 Using PySide6.8.2.1 and python3.13.2 (64-bit).
 
-25/03/2025
+26/03/2025
 """
 
 CURRENT_VERSION = "412.2"
 
 import re
 import time
-from os import environ, path, getenv
+from os import environ
 from sys import exit, argv
 
 # Suppress pygame welcome message
@@ -74,13 +74,10 @@ from copy import deepcopy
 from pathlib import Path
 from io import open
 from itertools import chain
-from json import load, loads, dump, JSONDecodeError
-from platform import system
-from shutil import copy2
+from json import load, JSONDecodeError
 
 from roman import fromRoman
 from typing import Any
-from datetime import datetime, timedelta
 
 from PySide6 import QtCore
 from PySide6 import QtGui
@@ -95,7 +92,8 @@ from PySide6.QtWidgets import (QDialogButtonBox, QApplication, QPlainTextEdit, Q
 import requests
 import subprocess
 import ctypes
-import functions as fcs
+import fcs
+import shared as sh
 
 from find import Ui_Dialog
 
@@ -116,7 +114,6 @@ except Exception as e:
 theme_state = {
     "is_dark_mode": False  # Default is light mode
 }
-date_index: int = 0  # Hours relative to today's date.
 
 mixer.init()
 
@@ -320,9 +317,9 @@ def check_count_sort(liszt: list[str], r_list: list) -> None:
 def prep_statusbar_message(index: int):
     """Prepare statusbar message."""
 
-    book = Info[index][0]
-    chapter = Info[index][1] + 1
-    occurrence = Info[index][2] + 1
+    book = sh.Info[index][0]
+    chapter = sh.Info[index][1] + 1
+    occurrence = sh.Info[index][2] + 1
     book_name = w.nwin[book]
 
     if w.occurrence == w.occurring:
@@ -333,7 +330,7 @@ def prep_statusbar_message(index: int):
 
     ye = f'Occurrence {w.occurrence}/{w.occurring} of "{w.keym}"'
 
-    if book in onechapterbooks:
+    if book in sh.onechapterbooks:
         w.message = f'{ye}  -  {book_name} {occurrence} KJV{end_message}'
     else:
         w.message = f'{ye}  -  {book_name} {chapter}:{occurrence} KJV{end_message}'
@@ -454,7 +451,7 @@ def format_status_message(q1, q2, q3):
     """Helper to format a message based on conditions."""
 
     q4 = w.nwin[q1]
-    if q1 in onechapterbooks:
+    if q1 in sh.onechapterbooks:
         return f"{q4} {q3} KJV"
     return f"{q4} {q2}:{q3} KJV"
 
@@ -468,39 +465,6 @@ def sizer(window_height: int, window_width: int) -> tuple[int, int]:
         window_width = int(width * 0.95)
 
     return window_height, window_width
-
-
-def save_settings_to_file(the_settings, filename="settings.json"):
-    """
-    Save the given settings dictionary to a JSON file.
-    """
-    try:
-        # Explicitly annotate the file object
-        with open(filename, "w") as file1:
-            # noinspection PyTypeChecker
-            dump(the_settings, file1, indent=4)  # Save as JSON with pretty formatting
-    except IOError as e1:
-        print(f"Error saving settings to file: {e1}")
-
-def setup_Abib_settings(abib_directory: Path) -> None:
-    """ Setup Abib user folder containing the 'settings.json' file."""
-
-    # Create the Abib directory if it doesn't exist
-    abib_directory.mkdir(parents=True, exist_ok=True)
-    # print(f"Created Abib directory: {abib_directory}")
-
-    # Path to the source settings.json file to copy (e.g. in your current working directory)
-    source_settings_file = Path("settings.json")
-    # print(f"source_settings_file: {source_settings_file}")
-
-    # Copy the file to the target user directory ... But don't if it exists!
-    if source_settings_file.is_file():
-        print(f"Source settings.json found: {source_settings_file}")
-        if path.exists(abib_directory):
-            copy2(source_settings_file, abib_directory)
-            print(f"Copied settings.json to {abib_directory}")
-        else:
-            print(f"Abib settings.json was found: {abib_directory} ... Skipping copy.")
 
 
 def commentary() -> None:
@@ -520,217 +484,14 @@ def feature() -> None:
     print('Future feature')
 
 
-def get_date_file(adjustment: int = 0) -> tuple:
-    """Process date into desired format."""
-
-    global date_index  # Needed because date_index is assigned to here.
-
-    try:
-        date_index += adjustment
-    except NameError:
-        date_index = adjustment
-    # print(f"date_index: {date_index}")
-
-    morn_or_even: str = ''
-
-    # Get today's date
-    today = datetime.now() + timedelta(hours=date_index)
-    # print(f"Today's date: {today}")
-
-    # Extract the full month name
-    month = today.strftime("%B")  # E.g., "February"
-
-    # Extract the day as an integer (which automatically avoids padding issues)
-    day = today.day  # E.g., 3
-
-    # Combine the month and day
-    formatted_date = f"{month} {day}"
-    # Determine if it's morning or evening
-    if today.hour < 12:
-        morn_or_even = "morning"
-    elif today.hour >= 12:
-        morn_or_even = "evening"
-
-    date_file1: tuple = (formatted_date, morn_or_even,)
-
-    return date_file1
-
-
-def attach_book_name(reference_text: str, current_line: int) -> str:
-    """Attach a book name to the floating-point reference."""
-
-    z1 = Info[current_line][0] + 1
-    book_name = next((key for key, value in bibledict.items() if value == z1), "")
-    return f"{book_name} {reference_text}"
-
-
-def split_reference(reference_text: str) -> list:
-    """
-    Split a Bible reference into components based on the book, chapter, and verse,
-    ensuring contiguous letters and numbers (e.g. 'g2.6') are split correctly.
-    """
-
-    # First, split on delimiters (space, period, colon)
-    intermediate_parts = re.split(r'[ .:]+', reference_text)
-    # print(f"865 Split reference: {reference_text} into {intermediate_parts}")
-
-    parts_list = []
-
-    # Further split parts with mixed letters and numbers (e.g., 'g2' -> ['g', '2'])
-    part_number: int = -1
-    for part in intermediate_parts:
-        part_number += 1
-        # Use regex to separate letters and digits if mixed
-        if part_number == 0 and part in bibledict:
-            parts_list.append(part)
-            # print(f"876 Part: {part} is a book name")
-        else:
-            match = re.findall(r'[a-zA-Z]+|\d+', part)
-            parts_list.extend(match)
-
-    if len(parts_list) > 1:
-        try:
-            if int(parts_list[0]):
-                parts_list[1] = f"{parts_list[0]}{parts_list[1]}"
-                del parts_list[0]
-        except ValueError:
-            pass
-
-    if len(parts_list) == 4:
-        parts_list = parts_list[:-1]
-
-    return parts_list
-
-
-def tidy(text: str, parts: list) ->  str:
-    """Tidy up the reference parts."""
-
-    abbr: list = ['d', 'c', 'l', 'm']
-    full_names: list = ['deuteronomy', 'colossians', 'leviticus', 'micah']
-
-    d: str = parts[0][0]
-    # print(f"918 d: {d}")
-
-    if d in abbr:
-        # Get the corresponding full name
-        try:
-            a: str = full_names[abbr.index(d)]
-            # print(f"920 '{d}' is an abbreviation for '{a}'.")
-        except ValueError:
-            # print(f"922 '{d}' is not in the list.")
-            raise ValueError("ValueError")
-
-        text = f"{a}{text[1:]}"
-        # print(f"933 text: {text}")
-
-    return text
-
-
-def check_roman_chapter_adjacent(reference_text: str) -> str:
-    """Check if the reference text can be split further into a book, chapter, and verse.
-    Specifically, if the first part of the reference text is a book in bibledict adjacent
-    to a chapter number in roman numerals, then the reference text is split further."""
-
-    #  Note: 'mi' is 1001 in roman numerals and will be converted later if we don't act.
-
-    div: int = 0
-    divis: int
-    reference_parts = split_reference(reference_text)
-    # print(f"948 Reference parts: {reference_parts}")
-
-    # len_parts: int = len(reference_parts)
-    # print(f"951 len_parts: {len_parts}")
-
-    try:
-        # Do this part only if the book name is invalid.
-        if reference_parts[0] not in bibledict and reference_parts[0][0] in bibledict:
-            reference_text = tidy(reference_text, reference_parts)
-            # print(f"956 After tidy: reference_text: {reference_text}")
-    except IndexError:
-        return '958 Error: No reference parts.'
-
-    reference_parts = split_reference(reference_text)
-    len_parts = len(reference_parts)
-    # print(f"948 Reference parts: {reference_parts}")
-    ref = reference_parts[0]
-    len_ref: int = len(ref)
-    # print(f"962 Reference text length: {len_ref} ref = {ref}")
-
-    if (ref in bibledict or fcs.isRoman(ref)) and ref != 'mi':
-        # print(f"965 ref: {ref} no need to split further.")
-        return reference_text
-    else:
-        # print(f"969 Reference text: {ref} needs to be split.")
-        pass
-
-        # Find the start of the roman numeral.
-        for i in range(len_ref, 0, -1):
-            if fcs.isRoman(ref[i:]):
-                div = i
-            else:
-                break
-
-        divis = len_ref - div
-        roman_number: str = ref[-divis:]
-        # print(f"980 Roman number: {roman_number}")
-        # print(f"981 divis = {divis}")
-        # print(f"982 ref = {ref}")
-
-        # Find the end of the bible book name.
-        results = []
-        for i in range(len_ref):
-            if ref[:i] in bibledict:
-                results.append(i)
-        # print(f"989 Results: {results}")
-
-        if results:
-            rr1: str = ref[:results[-1]]
-            # print(f"993 results[-1] = {results[-1]}")
-            # print(f"994 Book name is: {rr1}")
-            if divis + results[-1] == len_ref:
-                if len_parts == 1:
-                    reference_text = f"{rr1} {ref[-divis:]}"
-                elif len_parts == 2:
-                    reference_text = f"{rr1} {ref[-divis:]}.{reference_parts[1]}"
-                # print(f"997 Reference text: {reference_text}")
-                reference_parts = split_reference(reference_text)
-                len_parts = len(reference_parts)
-            elif divis + results[-1] > len_ref:
-                lbn: int =len(rr1)  # Length of the book name.
-                book = ref[:lbn]
-                # print(f"1001 Book name: {book}")
-                roman_number = ref[lbn:]
-                reference_text = f"{book} {roman_number}" # roman number is the chapter.
-            else:
-                # print(f"1005 Reference text: {reference_text} is unchanged.")
-                pass
-
-            if bibledict[rr1] - 1 in onechapterbooks:
-                pass
-            else:
-                # print(f"1011 Reference parts: {reference_parts}")
-                match len_parts:
-                    case 1:
-                        reference_text = f"{rr1}"
-                    case 2:
-                        reference_text = f"{rr1}  {roman_number}"
-                    case 3:
-                        reference_text = f"{rr1} {roman_number}.{reference_parts[2]}"
-                    case _:
-                        reference_text = f"Error: {reference_text} is invalid."
-
-                # print(f"1012 Reference text @ end adj: {reference_text}")
-
-    return reference_text
-
-
 def calculate_book_line(book: str, chapter: int, verse: int) -> int:
     """
     This function calculates and returns a specific line index from the global variable
-    'Info' based on given book, chapter, and verse parameters. The book, chapter,
-    and verse values are adjusted to zero-based indexing before computation. An error
-    is raised if the values are invalid or out of range for the dataset referenced by
-    'Info'.
+    'sh.Info' based on given book, chapter, and verse parameters.
+
+    The book, chapter, and verse values are adjusted to zero-based indexing before computation.
+    An error is raised if the values are invalid or out of range for the dataset referenced by
+    'sh.Info'.
 
     :param book: The book identifier provided as a string that is parsed into an integer.
     :param chapter: The chapter number. Must be a positive integer.
@@ -742,7 +503,7 @@ def calculate_book_line(book: str, chapter: int, verse: int) -> int:
     """
 
     try:
-        # Subtract 1 from book, chapter, and verse for zero-based Info index.
+        # Subtract 1 from the book, chapter, and verse for zero-based sh.Info index.
         book_id = int(book) - 1
         chapter = int(chapter) - 1
         verse = int(verse) - 1
@@ -751,38 +512,19 @@ def calculate_book_line(book: str, chapter: int, verse: int) -> int:
             message = f"Invalid chapter or verse range."
             w.on_error(message, 750, True)
             # print(message)
-            # Return the default index from Info
-            return Info.index([0, 0, 0])
+            # Return the default index from sh.Info
+            return sh.Info.index([0, 0, 0])
 
-        # Return the calculated index from Info
-        return Info.index([book_id, chapter, verse])
+        # Return the calculated index from sh.Info
+        return sh.Info.index([book_id, chapter, verse])
 
     except (ValueError, IndexError):
         message = f"Invalid book, chapter, or verse."
         w.on_error(message, 750, True)
         # print(message)
-        # Return the default index from Info
-        return Info.index([0, 0, 0])
+        # Return the default index from sh.Info
+        return sh.Info.index([0, 0, 0])
 
-def clean_chapter_prefix(reference_text: str) -> str:
-    """Clean 'Chap' prefixes from the reference text."""
-
-    reference_text = reference_text.lower()
-    reference_text = reference_text.replace(':', '.')
-    if reference_text.startswith('chap'):
-        ref = reference_text.replace('chap', '')
-        return ref.strip('.')
-
-    # Remove spaces from '2 Corinthians' etc..
-    reference_text = reference_text[:3].replace(' ', '') + reference_text[3:]
-
-    # Remove spaces enclosed by a-z
-    reference_text = re.sub(r"(?<=[a-z]) (?=[a-z])", "", reference_text)
-
-    # Remove all after a comma, e.g. zechariah.1.12,13
-    reference_text = reference_text.split(",")[0]
-
-    return reference_text
 
 def resolve_reference(bits: list) -> tuple:
     """Resolve the book, chapter, and verse using fcs.isRoman."""
@@ -791,7 +533,7 @@ def resolve_reference(bits: list) -> tuple:
     # print(f"Resolving reference bits: {bits}")
 
     # Step 1: Resolve the book name
-    book_number = bibledict.get(bits[0].lower(), None)
+    book_number = sh.bibledict.get(bits[0].lower(), None)
     # print(f"Book resolved to: {book_number}")
     if not book_number:
         return None, None, None
@@ -833,93 +575,6 @@ def resolve_reference(bits: list) -> tuple:
     return book_number, chapter, verse
 
 
-class AboutWindow(QtWidgets.QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle(f"Abib {CURRENT_VERSION}")
-
-        self.resize(480, 810)  # Set initial window size
-        self.content = None
-        self.about_window = None
-
-        # Create a QLabel widget
-        self.label = QtWidgets.QLabel(self)
-
-        # Load About.txt content
-        self.content = self.about()
-
-        # Set the contents of the QLabel
-        self.label.setText(self.content)
-
-        # Center align content
-        self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-
-        self.fontsize = 14
-        fixedfont: QFont = QtGui.QFont("Cascadia Mono", self.fontsize, QtGui.QFont.Weight.Bold)
-        self.label.setFont(fixedfont)
-
-        # Set the QLabel as the central widget
-        self.setCentralWidget(self.label)
-
-    def about(self) -> str:
-        """Load the About content from ABOUT.txt."""
-
-        self.content: str = ""
-        try:
-            with open("ABOUT.txt", "r", encoding="utf-8") as file_about:
-                self.content = file_about.read()
-        except FileNotFoundError:
-            self.content = "ABOUT.txt file not found."
-        except UnicodeDecodeError:
-            self.content = "Error: Unable to decode ABOUT.txt. Please make sure the file encoding is UTF-8."
-
-        winwidth: int = 480
-        winheight: int = 810
-
-        # Allow for small screen sizes
-        winheight, winwidth = sizer(winheight, winwidth)
-
-        w_origin, h_origin = centerer(winwidth, winheight)
-        self.setGeometry(w_origin, h_origin, winwidth, winheight)
-        # w.otherFileFlag = True
-
-        return self.content
-
-
-def compare_versions(version1, version2):
-    """
-    Compares two version numbers and determines which one is newer.
-
-    Args:
-        version1 (str): The first version number (e.g. "1.0.0").
-        version2 (str): The second version number (e.g. "2.3.6").
-
-    Returns:
-        int:
-        -1 if version1 < version2,
-         0 if version1 == version2,
-         1 if version1 > version2.
-    """
-    # Split the version strings into lists of integers
-    v1_parts = list(map(int, version1.split(".")))
-    v2_parts = list(map(int, version2.split(".")))
-
-    # Compare each part (major, minor, patch) in sequence
-    for v1, v2 in zip(v1_parts, v2_parts):
-        if v1 < v2:
-            return -1  # version1 is older
-        elif v1 > v2:
-            return 1  # version1 is newer
-
-    # If we run out of parts to compare, handle different lengths (e.g. 1.0 vs 1.0.1)
-    if len(v1_parts) < len(v2_parts) and any(part > 0 for part in v2_parts[len(v1_parts):]):
-        return -1  # version1 is older
-    elif len(v1_parts) > len(v2_parts) and any(part > 0 for part in v1_parts[len(v2_parts):]):
-        return 1  # version1 is newer
-
-    return 0  # versions are equal
-
-
 # Paths (can be dynamically defined within Abib at runtime)
 uninstaller_path = r"C:\Program Files\Abib\unins000.exe"
 upgrade_installer_path = Path.home() / "Downloads"
@@ -949,7 +604,7 @@ def check_for_updates(parent=None):
 
         # Step 2: Compare CURRENT_VERSION with latest_version
         if latest_version and exe_url:
-            output: int = compare_versions(CURRENT_VERSION, latest_version)
+            output: int = fcs.compare_versions(CURRENT_VERSION, latest_version)
             if output == -1:  # A newer version is available
                 reply = QtWidgets.QMessageBox.question(parent,
                                                        "Update Available",
@@ -1049,6 +704,7 @@ def update_abib():
     print("Checking for updates...")
     update_available, version, exe_url = check_for_updates()
     if not update_available:
+        print("No update available.")
         return
     path_to_setup_exe = str(Path.home() / "Downloads" / f"Abib_setup_{version}_win.exe")
     print("Update process started...")
@@ -1470,7 +1126,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def helper(self) -> None:
         """Help section."""
 
-        self.file_open(str(Path(current_directory / 'HELP.txt')))
+        self.file_open(str(Path(sh.current_directory / 'HELP.txt')))
         winwidth: int = 830
         winheight: int = 1343
 
@@ -1484,7 +1140,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def copyright(self) -> None:
         """Licence."""
 
-        self.file_open(str(Path(current_directory / 'LICENSE')))
+        self.file_open(str(Path(sh.current_directory / 'LICENSE')))
         winwidth: int = 940
         winheight: int = 1343
 
@@ -1498,7 +1154,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def readme(self) -> None:
         """Readme file."""
 
-        self.file_open(str(Path(current_directory / 'README.txt')))
+        self.file_open(str(Path(sh.current_directory / 'README.txt')))
         winwidth: int = 830
         winheight: int = 1343
 
@@ -1515,7 +1171,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if w.otherFileFlag is True:
             # print('reloaded')
             w.otherFileFlag = False
-            self.file_open(str(Path(current_directory / 'KJB_PCE.txt')))
+            self.file_open(str(Path(sh.current_directory / 'KJB_PCE.txt')))
             winwidth: int = 480
             winheight: int = 800
             w_origin, h_origin = centerer(winwidth, winheight)
@@ -1910,10 +1566,10 @@ class MainWindow(QtWidgets.QMainWindow):
         current_position = -1
         d1 = 0
         if self.dlg.checks[1] == 1:
-            files_path = Path(current_directory) / "PCE-find.txt"
+            files_path = Path(sh.current_directory) / "PCE-find.txt"
         else:
             assert self.dlg.checks[1] == 0
-            files_path = Path(current_directory) / "PCE-lower.txt"
+            files_path = Path(sh.current_directory) / "PCE-lower.txt"
             key = key.lower()
 
         # Debugging: Print the file path
@@ -2140,7 +1796,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def ref_to_statusbar(self, current_position: int) -> None:
         """Display messages in the status bar."""
 
-        q1, q2, q3 = Info[current_position][0], Info[current_position][1] + 1, Info[current_position][2] + 1
+        q1, q2, q3 = sh.Info[current_position][0], sh.Info[current_position][1] + 1, sh.Info[current_position][2] + 1
         message = w.message if w.message else format_status_message(q1, q2, q3)
 
         self.statusBar.showMessage(message)
@@ -2169,8 +1825,8 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             if current_position < 0:
                 current_position = 0
-            if current_position > LAST_VERSE_IN_BIBLE:
-                current_position = LAST_VERSE_IN_BIBLE
+            if current_position > sh.LAST_VERSE_IN_BIBLE:
+                current_position = sh.LAST_VERSE_IN_BIBLE
             self.display_verse(current_position)
 
     def goto_book(self, _index: int) -> None:
@@ -2183,11 +1839,11 @@ class MainWindow(QtWidgets.QMainWindow):
         back_push(current_position)
         book: int = self.comboBox_1.currentIndex()
         # book is an index 0-65
-        if book == BOOKS_IN_THE_BIBLE - 1:
+        if book == sh.BOOKS_IN_THE_BIBLE - 1:
             b = 22  # Number of chapters in Revelation
         else:
-            a: int = Info.index([book + 1, 0, 0])
-            b: int = Info[a - 1][1] + 1  # No. of chapters in the book.
+            a: int = sh.Info.index([book + 1, 0, 0])
+            b: int = sh.Info[a - 1][1] + 1  # No. of chapters in the book.
         w.nchapters = []
         for _ in range(1, b + 1):
             w.nchapters.append(str(_))
@@ -2202,8 +1858,8 @@ class MainWindow(QtWidgets.QMainWindow):
         current_position = self.reference_to_line_number(ref, book)
         if current_position < 0:
             current_position = 0
-        if current_position > LAST_VERSE_IN_BIBLE:
-            current_position = LAST_VERSE_IN_BIBLE
+        if current_position > sh.LAST_VERSE_IN_BIBLE:
+            current_position = sh.LAST_VERSE_IN_BIBLE
         self.display_verse(current_position)
         self.goto_chapter(_index)
 
@@ -2216,17 +1872,17 @@ class MainWindow(QtWidgets.QMainWindow):
         chapter: int = self.comboBox_2.currentIndex()
         if chapter == int(w.nchapters[-1]) - 1:
             # No. of verses in the chapter.
-            if book == BOOKS_IN_THE_BIBLE - 1:
+            if book == sh.BOOKS_IN_THE_BIBLE - 1:
                 d = 21
             else:
-                c: int = Info.index([book + 1, 0, 0]) - 1
-                d: int = Info[c][2] + 1
+                c: int = sh.Info.index([book + 1, 0, 0]) - 1
+                d: int = sh.Info[c][2] + 1
         else:
             try:
-                c = Info.index([book, chapter + 1, 0]) - 1
+                c = sh.Info.index([book, chapter + 1, 0]) - 1
             except ValueError:
-                c = Info.index([book + 1, 0, 0]) - 1
-            d = Info[c][2] + 1
+                c = sh.Info.index([book + 1, 0, 0]) - 1
+            d = sh.Info[c][2] + 1
         w.nverses = []
         for _ in range(1, d + 1):
             w.nverses.append(str(_))
@@ -2241,8 +1897,8 @@ class MainWindow(QtWidgets.QMainWindow):
         current_position = self.reference_to_line_number(ref, book, chapter)
         if current_position < 0:
             current_position = 0
-        if current_position > LAST_VERSE_IN_BIBLE:
-            current_position = LAST_VERSE_IN_BIBLE
+        if current_position > sh.LAST_VERSE_IN_BIBLE:
+            current_position = sh.LAST_VERSE_IN_BIBLE
         self.display_verse(current_position)
 
     def goto_verse(self, _index: int) -> None:
@@ -2261,8 +1917,8 @@ class MainWindow(QtWidgets.QMainWindow):
         current_position = self.reference_to_line_number(ref, book, chapter)
         if current_position < 0:
             current_position = 0
-        if current_position > LAST_VERSE_IN_BIBLE:
-            current_position = LAST_VERSE_IN_BIBLE
+        if current_position > sh.LAST_VERSE_IN_BIBLE:
+            current_position = sh.LAST_VERSE_IN_BIBLE
         # print(f"current_position in goto_verse: {current_position}")
         self.display_verse(current_position)
 
@@ -2273,11 +1929,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Clean up prefixes like 'Chap' to prevent incorrect matching
         # Also, remove spaces and convert ':' to '.'
-        reference_text = clean_chapter_prefix(reference_text)  # For example, 'Chap2:3' -> '2:3'
+        reference_text = fcs.clean_chap_prefix(reference_text)  # For example, 'Chap2:3' -> '2:3'
         # print(f"2372 After cleaning chapter prefix: {reference_text}")
 
         # Check for book names that are adjacent to roman chapter references.
-        reference_text = check_roman_chapter_adjacent(reference_text)  # For example, 'GenesisX.IV' -> 'Genesis.X.IV'
+        reference_text = fcs.check_roman_chapter_adjacent(reference_text)
+        # For example, 'GenesisX.IV' -> 'Genesis.X.IV'
+
         # print(f"2376 After checking for adjacent book names: {reference_text}")
 
         # Letters like iv, ix, xl, xc, i, v, x, l, c, d, m,
@@ -2330,11 +1988,11 @@ class MainWindow(QtWidgets.QMainWindow):
             verse = int(input_verse) if input_verse else '1'  # Verse stays as-is or '1'
 
             # Normalize the reference to the standard "book.chapter.verse" format
-            if book not in onechapterbooks:
+            if book not in sh.onechapterbooks:
                 reference_text = f"{book}.{chapter}.{verse}"
 
             try:
-                if bibledict[book] - 1 in onechapterbooks:
+                if sh.bibledict[book] - 1 in sh.onechapterbooks:
                     # print(f"2434 Book is in onechapterbooks: {book}")
                     # print(f"2435 book: {book}")
                     # print(f"2436 chapter: {chapter}")
@@ -2364,10 +2022,10 @@ class MainWindow(QtWidgets.QMainWindow):
         # Handle floating point-style references (e.g., "23.7")
         reference_text = reference_text.replace(":", ".")
         if fcs.is_float_re(reference_text):
-            reference_text = attach_book_name(reference_text, current_line)
+            reference_text = fcs.attach_book_name(reference_text, current_line)
 
         # Split the reference into parts for resolving
-        bits = split_reference(reference_text)
+        bits = fcs.split_reference(reference_text)
         # print(f"2469 Split reference: {bits}")
 
         book_num, chapter, verse = resolve_reference(bits)
@@ -2395,7 +2053,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """Calculate the absolute position of a verse from the current line.
            Only allows valid positions within the same chapter."""
 
-        inf: list = Info[current_line]
+        inf: list = sh.Info[current_line]
         current_chapter: int = inf[1]
         # print(f"2474 current_chapter: {current_chapter}")
         current_verse = inf[2]
@@ -2413,7 +2071,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         message = f"Out of bounds. No verse {new_verse + 1} here!"
         try:
-            new_chapter: int = Info[new_line][1]
+            new_chapter: int = sh.Info[new_line][1]
             # print(f"2484 new_chapter: {new_chapter}")
         except IndexError:
             # print(">>>>>>>>>>>>>>>")
@@ -2466,14 +2124,14 @@ class MainWindow(QtWidgets.QMainWindow):
             if linenumber < Amap[0]:
                 current_position = 0
             elif linenumber > KJB_PCE_LASTLINE - 118:
-                current_position = LAST_VERSE_IN_BIBLE
+                current_position = sh.LAST_VERSE_IN_BIBLE
             else:
                 for _ in range(10):
                     if linenumber + _ in Amap:
                         linenumber += _
                         break
                 else:
-                    return LAST_VERSE_IN_BIBLE
+                    return sh.LAST_VERSE_IN_BIBLE
                 current_position = Amap.index(linenumber)
 
         return current_position
@@ -2592,12 +2250,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         reset_attributes()
         current_position: int = self.get_line_number()
-        book: int = Info[current_position][0]
+        book: int = sh.Info[current_position][0]
         newbook: int = book - 1
         if newbook < 0:
             self.on_error('No earlier book!', 3000, True)
         else:
-            current_position = Info.index([newbook, 0, 0])
+            current_position = sh.Info.index([newbook, 0, 0])
             forward.clear()
             back_push(current_position)
             self.display_verse(current_position)
@@ -2608,12 +2266,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         reset_attributes()
         current_position: int = self.get_line_number()
-        book: int = Info[current_position][0]
+        book: int = sh.Info[current_position][0]
         newbook: int = book + 1
-        if newbook > BOOKS_IN_THE_BIBLE - 1:
+        if newbook > sh.BOOKS_IN_THE_BIBLE - 1:
             self.on_error('No later book!', 3000, True)
         else:
-            current_position = Info.index([newbook, 0, 0])
+            current_position = sh.Info.index([newbook, 0, 0])
             forward.clear()
             back_push(current_position)
             self.display_verse(current_position)
@@ -2624,8 +2282,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         reset_attributes()
         current_position: int = self.get_line_number()
-        book: int = Info[current_position][0]
-        chapter: int = Info[current_position][1]
+        book: int = sh.Info[current_position][0]
+        chapter: int = sh.Info[current_position][1]
         newchapter: int = chapter - 1
         if newchapter < 0:
             newbook: int = book - 1
@@ -2633,13 +2291,13 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.on_error('No earlier chapter!', 3000, True)
                 return
             while True:
-                if Info[current_position][0] == book:
+                if sh.Info[current_position][0] == book:
                     current_position -= 1
                 else:
                     break
-            newchapter = Info[current_position][1]
+            newchapter = sh.Info[current_position][1]
             book = newbook
-        current_position = Info.index([book, newchapter, 0])
+        current_position = sh.Info.index([book, newchapter, 0])
         forward.clear()
         back_push(current_position)
         self.display_verse(current_position)
@@ -2650,24 +2308,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         reset_attributes()
         current_position: int = self.get_line_number()
-        book: int = Info[current_position][0]
-        chapter: int = Info[current_position][1]
+        book: int = sh.Info[current_position][0]
+        chapter: int = sh.Info[current_position][1]
         newchapter: int = chapter + 1
         try:
-            current_position = Info.index([book, newchapter, 0])
+            current_position = sh.Info.index([book, newchapter, 0])
         except ValueError:
             newbook: int = book + 1
-            if newbook > BOOKS_IN_THE_BIBLE - 1:
+            if newbook > sh.BOOKS_IN_THE_BIBLE - 1:
                 self.on_error('No later chapter!', 3000, True)
                 return
             while True:
-                if Info[current_position][0] == book:
+                if sh.Info[current_position][0] == book:
                     current_position += 1
                 else:
                     break
-            newchapter = Info[current_position][1]
+            newchapter = sh.Info[current_position][1]
             book = newbook
-        current_position = Info.index([book, newchapter, 0])
+        current_position = sh.Info.index([book, newchapter, 0])
         forward.clear()
         back_push(current_position)
         self.display_verse(current_position)
@@ -2771,9 +2429,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.setWindowTitle(title)
 
     def open_settings_dialog(self):
-        """
-        Open the settings dialog and update settings if the user confirms.
-        """
+        """Open the settings dialog and update settings if the user confirms."""
+
         dialog = SettingsDialog(self)
 
         # Populate the settings dialog with current settings
@@ -2789,13 +2446,14 @@ class MainWindow(QtWidgets.QMainWindow):
             # print("Settings before saving:", self.settings)
 
             # Save settings to the file
-            save_settings_to_file(self.settings, user_settings_path)
+            fcs.save_settings_to_file(self.settings, user_settings_path)
 
             # Apply theme (if needed)
             self.set_theme(self.settings)
 
     def set_theme(self, the_settings):
         """Set theme based on the value retrieved from settings."""
+
         theme_key = 'theme'  # Key in the dictionary pointing to the theme.
         current_theme = the_settings.get(theme_key, 'Light')  # Default to Light mode if not set
 
@@ -2808,13 +2466,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self.settings[theme_key] = 'Light'  # Ensure settings reflect this theme
 
         # Save updated theme settings
-        save_settings_to_file(self.settings, user_settings_path)
+        fcs.save_settings_to_file(self.settings, user_settings_path)
 
     def display_secondary_window(self, offset: int = 0) -> None:
-        """
-        Creates and displays the secondary window to show SME text.
-        Ensures the secondary window is non-blocking.
-        """
+        """Creates and displays the secondary window to show SME text.
+        Ensures the secondary window is non-blocking."""
+
         # Get the SME text (from the sme method)
         try:
             sme_text = self.sme(offset)
@@ -2839,7 +2496,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         global date_file  # Needed because of assignment.
 
-        date_file = get_date_file(adjustment)
+        date_file = fcs.get_date_file(date_file[2], adjustment)
         # print(f"date_file: {date_file} adjustment: {adjustment}")
 
         # Move to the Bible text reference at the end
@@ -2910,6 +2567,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 print("Secondary window is not initialized.")
             else:
                 print("Secondary window's text display is unavailable.")
+#  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of MainWindow class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 class SecondaryWindow(QDialog):
@@ -3059,7 +2717,7 @@ class SettingsDialog(QtWidgets.QDialog):
         """
         Action when OK is clicked.
         """
-        # QMessageBox.information(self, "Info", "OK button clicked")
+        # QMessageBox.information(self, "sh.Info", "OK button clicked")
         self.accept()  # Close the dialog, marking it as 'accepted'
 
     def on_cancel_clicked(self):
@@ -3068,6 +2726,59 @@ class SettingsDialog(QtWidgets.QDialog):
         """
         # QMessageBox.warning(self, "Warning", "Cancel button clicked")
         self.reject()  # Close the dialog, marking it as 'rejected'
+
+
+class AboutWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle(f"Abib {CURRENT_VERSION}")
+
+        self.resize(480, 810)  # Set initial window size
+        self.content = None
+        self.about_window = None
+
+        # Create a QLabel widget
+        self.label = QtWidgets.QLabel(self)
+
+        # Load About.txt content
+        self.content = self.about()
+
+        # Set the contents of the QLabel
+        self.label.setText(self.content)
+
+        # Center align content
+        self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+
+        self.fontsize = 14
+        fixedfont: QFont = QtGui.QFont("Cascadia Mono", self.fontsize, QtGui.QFont.Weight.Bold)
+        self.label.setFont(fixedfont)
+
+        # Set the QLabel as the central widget
+        self.setCentralWidget(self.label)
+
+    def about(self) -> str:
+        """Load the About content from ABOUT.txt."""
+
+        self.content: str = ""
+        try:
+            with open("ABOUT.txt", "r", encoding="utf-8") as file_about:
+                self.content = file_about.read()
+        except FileNotFoundError:
+            self.content = "ABOUT.txt file not found."
+        except UnicodeDecodeError:
+            self.content = "Error: Unable to decode ABOUT.txt. Please make sure the file encoding is UTF-8."
+
+        winwidth: int = 480
+        winheight: int = 810
+
+        # Allow for small screen sizes
+        winheight, winwidth = sizer(winheight, winwidth)
+
+        w_origin, h_origin = centerer(winwidth, winheight)
+        self.setGeometry(w_origin, h_origin, winwidth, winheight)
+        # w.otherFileFlag = True
+
+        return self.content
 
 
 class SyntaxHighlighter(QtGui.QSyntaxHighlighter):
@@ -3151,7 +2862,7 @@ class FindDialog(QtWidgets.QDialog):
         self.ui.comboBox_1.addItems(w.nwin)
         self.ui.comboBox_2.addItems(w.nwin)
         self.ui.comboBox_1.setCurrentIndex(0)
-        self.ui.comboBox_2.setCurrentIndex(BOOKS_IN_THE_BIBLE - 1)
+        self.ui.comboBox_2.setCurrentIndex(sh.BOOKS_IN_THE_BIBLE - 1)
 
 
         QOk = QDialogButtonBox.StandardButton.Ok
@@ -3255,66 +2966,37 @@ class FindDialog(QtWidgets.QDialog):
 
 if __name__ == '__main__':
 
-    current_directory: Path = Path.cwd()
-    str_cwd: str = str(current_directory)
-    # settings_file: Path = current_directory / 'settings.json'
-    user_settings_dir: Path = Path.cwd()  # Initialize with the current working directory as a placeholder value.
-
-    if system() == 'Windows':
-        user_settings_dir = Path(getenv("APPDATA")) / "Abib"  # User's directory.
-    elif system() == 'Darwin':
-        user_settings_dir = Path.home() / "Library" / "Application Support" / "Abib"
-    elif system() == 'Linux':
-        user_settings_dir = Path.home() / ".config" / "Abib"
-    else:
-        print("Unknown operating system.")
-        exit()
+    app: QApplication = QtWidgets.QApplication()
+    app.setApplicationName("Abib")
 
     # If settings.json exists in "Abib" then do nothing.
-    user_settings_file = user_settings_dir / "settings.json"  # User's settings.json.
+    user_settings_file = sh.user_settings_dir / "settings.json"  # User's settings.json.
     if user_settings_file.exists():
         pass
     else:
-        setup_Abib_settings(user_settings_dir)
+        fcs.setup_Abib_settings(sh.user_settings_dir)
     user_settings_path: str = str(user_settings_file)
 
     # Load settings if the file is found (default if not).
     settings: dict = fcs.load_settings_from_file(user_settings_path)
 
-    # Construct the path to the icon regardless of the operating system.
-    icon_path: Path = current_directory / "images" / "abib_icon0.ico"
-    if not icon_path.is_file():
-        raise FileNotFoundError(f"Icon file not found: {icon_path}")
-
-    app: QApplication = QtWidgets.QApplication()
-    app.setApplicationName("Abib")
-
     # Show the splash screen if enabled in settings
-    splash_path = current_directory / "images" / "Abib_barley.png"
+    splash_path = sh.current_directory / "images" / "Abib_barley.png"
     if settings.get("show_splash", False):  # Default to False if the key is missing.
         splash = QSplashScreen(QPixmap(splash_path))
         splash.show()
 
-    if system() == 'Windows':
+    if sh.system() == 'Windows':
         app.processEvents()
 
     width, height = app.primaryScreen().size().toTuple()
     half_width = width / 2
     half_height = height / 2
 
-    MAX_VERSES_PER_CHAPTER = 176
-    MAX_CHAPTER_COUNT = 150
-    BOOKS_IN_THE_BIBLE = 66
-    CHAPTERS_IN_THE_BIBLE = 1189
-    LAST_VERSE_IN_BIBLE = 31101  # The first verse being zero.
-    EOF_BIBLE_TEXT = LAST_VERSE_IN_BIBLE + 1
-    EOF_AMAP = EOF_INFO = EOF_BIBLE_TEXT + 17
-
     w: MainWindow = MainWindow()
 
     back: list = []
     forward: list = []
-    onechapterbooks: tuple[int, int, int, int, int] = (30, 56, 62, 63, 64)
 
     # integers
     x: int = 0
@@ -3339,108 +3021,13 @@ if __name__ == '__main__':
     # w.hiLita.clear = True
     w.gent = None
     w.otherFileFlag = True
+    # Initialize date_index (hours relative to today's date)
+    # w.date_index: int = 0
 
     linehighlightcolor: QColor = QtGui.QColor("#0138b7")
     linetextcolor: QColor = QtGui.QColor("#ffffff")
 
     update_abib()
-
-    bibledict: dict[str, int] = {
-        'genesis': 1, 'ge': 1, 'gen': 1, 'g': 1, 'gene': 1, 'ot': 1,
-        'exodus': 2, 'ex': 2, 'exo': 2, 'e': 2, 'exod': 2,
-        'leviticus': 3, 'le': 3, 'lev': 3, 'levi': 3, 'l': 3, 'levt': 3, 'levtics': 3,
-        'numbers': 4, 'nu': 4, 'num': 4, 'number': 4, 'n': 4, 'numb': 4,
-        'deuteronomy': 5, 'de': 5, 'deut': 5, 'deu': 5, 'd': 5,
-        'joshua': 6, 'jos': 6, 'josh': 6, 'j': 6,
-        'judges': 7, 'jdg': 7, 'ju': 7, 'jud': 7, 'judg': 7, 'judge': 7,
-        'ruth': 8, 'ru': 8, 'rut': 8, 'r': 8,
-        '1samuel': 9, '1s': 9, '1sa': 9, '1sam': 9, '1bk': 9, 'ibk': 9,
-        'Isamuel': 9, 'Isam': 9,
-        'isamuel': 9, 'isam': 9,
-        '2samuel': 10, '2s': 10, '2sa': 10, '2sam': 10, '2bk': 10, 'iibk': 10,
-        'iisamuel': 10, 'iis': 10, 'iisa': 10, 'iisam': 10,
-        '1kings': 11, '1k': 11, '1ki': 11, '1kin': 11, '1king': 11, '3bk': 11,
-        'ikings': 11, 'ik': 11, 'iki': 11, 'ikin': 11, 'iking': 11, 'iiibk': 11, 'iiikings': 11,
-        '2kings': 12, '2k': 12, '2ki': 12, '2kin': 12, '2king': 12, '4bk': 12,
-        'iikings': 12, 'iik': 12, 'iiki': 12, 'iikin': 12, 'iiking': 12, 'ivbk': 12, 'iiiibk': 12, 'ivkings': 12,
-        '1chronicles': 13, '1ch': 13, '1chr': 13, '1chronicle': 13, '1c': 13,
-        '1chro': 13, '1chron': 13, '1chroni': 13, '1chronic': 13, '1cr': 13,
-        'ichro': 13, 'ichron': 13, 'ichroni': 13, 'ichronic': 13, 'icr': 13,
-        'ichronicles': 13, 'ich': 13, 'ichr': 13, 'ichronicle': 13, 'ic': 13,
-        '2chronicles': 14, '2ch': 14, '2chr': 14, '2chronicle': 14, '2c': 14,
-        'iichronicles': 14, 'iich': 14, 'iichr': 14, 'iichronicle': 14, 'iic': 14,
-        'ezra': 15, 'ezr': 15, 'ez': 15,
-        'nehemiah': 16, 'ne': 16, 'neh': 16, 'nehe': 16, 'neem': 16,
-        'esther': 17, 'es': 17, 'est': 17, 'esth': 17, 'esthe': 17, 'esta': 17,
-        'job': 18, 'jb': 18,
-        'psalms': 19, 'psalm': 19, 'ps': 19, 'psa': 19, 'p': 19,
-        'proverbs': 20, 'pr': 20, 'pro': 20, 'prov': 20, 'proverb': 20,
-        'ecclesiastes': 21, 'ec': 21, 'ecc': 21, 'eccl': 21, 'ecclesiaste': 21, 'eccles': 21,
-        'songofsolomon': 22, 'songofsongs': 22, 'so': 22, 'son': 22, 'song': 22,
-        'sos': 22, 'songs': 22, 's': 22, 'ss': 22, 'ca': 22, 'canticles': 22, 'sng': 22,
-        'isaiah': 23, 'isai': 23, 'esaias': 23, 'i': 23, 'is': 23, 'isa': 23, 'ish': 23,
-        'jeremiah': 24, 'je': 24, 'jer': 24, 'jeremy': 24,
-        'lamentations': 25, 'la': 25, 'lam': 25, 'lamentation': 25, 'lame': 25,
-        'ezekiel': 26, 'eze': 26, 'ezek': 26, 'ezk': 26, 'zek': 26,
-        'daniel': 27, 'da': 27, 'dan': 27, 'dani': 27,
-        'hosea': 28, 'ho': 28, 'hos': 28, 'h': 28, 'hose': 28,
-        'joel': 29, 'joe': 29, 'jol': 29,
-        'amos': 30, 'am': 30, 'amo': 30, 'a': 30,
-        'obadiah': 31, 'ob': 31, 'oba': 31, 'obad': 31, 'o': 31,
-        'jonah': 32, 'jon': 32, 'jona': 32,
-        'micah': 33, 'mi': 33, 'mic': 33, 'm': 33, 'mica': 33,
-        'nahum': 34, 'na': 34, 'nah': 34, 'nam': 34,
-        'habakkuk': 35, 'hab': 35, 'haba': 35, 'habak': 35, 'ha': 35, 'hb': 35,
-        'zephaniah': 36, 'zp': 36, 'zep': 36, 'zeph': 36, 'z': 36, 'ze': 36,
-        'haggai': 37, 'hag': 37, 'hagg': 37, 'hg': 37, 'haggi': 37,
-        'zechariah': 38, 'zc': 38, 'zec': 38, 'zech': 38,
-        'malachi': 39, 'mal': 39, 'mala': 39, 'malac': 39, 'ma': 39,
-        'matthew': 40, 'mt': 40, 'mat': 40, 'matt': 40, 'nt': 40,
-        'mark': 41, 'mr': 41, 'mk': 41, 'mar': 41, 'mrk': 41,
-        'luke': 42, 'lu': 42, 'lk': 42, 'luk': 42,
-        'john': 43, 'joh': 43, 'jn': 43, 'jno': 43, 'jo': 43, 'jhn': 43, 'jh': 43,
-        'acts': 44, 'ac': 44, 'act': 44,
-        'romans': 45, 'ro': 45, 'rom': 45, 'roman': 45, 'roma': 45,
-        '1corinthians': 46, '1co': 46, '1cor': 46, '1corinthian': 46,
-        'icorinthians': 46, 'ico': 46, 'icor': 46, 'icorinthian': 46,
-        '2corinthians': 47, '2co': 47, '2cor': 47, '2corinthian': 47,
-        'iicorinthians': 47, 'iico': 47, 'iicor': 47, 'iicorinthian': 47,
-        'galatians': 48, 'ga': 48, 'gal': 48, 'galatian': 48, 'gala': 48,
-        'ephesians': 49, 'ep': 49, 'eph': 49, 'ephesian': 49, 'ephe': 49,
-        'philippians': 50, 'php': 50, 'philip': 50, 'phil': 50, 'ph': 50, 'phili': 50,
-        'colossians': 51, 'co': 51, 'col': 51, 'colossian': 51, 'c': 51,
-        '1thessalonians': 52, '1th': 52, '1the': 52, '1thess': 52,
-        '1thessalonian': 52, '1t': 52, '1thes': 52,
-        'ithessalonians': 52, 'ith': 52, 'ithe': 52, 'ithess': 52,
-        'ithessalonian': 52, 'it': 52, 'ithes': 52,
-        '2thessalonians': 53, '2th': 53, '2the': 52, '2thess': 53,
-        '2thessalonian': 53, '2t': 53, '2thes': 53,
-        'iithessalonians': 53, 'iith': 53, 'iithe': 52, 'iithess': 53,
-        'iithessalonian': 53, 'iit': 53, 'iithes': 53,
-        '1timothy': 54, '1ti': 54, '1tim': 54,
-        'itimothy': 54, 'iti': 54, 'itim': 54,
-        '2timothy': 55, '2ti': 55, '2tim': 55,
-        'iitimothy': 55, 'iiti': 55, 'iitim': 55,
-        'titus': 56, 'ti': 56, 'tit': 56, 't': 56,
-        'philemon': 57, 'phm': 57, 'phi': 57, 'phl': 57, 'phile': 57, 'philo': 57,
-        'hebrews': 58, 'he': 58, 'heb': 58, 'hebrew': 58, 'hebr': 58,
-        'james': 59, 'ja': 59, 'jas': 59, 'jam': 59, 'jame': 59, 'jim': 59, 'jamo': 59,
-        '1peter': 60, '1p': 60, '1pe': 60, '1pet': 60, '1pete': 60,
-        'Ipeter': 60, 'Ip': 60, 'Ipe': 60, 'Ipet': 60, 'Ipete': 60,
-        'ipeter': 60, 'ip': 60, 'ipe': 60, 'ipet': 60, 'ipete': 60,
-        '2peter': 61, '2p': 61, '2pe': 61, '2pet': 61, '2pete': 61,
-        'IIpeter': 61, 'IIp': 61, 'IIpe': 61, 'IIpet': 61, 'IIpete': 61,
-        'iipeter': 61, 'iip': 61, 'iipe': 61, 'iipet': 61, 'iipete': 61,
-        '1john': 62, '1j': 62, '1jo': 62, '1joh': 62, '1jn': 62, '1jno': 62,
-        'ijohn': 62, 'ij': 62, 'ijo': 62, 'ijoh': 62, 'ijn': 62, 'ijno': 62,
-        '2john': 63, '2j': 63, '2jo': 63, '2joh': 63, '2jn': 63, '2jno': 63,
-        'iijohn': 63, 'iij': 63, 'iijo': 63, 'iijoh': 63, 'iijn': 63, 'iijno': 63,
-        '3john': 64, '3j': 64, '3jo': 64, '3joh': 64, '3jn': 64, '3jno': 64,
-        'iiijohn': 64, 'iiij': 64, 'iiijo': 64, 'iiijoh': 64, 'iiijn': 64, 'iiijno': 64,
-        'jude': 65, 'jd': 65, 'jde': 65,
-        'revelation': 66, 'revelationofjohn': 66, 're': 66, 'rev': 66, 'theapocalypseofjohn': 66,
-        'revelations': 66, 'reve': 66, 'apocalypse': 66, 'apocalypseofjohn': 66,
-    }
 
     book_bounds: list[int] = [
         0, 1533, 2746, 3605, 4893, 5852, 6510, 7128, 7213, 8023,
@@ -3473,7 +3060,7 @@ if __name__ == '__main__':
     # -------------------------------------------------- #
 
     # Construct full file path using pathlib
-    file_path = str(Path(str_cwd) / "KJB_PCE.txt")
+    file_path = str(Path(sh.str_cwd) / "KJB_PCE.txt")
     # Pass the constructed path to fcs.readio
     KJV = fcs.readio('', file_path, KJB_PCE_LASTLINE)
 
@@ -3492,10 +3079,10 @@ if __name__ == '__main__':
     assert (len(KJV) == KJB_PCE_LASTLINE - 118)
 
     # Use pathlib to construct the path
-    file_path = str(Path(str_cwd) / "Amap.txt")
+    file_path = str(Path(sh.str_cwd) / "Amap.txt")
 
     # Pass the constructed path to the function
-    Amap: list = fcs.readfile('', file_path, EOF_AMAP)
+    Amap: list = sh.readfile('', file_path, sh.EOF_AMAP)
 
     Amap = Amap[17:]
 
@@ -3508,19 +3095,8 @@ if __name__ == '__main__':
         v: Any = Amap[_]
         P119.append(v)
 
-    # Create the base directory as a Path object
-    base_dir = Path(str_cwd)
-
-    # Read Info.txt
-    Info = []
-    Inf: list = fcs.readfile('', str(Path(base_dir / "Info.txt")), EOF_INFO)
-    Inf = Inf[17:]  # Skip the first 17 elements
-    for _ in range(LAST_VERSE_IN_BIBLE + 1):
-        Info.append(loads(Inf[_]))
-    Info = tuple(Info)
-
     # Open KJB_PCE.txt
-    w.file_open(str(base_dir / "KJB_PCE.txt"))
+    w.file_open(str(sh.base_dir / "KJB_PCE.txt"))
 
     # Read stripped_dict.txt
     with open("stripped_dict.txt", encoding="utf-8") as f:
@@ -3535,21 +3111,21 @@ if __name__ == '__main__':
     set_lowdict: dict[Any, set] = fcs.load_list_set_dict("list_lowdict.json", strpd_low_dict)
 
     # Read and process PCE-find.txt
-    Rnew = fcs.readio('', str(Path(base_dir / "PCE-find.txt")), EOF_BIBLE_TEXT)
+    Rnew = fcs.readio('', str(Path(sh.base_dir / "PCE-find.txt")), sh.EOF_BIBLE_TEXT)
     Rnew = tuple(Rnew)
     Rdic: dict[int, Any] = dict(enumerate(Rnew))  # Convert Rnew to dictionary.
 
     # Read and process PCE-lower.txt
-    Rlow = fcs.readio('', str(Path(base_dir / "PCE-lower.txt")), EOF_BIBLE_TEXT)
+    Rlow = fcs.readio('', str(Path(sh.base_dir / "PCE-lower.txt")), sh.EOF_BIBLE_TEXT)
     Rlow = tuple(Rlow)
     Ldic: dict[int, Any] = dict(enumerate(Rlow))  # Convert Rlow to dictionary.
 
     # Read PCE-stripped.txt
-    Rstp = fcs.readio('', str(Path(base_dir / "PCE-stripped.txt")), EOF_BIBLE_TEXT)
+    Rstp = fcs.readio('', str(Path(sh.base_dir / "PCE-stripped.txt")), sh.EOF_BIBLE_TEXT)
     Rstp = tuple(Rstp)
 
     # Read PCE-stripped_lower.txt
-    Rlsp = fcs.readio('', str(Path(base_dir / "PCE-stripped_lower.txt")), EOF_BIBLE_TEXT)
+    Rlsp = fcs.readio('', str(Path(sh.base_dir / "PCE-stripped_lower.txt")), sh.EOF_BIBLE_TEXT)
     Rlsp = tuple(Rlsp)
 
     try:
@@ -3558,7 +3134,7 @@ if __name__ == '__main__':
     except JSONDecodeError as e:
         print(f"JSON file is invalid: {e}")
 
-    date_file: tuple = get_date_file()
+    date_file: tuple = fcs.get_date_file()
 
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # Plugin socket.
@@ -3571,7 +3147,7 @@ if __name__ == '__main__':
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     # Set the application icon
-    app_icon: QIcon = QIcon(str(icon_path))  # Convert the Path object to string for QIcon
+    app_icon: QIcon = QIcon(str(sh.icon_path))  # Convert the Path object to string for QIcon
     app.setWindowIcon(app_icon)
 
     w.show()
