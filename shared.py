@@ -3,7 +3,7 @@
 ################################################################################
 ## Module containing objects shared by Abib.py and fcs.py
 ##
-## Used by Abib.py version 412.2 =>
+## Used by Abib.py version 412.3 =>
 ################################################################################
 
 from pathlib import Path

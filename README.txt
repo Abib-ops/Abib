@@ -2,11 +2,15 @@
 ABIB README:
 ************
 
-Abib v412.2
+Abib v412.3
 -----------
+Refactored PySide6 imports.
 
 Changelog.
 -----------
+Abib v412.3
+
+
 Abib v412.2
 New module fcs.py created to reduce the size of Abib.py.
 Module shared.py created to prevent circular references.

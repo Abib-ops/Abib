@@ -54,10 +54,10 @@ Abib Bible Reader אביב
 
 Using PySide6.8.2.1 and python3.13.2 (64-bit).
 
-26/03/2025
+07/04/2025
 """
 
-CURRENT_VERSION = "412.2"
+CURRENT_VERSION = "412.3"
 
 import re
 import time
@@ -79,19 +79,22 @@ from json import load, JSONDecodeError
 from roman import fromRoman
 from typing import Any
 
-from PySide6 import QtCore
-from PySide6 import QtGui
-from PySide6 import QtPrintSupport
-from PySide6 import QtWidgets
-from PySide6.QtGui import QIcon, QColor, QFont, QPixmap
+from PySide6.QtWidgets import (QMainWindow, QTextEdit, QVBoxLayout, QWidget, QDialogButtonBox, QApplication,
+                               QToolBar, QPlainTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
+                               QSplashScreen, QPushButton, QDialog, QSizePolicy, QSpacerItem, QHBoxLayout,
+                               QStatusBar, QFileDialog, QCheckBox, QLabel)
+
+from PySide6.QtGui import (QAction, QMouseEvent, QKeyEvent, QSyntaxHighlighter, QIcon, QColor, QFont, QPixmap,
+                           QTextCursor, QTextCharFormat)
+
+from PySide6.QtCore import Qt, QRect, QSize, QEvent
+
 from PySide6.QtPrintSupport import QPrintDialog
-from PySide6.QtWidgets import (QDialogButtonBox, QApplication, QPlainTextEdit, QLineEdit, QComboBox,
-                               QGridLayout, QWidget, QMessageBox, QSplashScreen, QPushButton, QDialog,
-                               QSizePolicy, QSpacerItem)
 
 import requests
 import subprocess
 import ctypes
+
 import fcs
 import shared as sh
 
@@ -483,6 +486,13 @@ def feature() -> None:
 
     print('Future feature')
 
+    open_text_document_viewer("Pilgrims-Progress.txt")
+
+def open_text_document_viewer(file_path1):
+    """Open the TextDocumentWindow, loading a specified text document."""
+    text_window = TextDocumentWindow()
+    text_window.load_document(file_path1)
+    text_window.show()
 
 def calculate_book_line(book: str, chapter: int, verse: int) -> int:
     """
@@ -606,22 +616,22 @@ def check_for_updates(parent=None):
         if latest_version and exe_url:
             output: int = fcs.compare_versions(CURRENT_VERSION, latest_version)
             if output == -1:  # A newer version is available
-                reply = QtWidgets.QMessageBox.question(parent,
+                reply = QMessageBox.question(parent,
                                                        "Update Available",
                                                        f"A new version ({latest_version}) is available. Do you want to download and install it?",
-                                                       QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
-                                                       QtWidgets.QMessageBox.StandardButton.No
+                                                       QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                                                       QMessageBox.StandardButton.No
                                                        )
-                if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+                if reply == QMessageBox.StandardButton.Yes:
                     return True, latest_version, exe_url
                 else:
                     return False, "", ""
             elif output >= 0:  # The current version is up to date.
                 return False, "", ""
         else:
-            QtWidgets.QMessageBox.warning(parent, "Error", "Failed to fetch the latest version details.")
+            QMessageBox.warning(parent, "Error", "Failed to fetch the latest version details.")
     except requests.exceptions.RequestException as ere:
-        QtWidgets.QMessageBox.critical(parent, "Error", f"Failed to check for updates: {str(ere)}")
+        QMessageBox.critical(parent, "Error", f"Failed to check for updates: {str(ere)}")
 
 
 # Step 1: Download upgrade installer
@@ -722,7 +732,7 @@ def update_abib():
     exit(0)  # Exit the old instance of the application
 
 
-class MainWindow(QtWidgets.QMainWindow):
+class MainWindow(QMainWindow):
     """MainWindow class."""
 
     def __init__(self, *args, **kwargs) -> None:
@@ -760,11 +770,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.okButton: None = None
         self.dlg: None = None  # No external window yet.
         self.gent: None = None
-        self.textEditor: QPlainTextEdit = QtWidgets.QPlainTextEdit()
+        self.textEditor: QPlainTextEdit = QPlainTextEdit()
         # Store a reference to the secondary window to manage its lifecycle
         self.secondary_window = None
 
-        #QtCore.QTimer.singleShot(0, lambda: self.sme("PM", -1))  # Adjusted to yesterday evening's reading.
+        #Qt.QTimer.singleShot(0, lambda: self.sme("PM", -1))  # Adjusted to yesterday evening's reading.
 
         self.nwin: list[str] = [
             'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
@@ -809,263 +819,263 @@ class MainWindow(QtWidgets.QMainWindow):
         w_origin, h_origin = centerer(self.winwidth, self.winheight)
         self.setGeometry(w_origin, h_origin, self.winwidth, self.winheight)
 
-        fixedfont: QFont = QtGui.QFont("Cascadia Mono", self.fontsize, QtGui.QFont.Weight.Medium)
+        fixedfont: QFont = QFont("Cascadia Mono", self.fontsize, QFont.Weight.Medium)
         self.textEditor.setFont(fixedfont)
         self.textEditor.setReadOnly(True)
 
-        self.display_verse_input: QLineEdit = QtWidgets.QLineEdit()
+        self.display_verse_input: QLineEdit = QLineEdit()
         self.display_verse_input.setToolTip("F2 Enter or OK to search for a verse.")
         # self.display_verse_input.returnPressed.connect(self.goto_line)
-        self.display_verse_input.setGeometry(QtCore.QRect(50, 50, 200, 25))  # Reduce the width to 200
+        self.display_verse_input.setGeometry(QRect(50, 50, 200, 25))  # Reduce the width to 200
         self.display_verse_input.installEventFilter(self)  # Install event filter for custom key handling
 
         # Store command history and variables
         self.command_history = []
         self.history_index = -1
 
-        self.comboBox_1: QComboBox = QtWidgets.QComboBox()
+        self.comboBox_1: QComboBox = QComboBox()
         self.comboBox_1.addItems(self.nwin)
         self.comboBox_1.setCurrentIndex(0)
         self.comboBox_1.activated.connect(self.goto_book)
 
-        self.comboBox_2: QComboBox = QtWidgets.QComboBox()
+        self.comboBox_2: QComboBox = QComboBox()
         self.comboBox_2.addItems(self.nchapters)
         self.comboBox_2.setCurrentIndex(0)
         self.comboBox_2.activated.connect(self.goto_chapter)
 
-        self.comboBox_3: QComboBox = QtWidgets.QComboBox()
+        self.comboBox_3: QComboBox = QComboBox()
         self.comboBox_3.addItems(self.nverses)
         self.comboBox_3.setCurrentIndex(0)
         self.comboBox_3.activated.connect(self.goto_verse)
 
         self.hiLita: SyntaxHighlighter = SyntaxHighlighter(self.textEditor.document())
 
-        grid: QGridLayout = QtWidgets.QGridLayout()
+        grid: QGridLayout = QGridLayout()
         grid.setSpacing(2)
         self.setLayout(grid)
 
         grid.addWidget(self.textEditor, 0, 0, 1, 3)
-        self.textEditor.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
+        self.textEditor.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         grid.addWidget(self.comboBox_1, 1, 0)
-        self.comboBox_1.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.comboBox_1.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         grid.addWidget(self.comboBox_2, 1, 1)
-        self.comboBox_2.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.comboBox_2.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         grid.addWidget(self.comboBox_3, 1, 2)
-        self.comboBox_3.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.comboBox_3.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         grid.addWidget(self.display_verse_input, 2, 0)
-        self.display_verse_input.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
+        self.display_verse_input.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
-        self.okButton = QtWidgets.QPushButton("OK")
+        self.okButton = QPushButton("OK")
         self.okButton.setStyleSheet("QPushButton { text-align: left; }")
-        self.okButton.setGeometry(QtCore.QRect(200, 200, 75, 30))  # Position the "OK" button
+        self.okButton.setGeometry(QRect(200, 200, 75, 30))  # Position the "OK" button
 
         grid.addWidget(self.okButton, 2, 1)
-        self.okButton.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.okButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.okButton.setToolTip("Enter")
         self.display_verse_input.returnPressed.connect(self.goto_line)
         self.okButton.clicked.connect(self.goto_line)
 
-        self.buttonQ = QtWidgets.QPushButton("Quit")
+        self.buttonQ = QPushButton("Quit")
         self.buttonQ.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonQ.clicked.connect(exit)
         grid.addWidget(self.buttonQ, 2, 2)
         self.buttonQ.setToolTip("Close Abib")
-        self.buttonQ.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.buttonQ.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         # Create a horizontal layout for Find and Find Next buttons
-        find_buttons_layout = QtWidgets.QHBoxLayout()
+        find_buttons_layout = QHBoxLayout()
 
-        self.buttonf3 = QtWidgets.QPushButton("Find", self)
+        self.buttonf3 = QPushButton("Find", self)
         self.buttonf3.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf3.clicked.connect(self.f3)
-        self.buttonf3.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.buttonf3.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.buttonf3.setToolTip("F3")
         find_buttons_layout.addWidget(self.buttonf3)
 
-        self.buttonf4 = QtWidgets.QPushButton("Find Next")
+        self.buttonf4 = QPushButton("Find Next")
         self.buttonf4.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf4.clicked.connect(self.f4)
-        self.buttonf4.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.buttonf4.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.buttonf4.setToolTip("F4")
         find_buttons_layout.addWidget(self.buttonf4)
 
         # Add the horizontal layout to the grid at row 3, column 0
         grid.addLayout(find_buttons_layout, 3, 0)
 
-        self.buttonf5 = QtWidgets.QPushButton("Back")
+        self.buttonf5 = QPushButton("Back")
         self.buttonf5.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf5.clicked.connect(self.f5)
         grid.addWidget(self.buttonf5, 3, 1)
         self.buttonf5.setToolTip("F5")
-        self.buttonf5.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.buttonf5.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        self.buttonf6 = QtWidgets.QPushButton("Forward")
+        self.buttonf6 = QPushButton("Forward")
         self.buttonf6.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf6.clicked.connect(self.f6)
         grid.addWidget(self.buttonf6, 3, 2)
         self.buttonf6.setToolTip("F6")
-        self.buttonf6.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.buttonf6.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         # Create a horizontal layout for Book- and Book+ buttons
-        book_buttons_layout = QtWidgets.QHBoxLayout()
+        book_buttons_layout = QHBoxLayout()
 
-        self.buttonf7 = QtWidgets.QPushButton("Book-")
+        self.buttonf7 = QPushButton("Book-")
         self.buttonf7.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf7.clicked.connect(self.earlier_book)
-        self.buttonf7.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.buttonf7.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.buttonf7.setToolTip("F7")
         book_buttons_layout.addWidget(self.buttonf7)
 
-        self.buttonf8 = QtWidgets.QPushButton("Book+")
+        self.buttonf8 = QPushButton("Book+")
         self.buttonf8.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf8.clicked.connect(self.later_book)
-        self.buttonf8.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.buttonf8.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.buttonf8.setToolTip("F8")
         book_buttons_layout.addWidget(self.buttonf8)
 
         # Add the horizontal layout to the grid at row 4, column 0
         grid.addLayout(book_buttons_layout, 4, 0)
 
-        self.buttonf10 = QtWidgets.QPushButton("Chapter-")
+        self.buttonf10 = QPushButton("Chapter-")
         self.buttonf10.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf10.clicked.connect(self.earlier_chapter)
         grid.addWidget(self.buttonf10, 4, 1)
         self.buttonf10.setToolTip("F10")
-        self.buttonf10.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.buttonf10.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        self.buttonf11 = QtWidgets.QPushButton("Chapter+")
+        self.buttonf11 = QPushButton("Chapter+")
         self.buttonf11.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf11.clicked.connect(self.later_chapter)
         grid.addWidget(self.buttonf11, 4, 2)
         self.buttonf11.setToolTip("F11")
-        self.buttonf11.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.buttonf11.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         # Create a horizontal layout for Fullscreen and Devotional buttons
-        full_buttons_layout = QtWidgets.QHBoxLayout()
+        full_buttons_layout = QHBoxLayout()
 
-        self.buttonf9 = QtWidgets.QPushButton("Fullscreen")
+        self.buttonf9 = QPushButton("Fullscreen")
         self.buttonf9.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf9.clicked.connect(self.f9)
         full_buttons_layout.addWidget(self.buttonf9)
         self.buttonf9.setToolTip("F9")
-        self.buttonf9.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.buttonf9.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        self.buttonf12 = QtWidgets.QPushButton("Devotional")
+        self.buttonf12 = QPushButton("Devotional")
         self.buttonf12.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf12.clicked.connect(self.f12)
         full_buttons_layout.addWidget(self.buttonf12)
         self.buttonf12.setToolTip("F12")
-        self.buttonf12.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.buttonf12.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         # Add the horizontal layout to the grid at row 5, column 0
         grid.addLayout(full_buttons_layout, 5, 0)
 
-        self.buttonf13 = QtWidgets.QPushButton("")
+        self.buttonf13 = QPushButton("")
         self.buttonf13.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf13.clicked.connect(commentary)
         grid.addWidget(self.buttonf13, 5, 1)
         self.buttonf13.setToolTip("Ctrl + Shift + C")
-        self.buttonf13.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.buttonf13.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        self.buttonf14 = QtWidgets.QPushButton("")
+        self.buttonf14 = QPushButton("Pilgrim's Progress")
         self.buttonf14.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf14.clicked.connect(feature)
         grid.addWidget(self.buttonf14, 5, 2)
         self.buttonf14.setToolTip("Ctrl + Shift + ?")
-        self.buttonf14.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.buttonf14.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        container: QWidget = QtWidgets.QWidget()
+        container: QWidget = QWidget()
         container.setLayout(grid)
         self.setCentralWidget(container)
         self.display_verse_input.setFocus()
 
-        self.statusBar = QtWidgets.QStatusBar()
+        self.statusBar = QStatusBar()
         self.setStatusBar(self.statusBar)
 
-        file_toolbar = QtWidgets.QToolBar("File")
-        file_toolbar.setIconSize(QtCore.QSize(14, 14))
+        file_toolbar = QToolBar("File")
+        file_toolbar.setIconSize(QSize(14, 14))
         self.addToolBar(file_toolbar)
         file_menu = self.menuBar().addMenu("&File")
 
         # Create a Path object for the file path.
         icon1_path = Path('images') / 'blue-folder-open-document.png'
-        # Use str() to convert Path object to string for QtGui.QIcon.
-        open_file_action = QtGui.QAction(QtGui.QIcon(str(icon1_path)), "Open file...", self)
+        # Use str() to convert Path object to string for QIcon.
+        open_file_action = QAction(QIcon(str(icon1_path)), "Open file...", self)
         open_file_action.setStatusTip("Open file")
         open_file_action.triggered.connect(self.file_open)
         file_menu.addAction(open_file_action)
         file_toolbar.addAction(open_file_action)
 
         icon2_path = Path('images') / 'printer.png'
-        print_action = QtGui.QAction(QtGui.QIcon(str(icon2_path)), "Print...", self)
+        print_action = QAction(QIcon(str(icon2_path)), "Print...", self)
         print_action.setStatusTip("Print current page")
         print_action.triggered.connect(self.file_print)
         file_menu.addAction(print_action)
         file_toolbar.addAction(print_action)
 
         icon3_path = Path('images') / 'exit.png'
-        exit_action = QtGui.QAction(QtGui.QIcon(str(icon3_path)), "Exit", self)
+        exit_action = QAction(QIcon(str(icon3_path)), "Exit", self)
         exit_action.setStatusTip("Exit the program")
         exit_action.triggered.connect(exit)
         file_menu.addAction(exit_action)
 
-        edit_toolbar = QtWidgets.QToolBar("Edit")
-        edit_toolbar.setIconSize(QtCore.QSize(14, 14))
+        edit_toolbar = QToolBar("Edit")
+        edit_toolbar.setIconSize(QSize(14, 14))
         self.addToolBar(edit_toolbar)
         edit_menu = self.menuBar().addMenu("&Edit")
 
         icon4_path = Path('images') / 'document-copy.png'
-        copy_action = QtGui.QAction(QtGui.QIcon(str(icon4_path)), "Copy", self)
+        copy_action = QAction(QIcon(str(icon4_path)), "Copy", self)
         copy_action.setStatusTip("Copy selected text")
         copy_action.triggered.connect(self.textEditor.copy)
         edit_toolbar.addAction(copy_action)
         edit_menu.addAction(copy_action)
 
         icon5_path = Path('images') / 'selection-input.png'
-        select_action = QtGui.QAction(QtGui.QIcon(str(icon5_path)), "Select all", self)
+        select_action = QAction(QIcon(str(icon5_path)), "Select all", self)
         select_action.setStatusTip("Select all text")
         select_action.triggered.connect(self.textEditor.selectAll)
         edit_menu.addAction(select_action)
 
         help_menu = self.menuBar().addMenu("&Help")
         icon6_path = Path('images') / 'license.png'
-        copyright_action = QtGui.QAction(QtGui.QIcon(str(icon6_path)), "LICENSE", self)
+        copyright_action = QAction(QIcon(str(icon6_path)), "LICENSE", self)
         copyright_action.setStatusTip("License")
         copyright_action.triggered.connect(self.copyright)
         help_menu.addAction(copyright_action)
 
         help_menu.addSeparator()
         icon7_path = Path('images') / 'question.png'
-        help_action = QtGui.QAction(QtGui.QIcon(str(icon7_path)), "Abib Help", self)
+        help_action = QAction(QIcon(str(icon7_path)), "Abib Help", self)
         help_action.setStatusTip("Help file")
         help_action.triggered.connect(self.helper)
         help_menu.addAction(help_action)
 
         help_menu.addSeparator()
         icon8_path = Path('images') / 'details.png'
-        readme_action = QtGui.QAction(QtGui.QIcon(str(icon8_path)), "Readme", self)
+        readme_action = QAction(QIcon(str(icon8_path)), "Readme", self)
         readme_action.setStatusTip("Readme file")
         readme_action.triggered.connect(self.readme)
         help_menu.addAction(readme_action)
 
         help_menu.addSeparator()
         icon9_path = Path('images') / 'about.png'
-        about_action = QtGui.QAction(QtGui.QIcon(str(icon9_path)), "About", self)
+        about_action = QAction(QIcon(str(icon9_path)), "About", self)
         about_action.setStatusTip("About Abib")
         about_action.triggered.connect(self.show_about_dialog)
         help_menu.addAction(about_action)
 
         help_menu.addSeparator()
         icon10_path = Path('images') / 'settings.png'
-        settings_action = QtGui.QAction(QtGui.QIcon(str(icon10_path)), "Settings", self)
+        settings_action = QAction(QIcon(str(icon10_path)), "Settings", self)
         settings_action.setStatusTip("Settings")
         settings_action.triggered.connect(self.open_settings_dialog)
         help_menu.addAction(settings_action)
 
         self.secondary_window = SecondaryWindow("Text to display", self.geometry())
-        self.secondary_window.text_display = QtWidgets.QPlainTextEdit()
+        self.secondary_window.text_display = QPlainTextEdit()
 
         # Apply theme from settings during initialisation.
         self.set_theme(self.settings)
@@ -1080,8 +1090,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def eventFilter(self, source, event):
         """Custom event filter to handle key events on QLineEdit."""
 
-        if source == self.display_verse_input and event.type() == QtCore.QEvent.KeyPress:
-            if event.key() == QtCore.Qt.Key_Up:  # Handle Up Arrow
+        if source == self.display_verse_input and event.type() == QEvent.KeyPress:
+            if event.key() == Qt.Key_Up:  # Handle Up Arrow
                 if self.command_history and self.history_index > 0:
                     self.history_index -= 1
                     self.display_verse_input.setText(self.command_history[self.history_index])
@@ -1090,7 +1100,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.display_verse_input.setText(self.command_history[self.history_index])
                 return True
 
-            elif event.key() == QtCore.Qt.Key_Down:  # Handle Down Arrow
+            elif event.key() == Qt.Key_Down:  # Handle Down Arrow
                 if self.command_history and self.history_index < len(self.command_history) - 1:
                     self.history_index += 1
                     self.display_verse_input.setText(self.command_history[self.history_index])
@@ -1099,7 +1109,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.display_verse_input.clear()  # Clear input when navigating below last command
                 return True
 
-            elif event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:  # Handle Enter
+            elif event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:  # Handle Enter
                 current_text = self.display_verse_input.text().strip()
                 if current_text:
                     self.command_history.append(current_text)  # Add current text to history
@@ -1209,7 +1219,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def toggle_fullscreen(self) -> None:
         """Fullscreen."""
 
-        if self.windowState() & QtCore.Qt.WindowState.WindowFullScreen:
+        if self.windowState() & Qt.WindowState.WindowFullScreen:
             self.showNormal()
         else:
             self.showFullScreen()
@@ -1730,14 +1740,14 @@ class MainWindow(QtWidgets.QMainWindow):
         """Display engine."""
 
         # print('move_to_line')
-        self.textEditor.setLineWrapMode(QtWidgets.QPlainTextEdit.LineWrapMode.NoWrap)
+        self.textEditor.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
         self.on_text_changed(ln)
         ln = make_offset(ln)
-        linecursor = QtGui.QTextCursor(
+        linecursor = QTextCursor(
             self.textEditor.document().findBlockByLineNumber(ln))
-        self.textEditor.moveCursor(QtGui.QTextCursor.MoveOperation.End)
+        self.textEditor.moveCursor(QTextCursor.MoveOperation.End)
         self.textEditor.setTextCursor(linecursor)
-        self.textEditor.setLineWrapMode(QtWidgets.QPlainTextEdit.LineWrapMode.WidgetWidth)
+        self.textEditor.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)
         if self.dlg is not None:
             if self.dlg.checks[0] == 3 or self.dlg.checks[0] == 4:
                 w.key = w.store
@@ -1746,9 +1756,9 @@ class MainWindow(QtWidgets.QMainWindow):
         """Highlighting."""
 
         # print('on_text_changed')
-        fmt = QtGui.QTextCharFormat()
-        fmt.setBackground(QtGui.QColor(linehighlightcolor))
-        fmt.setForeground(QtGui.QColor(linetextcolor))
+        fmt = QTextCharFormat()
+        fmt.setBackground(QColor(linehighlightcolor))
+        fmt.setForeground(QColor(linetextcolor))
 
         w.hiLita.clear = True
         w.hiLita.clear_highlight()
@@ -1777,20 +1787,20 @@ class MainWindow(QtWidgets.QMainWindow):
         if current_position in starts_with_italics:  # Verses that start with italics.
             w.hiLita.keyinc = 1
 
-        self.textEditor.setLineWrapMode(QtWidgets.QPlainTextEdit.LineWrapMode.NoWrap)
-        fmt = QtGui.QTextCharFormat()
-        fmt.setBackground(QtGui.QColor(linehighlightcolor))
-        fmt.setForeground(QtGui.QColor(linetextcolor))
+        self.textEditor.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
+        fmt = QTextCharFormat()
+        fmt.setBackground(QColor(linehighlightcolor))
+        fmt.setForeground(QColor(linetextcolor))
         w.hiLita.clear = True
         w.hiLita.clear_highlight()
         w.hiLita.setFormat(w.hiLita.position, w.hiLita.length, fmt)
         w.hiLita.highlight_line(ln, fmt)
         ln = make_offset(ln)
-        linecursor = QtGui.QTextCursor(
+        linecursor = QTextCursor(
             self.textEditor.document().findBlockByLineNumber(ln))
-        self.textEditor.moveCursor(QtGui.QTextCursor.MoveOperation.End)
+        self.textEditor.moveCursor(QTextCursor.MoveOperation.End)
         self.textEditor.setTextCursor(linecursor)
-        self.textEditor.setLineWrapMode(QtWidgets.QPlainTextEdit.LineWrapMode.WidgetWidth)
+        self.textEditor.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)
         self.ref_to_statusbar(current_position)
 
     def ref_to_statusbar(self, current_position: int) -> None:
@@ -1829,7 +1839,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 current_position = sh.LAST_VERSE_IN_BIBLE
             self.display_verse(current_position)
 
-    def goto_book(self, _index: int) -> None:
+    def  goto_book(self, _index: int) -> None:
         """Move display to line requested by comboBox_1."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
@@ -2116,7 +2126,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def get_line_number(self):
         """Find the line number of the verse at the top of the screen."""
 
-        self.textEditor.moveCursor(QtGui.QTextCursor.MoveOperation.StartOfLine)
+        self.textEditor.moveCursor(QTextCursor.MoveOperation.StartOfLine)
         linenumber: int = self.textEditor.textCursor().blockNumber()
         if linenumber in Amap:
             current_position: int = Amap.index(linenumber)
@@ -2136,38 +2146,38 @@ class MainWindow(QtWidgets.QMainWindow):
 
         return current_position
 
-    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+    def mousePressEvent(self, event: QMouseEvent) -> None:
         """Mouse trapping routine."""
 
-        if event.buttons() == QtCore.Qt.MouseButton.LeftButton:
+        if event.buttons() == Qt.MouseButton.LeftButton:
             current_position: int = self.get_line_number()
             self.ref_to_statusbar(current_position)
-        elif event.buttons() == QtCore.Qt.MouseButton.RightButton:
+        elif event.buttons() == Qt.MouseButton.RightButton:
             pass
-        elif event.buttons() == QtCore.Qt.MouseButton.MiddleButton and w.no_f3_yet == 1:
+        elif event.buttons() == Qt.MouseButton.MiddleButton and w.no_f3_yet == 1:
             self.f4()
-        elif event.buttons() == QtCore.Qt.MouseButton.MiddleButton and w.no_f3_yet == 0:
+        elif event.buttons() == Qt.MouseButton.MiddleButton and w.no_f3_yet == 0:
             current_position = self.get_line_number()
             self.ref_to_statusbar(current_position)
 
-    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         """Key trapping routine."""
 
         qtcore_keys_dict = {
-            QtCore.Qt.Key.Key_F2: self.f2,
-            QtCore.Qt.Key.Key_F3: self.f3,
-            QtCore.Qt.Key.Key_F4: self.f4,
-            QtCore.Qt.Key.Key_F5: self.f5,
-            QtCore.Qt.Key.Key_F6: self.f6,
-            QtCore.Qt.Key.Key_F7: self.earlier_book,
-            QtCore.Qt.Key.Key_F8: self.later_book,
-            QtCore.Qt.Key.Key_F9: self.f9,
-            QtCore.Qt.Key.Key_F10: self.earlier_chapter,
-            QtCore.Qt.Key.Key_F11: self.later_chapter,
-            QtCore.Qt.Key.Key_C: self.C,
-            QtCore.Qt.Key.Key_Question: self.question,
-            QtCore.Qt.Key.Key_F12: self.f12,
-            QtCore.Qt.Key.Key_Q: exit}
+            Qt.Key.Key_F2: self.f2,
+            Qt.Key.Key_F3: self.f3,
+            Qt.Key.Key_F4: self.f4,
+            Qt.Key.Key_F5: self.f5,
+            Qt.Key.Key_F6: self.f6,
+            Qt.Key.Key_F7: self.earlier_book,
+            Qt.Key.Key_F8: self.later_book,
+            Qt.Key.Key_F9: self.f9,
+            Qt.Key.Key_F10: self.earlier_chapter,
+            Qt.Key.Key_F11: self.later_chapter,
+            Qt.Key.Key_C: self.C,
+            Qt.Key.Key_Question: self.question,
+            Qt.Key.Key_F12: self.f12,
+            Qt.Key.Key_Q: exit}
 
         if event.key():
             try:
@@ -2369,9 +2379,9 @@ class MainWindow(QtWidgets.QMainWindow):
     def dialog_critical(self, exception_text: str) -> None:
         """Error message dialog."""
 
-        dlg: QMessageBox = QtWidgets.QMessageBox(self)
+        dlg: QMessageBox = QMessageBox(self)
         dlg.setText(exception_text)
-        dlg.setIcon(QtWidgets.QMessageBox.Icon.Critical)
+        dlg.setIcon(QMessageBox.Icon.Critical)
         dlg.show()
 
     def file_open(self, path1: str) -> None:
@@ -2381,7 +2391,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if path1:
             pass
         else:
-            path1, _ = QtWidgets.QFileDialog.getOpenFileName(
+            path1, _ = QFileDialog.getOpenFileName(
                 self, "Open file", "",
                 "Text documents (*.txt);All files (*.*)")
             # print(path1, ' Opened')
@@ -2414,7 +2424,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def file_print(self) -> None:
         """File print routine."""
 
-        dlg: QPrintDialog = QtPrintSupport.QPrintDialog()
+        dlg: QPrintDialog = QPrintDialog()
         if dlg.exec_():
             self.textEditor.print_(dlg.printer())
 
@@ -2572,7 +2582,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 class SecondaryWindow(QDialog):
 
-    def __init__(self, text: str, parent_geometry: QtCore.QRect = None):
+    def __init__(self, text: str, parent_geometry: QRect = None):
         """
         Initialize the secondary window to display text.
         :param text: The text to display in the window.
@@ -2586,7 +2596,7 @@ class SecondaryWindow(QDialog):
 
         # Set default geometry if 'parent_geometry' is None
         if parent_geometry is None:
-            parent_geometry = QtCore.QRect(100, 100, 640, 480)  # Default example fallback
+            parent_geometry = QRect(100, 100, 640, 480)  # Default example fallback
 
         # Window setup
         self.setWindowTitle("C H Spurgeon's Morning and Evening Readings")
@@ -2600,21 +2610,21 @@ class SecondaryWindow(QDialog):
         self.text = text
 
         # Text display
-        self.text_display = QtWidgets.QPlainTextEdit()
+        self.text_display = QPlainTextEdit()
         self.text_display.setPlainText(text)
         self.text_display.setReadOnly(True)  # Make it read-only
 
         # Apply the font from the main window
         self.fontsize = 10
-        font: QFont = QtGui.QFont("Cascadia Mono", self.fontsize, QtGui.QFont.Weight.Medium)
+        font: QFont = QFont("Cascadia Mono", self.fontsize, QFont.Weight.Medium)
         self.text_display.setFont(font)
 
         # Layout
-        layout = QtWidgets.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.addWidget(self.text_display)
 
         # Create a container for buttons
-        button_layout = QtWidgets.QHBoxLayout()
+        button_layout = QHBoxLayout()
 
         # Add a spacer to push buttons to the right
         spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -2675,15 +2685,15 @@ class SecondaryWindow(QDialog):
                     """)
 
 
-class SettingsDialog(QtWidgets.QDialog):
+class SettingsDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Settings")
-        self.layout = QtWidgets.QVBoxLayout(self)
+        self.layout = QVBoxLayout(self)
 
         # Create splash checkbox
-        self.splash_checkbox = QtWidgets.QCheckBox("Show Splash Screen")
+        self.splash_checkbox = QCheckBox("Show Splash Screen")
         self.layout.addWidget(self.splash_checkbox)
 
         # Create theme combobox
@@ -2728,7 +2738,7 @@ class SettingsDialog(QtWidgets.QDialog):
         self.reject()  # Close the dialog, marking it as 'rejected'
 
 
-class AboutWindow(QtWidgets.QMainWindow):
+class AboutWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle(f"Abib {CURRENT_VERSION}")
@@ -2738,7 +2748,7 @@ class AboutWindow(QtWidgets.QMainWindow):
         self.about_window = None
 
         # Create a QLabel widget
-        self.label = QtWidgets.QLabel(self)
+        self.label = QLabel(self)
 
         # Load About.txt content
         self.content = self.about()
@@ -2747,10 +2757,10 @@ class AboutWindow(QtWidgets.QMainWindow):
         self.label.setText(self.content)
 
         # Center align content
-        self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.fontsize = 14
-        fixedfont: QFont = QtGui.QFont("Cascadia Mono", self.fontsize, QtGui.QFont.Weight.Bold)
+        fixedfont: QFont = QFont("Cascadia Mono", self.fontsize, QFont.Weight.Bold)
         self.label.setFont(fixedfont)
 
         # Set the QLabel as the central widget
@@ -2781,7 +2791,7 @@ class AboutWindow(QtWidgets.QMainWindow):
         return self.content
 
 
-class SyntaxHighlighter(QtGui.QSyntaxHighlighter):
+class SyntaxHighlighter(QSyntaxHighlighter):
     """Syntax highlighter."""
 
     def __init__(self, parent) -> None:
@@ -2799,7 +2809,7 @@ class SyntaxHighlighter(QtGui.QSyntaxHighlighter):
         """Highlight lines."""
 
         if isinstance(line_num, int) and \
-                (line_num >= 0) and (isinstance(fmt, QtGui.QTextCharFormat)):
+                (line_num >= 0) and (isinstance(fmt, QTextCharFormat)):
             self._highlight_lines[line_num] = fmt
             block = self.document().findBlockByLineNumber(line_num)
             self.rehighlightBlock(block)
@@ -2823,7 +2833,7 @@ class SyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.fmt = self._highlight_lines.get(blockNumber)
         if self.fmt is not None:
             # noinspection PyTypeChecker
-            self.position = w.y + self.lineinc
+            self.position = w.y +  self.lineinc
             if w.dlg is not None:
                 if w.dlg.checks[2] != 6:
                     self.length = len(w.key) + self.keyinc
@@ -2835,7 +2845,124 @@ class SyntaxHighlighter(QtGui.QSyntaxHighlighter):
             # print(f'Block {blockNumber} {KJV[blockNumber]}')
 
 
-class FindDialog(QtWidgets.QDialog):
+class TextDocumentWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Text Document Viewer")
+        self.resize(800, 600)
+
+        # Load Bible data from the JSON file
+        bible_data = fcs.load_json_dict("bible_data.json")
+
+        # Bible data to use for scripture lookups
+        self.bible_data = bible_data
+
+        # Main layout and text editor
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        self.layout = QVBoxLayout(self.central_widget)
+
+        self.text_edit = QTextEdit()
+        self.text_edit.setFont(QFont("Arial", 12))
+        self.text_edit.setReadOnly(False)  # Make it editable if necessary
+        self.layout.addWidget(self.text_edit)
+
+        # Connect text changes to highlighting function
+        self.text_edit.textChanged.connect(self.highlight_references)
+
+    def load_document(self, file_path1):
+        """Load a text document into the QTextEdit."""
+        with open(file_path1, 'r', encoding='utf-8') as f1:
+            content = f1.read()
+        self.text_edit.setPlainText(content)
+        self.highlight_references()
+
+    def highlight_references(self):
+        """Highlight scripture references in the text."""
+        text = self.text_edit.toPlainText()
+
+        # Find all scripture references using a regex pattern
+        references = self.find_scripture_references(text)
+
+        # Highlight references
+        cursor = self.text_edit.textCursor()
+        fmt = QTextCharFormat()
+        fmt.setForeground(QColor("blue"))
+        fmt.setFontUnderline(True)
+
+        # Clear previous formatting
+        cursor.select(QTextCursor.SelectionType.Document)
+        no_format = QTextCharFormat()
+        cursor.setCharFormat(no_format)
+
+        # Apply new highlights
+        for match in references:
+            start, length = match['start'], match['length']
+            cursor.setPosition(start)
+            cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor, length)
+            cursor.setCharFormat(fmt)
+
+        # Connect clicking on references to open scripture
+        self.text_edit.cursorPositionChanged.connect(self.handle_click)
+
+    @staticmethod
+    def find_scripture_references(text):
+        """Find scripture references using regex."""
+        references = []
+        # Regex pattern to match "Book Chapter:Verse", e.g., "John 3:16"
+        pattern = r'\b([1-3]?\s?[A-Za-z]+)\s+(\d{1,3}):(\d{1,3})\b'
+        for match in re.finditer(pattern, text):
+            references.append({
+                'text': match.group(0),
+                'book': match.group(1),
+                'chapter': int(match.group(2)),
+                'verse': int(match.group(3)),
+                'start': match.start(),
+                'length': len(match.group(0))
+            })
+        return references
+
+    def handle_click(self):
+        """Detect whether a highlighted reference was clicked and display its text."""
+        cursor = self.text_edit.textCursor()
+        position = cursor.position()
+        text = self.text_edit.toPlainText()
+        references = self.find_scripture_references(text)
+
+        for ref in references:
+            if ref['start'] <= position <= ref['start'] + ref['length']:
+                self.open_scripture_window(ref)
+                break
+
+    def open_scripture_window(self, reference):
+        """Open a new window with the scripture text."""
+        book = reference['book']
+        chapter = reference['chapter']
+        verse = reference['verse']
+
+        # Lookup scripture from Bible data
+        scripture_text = self.lookup_scripture(book, chapter, verse)
+
+        # Create a new window to display the text
+        scripture_window = QMainWindow(self)
+        scripture_window.setWindowTitle(f"{reference['text']}")
+        scripture_window.resize(400, 300)
+
+        text_edit = QTextEdit()
+        text_edit.setPlainText(scripture_text)
+        text_edit.setReadOnly(True)
+
+        scripture_window.setCentralWidget(text_edit)
+        scripture_window.show()
+
+    def lookup_scripture(self, book, chapter, verse):
+        """Retrieve scripture text from Bible data."""
+        # Adjust this method according to your Bible data structure
+        chapter_data = self.bible_data.get(book, {}).get(chapter, {})
+        return chapter_data.get(verse, "Scripture not found.")
+
+
+class FindDialog(QDialog):
     """Find dialog."""
 
     def __init__(self, parent=None) -> None:
@@ -2852,10 +2979,10 @@ class FindDialog(QtWidgets.QDialog):
         self.setGeometry(700, 300, 400, 378)
 
         self.ui.lineEdit_1.setToolTip("press RETURN to find")
-        # self.ui.lineEdit_1.setEchoMode(QtWidgets.QLineEdit.Normal)
+        # self.ui.lineEdit_1.setEchoMode(QLineEdit.Normal)
         self.ui.lineEdit_1.returnPressed.connect(self.getter)
         self.ui.lineEdit_1.setClearButtonEnabled(False)
-        self.ui.lineEdit_1.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
+        self.ui.lineEdit_1.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         self.ui.pushButton_1.clicked.connect(self.ui.lineEdit_1.clear)
 
@@ -2867,24 +2994,24 @@ class FindDialog(QtWidgets.QDialog):
 
         QOk = QDialogButtonBox.StandardButton.Ok
         self.ui.buttonBox.button(QOk).setEnabled(True)
-        self.ui.buttonBox.button(QOk).setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.ui.buttonBox.button(QOk).setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.ui.buttonBox.button(QOk).clicked.connect(self.getter)
         QCancel = QDialogButtonBox.StandardButton.Cancel
         self.ui.buttonBox.button(QCancel).setEnabled(True)
-        self.ui.buttonBox.button(QCancel).setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.ui.buttonBox.button(QCancel).setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.ui.buttonBox.button(QCancel).clicked.connect(w.close_find_window)
 
         self.ui.lineEdit_1.setFocus()
 
-        self.ui.comboBox_1.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
-        self.ui.comboBox_2.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_1.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_2.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_3.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_4.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_5.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_6.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
-        self.ui.checkBox.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.ui.comboBox_1.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.ui.comboBox_2.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.ui.radiobutton_1.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.ui.radiobutton_2.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.ui.radiobutton_3.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.ui.radiobutton_4.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.ui.radiobutton_5.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.ui.radiobutton_6.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.ui.checkBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.ui.lineEdit_1.textChanged.connect(self.ui.lineEdit_1.setFocus)
         self.ui.pushButton_1.hide()
@@ -2966,7 +3093,7 @@ class FindDialog(QtWidgets.QDialog):
 
 if __name__ == '__main__':
 
-    app: QApplication = QtWidgets.QApplication()
+    app: QApplication = QApplication()
     app.setApplicationName("Abib")
 
     # If settings.json exists in "Abib" then do nothing.
@@ -3024,8 +3151,8 @@ if __name__ == '__main__':
     # Initialize date_index (hours relative to today's date)
     # w.date_index: int = 0
 
-    linehighlightcolor: QColor = QtGui.QColor("#0138b7")
-    linetextcolor: QColor = QtGui.QColor("#ffffff")
+    linehighlightcolor: QColor = QColor("#0138b7")
+    linetextcolor: QColor = QColor("#ffffff")
 
     update_abib()
 
