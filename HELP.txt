@@ -2,16 +2,16 @@
 ABIB HELP:
 **********
 
-Abib Bible Reader v412.2
+Abib Bible Reader v412.3
 
 Installing Abib on Windows.
 ---------------------------
 
 First uninstall any previous version of this program.
 
-Get the "Abib_setup_412.2_win.exe" file from the Abib-ops on GitHub.
+Get the "Abib_setup_412.3_win.exe" file from the Abib-ops on GitHub.
 
-Next double click the "Abib_setup_412.2_win.exe" installer and follow
+Next double click the "Abib_setup_412.3_win.exe" installer and follow
 the instructions, mostly click Next a few times, agree to the
 licence, and Abib will install. Please ignore any negative windows that
 claim that Abib is from an unknown author.
@@ -465,11 +465,15 @@ text in the "Find ?:" box.
 Installing Abib on Linux.
 -------------------------
 
-Get the "Abib_linux_412.2.tar.bz2" file from the author.
-If you can get it, then it may be an earlier version because of
-recent changes that work on Windows only.
+Get the "Abib_linux_412.3.tar.bz2" file from the author.
+
+    If you can get it, then it may be an earlier version because of
+    recent changes that work on Windows only, and the direction of
+    the project has moved away from cross-platform to Windows 11.
+    But with some modifications, it could be made to work on Linux.
+
 Move it to your home folder or desired location and navigate there.
-Expand the compressed archive with: tar -jxvf Abib_linux_412.2.tar.bz2
+Expand the compressed archive with: tar -jxvf Abib_linux_412.3.tar.bz2
 
 $ chmod +x Abib will make sure that the executable flag is set.
 
@@ -478,10 +482,13 @@ needs to be in the same folder as all of its dependencies.
 
 Alternatively, if you have the Windows version installed, go to
 C:\Program Files\ and copy the Abib folder onto a USB pen drive.
+
 Copy the Abib folder from the USB drive to your home directory.
 Now run Abib.py the python script within the folder, with:
 
 $ python Abib.py
+
+You can also get the python source from GitHub, user Abib-ops.
 
 # Copyright 2025 Andrew Kingston
 #
