@@ -6,7 +6,7 @@ This file is part of Abib Bible Reader.
 
 Abib is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
+the Free Software Foundation, either version 3 of the License or
 any later version.
 
 Abib is distributed in the hope that it will be useful,
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Abib.  If not, see <https://www.gnu.org/licenses/>.
 
 For linux use:
-Make sure python is up-to-date in your distro
+Make sure python is up to date in your distro
 Copy the Abib folder from the installation media or download to the home folder
 Navigate to the folder where you have put Abib
 do
@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6.8.2.1 and python3.13.2 (64-bit).
 
-07/04/2025
+20/04/2025
 """
 
 CURRENT_VERSION = "412.3"
@@ -62,7 +62,8 @@ CURRENT_VERSION = "412.3"
 import re
 import time
 from os import environ
-from sys import exit, argv
+from sys import exit, argv, setrecursionlimit
+setrecursionlimit(200)
 
 # Suppress pygame welcome message
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
@@ -107,7 +108,7 @@ except ImportError:
     pass
 
 try:
-    # Included in try/except block for Mac/Linux
+    # Included in the try/except block for Mac/Linux
     myappid = f'Abib Bible Reader.{CURRENT_VERSION}'
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except Exception as e:
@@ -318,7 +319,7 @@ def check_count_sort(liszt: list[str], r_list: list) -> None:
 
 
 def prep_statusbar_message(index: int):
-    """Prepare statusbar message."""
+    """Prepare the statusbar message."""
 
     book = sh.Info[index][0]
     chapter = sh.Info[index][1] + 1
@@ -398,7 +399,7 @@ def findf3_ww_any(x1: int, x2: int, numwords: int, _set: dict[str, set], r_list:
 
 
 def make_offset(ln: int) -> int:
-    """Enable highlighting of first verses, while showing titles above."""
+    """Enable highlighting of first verses while showing the titles above."""
 
     # print('make_offset')
     n: str = KJV[ln][0]
@@ -460,7 +461,7 @@ def format_status_message(q1, q2, q3):
 
 
 def sizer(window_height: int, window_width: int) -> tuple[int, int]:
-    """Adjust window size to fit screen."""
+    """Adjust window size to fit the screen."""
 
     if window_height > height:
         window_height = int(height * 0.95)
@@ -481,43 +482,38 @@ def commentary() -> None:
     # print(f"{book_name} Commentary:", calvincom.get_commentary(book_name))
     print('Future feature')
 
-def feature() -> None:
-    """For a future feature key."""
-
-    print('Future feature')
-
-    open_text_document_viewer("Pilgrims-Progress.txt")
-
 def open_text_document_viewer(file_path1):
     """Open the TextDocumentWindow, loading a specified text document."""
     text_window = TextDocumentWindow()
     text_window.load_document(file_path1)
     text_window.show()
 
-def calculate_book_line(book: str, chapter: int, verse: int) -> int:
+def calculate_book_line(book: str, chapter: int, verse: int, current_line_num: int) -> int:
     """
     This function calculates and returns a specific line index from the global variable
-    'sh.Info' based on given book, chapter, and verse parameters.
+    'sh.Info' based on the given book, chapter, and verse parameters.
 
     The book, chapter, and verse values are adjusted to zero-based indexing before computation.
     An error is raised if the values are invalid or out of range for the dataset referenced by
     'sh.Info'.
 
-    :param book: The book identifier provided as a string that is parsed into an integer.
+    :param book: The book identifier is provided as a string parsed into an integer.
     :param chapter: The chapter number. Must be a positive integer.
     :param verse: The verse number. Must be a positive integer.
-    :return: The calculated line index corresponding to the book, chapter, and verse.
+    :param current_line_num: The current line number. Must be a positive integer.
+    :return: The calculated line index corresponding to the book, chapter, and verse or defaults to current_line_num.
     :rtype: int
     :default: If the book, chapter, or verse is invalid or out of range for processing,
-              the line index will be set to zero. i.e. to Genesis chapter 1, verse 1.
+              the line index will be set to current_line_num.
     """
+    rv: int = current_line_num  # default return value.
+
+    # Subtract 1 from the book, chapter, and verse for a zero-based sh.Info index.
+    book_id = int(book) - 1
+    chapter = int(chapter) - 1
+    verse = int(verse) - 1
 
     try:
-        # Subtract 1 from the book, chapter, and verse for zero-based sh.Info index.
-        book_id = int(book) - 1
-        chapter = int(chapter) - 1
-        verse = int(verse) - 1
-
         if book_id < 0 or chapter < 0 or verse < 0:
             message = f"Invalid chapter or verse range."
             w.on_error(message, 750, True)
@@ -526,14 +522,15 @@ def calculate_book_line(book: str, chapter: int, verse: int) -> int:
             return sh.Info.index([0, 0, 0])
 
         # Return the calculated index from sh.Info
-        return sh.Info.index([book_id, chapter, verse])
+        rv = sh.Info.index([book_id, chapter, verse])
+        return rv
 
     except (ValueError, IndexError):
         message = f"Invalid book, chapter, or verse."
         w.on_error(message, 750, True)
         # print(message)
         # Return the default index from sh.Info
-        return sh.Info.index([0, 0, 0])
+        return rv
 
 
 def resolve_reference(bits: list) -> tuple:
@@ -597,7 +594,7 @@ def check_for_updates(parent=None):
     Check for updates, download the latest installer, and install it silently if a new version is available.
     """
     try:
-        # Step 1: Fetch latest release information from GitHub
+        # Step 1: Fetch the latest release information from GitHub
         response = requests.get(GITHUB_API_URL)
         response.raise_for_status()
         data = response.json()
@@ -628,10 +625,13 @@ def check_for_updates(parent=None):
                     return False, "", ""
             elif output >= 0:  # The current version is up to date.
                 return False, "", ""
+            return None
         else:
             QMessageBox.warning(parent, "Error", "Failed to fetch the latest version details.")
+            return None
     except requests.exceptions.RequestException as ere:
         QMessageBox.critical(parent, "Error", f"Failed to check for updates: {str(ere)}")
+        return None
 
 
 # Step 1: Download upgrade installer
@@ -740,6 +740,9 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
 
         # Load saved settings or initialise default ones.
+        # self.feature = None
+        self.text_edit_window = None
+        self.text_edit = None
         self.history_index = None
         self.command_history = None
         self.about_window = None
@@ -773,6 +776,7 @@ class MainWindow(QMainWindow):
         self.textEditor: QPlainTextEdit = QPlainTextEdit()
         # Store a reference to the secondary window to manage its lifecycle
         self.secondary_window = None
+        self.feature = self.feature
 
         #Qt.QTimer.singleShot(0, lambda: self.sme("PM", -1))  # Adjusted to yesterday evening's reading.
 
@@ -824,7 +828,7 @@ class MainWindow(QMainWindow):
         self.textEditor.setReadOnly(True)
 
         self.display_verse_input: QLineEdit = QLineEdit()
-        self.display_verse_input.setToolTip("F2 Enter or OK to search for a verse.")
+        self.display_verse_input.setToolTip("F2, Enter or OK to search for a verse.")
         # self.display_verse_input.returnPressed.connect(self.goto_line)
         self.display_verse_input.setGeometry(QRect(50, 50, 200, 25))  # Reduce the width to 200
         self.display_verse_input.installEventFilter(self)  # Install event filter for custom key handling
@@ -981,7 +985,7 @@ class MainWindow(QMainWindow):
 
         self.buttonf14 = QPushButton("Pilgrim's Progress")
         self.buttonf14.setStyleSheet("QPushButton { text-align: left; }")
-        self.buttonf14.clicked.connect(feature)
+        self.buttonf14.clicked.connect(self.feature)
         grid.addWidget(self.buttonf14, 5, 2)
         self.buttonf14.setToolTip("Ctrl + Shift + ?")
         self.buttonf14.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -1106,7 +1110,7 @@ class MainWindow(QMainWindow):
                     self.display_verse_input.setText(self.command_history[self.history_index])
                 elif self.history_index == len(self.command_history) - 1:
                     self.history_index += 1
-                    self.display_verse_input.clear()  # Clear input when navigating below last command
+                    self.display_verse_input.clear()  # Clear input when navigating below the last command
                 return True
 
             elif event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:  # Handle Enter
@@ -1117,10 +1121,31 @@ class MainWindow(QMainWindow):
                     # print(f"Executed: {current_text}")  # Simulate command execution
                     # print("Return key intercepted in eventFilter")  # Debugging
                     self.goto_line()  # Trigger goto_line manually
-                    self.display_verse_input.clear()  # Clear input field after submission
+                    self.display_verse_input.clear()  # Clear the input field after submission
                 return True
 
         return super().eventFilter(source, event)
+
+    def feature(self) -> None:
+        """For a future feature key."""
+
+        print('Pilgrims-Progress')
+        # Persist the reference to the window
+        self.text_edit_window = TextDocumentWindow()  # Instantiate the window
+        self.text_edit_window.text_display = QTextEdit()
+        self.text_edit_window.text_display.setPlainText("Pilgrims-Progress Content.")
+        self.text_edit_window.show()  # Show the window
+
+    # def feature(self) -> None:
+    #     """For a future feature key."""
+    # 
+    #     print('Pilgrims-Progress')
+    # 
+    #     # self.text_edit = TextDocumentWindow()  # Instantiate the window
+    #     # self.text_edit.text_display = QTextEdit()
+    #     # self.text_edit.show()  # Display the window
+    # 
+    #     open_text_document_viewer("Pilgrims-Progress.txt")
 
     def show_about_dialog(self):
         """Show the About window when Help -> About is clicked."""
@@ -1212,7 +1237,7 @@ class MainWindow(QMainWindow):
             self.dlg.show()
 
     def close_find_window(self) -> None:
-        """Close Find window."""
+        """Close the Find window."""
 
         self.dlg.hide()
 
@@ -1259,7 +1284,7 @@ class MainWindow(QMainWindow):
         return num, _key
 
     def prepare_key_for_find(self) -> None:
-        """Adjust key for searching in Rnew, which has no Unicode italics.
+        """Adjust 'key' for searching in Rnew, which has no Unicode italics.
 
         It also has a different apostrophe and uses æ and Æ.
         """
@@ -1500,7 +1525,7 @@ class MainWindow(QMainWindow):
         # Number of occurrences of the searchitem within the range x1 to x2.
 
     def occurrent(self, x1: int, x2: int):
-        """Count occurrences of item searched for."""
+        """Count occurrences of the item searched for."""
 
         if w.occurrence == 0:
             self.gent = self.gen(w.key, x1, x2)
@@ -1536,7 +1561,7 @@ class MainWindow(QMainWindow):
                 self.statusBar.showMessage("Search completed: no more matches.")
                 return
 
-            # Set status bar message and other UI updates.
+            # Set the status bar message and other UI updates.
             prep_statusbar_message(current_position)
             self.statusBar.showMessage(w.message)
             self.statusBar.repaint()
@@ -1571,7 +1596,7 @@ class MainWindow(QMainWindow):
             self.goto_line_find(current_position)
 
     def gen(self, key: str, x1: int, x2: int):
-        """Return next position of the searched for key."""
+        """Return the next position of the searched for key."""
 
         current_position = -1
         d1 = 0
@@ -1781,7 +1806,7 @@ class MainWindow(QMainWindow):
             pass
 
     def se_display_verse(self, current_position: int) -> None:
-        """Display Bible text in textEditor after back or forward pop."""
+        """Display Bible text in textEditor after a back or forward pop."""
 
         ln: int = Amap[current_position]
         if current_position in starts_with_italics:  # Verses that start with italics.
@@ -1955,7 +1980,7 @@ class MainWindow(QMainWindow):
         roman_book: list = ['i', 'l', 'c', 'd', 'm']
         # So,
         if reference_text.lower() in roman_book:
-            pass  # Here if a single letter that must not be converted to numeric.
+            pass  # Here if it's a single letter that must not be converted to numeric.
         else:
             # Convert Roman numerals to numeric values
             reference_text = fcs.convert_roman_to_integer(reference_text)
@@ -1997,7 +2022,7 @@ class MainWindow(QMainWindow):
             chapter = int(input_chapter) if input_chapter else str(int(chapter + 1))  # Default to current chapter
             verse = int(input_verse) if input_verse else '1'  # Verse stays as-is or '1'
 
-            # Normalize the reference to the standard "book.chapter.verse" format
+            # Normalise the reference to the standard "book.chapter.verse" format
             if book not in sh.onechapterbooks:
                 reference_text = f"{book}.{chapter}.{verse}"
 
@@ -2021,7 +2046,7 @@ class MainWindow(QMainWindow):
         # Use the processed text for further resolving
         current_line = self.get_line_number()
 
-        # Handle numeric-only references (e.g., "34")
+        # Handle numeric-only references (e.g. "34")
         if self.is_integer(reference_text):
             verse = int(reference_text) - 1
             # print(f"2456 verse: {verse}")
@@ -2039,6 +2064,7 @@ class MainWindow(QMainWindow):
         # print(f"2469 Split reference: {bits}")
 
         book_num, chapter, verse = resolve_reference(bits)
+        # print(f"2064 book_num: {book_num} chapter: {chapter} verse: {verse}")
 
         if not book_num:
             self.error_invalid_book()
@@ -2047,7 +2073,7 @@ class MainWindow(QMainWindow):
             return -1
 
         try:
-            position = calculate_book_line(book_num, chapter, verse)
+            position = calculate_book_line(book_num, chapter, verse, current_line)
             if position is not None:
                 return position
         except ValueError:
@@ -2101,7 +2127,7 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def is_integer(value: Any) -> bool:
-        """True if value is an integer."""
+        """True if the value is an integer."""
 
         val: str = str(value)
         if val.startswith('-'):
@@ -2175,7 +2201,7 @@ class MainWindow(QMainWindow):
             Qt.Key.Key_F10: self.earlier_chapter,
             Qt.Key.Key_F11: self.later_chapter,
             Qt.Key.Key_C: self.C,
-            Qt.Key.Key_Question: self.question,
+            Qt.Key.Key_Question: self.feature,
             Qt.Key.Key_F12: self.f12,
             Qt.Key.Key_Q: exit}
 
@@ -2204,7 +2230,7 @@ class MainWindow(QMainWindow):
         self.onFindBtnClicked()
 
     def f4(self) -> None:
-        """Find next key F4."""
+        """Find the next key F4."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         if w.key == ' ' or w.no_f3_yet == 0:
@@ -2249,10 +2275,9 @@ class MainWindow(QMainWindow):
         """Commentary key."""
         commentary()
 
-    @staticmethod
-    def question() -> None:
+    def question(self) -> None:
         """Feature key."""
-        feature()
+        self.feature()
 
     def earlier_book(self) -> None:
         """Move to the earlier book."""
@@ -2355,12 +2380,12 @@ class MainWindow(QMainWindow):
             w.message = ''
 
     def beep(self, current_position: int, lm: float) -> None:
-        """Makes a beep sound, and clears the message."""
+        """Makes a beep sound and clears the message."""
 
-        # Initialize Pygame's mixer
+        # Initialise Pygame's mixer
         mixer.init()
 
-        # Load your sound effect file (e.g., 'sound.wav')
+        # Load your sound effect file (e.g. 'sound.wav')
         beep_sound = mixer.Sound('sound.mp3')
         beep_sound.set_volume(0.5)  # Set volume to 50%
 
@@ -2448,9 +2473,13 @@ class MainWindow(QMainWindow):
         dialog.theme_combobox.setCurrentText(self.settings.get("theme", "Light"))
 
         if dialog.exec():  # If the dialog is accepted (OK button).
+
             # Get settings from the dialog and explicitly set show_splash
-            self.settings["theme"] = dialog.theme_combobox.currentText()  # Ensure the theme is updated
-            self.settings["show_splash"] = dialog.splash_checkbox.isChecked()  # Ensure splash checkbox updates settings
+
+            # Ensure the theme is updated
+            self.settings["theme"] = dialog.theme_combobox.currentText()
+            # Ensure the show_splash setting is updated
+            self.settings["show_splash"] = dialog.splash_checkbox.isChecked()
 
             # DEBUG: Print settings before saving
             # print("Settings before saving:", self.settings)
@@ -2462,7 +2491,7 @@ class MainWindow(QMainWindow):
             self.set_theme(self.settings)
 
     def set_theme(self, the_settings):
-        """Set theme based on the value retrieved from settings."""
+        """Set the theme based on the value retrieved from settings."""
 
         theme_key = 'theme'  # Key in the dictionary pointing to the theme.
         current_theme = the_settings.get(theme_key, 'Light')  # Default to Light mode if not set
@@ -2565,7 +2594,7 @@ class MainWindow(QMainWindow):
     def update_text_display_theme(self) -> None:
         """Update the text display theme based on the current theme 'theme_state'."""
 
-        # Ensure secondary window and its text display exist
+        # Ensure the secondary window and its text display exist
         if self.secondary_window and self.secondary_window.text_display:
             # Apply the theme
             self.secondary_window.apply_theme(theme_state["is_dark_mode"])
@@ -2584,7 +2613,7 @@ class SecondaryWindow(QDialog):
 
     def __init__(self, text: str, parent_geometry: QRect = None):
         """
-        Initialize the secondary window to display text.
+        Initialise the secondary window to display text.
         :param text: The text to display in the window.
         :param parent_geometry: The geometry of the parent (primary) window for positioning.
         """
@@ -2692,7 +2721,7 @@ class SettingsDialog(QDialog):
         self.setWindowTitle("Settings")
         self.layout = QVBoxLayout(self)
 
-        # Create splash checkbox
+        # Create the splash checkbox
         self.splash_checkbox = QCheckBox("Show Splash Screen")
         self.layout.addWidget(self.splash_checkbox)
 
@@ -2701,41 +2730,17 @@ class SettingsDialog(QDialog):
         self.theme_combobox.addItems(["Light", "Dark"])
         self.layout.addWidget(self.theme_combobox)
 
-        # Define the OK and Cancel buttons
-        QOk = QDialogButtonBox.StandardButton.Ok
-        QCancel = QDialogButtonBox.StandardButton.Cancel
+        # Create the button box with correct typing
+        button_types = QDialogButtonBox.StandardButton
+        buttons = button_types.Ok | button_types.Cancel  # type: ignore
+        self.button_box = QDialogButtonBox(buttons)
 
-        # Create the button box
-        self.button_box = QDialogButtonBox(QOk | QCancel)
-        self.button_box.button(QOk).setText("OK")
-        self.button_box.button(QCancel).setText("Cancel")
-
-        # Enable the buttons (already enabled by default, but this is to ensure clarity)
-        self.button_box.button(QOk).setEnabled(True)
-        self.button_box.button(QCancel).setEnabled(True)
-
-        # Explicitly declare the type of the button (`QPushButton`)
-        ok_button: QPushButton = self.button_box.button(QOk)
-        ok_button.clicked.connect(self.on_ok_clicked)
-        cancel_button: QPushButton = self.button_box.button(QCancel)
-        cancel_button.clicked.connect(self.on_cancel_clicked)
+        # Connect the button box signals
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
 
         # Add the button box to the layout
         self.layout.addWidget(self.button_box)
-
-    def on_ok_clicked(self):
-        """
-        Action when OK is clicked.
-        """
-        # QMessageBox.information(self, "sh.Info", "OK button clicked")
-        self.accept()  # Close the dialog, marking it as 'accepted'
-
-    def on_cancel_clicked(self):
-        """
-        Action when Cancel is clicked.
-        """
-        # QMessageBox.warning(self, "Warning", "Cancel button clicked")
-        self.reject()  # Close the dialog, marking it as 'rejected'
 
 
 class AboutWindow(QMainWindow):
@@ -2743,7 +2748,7 @@ class AboutWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle(f"Abib {CURRENT_VERSION}")
 
-        self.resize(480, 810)  # Set initial window size
+        self.resize(480, 810)  # Set the initial window size
         self.content = None
         self.about_window = None
 
@@ -2845,30 +2850,71 @@ class SyntaxHighlighter(QSyntaxHighlighter):
             # print(f'Block {blockNumber} {KJV[blockNumber]}')
 
 
-class TextDocumentWindow(QMainWindow):
+class TextDocumentWindow(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Text Document Viewer")
         self.resize(800, 600)
 
-        # Load Bible data from the JSON file
+        # Load Bible data from a JSON file
         bible_data = fcs.load_json_dict("bible_data.json")
-
-        # Bible data to use for scripture lookups
         self.bible_data = bible_data
 
         # Main layout and text editor
-        self.central_widget = QWidget()
-        self.setCentralWidget(self.central_widget)
-        self.layout = QVBoxLayout(self.central_widget)
+        self.layout = QVBoxLayout()  # Directly set a layout for QDialog
+        self.setLayout(self.layout)
 
         self.text_edit = QTextEdit()
-        self.text_edit.setFont(QFont("Arial", 12))
-        self.text_edit.setReadOnly(False)  # Make it editable if necessary
+        self.text_edit.setFont(QFont("Cascadia Mono", 12))
+        self.text_edit.setReadOnly(True)  # Set to False if you want it editable
         self.layout.addWidget(self.text_edit)
 
-        # Connect text changes to highlighting function
+        # Display all verses of Genesis Chapter 1
+        # genesis_chapter_1 = self.get_chapter_text("Genesis", "1")
+        # self.text_edit.setText(genesis_chapter_1)
+
+        # Display the content of Pilgrim's Progress file
+        self.load_text_file("Pilgrims-Progress.txt")
+
+    # Connect text changes to a highlighting function
         self.text_edit.textChanged.connect(self.highlight_references)
+
+    def load_text_file(self, file_path1):
+        """
+        Load the content of the specified file and display it in the text editor.
+        Update the window title with the name of the loaded file.
+        """
+        try:
+            with open(file_path1, 'r', encoding='utf-8') as file1:
+                content = file1.read()
+                self.text_edit.setText(content)
+
+                # Extract the file name from the file path
+                file_name = file_path1.removesuffix(".txt")
+
+                # Update the window title to match the file name
+                self.setWindowTitle(file_name)
+        except FileNotFoundError:
+            self.text_edit.setText("Error: File not found.")
+        except Exception as e1:
+            self.text_edit.setText(f"Error loading file: {e1}")
+
+    def get_chapter_text(self, book, chapter):
+        """
+        Retrieve the text of a specific chapter from the Bible data.
+        :param book: The name of the book (e.g. 'Genesis')
+        :param chapter: The chapter number as a string (e.g. '1')
+        :return: A concatenated string of all verses in the chapter.
+        """
+        if (
+                book in self.bible_data
+                and chapter in self.bible_data[book]
+        ):
+            # Combine all verses in the chapter
+            verses = self.bible_data[book][chapter]
+            return "\n".join(f"{verse_num}: {text}" for verse_num, text in verses.items())
+        else:
+            return f"Chapter {chapter} of {book} not found."
 
     def load_document(self, file_path1):
         """Load a text document into the QTextEdit."""
@@ -2948,11 +2994,11 @@ class TextDocumentWindow(QMainWindow):
         scripture_window.setWindowTitle(f"{reference['text']}")
         scripture_window.resize(400, 300)
 
-        text_edit = QTextEdit()
-        text_edit.setPlainText(scripture_text)
-        text_edit.setReadOnly(True)
+        text_edit1 = QTextEdit()
+        text_edit1.setPlainText(scripture_text)
+        text_edit1.setReadOnly(True)
 
-        scripture_window.setCentralWidget(text_edit)
+        scripture_window.setCentralWidget(text_edit1)
         scripture_window.show()
 
     def lookup_scripture(self, book, chapter, verse):
@@ -3053,7 +3099,7 @@ class FindDialog(QDialog):
         return i, j
 
     def check_changed(self) -> None:
-        """Ensure that checkBox is correct."""
+        """Ensure that the checkBox is correct."""
 
         if self.ui.checkBox.isChecked():
             self.checks[1] = 1
@@ -3096,7 +3142,7 @@ if __name__ == '__main__':
     app: QApplication = QApplication()
     app.setApplicationName("Abib")
 
-    # If settings.json exists in "Abib" then do nothing.
+    # If settings.json exists in "Abib", then do nothing.
     user_settings_file = sh.user_settings_dir / "settings.json"  # User's settings.json.
     if user_settings_file.exists():
         pass
@@ -3148,7 +3194,7 @@ if __name__ == '__main__':
     # w.hiLita.clear = True
     w.gent = None
     w.otherFileFlag = True
-    # Initialize date_index (hours relative to today's date)
+    # Initialise date_index (hours relative to today's date)
     # w.date_index: int = 0
 
     linehighlightcolor: QColor = QColor("#0138b7")
@@ -3267,7 +3313,7 @@ if __name__ == '__main__':
     # Plugin socket.
     # Paste the plugin here for probably single use and run Abib to run
     # it.  This enables utility plugins to use the functions of Abib.
-    # Beware of over-writing previous files accidentally.
+    # Beware of overwriting previous files accidentally.
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # *** PLACE YOUR PLUGIN HERE (between the two lines) ***
 

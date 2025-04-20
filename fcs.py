@@ -148,20 +148,21 @@ def is_float_re(string_: str) -> bool:
     return m is not None  # More Pythonic than `return True if m else False`
 
 def any_of_the_words_lookup(_key: str, _set: dict[str, set]) -> tuple[int, str]:
-    """Takes _key and splits it into separate words in liszt,
+    """Takes '_key' and splits it into separate words in 'liszt',
     which are then looked up in the set of Bible words.
-    Returns modified _key and count in num of occurrences of the words in it."""
+
+    Returns modified '_key' and 'count' in 'number_of_occurrences' of the words in it."""
 
     liszt: list[str] = _key.split(' ')
 
-    # use a set to eliminate duplicates, keep words found in _set
+    # Uses a set to eliminate duplicates, keep words found in '_set'
     unique_words = set(word for word in liszt if word in _set)
 
     _key = ' '.join(unique_words)  # join the set into a string
 
-    num = len(unique_words)  # count the number of unique words
+    number_of_occurrences = len(unique_words)  # count the number of unique words
 
-    return num, _key
+    return number_of_occurrences, _key
 
 def squeeze(char: str, s: str) -> str:
     """Remove duplicate characters. For example, '.....' is replaced with '.'."""
@@ -173,7 +174,7 @@ def squeeze(char: str, s: str) -> str:
 
 def remove_junk(text: str) -> str:
     """Remove junk characters from text.  Junk characters are any non-alphabetic characters,
-       numbers or any of the normal punctuation characters.
+       numbers, or any of the normal punctuation characters.
        Plus, the text must start and finish with a letter or a number."""
 
     # print(f"remove_junk: {text}")
@@ -219,10 +220,10 @@ def convert_roman_to_integer(reference_text):
     pattern = re.compile(r'\b(IV|IX|XL|XC|L|C|D|M|I|V|X)+\b', re.IGNORECASE)
 
     def replacer(matched):
-        # Extract the matched Roman numeral
+        # Extract matched Roman numeral
         roman_numeral = matched.group(0)
         try:
-            # Use `fromRoman` to convert Roman numeral to an integer
+            # Use `fromRoman` to convert 'roman_numeral' to an integer
             return str(fromRoman(roman_numeral))
         except InvalidRomanNumeralError:
             # In case of invalid Roman numerals, return the original text
@@ -510,7 +511,7 @@ def attach_book_name(reference_text: str, current_line: int) -> str:
 
 def get_date_file(date_index: int = 0, adjustment: int = 0) -> tuple:
     """
-    Process date into desired format without using global variables.
+    Process the date into the desired format without using global variables.
 
     Args:
         date_index (int): Hours relative to today's date.
@@ -546,7 +547,7 @@ def get_date_file(date_index: int = 0, adjustment: int = 0) -> tuple:
     return formatted_date, morn_or_even, date_index
 
 def setup_Abib_settings(abib_directory: Path) -> None:
-    """ Setup Abib user folder containing the 'settings.json' file."""
+    """ Set up the Abib user folder containing the 'settings.json' file."""
 
     # Create the Abib directory if it doesn't exist
     abib_directory.mkdir(parents=True, exist_ok=True)

@@ -14,7 +14,7 @@ from platform import system
 current_directory: Path = Path.cwd()
 str_cwd: str = str(current_directory)
 # settings_file: Path = current_directory / 'settings.json'
-user_settings_dir: Path = Path.cwd()  # Initialize with the current working directory as a placeholder value.
+user_settings_dir: Path = Path.cwd()  # Initialise with the current working directory as a placeholder value.
 
 if system() == 'Windows':
     user_settings_dir = Path(getenv("APPDATA")) / "Abib"  # User's directory.
@@ -156,7 +156,7 @@ def readfile(input_path: str, input_filename: str, file_length: int) -> list:
                     i_line = x5.splitlines()[0]  # Keep as string if conversion fails
                 output_listname.append(i_line)
     except FileNotFoundError:
-        exit(err)  # Exit program with an error message
+        exit(err)  # Exit the program with an error message
 
     return output_listname
 
