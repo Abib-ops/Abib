@@ -4,24 +4,28 @@ ABIB HELP:
 
 Abib Bible Reader v412.3
 
+This Bible, I hope, can serve as a useful tool when viewing a Christian sermon
+on your PC, allowing you to read the scriptures while viewing the message.
+
 Installing Abib on Windows.
 ---------------------------
 
-First uninstall any previous version of this program.
+First, uninstall any previous version of this program.
 
-Get the "Abib_setup_412.3_win.exe" file from the Abib-ops on GitHub.
+Get the "Abib_setup_412.3_win.exe" file from 'Abib-ops' on GitHub,
+find it in the 'Abib' repository.
 
-Next double click the "Abib_setup_412.3_win.exe" installer and follow
+Next, double-click the "Abib_setup_412.3_win.exe" installer and follow
 the instructions, mostly click Next a few times, agree to the
 licence, and Abib will install. Please ignore any negative windows that
 claim that Abib is from an unknown author.
 
 Please read the README file at C:\Program Files\Abib\README.txt for the
-latest information, and for some things that are not mentioned in this
+latest information and for some things that are not mentioned in this
 Help.txt.
 
 I hope that this Bible program will encourage you to read from God's
-Word, daily; it has me, so please, delight in His word.
+Word daily; it has me, so please, delight in His word.
 Remember, “The Bible will keep you from sin, or sin will keep you from
 the Bible.” ― Dwight L. Moody.
 (More at www.goodreads.com/author/quotes/5083573.Dwight_L_Moody)
@@ -33,7 +37,7 @@ do the things that ye would." Galatians 5:17 KJV.
 Introduction.
 -------------
 
-The name Abib, is the old name for the Jewish month Nisan.  Please
+The name Abib is the old name for the Jewish month Nisan.  Please
 watch the short video from YouTube, "Abib (Nisan) - The Jewish Month of
 Abib (Nisan)" - www.youtube.com/watch?v=v0nR2XgaG4k.
 
@@ -46,33 +50,39 @@ with the new one on your system.  You can keep the older versions if
 you like as they are totally independent.
 
 Before you read any more of this help-file, you could open another
-instance of Abib, and drag it to one side, so you can try out the
-instructions, as you read.  If you have opened this Help file with
+instance of Abib and drag it to one side, so you can try out the
+instructions as you read.  If you have opened this Help file with
 Abib, you can get back to the Bible by clicking 'Back'.
 
-Note: The display can be zoomed in and out by holding down Ctrl and
-using the mouse wheel if you need larger print, or if you prefer
-smaller print.
+Note: The display font size can be zoomed up and down by holding down
+Ctrl and using the mouse wheel.
 
 Abib is a simple Bible reading tool with the ability to rapidly find
 passages of scripture. This can be useful while listening to a sermon,
-especially online Zoom, YouTube and Facebook sessions, and the small
+especially online Zoom, YouTube, and Facebook sessions, and the small
 adjustable Abib window takes up little room.
 
 Navigating to passages of scripture.
 ------------------------------------
 
 There are three dropdown boxes for entry of passage references,
-which makes Abib easier to use, and really does not need any
-explanation.
+which makes Abib easy to use and are self-explanatory.
 
 What follows is a description of the older and faster,
 keyboard method which you can learn if you are so disposed.
 Otherwise, skip to "Moving backwards and forwards in the Bible".
 
-To go to a particular book, enter the first one, two or three
-letters of the book's name in the passage text box, which is to the
-right of the three passage dropdown boxes.
+First, find the text entry box in the row below the three dropdown
+boxes.  It has an "F2, Enter or OK to search for a verse." tooltip.
+The 'F2' key is used to move the focus to the text entry box if it
+has been moved away.
+
+Enter a 'p' into the box and press Enter.  Psalm 1 will be displayed.
+Enter an 'r' into the box and press Enter.  Ruth Chapter 1 shows.
+Enter a 'j' into the box and press Enter.  Joshua Chapter 1 shows.
+
+There are 66 books in the Bible and only 26 letters in the alphabet,
+so we can use more than one letter to identify a book title.
 
 Examples "na" when entered will take you to Nahum 1:1
 
@@ -96,67 +106,18 @@ unnecessary, but if you put one in, it will still work.
 There is a quick way to move within the same chapter by just entering
 the verse number.
 
-So, let's say you have entered P119.1, and you want to move to verse 22
+So, let's say you have entered P119.5, and you want to move to verse 22
 in the same Psalm, just enter 22 and press return.
 
 There is another similar feature if you are in a particular book,
-and you enter a floating-point number like, 3.16  It must be a full
+and you enter a floating-point number like, '3.16' It must be a full
 stop here, a colon won't do; then wherever you are in the book you
 will move to chapter 3 verse 16, if there is a 3:16 in the book -
-otherwise it will beep.
+otherwise it will beep and give an error message in the status bar.
+Try it out. Type 'jo' and this will take you to 'The Gospel of John'.
+Next '3.16' and you will be at John 3:16.  Note: '3.16' and 3.16 have
+the same effect, but the quotes are not needed.
 
-
-Moving backwards and forwards in the Bible.
--------------------------------------------
-
-1) One book at a time.
-
-   Use F7 or the 'Book-' pushbutton to go to the previous book.
-
-   Use F8 or the 'Book+' pushbutton to go forward to the next book.
-
-2) One chapter at a time.
-
-   Use F10 or the 'Chapter-' pushbutton to go to the previous chapter.
-
-   Use F11 or the 'Chapter+' pushbutton to go forward to the next one.
-
-3) By using the scrollbar.
-
-4) The up and down arrow keys.
-
-5) Page Up and Page Down keys.
-
-6) The mouse scroll wheel.
-
-7) You can move to the start of the Bible by pressing the Home key or
-   to the end by pressing the End key, there are some blank lines at
-   the end.
-
-Make sure that the display window has the focus, except when entering a
-passage reference in the text entry box.
-
-After you move in the Bible to a new place, by any of the last five
-methods, the cursor will remain where it was, and you will notice that
-the passage reference in the status-bar did not change.
-
-If you click on a verse and after that click on the window frame
-somewhere, the status-bar will display the Bible reference.
-
-This behaviour is uncorrected because it helps to facilitate the
-ability to copy from the text.
-
-8) Using the text entry box to enter an abbreviated passage reference.
-For best results, it will be necessary to learn the abbreviations for
-the names of the books. You can look them up in the index just before
-Genesis.  Type 'g' for Genesis and then scroll back.  Many of the 
-abbreviations can be shortened to one letter, generally the book that
-appears first in the Bible will have the single letter shortcut i.e.,
-'j' is for Joshua not Judges, Job, Jeremiah, Joel, Jonah, John, James
-or Jude.  In fact, as there are so many books beginning with 'j' it is
-essential to learn them, but it is not difficult.
-
-Here is an improved copy of the index from the Bible.
 
 THE NAMES AND ORDER OF ALL THE
 BOOKS OF THE OLD AND NEW TESTAMENT,
@@ -240,6 +201,64 @@ Jude              jd      1         jude
 Revelation        re      22        rev
 
 
+Moving backwards and forwards in the Bible.
+-------------------------------------------
+
+1) One book at a time.
+
+   Use F7 or the 'Book-' pushbutton to go to the previous book.
+
+   Use F8 or the 'Book+' pushbutton to go forward to the next book.
+
+2) One chapter at a time.
+
+   Use F10 or the 'Chapter-' pushbutton to go to the previous chapter.
+
+   Use F11 or the 'Chapter+' pushbutton to go forward to the next one.
+
+3) The mouse scroll wheel.
+
+Methods 4 to 7 require the focus to be moved to the Bible text window
+by clicking on it.
+
+4) The up and down arrow keys.
+
+5) Page Up and Page Down keys.
+
+6) By using the scrollbar.
+
+7) You can move to the start of the Bible by pressing the Home key or
+   to the end by pressing the End key, there are some blank lines at
+   the end.
+
+After you move in the Bible to a new place, by any of the last five
+methods, the cursor will remain where it was, and you will notice that
+the passage reference in the status-bar did not change.
+
+After selecting a verse, clicking the window frame or status bar will
+display that verse's reference in the status bar.
+
+This behaviour is uncorrected because it helps to facilitate the
+ability to copy from the text.
+
+8) Using the text entry box to enter an abbreviated passage reference.
+For best results, it will be necessary to learn the abbreviations for
+the names of the books. You can look them up in the index just before
+Genesis.  Type 'g' for Genesis and then scroll back.  Many of the
+abbreviations can be shortened to one letter; generally the book that
+appears first in the Bible will have the single letter shortcut i.e.
+'j' is for Joshua, not Judges, Job, Jeremiah, Joel, Jonah, John, James,
+or Jude.  In fact, as there are so many books beginning with 'j', it is
+best to learn their abbreviations.
+
+Here is an improved copy of the index from the Bible.  Notice that
+Roman numerals can be used in the abbreviations and that there are
+many others that are not listed here.  You may find that the abbreviation
+you try does not work, and you are taken to the wrong book at first,
+there is a learning curve, but it is well worth climbing the 'Hill of
+Difficulty'.
+
+
 The Find or Search feature.
 ---------------------------
 
@@ -247,7 +266,7 @@ Abib also has an easy-to-use basic search facility.
 
 To search for a word or phrase in the Bible.
 
-First click on the 'Find' button or press the F3 keyboard key.
+First, click on the 'Find' button or press the F3 keyboard key.
 
 The Find Options window will open.
 
@@ -326,7 +345,7 @@ should find all of those references, with either spelling, Note: No
 spaces in the middle or the search will include them.
 
 Of course, you could just have put "Melchi.ede." and that will also
-work, and find all 11 cases.
+work and find all 11 cases.
 
 Just one more thing: If you surround your search word with "\b" at
 either end, these are word boundaries, and you will get whole word
@@ -352,9 +371,8 @@ Cascadia Code.
 Function Keys
 -------------
 
-Apart from the GUI controls which are self-evident and should need no
-explanation, there are other keyboard controls that I will explain
-here.
+Apart from the GUI controls, which are self-evident and should need no
+explanation, there are other keyboard controls that I will explain.
 
 Some of these function key controls were originally derived from and
 are compatible with their usage on the Online Bible project by Larry
@@ -406,8 +424,8 @@ plus in capitals
 
 Æneas & Ænon.
 
-These characters can be entered into the Find what: text entry box
-either by copy and paste or they can be replaced by the two characters
+These characters can be entered into the Find ?: text entry box
+either by copy and paste, or they can be replaced by the two characters
 'a' and 'e' or 'A' and 'E'.
 
 Alternatively, they can be entered with special key sequences.
@@ -450,15 +468,15 @@ and Abib will interpret and convert it.
 
 Another character that is different is the apostrophe.  Most modern
 keyboards and text use the ['] character.  This was not used in the
-PCE KJV Bible but the character used is the [’].
+PCE KJV Bible, but the character used is the [’].
 
 So, to enter it in Windows:
 
 Hold down Alt type 0146 on the numeric keypad giving '’'.
 
-But don’t worry Abib also takes care of this, so you can use the ['].
+Abib also takes care of this, so you can use the ['].
 
-Abib also takes care of the italic words, so you can enter plain
+It also takes care of the italic words, so you can enter plain
 text in the "Find ?:" box.
 
 
@@ -529,7 +547,7 @@ Cambridge Edition (PCE).
 By Matthew Verschuur, copyright 26 January 2007 (Australia Day).
 
 Since the year 2000 I have contacted various King James Bible people
-and organisations in regard to seeking out a certain text of King
+and organisations in regard to seeking out a certain text of the King
 James Bible, namely, a standard text of the Cambridge Edition.
 
 For a long time the question, “Which King James Bible edition is
@@ -541,19 +559,24 @@ there has been a rising awareness in recent years concerning
 “counterfeit” King James Bibles with “subtle changes”.
 
 The Scripture promises that the Word of God should be preserved by God,
-and this undergirding a sound King James Bible only doctrine. It is
+and this is undergirding a sound King James Bible only doctrine. It is
 consistent with this that there should be one correct received standard
-edition of the King James Bible, where every word is pure
-(Proverbs 30:5) to the jot and tittle (Matthew 5:18).
+edition of the King James Bible, where every word is pure (Proverbs 30:5)
+to the jot and tittle (Matthew 5:18).
+
+(Editors note: While you may not agree with the KJV only doctrine but
+believe that the Bible is preserved in the original Hebrew, Greek, and
+Aramaic texts, the PCE is used in Abib, and I am not able to judge if
+there is a better option.)
 
 I do not agree with the claim that there is no standard or that any
-edition of the King James Bible is sufficient. On the other side, those
+edition of the King James Bible is enough. On the other side, those
 who have said, “The 1769 Edition”, or “The Cambridge Edition” have been
 too vague. Plainly, there have been changes in all editions since 1769,
 and there are variations in Cambridge Bibles, such as the Victorian
-text (circa 1830 to circa 1900), the Pure Cambridge Edition (circa 1900
-to circa 1970s) which is also printed in many Collins editions, and the
-Concord text (circa 1970s to circa 2000). Besides these, other
+text (circa 1830 to circa 1900). The Pure Cambridge Edition (circa 1900
+to circa the 1970s) which is also printed in many Collins editions, and
+the Concord text (circa the 1970s to circa 2000). Besides these, other
 modernised variations appear in Bibles printed in America under the
 name of Cambridge.
 
@@ -564,29 +587,29 @@ Paragraph Bible by David Norton, 2005, which makes many unacceptable
 changes departing from all traditional King James Bibles.
 
 Those who are knowledgeable about the King James Bible agree that the
-Cambridge Edition is superior to the Oxford, Nelson or any other
+Cambridge Edition is superior to the Oxford, Nelson, or any other
 edition. However, the particular variations in Cambridge Editions have
 not been closely studied until now. That is, identifying which
 Cambridge Edition is correct.
 
 Sadly, many King James Bibles that follow the Cambridge Edition as are
 now being produced or provided by King James Bible people are not the
-correct Cambridge Edition, but follow the Concord Cambridge Edition,
+correct Cambridge Edition. These follow the Concord Cambridge Edition,
 which has departed from the pure text. The correct text has, among
 other things, “rasor”, “inquire”, “counseller”, “expences”, “ancle”,
-“Geba” at Ezra 2:26 and lower case “spirit” at Acts 11:12, 28 and
-1John 5:8.
+“Geba” at Ezra 2:26, and lower case “spirit” at Acts 11:12, 28 and
+1 John 5:8.
 
 There has been a great ignorance of the fact that a final purification
 took place in the history of the King James Bible. Those who have
 studied the history of the King James Bible in depth would have been
 aware of the major purification(s) that took place, such as the
-editions of 1629, 1638 and 1769. There was also a proper purification
+editions of 1629, 1638, and 1769. There was also a proper purification
 that took place circa 1900, which has resulted in the final text of the
 King James Bible, which is in all ways the definitive presentation of
-the King James Bible, and should not be altered.
+the King James Bible and should not be altered.
 
-I have now launched a website which details this area, and have also
+I have now launched a website which details this area and have also
 freely made available an exactly correct electronic text of the King
 James Bible (without typographical or edition variation errors). The
 Pure Cambridge Edition is the historically received true text of the
@@ -598,7 +621,7 @@ HOW TO KNOW THE
 
 PURE CAMBRIDGE EDITION OF THE KING JAMES BIBLE
 
-It is important to have the correct, perfect and final text of the King
+It is important to have the correct, perfect, and final text of the King
 James Bible, since there are correctors (e.g. publishers) who have
 changed some aspects of King James Bible texts. The final form of the
 King James Bible is the Pure Cambridge Edition (circa 1900), which

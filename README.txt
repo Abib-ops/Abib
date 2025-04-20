@@ -9,7 +9,10 @@ Changelog.
 -----------
 Abib v412.3
 Refactored PySide6 imports.
-New feature.
+The Pilgrim's Progress by John Bunyan window included.
+The issue has been addressed so that when an invalid 'chapter.verse' input
+(specified as a decimal) is entered, the system no longer defaults to
+Genesis 1:1. Instead, it now remains on the current line.
 
 Abib v412.2
 New module fcs.py created to reduce the size of Abib.py.
@@ -34,12 +37,12 @@ Abib v410.3
 Bug fixed regarding installation.
 About.txt changed for cross-platform compatibility.
 
-Argument issue resolved: In that for the present, there must be either no arguments
-or three arguments. The arguments are, in order, font-size, width and height.
-They are by default 14 480 810 respectively, therefore, to have them to change
-just the font-size, you would need to have, for example, 12 480 810 or 11 480 810.
-You must have all three arguments present, I believe, and this will allow for a large
-choice of window sizes to suit different screens.
+The current implementation requires that you either provide no arguments or exactly
+three arguments, in the following order: font-size, width, and height. By default,
+these values are set to 14, 480, and 810 respectively. Consequently, if you only wish
+to modify the font size, you must supply all three parameters—for example, "11 480 810"
+or "12 480 810." This approach ensures that a wide range of window sizes can be
+accommodated to suit different screens.
 
 The place to put the arguments:
 Right-click on the Windows Abib icon;
@@ -50,10 +53,6 @@ It is after this that you can put your three arguments e.g.
 
 Apply Changes:
 - Click Apply and OK to save the changes.
-
-This Bible serves as a valuable companion when viewing a Christian sermon on your PC,
-conveniently positioned to one side of the screen, allowing you to read the scriptures
-alongside the minister's message.
 
 Abib v410.2
 Bug fixed concerning incorrect behaviour when entering integer values for verses,
@@ -68,7 +67,7 @@ First version on GitHub.
 
 Abib409
 Two extra arguments allowed for window width and window height.
-Possible two more for window origin, which could be calculated depending on screen size.
+Possibly two more for window origin, which could be calculated depending on screen size.
 Re-write of the F2 display reference section, because the code was hard to understand,
 now it is easier to follow and more intuitive to use.
 Introduced a sound for errors using the pygame library.
@@ -78,7 +77,7 @@ Changed the ABOUT.txt window to have THE HOLY BIBLE title page.
 Much, much more debugging and testing, e.g. miv.ii resolves to Micah 4:2 not 1004.2
 
 Abib408
-Devotional, Commentary and a blank button added.
+Devotional, Commentary, and a blank button are added.
 The Commentary button is for future use.
 Buttons rearranged to accommodate new ones.
 Spurgeon's Morning and Evening Readings added.
@@ -87,7 +86,7 @@ Some improvements to the F2 reference entry section
 
 Abib407
 Text highlighting colour bug fixed.
-'OK' button for Display verse text entry added.
+'OK' button for Display verse text entry is added.
 
 Abib406
 Minor background improvements.
@@ -102,11 +101,11 @@ F2 Display text entry box retains focus now.
 Linux and Windows versions identical code.
 
 Abib404
-F2 passage entry invalid text before and after valid entry now ignored.
+F2 passage entry invalid text before and after valid entry is now ignored.
 
 Abib403
 Splash screen added.
-Ensured focus is in F2 display verse text entry box.
+Ensured focus is in the F2 display verse text entry box.
 
 Abib402
 Some refactoring and bugfixes.
@@ -115,7 +114,7 @@ Abib401
 Removed acoustic guitar intro.
 Removed all error sounds.
 Error messages remain in the status bar a little longer.
-Adjustment to Copyright, README and HELP windows size.
+Adjustment to Copyright, README, and HELP windows size.
 
 Abib400
 Much refactoring of the code.
@@ -134,18 +133,18 @@ Assured centering of the Abib window on startup.
 Also, of the other windows except Find.
 
 Abib397
-Changes to About, Help, Readme and Copyright windows.
+Changes to About, Help, Readme, and Copyright windows.
 
 Abib396
 Python 3.13.1 updated version
 No real changes
 
 Abib395
-Changes to 'About' window.
+Changes to the 'About' window.
 Corrected problems with 'Any of the words' search.
 
 Abib394
-Is a test version of 393 to check that installation is correct.
+Is a test version of 393 to check that the installation is correct.
 
 Abib393
 Blank lines placed at the end of Revelation to prevent a glitch.
@@ -157,7 +156,7 @@ Except:
 Bugfix correcting Back and especially Forward not working properly.
 
 Another bug fixed regarding the following verses; Joshua 15:1,Job 7:1, Psalm 70:1,
-Psalm 92:1, Hosea 8:1 and Romans 8:1.
+Psalm 92:1, Hosea 8:1, and Romans 8:1.
 These are all first verses of chapters that start with italicised first words.
 These were displayed incorrectly when viewed using Back and Forward.
 
@@ -171,10 +170,10 @@ Some changes to the Help Menu.
 Abib3.8.5b
 Found and corrected a bug preventing, whole word, searches containing
 the single letter words "A", "I" and "O".
-Fixed bug preventing, whole word, searches for words containing a
-hyphen, e.g., Beth-lehem.  Will now work with or without the hyphen.
+Fixed the bug preventing a "Whole word" search for words containing a
+hyphen, e.g. Beth-lehem.  Will now work with or without the hyphen.
 However, Raw searches still require the hyphen.
-Some adjustments made to improve search highlighting.
+Some adjustments were made to improve search highlighting.
 
 Abib3.8.4b
 Change of sound for 'Not found'
@@ -196,7 +195,7 @@ This is how to use it (The default font size is 14):
 
        Here width and height can be adjusted from default values.
 
-    3) Click on Apply, then Continue for Administrative permission and
+    3) Click on Apply, then Continue for Administrative permission, and
        then OK.
 
     4) If you have another shortcut in the taskbar, you will need to
@@ -206,7 +205,7 @@ This is how to use it (The default font size is 14):
 Abib3.8.3b
 Changed the default font to a smaller size, can be adjusted with Ctrl &
 mouse wheel.
-Removed bug affecting highlighting after Find and using passage
+Fixed the bug affecting highlighting after 'Find' and using passage
 dropdown boxes.
 
 Abib3.8.2b
@@ -268,7 +267,7 @@ Click on Font settings.
 
 Under Add fonts, there is a Drag and Drop to install box.
 
-So, using File Explorer navigate to C:\Program Files\Abib\font and
+In 'File Explorer' navigate to 'C:\Program Files\Abib\font' and
 there you will see the file CascadiaMono.ttf. Drag the CascadiaMono
 file, from inside the font folder, into the box, and it will install
 automatically.
@@ -290,7 +289,7 @@ standard .ttf at:
 https://github.com/microsoft/cascadia-code/releases
 
 The file above can be installed on almost every modern operating
-system, including Ubuntu. For the latter, just double-click on the .ttf
+system, including Ubuntu. For the latter, double-click on the .ttf
 file to open the font manager/preview tool. Hit ‘install’ to install it
 on your system.  Thanks to Hal.
 
@@ -312,7 +311,7 @@ ls /media/andrew
 The usb mount point is variable. /media is deprecated in many modern OS. 
 Run mount to find the mount point.
 
-See or find the right entry in the output, and now save it in the source
+See or find the right entry in the output and now save it in the source
 directory variable (s_dir):
 
 s_dir=/media/andrew/my_usb_drive
@@ -322,7 +321,7 @@ enter this command:
 
 cp -r "$s_dir"/Abib /home/andrew/.Abib
 
-Possibly /home/username/.Abib where username is replaced with your
+Possibly /home/username/.Abib where 'username' is replaced with your
 linux username.
 
 Now you can run it by navigating to that folder and doing:
