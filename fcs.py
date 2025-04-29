@@ -3,7 +3,7 @@
 ################################################################################
 ## Module containing various functions.
 ##
-## Used by Abib.py version 412.3 =>
+## Used by Abib.py version 412.4 =>
 ################################################################################
 
 from json import load, loads, JSONDecodeError, dump
@@ -240,7 +240,9 @@ def load_settings_from_file(filename="settings.json"):
     # Default settings
     default_settings = {
         "theme": "Light",
-        "show_splash": False
+        "show_splash": False,
+        "last_read_position": 0,
+        "_comment": "This is a comment. It will be ignored by the program..."
     }
 
     # Check if the file exists
@@ -264,6 +266,7 @@ def load_settings_from_file(filename="settings.json"):
                 settings_here.setdefault(key, value)
 
             # print("Loaded settings:", settings_here)
+            # print("Settings file:", settings_here)
             return settings_here
 
     except JSONDecodeError:
@@ -284,10 +287,12 @@ def save_settings_to_file(the_settings, filename="settings.json"):
     """
     Save the given settings dictionary to a JSON file.
     """
+    # print(f"Saving settings to file: {filename}")
+    # print(f"Settings: {the_settings}")
     try:
         # Explicitly annotate the file object
         with open(filename, "w") as file1:
-            # noinspection PyTypeChecker
+            # Dump the settings dictionary to JSON format
             dump(the_settings, file1, indent=4)  # Save as JSON with pretty formatting
     except IOError as e1:
         print(f"Error saving settings to file: {e1}")
@@ -555,7 +560,7 @@ def setup_Abib_settings(abib_directory: Path) -> None:
 
     # Path to the source settings.json file to copy (e.g. in your current working directory)
     source_settings_file = Path("settings.json")
-    # print(f"source_settings_file: {source_settings_file}")
+    print(f"source_settings_file: {source_settings_file}")
 
     # Copy the file to the target user directory ... But don't if it exists!
     if source_settings_file.is_file():

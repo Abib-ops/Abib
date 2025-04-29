@@ -52,12 +52,12 @@ Additional Bible-based resources are available at www.spurgeongems.org.
 
 Abib Bible Reader אביב
 
-Using PySide6.8.2.1 and python3.13.2 (64-bit).
+Using PySide6.8.2.1 and python3.13.3 (64-bit).
 
-20/04/2025
+21/04/2025
 """
 
-CURRENT_VERSION = "412.3"
+CURRENT_VERSION = "412.4"
 
 import re
 import time
@@ -88,7 +88,7 @@ from PySide6.QtWidgets import (QMainWindow, QTextEdit, QVBoxLayout, QWidget, QDi
 from PySide6.QtGui import (QAction, QMouseEvent, QKeyEvent, QSyntaxHighlighter, QIcon, QColor, QFont, QPixmap,
                            QTextCursor, QTextCharFormat)
 
-from PySide6.QtCore import Qt, QRect, QSize, QEvent
+from PySide6.QtCore import Qt, QRect, QSize, QEvent, QTimer
 
 from PySide6.QtPrintSupport import QPrintDialog
 
@@ -482,11 +482,11 @@ def commentary() -> None:
     # print(f"{book_name} Commentary:", calvincom.get_commentary(book_name))
     print('Future feature')
 
-def open_text_document_viewer(file_path1):
-    """Open the TextDocumentWindow, loading a specified text document."""
-    text_window = TextDocumentWindow()
-    text_window.load_document(file_path1)
-    text_window.show()
+# def open_text_document_viewer(file_path1):
+#     """Open the TextDocumentWindow, loading a specified text document."""
+#     text_window = TextDocumentWindow()
+#     text_window.load_document(file_path1)
+#     text_window.show()
 
 def calculate_book_line(book: str, chapter: int, verse: int, current_line_num: int) -> int:
     """
@@ -1135,6 +1135,7 @@ class MainWindow(QMainWindow):
         self.text_edit_window.text_display = QTextEdit()
         self.text_edit_window.text_display.setPlainText("Pilgrims-Progress Content.")
         self.text_edit_window.show()  # Show the window
+        self.text_edit_window.highlight_references()
 
     # def feature(self) -> None:
     #     """For a future feature key."""
@@ -2482,7 +2483,7 @@ class MainWindow(QMainWindow):
             self.settings["show_splash"] = dialog.splash_checkbox.isChecked()
 
             # DEBUG: Print settings before saving
-            # print("Settings before saving:", self.settings)
+            print("Settings before saving:", self.settings)
 
             # Save settings to the file
             fcs.save_settings_to_file(self.settings, user_settings_path)
@@ -2505,6 +2506,7 @@ class MainWindow(QMainWindow):
             self.settings[theme_key] = 'Light'  # Ensure settings reflect this theme
 
         # Save updated theme settings
+        # print(f"Saving updated theme settings: {the_settings}")
         fcs.save_settings_to_file(self.settings, user_settings_path)
 
     def display_secondary_window(self, offset: int = 0) -> None:
@@ -2869,25 +2871,115 @@ class TextDocumentWindow(QDialog):
         self.text_edit.setReadOnly(True)  # Set to False if you want it editable
         self.layout.addWidget(self.text_edit)
 
-        # Display all verses of Genesis Chapter 1
-        # genesis_chapter_1 = self.get_chapter_text("Genesis", "1")
-        # self.text_edit.setText(genesis_chapter_1)
+        # Connect the vertical scroll bar signal to continuously save the scroll position
+        self.text_edit.verticalScrollBar().valueChanged.connect(self.save_scroll_position)
 
         # Display the content of Pilgrim's Progress file
         self.load_text_file("Pilgrims-Progress.txt")
+        # self.text_edit.setMouseTracking(True)
+        self.text_edit.viewport().setMouseTracking(True)
+        self.text_edit.viewport().installEventFilter(self)
+        self.text_edit.viewport().setAttribute(Qt.WidgetAttribute.WA_Hover, True)
 
-    # Connect text changes to a highlighting function
-        self.text_edit.textChanged.connect(self.highlight_references)
+        # self.text_edit.installEventFilter(self)
+        self.popup_window = None  # Track if a popup exists
+
+        self.canonical_books = {
+            1: "Genesis",
+            2: "Exodus",
+            3: "Leviticus",
+            4: "Numbers",
+            5: "Deuteronomy",
+            6: "Joshua",
+            7: "Judges",
+            8: "Ruth",
+            9: "1 Samuel",
+            10: "2 Samuel",
+            11: "1 Kings",
+            12: "2 Kings",
+            13: "1 Chronicles",
+            14: "2 Chronicles",
+            15: "Ezra",
+            16: "Nehemiah",
+            17: "Esther",
+            18: "Job",
+            19: "Psalms",
+            20: "Proverbs",
+            21: "Ecclesiastes",
+            22: "Song of Solomon",
+            23: "Isaiah",
+            24: "Jeremiah",
+            25: "Lamentations",
+            26: "Ezekiel",
+            27: "Daniel",
+            28: "Hosea",
+            29: "Joel",
+            30: "Amos",
+            31: "Obadiah",
+            32: "Jonah",
+            33: "Micah",
+            34: "Nahum",
+            35: "Habakkuk",
+            36: "Zephaniah",
+            37: "Haggai",
+            38: "Zechariah",
+            39: "Malachi",
+            40: "Matthew",
+            41: "Mark",
+            42: "Luke",
+            43: "John",
+            44: "Acts",
+            45: "Romans",
+            46: "1 Corinthians",
+            47: "2 Corinthians",
+            48: "Galatians",
+            49: "Ephesians",
+            50: "Philippians",
+            51: "Colossians",
+            52: "1 Thessalonians",
+            53: "2 Thessalonians",
+            54: "1 Timothy",
+            55: "2 Timothy",
+            56: "Titus",
+            57: "Philemon",
+            58: "Hebrews",
+            59: "James",
+            60: "1 Peter",
+            61: "2 Peter",
+            62: "1 John",
+            63: "2 John",
+            64: "3 John",
+            65: "Jude",
+            66: "Revelation",
+        }
+
+    @staticmethod
+    def save_scroll_position(value):
+        """
+        Save the current vertical scroll position immediately.
+        """
+
+        # Update the settings dictionary with the new value
+        w.settings["last_read_position"] = value
+
+        # Persist the settings to disk.
+        fcs.save_settings_to_file(w.settings, user_settings_file)
 
     def load_text_file(self, file_path1):
         """
         Load the content of the specified file and display it in the text editor.
         Update the window title with the name of the loaded file.
         """
+        # Get last read position; default to 0 if not set
+        last_position: int = w.settings.get("last_read_position", 0)
+        # print(f"Loaded last_read_position = {last_position}")
         try:
             with open(file_path1, 'r', encoding='utf-8') as file1:
                 content = file1.read()
                 self.text_edit.setText(content)
+
+                # Set the scrollbar to the last read position after loading the text
+                QTimer.singleShot(100, lambda: self.text_edit.verticalScrollBar().setValue(last_position))
 
                 # Extract the file name from the file path
                 file_name = file_path1.removesuffix(".txt")
@@ -2916,19 +3008,12 @@ class TextDocumentWindow(QDialog):
         else:
             return f"Chapter {chapter} of {book} not found."
 
-    def load_document(self, file_path1):
-        """Load a text document into the QTextEdit."""
-        with open(file_path1, 'r', encoding='utf-8') as f1:
-            content = f1.read()
-        self.text_edit.setPlainText(content)
-        self.highlight_references()
-
     def highlight_references(self):
         """Highlight scripture references in the text."""
         text = self.text_edit.toPlainText()
 
         # Find all scripture references using a regex pattern
-        references = self.find_scripture_references(text)
+        references: list = self.find_scripture_references(text)
 
         # Highlight references
         cursor = self.text_edit.textCursor()
@@ -2948,40 +3033,147 @@ class TextDocumentWindow(QDialog):
             cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor, length)
             cursor.setCharFormat(fmt)
 
-        # Connect clicking on references to open scripture
-        self.text_edit.cursorPositionChanged.connect(self.handle_click)
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.Leave:
+            # The mouse has left the viewport, so close the popup
+            self.closePopup()
+        elif event.type() == QEvent.Type.MouseMove:
+            # Optionally, verify if the MouseMove event is outside your highlight area
+            # and close the popup if needed
+            cursor = self.text_edit.cursorForPosition(event.position().toPoint())
+            position = cursor.position()
+            text = self.text_edit.toPlainText()
+            references = self.find_scripture_references(text)
+            over_reference = any(ref['start'] <= position <= ref['start'] + ref['length'] for ref in references)
+            if not over_reference:
+                self.closePopup()
+            else:
+                self.handle_hover(event)
+        return super().eventFilter(obj, event)
 
-    @staticmethod
-    def find_scripture_references(text):
-        """Find scripture references using regex."""
-        references = []
-        # Regex pattern to match "Book Chapter:Verse", e.g., "John 3:16"
-        pattern = r'\b([1-3]?\s?[A-Za-z]+)\s+(\d{1,3}):(\d{1,3})\b'
-        for match in re.finditer(pattern, text):
-            references.append({
-                'text': match.group(0),
-                'book': match.group(1),
-                'chapter': int(match.group(2)),
-                'verse': int(match.group(3)),
-                'start': match.start(),
-                'length': len(match.group(0))
-            })
-        return references
+    def handle_hover(self, event):
+        """Detect whether a highlighted reference was hovered and display its text."""
 
-    def handle_click(self):
-        """Detect whether a highlighted reference was clicked and display its text."""
-        cursor = self.text_edit.textCursor()
+        # Get the mouse position from the event and map to the cursor position
+        cursor = self.text_edit.cursorForPosition(event.position().toPoint())
         position = cursor.position()
         text = self.text_edit.toPlainText()
         references = self.find_scripture_references(text)
 
+        # Avoid creating a new popup if one is already visible
+        if hasattr(self, 'popup_window') and self.popup_window and self.popup_window.isVisible():
+            return
+
         for ref in references:
+            # print(f"Found reference: {ref}")
             if ref['start'] <= position <= ref['start'] + ref['length']:
-                self.open_scripture_window(ref)
+                self.popup_window = QWidget()  # Create the popup window
+                # Optionally, use a window flag for a tooltip-like appearance
+                self.popup_window.setWindowFlags(Qt.WindowType.ToolTip)
+                self.popup_window.setStyleSheet("border: 2px solid blue;")
+
+                scripture, canonical = self.get_scripture(ref)
+
+                scripture: str = scripture + '\n' + canonical + ' KJV'
+
+                # Create a label with the scripture text, using the same font as text_edit.
+                label = QLabel(scripture, self.popup_window)
+                label.setFont(self.text_edit.font())
+                label.setWordWrap(True)
+                # Set the width of the label to match text_edit's width.
+                label.setFixedWidth(self.text_edit.width())
+                label.adjustSize()
+
+                # Use a layout with minimal margins to hold the label.
+                layout = QVBoxLayout(self.popup_window)
+                layout.setContentsMargins(0, 0, 0, 0)
+                layout.addWidget(label)
+                self.popup_window.adjustSize()
+
+                # Get the position of the hovered reference.
+                cursor = self.text_edit.cursorForPosition(event.position().toPoint())
+                cursor_rect = self.text_edit.cursorRect(cursor)
+                global_cursor_top_left = self.text_edit.mapToGlobal(cursor_rect.topLeft())
+
+                # Get the global position of the text_edit's right border.
+                text_edit_top_right = self.text_edit.mapToGlobal(self.text_edit.rect().topRight())
+
+                # Position the popup: x coordinate from text_edit's right border,
+                # y coordinate from the hovered reference.
+                popup_x = text_edit_top_right.x()
+                popup_y = global_cursor_top_left.y()
+                self.popup_window.move(popup_x, popup_y)
+
+                self.popup_window.show()
                 break
 
-    def open_scripture_window(self, reference):
-        """Open a new window with the scripture text."""
+    def closePopup(self):
+        if self.popup_window and self.popup_window.isVisible():
+            self.popup_window.close()
+            self.popup_window = None
+
+    @staticmethod
+    def find_scripture_references(text):
+        """Find scripture references using regex, supporting multiple verses."""
+        references = []
+        # The regex now supports references that include multiple verses. It matches either:
+        #  1. References to colon: e.g. "1 Thess. 4:16,17" or "John 3:16-18"
+        #  2. References without colon (for one-chapter books): e.g. "Jude 15,16" or "Obad 3-5"
+        #
+        # Explanation:
+        #   - (?:^|\s) ensures that the reference starts at the beginning of the string or
+        #     after whitespace.
+        #   - ([1-3]?\s?[A-Za-z]+)(?:\.)? captures the book name (possibly preceded by a
+        #     numeral) and allows an optional dot.
+        #   - \s+ consumes whitespace.
+        #   - The alternation handles either:
+        #       a) (\d{1,3}):(...) => a chapter from 1 to 3 digits, a colon, and then the verses.
+        #       b) (\d{1,3}(?:(?:,\s*\d{1,3})+|(?:-\d{1,3}))?) => for one-chapter books,
+        #          the verse(s) (optionally multiple verses with commas or a hyphen range).
+        #
+        # For the verse part after the colon, the pattern \d{1,3}(?:(?:,\s*\d{1,3})+|(?:-\d{1,3}))?
+        # matches a single verse number and allows for either comma-separated additional numbers
+        # (one or more) or a hyphen range.
+        #
+        pattern = (
+            r'(?:^|\s)'  # Start at the beginning or whitespace
+            r'([1-3]?\s?[A-Za-z]+)(?:\.)?\s+'  # Book name with an optional period
+            r'(?:(\d{1,3}):'  # Option A: With colon - capture chapter in group 2
+            r'(\d{1,3}(?:(?:,\s*\d{1,3})+|(?:-\d{1,3}))?)'  # Capture verses in group 3
+            r'|'  # OR
+            r'(\d{1,3}(?:(?:,\s*\d{1,3})+|(?:-\d{1,3}))?)'  # Option B: Without a colon, capture verses in group 4
+            r')\b'
+        )
+        for match in re.finditer(pattern, text):
+            full_text = match.group(0).lstrip()  # remove any leading whitespace
+            book = match.group(1)
+            if match.group(3):  # Option A: chapter and verses provided
+                chapter = int(match.group(2))
+                verses = match.group(3)
+            elif match.group(4):  # Option B: No colon; assume a one-chapter book if applicable
+                chapter = 1
+                verses = match.group(4)
+                # Optional: if this is not meant for one-chapter books,
+                # you might choose to skip or process it differently.
+                if book.strip().lower() not in {"jude", "obad", "phlm", "amos", "titus"}:
+                    # For non-one-chapter books, skip this match (or handle as needed)
+                    continue
+            else:
+                continue
+
+            references.append({
+                'text': full_text,
+                'book': book,
+                'chapter': chapter,
+                'verse': verses,  # verses are kept as a string; you can further parse if needed.
+                'start': match.start() + (len(match.group(0)) - len(full_text)),
+                'length': len(full_text)
+            })
+        return references
+
+    def get_scripture(self, reference):
+        """Takes a reference and returns the scripture text."""
+
         book = reference['book']
         chapter = reference['chapter']
         verse = reference['verse']
@@ -2989,23 +3181,66 @@ class TextDocumentWindow(QDialog):
         # Lookup scripture from Bible data
         scripture_text = self.lookup_scripture(book, chapter, verse)
 
-        # Create a new window to display the text
-        scripture_window = QMainWindow(self)
-        scripture_window.setWindowTitle(f"{reference['text']}")
-        scripture_window.resize(400, 300)
+        normalized_book = self.normalize_book_input(book)
+        book_id = sh.bibledict.get(normalized_book)
+        if not book_id:
+            return "Scripture not found."
 
-        text_edit1 = QTextEdit()
-        text_edit1.setPlainText(scripture_text)
-        text_edit1.setReadOnly(True)
+        # Mapping from book numbers to canonical names.
+        full_book = self.canonical_books.get(book_id, book)
+        full_reference = f"{full_book} {chapter}:{verse}"
 
-        scripture_window.setCentralWidget(text_edit1)
-        scripture_window.show()
+        return scripture_text, full_reference
 
-    def lookup_scripture(self, book, chapter, verse):
-        """Retrieve scripture text from Bible data."""
-        # Adjust this method according to your Bible data structure
-        chapter_data = self.bible_data.get(book, {}).get(chapter, {})
-        return chapter_data.get(verse, "Scripture not found.")
+    @staticmethod
+    def normalize_book_input(book_input: str) -> str:
+        # Convert to lowercase and remove non-alphanumeric characters.
+        return re.sub(r'\W+', '', book_input.lower())
+
+    def lookup_scripture(self, book, chapter, verses):
+        # print(f"Looking up scripture for {book} {chapter}:{verses}")
+        normalized_book = self.normalize_book_input(book)
+        book_id = sh.bibledict.get(normalized_book)
+        if not book_id:
+            return "Scripture not found."
+
+        # Mapping from book numbers to canonical names.
+        full_book = self.canonical_books.get(book_id, book)
+
+        chapter_data = self.bible_data.get(full_book, {}).get(str(chapter), {})
+
+        verse_numbers = []
+        # Split by comma in case we have multiple verses or ranges.
+        for part in verses.split(','):
+            part = part.strip()
+            if '-' in part:
+                try:
+                    start, end = part.split('-', 1)
+                    start = int(start.strip())
+                    end = int(end.strip())
+                    # Generate a list of verse numbers from start to end, inclusive.
+                    if start <= end:
+                        verse_numbers.extend(range(start, end + 1))
+                    else:
+                        verse_numbers.extend(range(start, end - 1, -1))
+                except ValueError:
+                    return "Scripture not found."
+            else:
+                try:
+                    verse_numbers.append(int(part))
+                except ValueError:
+                    return "Scripture not found."
+
+        results = []
+        for ve in verse_numbers:
+            verse_text = str(ve) + ' ' + chapter_data.get(str(ve))
+            if verse_text is None:
+                results.append(f"Verse {ve} not found.")
+            else:
+                results.append(verse_text)
+
+        # Join multiple verses with line breaks. Adjust as needed.
+        return "\n".join(results)
 
 
 class FindDialog(QDialog):
@@ -3142,7 +3377,7 @@ if __name__ == '__main__':
     app: QApplication = QApplication()
     app.setApplicationName("Abib")
 
-    # If settings.json exists in "Abib", then do nothing.
+    # If settings.json exists in the user's "APPDATA/Abib" folder, then do nothing.
     user_settings_file = sh.user_settings_dir / "settings.json"  # User's settings.json.
     if user_settings_file.exists():
         pass

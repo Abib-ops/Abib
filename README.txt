@@ -2,11 +2,13 @@
 ABIB README:
 ************
 
-Abib v412.3
+Abib v412.4
 -----------
 
 Changelog.
 -----------
+Abib v412.4
+
 Abib v412.3
 Refactored PySide6 imports.
 The Pilgrim's Progress by John Bunyan window included.
@@ -39,8 +41,8 @@ About.txt changed for cross-platform compatibility.
 
 The current implementation requires that you either provide no arguments or exactly
 three arguments, in the following order: font-size, width, and height. By default,
-these values are set to 14, 480, and 810 respectively. Consequently, if you only wish
-to modify the font size, you must supply all three parameters—for example, "11 480 810"
+these values are set to "14 480 810" respectively. Consequently, if you only wish
+to modify the font size, you must supply all three parameters, e.g. "11 480 810"
 or "12 480 810." This approach ensures that a wide range of window sizes can be
 accommodated to suit different screens.
 
