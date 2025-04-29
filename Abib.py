@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6.8.2.1 and python3.13.3 (64-bit).
 
-21/04/2025
+29/04/2025
 """
 
 CURRENT_VERSION = "412.4"
@@ -711,10 +711,10 @@ def run_installer(installer_path: str) -> bool:
 
 # Main update process
 def update_abib():
-    print("Checking for updates...")
+    # print("Checking for updates...")
     update_available, version, exe_url = check_for_updates()
     if not update_available:
-        print("No update available.")
+        # print("No update available.")
         return
     path_to_setup_exe = str(Path.home() / "Downloads" / f"Abib_setup_{version}_win.exe")
     print("Update process started...")
@@ -1129,24 +1129,13 @@ class MainWindow(QMainWindow):
     def feature(self) -> None:
         """For a future feature key."""
 
-        print('Pilgrims-Progress')
+        # print('Pilgrims-Progress')
         # Persist the reference to the window
         self.text_edit_window = TextDocumentWindow()  # Instantiate the window
         self.text_edit_window.text_display = QTextEdit()
         self.text_edit_window.text_display.setPlainText("Pilgrims-Progress Content.")
         self.text_edit_window.show()  # Show the window
         self.text_edit_window.highlight_references()
-
-    # def feature(self) -> None:
-    #     """For a future feature key."""
-    # 
-    #     print('Pilgrims-Progress')
-    # 
-    #     # self.text_edit = TextDocumentWindow()  # Instantiate the window
-    #     # self.text_edit.text_display = QTextEdit()
-    #     # self.text_edit.show()  # Display the window
-    # 
-    #     open_text_document_viewer("Pilgrims-Progress.txt")
 
     def show_about_dialog(self):
         """Show the About window when Help -> About is clicked."""
@@ -2876,12 +2865,10 @@ class TextDocumentWindow(QDialog):
 
         # Display the content of Pilgrim's Progress file
         self.load_text_file("Pilgrims-Progress.txt")
-        # self.text_edit.setMouseTracking(True)
         self.text_edit.viewport().setMouseTracking(True)
         self.text_edit.viewport().installEventFilter(self)
         self.text_edit.viewport().setAttribute(Qt.WidgetAttribute.WA_Hover, True)
 
-        # self.text_edit.installEventFilter(self)
         self.popup_window = None  # Track if a popup exists
 
         self.canonical_books = {
@@ -3072,9 +3059,9 @@ class TextDocumentWindow(QDialog):
                 self.popup_window.setWindowFlags(Qt.WindowType.ToolTip)
                 self.popup_window.setStyleSheet("border: 2px solid blue;")
 
-                scripture, canonical = self.get_scripture(ref)
+                scriptures, canonical = self.get_scripture(ref)
 
-                scripture: str = scripture + '\n' + canonical + ' KJV'
+                scripture: str = scriptures + '\n' + canonical + ' KJV'
 
                 # Create a label with the scripture text, using the same font as text_edit.
                 label = QLabel(scripture, self.popup_window)
@@ -3116,29 +3103,10 @@ class TextDocumentWindow(QDialog):
     def find_scripture_references(text):
         """Find scripture references using regex, supporting multiple verses."""
         references = []
-        # The regex now supports references that include multiple verses. It matches either:
-        #  1. References to colon: e.g. "1 Thess. 4:16,17" or "John 3:16-18"
-        #  2. References without colon (for one-chapter books): e.g. "Jude 15,16" or "Obad 3-5"
-        #
-        # Explanation:
-        #   - (?:^|\s) ensures that the reference starts at the beginning of the string or
-        #     after whitespace.
-        #   - ([1-3]?\s?[A-Za-z]+)(?:\.)? captures the book name (possibly preceded by a
-        #     numeral) and allows an optional dot.
-        #   - \s+ consumes whitespace.
-        #   - The alternation handles either:
-        #       a) (\d{1,3}):(...) => a chapter from 1 to 3 digits, a colon, and then the verses.
-        #       b) (\d{1,3}(?:(?:,\s*\d{1,3})+|(?:-\d{1,3}))?) => for one-chapter books,
-        #          the verse(s) (optionally multiple verses with commas or a hyphen range).
-        #
-        # For the verse part after the colon, the pattern \d{1,3}(?:(?:,\s*\d{1,3})+|(?:-\d{1,3}))?
-        # matches a single verse number and allows for either comma-separated additional numbers
-        # (one or more) or a hyphen range.
-        #
         pattern = (
-            r'(?:^|\s)'  # Start at the beginning or whitespace
+            r'(?:(?<=^)|(?<=[^\w]))'  # Start at the beginning or after a non-word character
             r'([1-3]?\s?[A-Za-z]+)(?:\.)?\s+'  # Book name with an optional period
-            r'(?:(\d{1,3}):'  # Option A: With colon - capture chapter in group 2
+            r'(?:(\d{1,3}):'  # Option A: With colon (capture chapter in group 2)
             r'(\d{1,3}(?:(?:,\s*\d{1,3})+|(?:-\d{1,3}))?)'  # Capture verses in group 3
             r'|'  # OR
             r'(\d{1,3}(?:(?:,\s*\d{1,3})+|(?:-\d{1,3}))?)'  # Option B: Without a colon, capture verses in group 4
@@ -3153,10 +3121,7 @@ class TextDocumentWindow(QDialog):
             elif match.group(4):  # Option B: No colon; assume a one-chapter book if applicable
                 chapter = 1
                 verses = match.group(4)
-                # Optional: if this is not meant for one-chapter books,
-                # you might choose to skip or process it differently.
-                if book.strip().lower() not in {"jude", "obad", "phlm", "amos", "titus"}:
-                    # For non-one-chapter books, skip this match (or handle as needed)
+                if book.strip().lower() not in {"obad", "phlm", "2john", "3john", "jude"}:
                     continue
             else:
                 continue
@@ -3165,7 +3130,7 @@ class TextDocumentWindow(QDialog):
                 'text': full_text,
                 'book': book,
                 'chapter': chapter,
-                'verse': verses,  # verses are kept as a string; you can further parse if needed.
+                'verse': verses,
                 'start': match.start() + (len(match.group(0)) - len(full_text)),
                 'length': len(full_text)
             })
@@ -3188,7 +3153,10 @@ class TextDocumentWindow(QDialog):
 
         # Mapping from book numbers to canonical names.
         full_book = self.canonical_books.get(book_id, book)
-        full_reference = f"{full_book} {chapter}:{verse}"
+        if book_id - 1 in sh.onechapterbooks:
+            full_reference = f"{full_book} {verse}"
+        else:
+            full_reference = f"{full_book} {chapter}:{verse}"
 
         return scripture_text, full_reference
 
@@ -3202,6 +3170,9 @@ class TextDocumentWindow(QDialog):
         normalized_book = self.normalize_book_input(book)
         book_id = sh.bibledict.get(normalized_book)
         if not book_id:
+            print(f"Book not found: {book}")
+            print(f"Normalized book: {normalized_book}")
+            print(f"Book ID: {book_id}")
             return "Scripture not found."
 
         # Mapping from book numbers to canonical names.
@@ -3224,11 +3195,13 @@ class TextDocumentWindow(QDialog):
                     else:
                         verse_numbers.extend(range(start, end - 1, -1))
                 except ValueError:
+                    print(f"Scripture not found for {book} {chapter}:{part}")
                     return "Scripture not found."
             else:
                 try:
                     verse_numbers.append(int(part))
                 except ValueError:
+                    print(f"Scripture not found for {book} {chapter}:{part}")
                     return "Scripture not found."
 
         results = []

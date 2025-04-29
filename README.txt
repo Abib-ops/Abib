@@ -8,6 +8,9 @@ Abib v412.4
 Changelog.
 -----------
 Abib v412.4
+Pilgrim's Progress improved with highlighted scripture references,
+when hovered over with the mouse, the scripture pops up next to the text.
+The Pilgrim's Progress window remembers the last position where the user was.
 
 Abib v412.3
 Refactored PySide6 imports.
