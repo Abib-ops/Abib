@@ -3,7 +3,7 @@
 ################################################################################
 ## Module containing objects shared by Abib.py and fcs.py
 ##
-## Used by Abib.py version 412.3 =>
+## Used by Abib.py version 412.4 =>
 ################################################################################
 
 from pathlib import Path
@@ -119,7 +119,7 @@ bibledict: dict[str, int] = {
         '2timothy': 55, '2ti': 55, '2tim': 55,
         'iitimothy': 55, 'iiti': 55, 'iitim': 55,
         'titus': 56, 'ti': 56, 'tit': 56, 't': 56,
-        'philemon': 57, 'phm': 57, 'phi': 57, 'phl': 57, 'phile': 57, 'philo': 57,
+        'philemon': 57, 'phm': 57, 'phi': 57, 'phl': 57, 'phile': 57, 'philo': 57, "phlm": 57,
         'hebrews': 58, 'he': 58, 'heb': 58, 'hebrew': 58, 'hebr': 58,
         'james': 59, 'ja': 59, 'jas': 59, 'jam': 59, 'jame': 59, 'jim': 59, 'jamo': 59,
         '1peter': 60, '1p': 60, '1pe': 60, '1pet': 60, '1pete': 60,

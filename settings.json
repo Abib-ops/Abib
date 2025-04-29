@@ -1,4 +1,6 @@
 {
     "theme": "Light",
-    "show_splash": false
+    "show_splash": false,
+    "last_read_position": 15820,
+    "_comment": "This is a comment. It will be ignored by the program..."
 }
