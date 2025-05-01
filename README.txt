@@ -2,11 +2,16 @@
 ABIB README:
 ************
 
-Abib v412.5
+Abib v412.6
 -----------
 
 Changelog.
 -----------
+Abib v412.6
+Adjustment to the position of the scripture popup windows to suit smaller
+screens.
+
+
 Abib v412.5
 Bugfix, fixed non-responsive hovered over references in hypertext used in
 The Pilgrim's Progress.
