@@ -2,15 +2,20 @@
 ABIB README:
 ************
 
-Abib v412.4
+Abib v412.5
 -----------
 
 Changelog.
 -----------
+Abib v412.5
+Bugfix, fixed non-responsive hovered over references in hypertext used in
+The Pilgrim's Progress.
+
+
 Abib v412.4
 Pilgrim's Progress improved with highlighted scripture references,
 when hovered over with the mouse, the scripture pops up next to the text.
-The Pilgrim's Progress window remembers the last position where the user was.
+The Pilgrim's Progress window remembers the user's last position.
 
 Abib v412.3
 Refactored PySide6 imports.

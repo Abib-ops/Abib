@@ -3,7 +3,7 @@
 ################################################################################
 ## Module containing various functions.
 ##
-## Used by Abib.py version 412.4 =>
+## Used by Abib.py version 412.5 =>
 ################################################################################
 
 from json import load, loads, JSONDecodeError, dump
