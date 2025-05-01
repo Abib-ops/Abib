@@ -57,7 +57,7 @@ Using PySide6.8.2.1 and python3.13.3 (64-bit).
 30/04/2025
 """
 
-CURRENT_VERSION = "412.5"
+CURRENT_VERSION = "412.6"
 
 import re
 import time
@@ -3070,15 +3070,15 @@ class TextDocumentWindow(QDialog):
             # Check whether the popup exists and is visible.
             if self.popup_window is None or not self.popup_window.isVisible():
                 # The popup was closed externally (or never created), so re-create it.
-                pass  # Continue to creation below.
+                pass  # Continue to creating it, below.
             else:
                 # Update the popup's position.
                 cursor = self.text_edit.cursorForPosition(event.position().toPoint())
                 cursor_rect = self.text_edit.cursorRect(cursor)
                 global_cursor_top_left = self.text_edit.mapToGlobal(cursor_rect.topLeft())
-                text_edit_top_right = self.text_edit.mapToGlobal(self.text_edit.rect().topRight())
-                popup_x = text_edit_top_right.x()
-                popup_y = global_cursor_top_left.y()
+                text_edit_top_left = self.text_edit.mapToGlobal(self.text_edit.rect().topLeft())
+                popup_x = text_edit_top_left.x()
+                popup_y = global_cursor_top_left.y() + 60  # Adjust the vertical offset for a couple of lines down
                 self.popup_window.move(popup_x, popup_y)
                 return
         else:
@@ -3113,9 +3113,9 @@ class TextDocumentWindow(QDialog):
         cursor = self.text_edit.cursorForPosition(event.position().toPoint())
         cursor_rect = self.text_edit.cursorRect(cursor)
         global_cursor_top_left = self.text_edit.mapToGlobal(cursor_rect.topLeft())
-        text_edit_top_right = self.text_edit.mapToGlobal(self.text_edit.rect().topRight())
-        popup_x = text_edit_top_right.x()
-        popup_y = global_cursor_top_left.y()
+        text_edit_top_left = self.text_edit.mapToGlobal(self.text_edit.rect().topLeft())
+        popup_x = text_edit_top_left.x()
+        popup_y = global_cursor_top_left.y() + 60  # Adjust vertical offset as needed
         self.popup_window.move(popup_x, popup_y)
 
         self.popup_window.show()

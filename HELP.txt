@@ -2,7 +2,7 @@
 ABIB HELP:
 **********
 
-Abib Bible Reader v412.5
+Abib Bible Reader v412.6
 
 This Bible, I hope, can serve as a useful tool while viewing or listening to a Christian message on your PC, allowing you to read the scriptures along with the preacher.
 
@@ -11,10 +11,10 @@ Installing Abib on Windows.
 
 First, uninstall any previous version of this program.
 
-Get the "Abib_setup_412.5_win.exe" file from 'Abib-ops' on GitHub,
+Get the "Abib_setup_412.6_win.exe" file from 'Abib-ops' on GitHub,
 find it in the 'Abib' repository.
 
-Next, double-click the "Abib_setup_412.5_win.exe" installer and follow
+Next, double-click the "Abib_setup_412.6_win.exe" installer and follow
 the instructions, mostly click Next a few times, agree to the
 licence, and Abib will install. Please ignore any negative windows that
 claim that Abib is from an unknown author.
@@ -482,7 +482,7 @@ text in the "Find ?:" box.
 Installing Abib on Linux.
 -------------------------
 
-Get the "Abib_linux_412.5.tar.bz2" file from the author.
+Get the "Abib_linux_412.6.tar.bz2" file from the author.
 
     If you can get it, then it may be an earlier version because of
     recent changes that work on Windows only, and the direction of
@@ -490,7 +490,7 @@ Get the "Abib_linux_412.5.tar.bz2" file from the author.
     But with some modifications, it could be made to work on Linux.
 
 Move it to your home folder or desired location and navigate there.
-Expand the compressed archive with: tar -jxvf Abib_linux_412.5.tar.bz2
+Expand the compressed archive with: tar -jxvf Abib_linux_412.6.tar.bz2
 
 $ chmod +x Abib will make sure that the executable flag is set.
 
