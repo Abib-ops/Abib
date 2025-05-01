@@ -54,10 +54,10 @@ Abib Bible Reader אביב
 
 Using PySide6.8.2.1 and python3.13.3 (64-bit).
 
-29/04/2025
+30/04/2025
 """
 
-CURRENT_VERSION = "412.4"
+CURRENT_VERSION = "412.5"
 
 import re
 import time
@@ -482,11 +482,6 @@ def commentary() -> None:
     # print(f"{book_name} Commentary:", calvincom.get_commentary(book_name))
     print('Future feature')
 
-# def open_text_document_viewer(file_path1):
-#     """Open the TextDocumentWindow, loading a specified text document."""
-#     text_window = TextDocumentWindow()
-#     text_window.load_document(file_path1)
-#     text_window.show()
 
 def calculate_book_line(book: str, chapter: int, verse: int, current_line_num: int) -> int:
     """
@@ -2844,6 +2839,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
 class TextDocumentWindow(QDialog):
     def __init__(self):
         super().__init__()
+        self.current_reference = None
         self.setWindowTitle("Text Document Viewer")
         self.resize(800, 600)
 
@@ -3041,58 +3037,88 @@ class TextDocumentWindow(QDialog):
     def handle_hover(self, event):
         """Detect whether a highlighted reference was hovered and display its text."""
 
-        # Get the mouse position from the event and map to the cursor position
+        # Get the mouse cursor position and associated text position.
         cursor = self.text_edit.cursorForPosition(event.position().toPoint())
         position = cursor.position()
         text = self.text_edit.toPlainText()
         references = self.find_scripture_references(text)
 
-        # Avoid creating a new popup if one is already visible
-        if hasattr(self, 'popup_window') and self.popup_window and self.popup_window.isVisible():
+        # Find a reference under the current mouse position.
+        hovered_reference = None
+        for ref in references:
+            if ref["start"] <= position <= ref["start"] + ref["length"]:
+                hovered_reference = ref
+                break
+
+        if hovered_reference is None:
+            # No reference under the mouse:
+            if self.popup_window is not None:
+                self.popup_window.close()
+                self.popup_window = None
+            self.current_reference = None
             return
 
-        for ref in references:
-            # print(f"Found reference: {ref}")
-            if ref['start'] <= position <= ref['start'] + ref['length']:
-                self.popup_window = QWidget()  # Create the popup window
-                # Optionally, use a window flag for a tooltip-like appearance
-                self.popup_window.setWindowFlags(Qt.WindowType.ToolTip)
-                self.popup_window.setStyleSheet("border: 2px solid blue;")
+        # Determine if the current hovered reference is the same as the previously stored one
+        same_reference = (
+                self.current_reference is not None and
+                self.current_reference["start"] == hovered_reference["start"] and
+                self.current_reference["length"] == hovered_reference["length"]
+        )
 
-                scriptures, canonical = self.get_scripture(ref)
-
-                scripture: str = scriptures + '\n' + canonical + ' KJV'
-
-                # Create a label with the scripture text, using the same font as text_edit.
-                label = QLabel(scripture, self.popup_window)
-                label.setFont(self.text_edit.font())
-                label.setWordWrap(True)
-                # Set the width of the label to match text_edit's width.
-                label.setFixedWidth(self.text_edit.width())
-                label.adjustSize()
-
-                # Use a layout with minimal margins to hold the label.
-                layout = QVBoxLayout(self.popup_window)
-                layout.setContentsMargins(0, 0, 0, 0)
-                layout.addWidget(label)
-                self.popup_window.adjustSize()
-
-                # Get the position of the hovered reference.
+        if same_reference:
+            # If the mouse is still within the current reference...
+            # Check whether the popup exists and is visible.
+            if self.popup_window is None or not self.popup_window.isVisible():
+                # The popup was closed externally (or never created), so re-create it.
+                pass  # Continue to creation below.
+            else:
+                # Update the popup's position.
                 cursor = self.text_edit.cursorForPosition(event.position().toPoint())
                 cursor_rect = self.text_edit.cursorRect(cursor)
                 global_cursor_top_left = self.text_edit.mapToGlobal(cursor_rect.topLeft())
-
-                # Get the global position of the text_edit's right border.
                 text_edit_top_right = self.text_edit.mapToGlobal(self.text_edit.rect().topRight())
-
-                # Position the popup: x coordinate from text_edit's right border,
-                # y coordinate from the hovered reference.
                 popup_x = text_edit_top_right.x()
                 popup_y = global_cursor_top_left.y()
                 self.popup_window.move(popup_x, popup_y)
+                return
+        else:
+            # Hovered reference differs from current_reference.
+            if self.popup_window is not None:
+                self.popup_window.close()
+                self.popup_window = None
 
-                self.popup_window.show()
-                break
+            # Update the current_reference to the new one.
+            self.current_reference = hovered_reference
+
+        # Create a new popup for the hovered/current reference.
+        self.popup_window = QWidget()
+        self.popup_window.setWindowFlags(Qt.WindowType.ToolTip)
+        self.popup_window.setStyleSheet("border: 2px solid blue;")
+
+        scriptures, canonical = self.get_scripture(hovered_reference)
+        scripture = scriptures + "\n" + canonical + " KJV"
+
+        label = QLabel(scripture, self.popup_window)
+        label.setFont(self.text_edit.font())
+        label.setWordWrap(True)
+        label.setFixedWidth(self.text_edit.width())
+        label.adjustSize()
+
+        layout = QVBoxLayout(self.popup_window)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(label)
+        self.popup_window.adjustSize()
+
+        # Position the popup relative to the cursor.
+        cursor = self.text_edit.cursorForPosition(event.position().toPoint())
+        cursor_rect = self.text_edit.cursorRect(cursor)
+        global_cursor_top_left = self.text_edit.mapToGlobal(cursor_rect.topLeft())
+        text_edit_top_right = self.text_edit.mapToGlobal(self.text_edit.rect().topRight())
+        popup_x = text_edit_top_right.x()
+        popup_y = global_cursor_top_left.y()
+        self.popup_window.move(popup_x, popup_y)
+
+        self.popup_window.show()
 
     def closePopup(self):
         if self.popup_window and self.popup_window.isVisible():
