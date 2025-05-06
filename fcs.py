@@ -3,7 +3,7 @@
 ################################################################################
 ## Module containing various functions.
 ##
-## Used by Abib.py version 412.6 =>
+## Used by Abib.py version 412.7 =>
 ################################################################################
 
 from json import load, loads, JSONDecodeError, dump
@@ -415,7 +415,7 @@ def check_roman_chapter_adjacent(reference_text: str) -> str:
     Specifically, if the first part of the reference text is a book in sh.bibledict adjacent
     to a chapter number in roman numerals, then the reference text is split further."""
 
-    #  Note: 'mi' is 1001 in roman numerals and will be converted later if we don't act.
+    #  Note: 'MI' is 1001 in roman numerals and will be converted later if we don't act.
 
     div: int = 0
     divis: int

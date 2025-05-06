@@ -2,14 +2,17 @@
 ABIB README:
 ************
 
-Abib v412.6
+Abib v412.7
 -----------
 
 Changelog.
 -----------
+Abib v412.7
+
+
 Abib v412.6
 Adjustment to the position of the scripture popup windows to suit smaller
-screens.
+screens in the Pilgrim's Progress window.
 
 
 Abib v412.5
