@@ -54,10 +54,10 @@ Abib Bible Reader אביב
 
 Using PySide6.8.2.1 and python3.13.3 (64-bit).
 
-30/04/2025
+06/05/2025
 """
 
-CURRENT_VERSION = "412.6"
+CURRENT_VERSION = "412.7"
 
 import re
 import time
