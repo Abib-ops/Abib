@@ -52,7 +52,7 @@ Additional Bible-based resources are available at www.spurgeongems.org.
 
 Abib Bible Reader אביב
 
-Using PySide6.8.2.1 and python3.13.3 (64-bit).
+Using PySide6-6.9.0 and python3.13.3 (64-bit).
 
 20/05/2025
 """
