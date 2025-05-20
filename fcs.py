@@ -173,9 +173,10 @@ def squeeze(char: str, s: str) -> str:
     return s
 
 def remove_junk(text: str) -> str:
-    """Remove junk characters from text.  Junk characters are any non-alphabetic characters,
-       numbers, or any of the normal punctuation characters.
-       Plus, the text must start and finish with a letter or a number."""
+    """Remove junk characters from 'text'.
+    Junk characters are any non-alphabetic characters,
+    numbers, or any of the normal punctuation characters.
+    Plus, the text must start and finish with a letter or a number."""
 
     # print(f"remove_junk: {text}")
     # Define allowed characters using a set for fast membership checks.
