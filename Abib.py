@@ -5,16 +5,16 @@ Copyright 2025 Andrew Kingston.
 This file is part of Abib Bible Reader.
 
 Abib is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License or
+it under the terms of the GNU General Public Licence as published by
+the Free Software Foundation, either version 3 of the Licence or
 any later version.
 
 Abib is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+GNU General Public Licence for more details.
 
-You should have received a copy of the GNU General Public License
+You should have received a copy of the GNU General Public Licence
 along with Abib.  If not, see <https://www.gnu.org/licenses/>.
 
 For linux use:
@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6.8.2.1 and python3.13.3 (64-bit).
 
-06/05/2025
+20/05/2025
 """
 
 CURRENT_VERSION = "412.7"
@@ -1133,7 +1133,7 @@ class MainWindow(QMainWindow):
         self.text_edit_window.highlight_references()
 
     def show_about_dialog(self):
-        """Show the About window when Help -> About is clicked."""
+        """Show the 'About' window when Help -> About is clicked."""
 
         # Initialize AboutWindow if it hasn't been created
         if self.about_window is None:
@@ -2002,7 +2002,7 @@ class MainWindow(QMainWindow):
             input_chapter = matched.group(2)  # Chapter (e.g., '3')
             input_verse = matched.group(3)  # Verse (e.g., '4')
 
-            # Use the current context if book or chapter is missing
+            # Use the current context if 'book' or 'chapter' is missing
             book = input_book.strip() if input_book else book  # Default to the current book
             chapter = int(input_chapter) if input_chapter else str(int(chapter + 1))  # Default to current chapter
             verse = int(input_verse) if input_verse else '1'  # Verse stays as-is or '1'
@@ -2758,7 +2758,7 @@ class AboutWindow(QMainWindow):
         self.setCentralWidget(self.label)
 
     def about(self) -> str:
-        """Load the About content from ABOUT.txt."""
+        """Load the 'About' content from ABOUT.txt."""
 
         self.content: str = ""
         try:

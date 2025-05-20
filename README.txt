@@ -8,17 +8,19 @@ Abib v412.7
 Changelog.
 -----------
 Abib v412.7
-
+Upgraded various packages associated with requirements.txt.
+These are needed for the pyinstaller build process.
+Git-Hub gave a warning about a security vulnerability:
+"setuptools has a path traversal vulnerability in PackageIndex.download
+that leads to Arbitrary File Write". This is now fixed.
 
 Abib v412.6
 Adjustment to the position of the scripture popup windows to suit smaller
 screens in the Pilgrim's Progress window.
 
-
 Abib v412.5
 Bugfix, fixed non-responsive hovered over references in hypertext used in
 The Pilgrim's Progress.
-
 
 Abib v412.4
 Pilgrim's Progress improved with highlighted scripture references,
