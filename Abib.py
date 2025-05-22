@@ -55,9 +55,9 @@ Abib Bible Reader אביב
 Using PySide6-6.9.0 and python3.13.3 (64-bit).
 
 20/05/2025
-"""
 
-CURRENT_VERSION = "412.7"
+Note to self:  Check for the use of pass in the code.
+"""
 
 import re
 import time
@@ -107,6 +107,8 @@ except ImportError:
     windll = None  # Linux or Mac if here.
     pass
 
+CURRENT_VERSION = sh.CURRENT_VERSION
+
 try:
     # Included in the try/except block for Mac/Linux
     myappid = f'Abib Bible Reader.{CURRENT_VERSION}'
@@ -130,9 +132,7 @@ def back_push(current_position) -> None:
                   w.hiLita.length, w.no_f3_yet, w.occurring, w.key, w.dlg)
         back.append(saving)
     else:
-        if back[-1][0] == current_position and back[-1][1] == w.y:
-            pass
-        else:
+        if not(back[-1][0] == current_position and back[-1][1] == w.y):
             saving = (current_position, w.y, w.hiLita.lineinc, w.hiLita.keyinc,
                       w.hiLita.fmt, w.hiLita.length, w.no_f3_yet,
                       w.occurring, w.key, w.dlg)
@@ -167,9 +167,7 @@ def forward_push(current_position) -> None:
                   w.hiLita.length, w.no_f3_yet, w.occurring, w.key, w.dlg)
         forward.append(saving)
     else:
-        if forward[-1][0] == current_position and forward[-1][1] == w.y:
-            pass
-        else:
+        if not(forward[-1][0] == current_position and forward[-1][1] == w.y):
             saving = (current_position, w.y, w.hiLita.lineinc, w.hiLita.keyinc,
                       w.hiLita.fmt, w.hiLita.length, w.no_f3_yet,
                       w.occurring, w.key, w.dlg)
@@ -224,15 +222,13 @@ def findf3_ww_ac(x1: int, x2: int, numwords: int, _set: dict[str, set], r_list: 
             s = s & _set[j]
     w.occur = sorted(list(s))
     w.occurs = []
-    pattern = rf"\b{w.key}\b"
+
+    pattern = re.compile(rf"\b{re.escape(w.key)}\b")
+
     for i in w.occur:
-        if i < x1 or i > x2:
-            continue
-        if re.search(pattern, r_list[i]):
-            pass
-        else:
-            continue
-        w.occurs.append(i)
+        if x1 <= i <= x2 and pattern.search(r_list[i]):
+            w.occurs.append(i)
+
     liszt = [w.key]
     iterate_list(liszt, r_list)
     c = 0
@@ -1690,9 +1686,7 @@ class MainWindow(QMainWindow):
         lr = len(KJV[ln])
         for _ in range(lr):
             unich = ord(KJV[ln][_])
-            if unich in ignore:
-                pass
-            elif unich > 230:
+            if unich not in ignore and unich > 230:
                 litz.append(_)
         j = 0
         for i in litz:
@@ -1717,17 +1711,13 @@ class MainWindow(QMainWindow):
             end = start + len(w.key)  # change w.yend
             num = self.stripped_punctuation_adjust_ki(current_position, start, end)
         lav = len(KJV[ln])
-        if start > lav or endof > lav:
-            pass
-        else:
+        if not(start > lav or endof > lav):
             for i in range(start, endof + num):
                 try:
                     unich = ord(KJV[ln][i])
                 except IndexError:
                     pass
-                if unich in ignore:
-                    pass
-                elif unich > 230:
+                if unich not in ignore and unich > 230:
                     litz.append(i)
         keyinc = len(litz) + num
         w.hiLita.keyinc = keyinc

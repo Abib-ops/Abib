@@ -3,13 +3,15 @@
 ################################################################################
 ## Module containing objects shared by Abib.py and fcs.py
 ##
-## Used by Abib.py version 412.7 =>
+## Used by Abib.py (CURRENT_VERSION) =>
 ################################################################################
 
 from pathlib import Path
 from os import getenv
 from json import loads
 from platform import system
+
+CURRENT_VERSION = "412.8"
 
 current_directory: Path = Path.cwd()
 str_cwd: str = str(current_directory)
