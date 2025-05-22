@@ -2,35 +2,38 @@
 ABIB README:
 ************
 
-Abib v412.7
+Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
+
+Abib v412.8
 -----------
 
 Changelog.
 -----------
+Abib 412.8
+Minor refactoring.
+
 Abib v412.7
 Upgraded various packages associated with requirements.txt.
 These are needed for the pyinstaller build process.
 Git-Hub gave a warning about a security vulnerability:
-"setuptools has a path traversal vulnerability in PackageIndex.download
-that leads to Arbitrary File Write". This is now fixed.
+"setuptools has a path traversal vulnerability in PackageIndex.download that leads to Arbitrary File Write". This is now fixed.
 
 Abib v412.6
-Adjustment to the position of the scripture popup windows to suit smaller
-screens in the Pilgrim's Progress window.
+Adjustment to the position of the scripture popup windows to suit 
+smaller screens in the Pilgrim's Progress window.
 
 Abib v412.5
-Bugfix, fixed non-responsive hovered over references in hypertext used in
-The Pilgrim's Progress.
+Bugfix, fixed non-responsive hovered over references in hypertext used in The Pilgrim's Progress.
 
 Abib v412.4
 Pilgrim's Progress improved with highlighted scripture references,
-when hovered over with the mouse, the scripture pops up next to the text.
-The Pilgrim's Progress window remembers the user's last position.
+when hovered over with the mouse, the scripture pops up next to the 
+text. The Pilgrim's Progress window remembers the user's last position.
 
 Abib v412.3
 Refactored PySide6 imports.
 The Pilgrim's Progress by John Bunyan window included.
-The issue has been addressed so that when an invalid 'chapter.verse' input
+The issue has been addressed that when an invalid 'chapter.verse' input
 (specified as a decimal) is entered, the system no longer defaults to
 Genesis 1:1. Instead, it now remains on the current line.
 
@@ -57,12 +60,7 @@ Abib v410.3
 Bug fixed regarding installation.
 About.txt changed for cross-platform compatibility.
 
-The current implementation requires that you either provide no arguments or exactly
-three arguments, in the following order: font-size, width, and height. By default,
-these values are set to "14 480 810" respectively. Consequently, if you only wish
-to modify the font size, you must supply all three parameters, e.g. "11 480 810"
-or "12 480 810." This approach ensures that a wide range of window sizes can be
-accommodated to suit different screens.
+The current implementation requires that you either provide no arguments or exactly three arguments, in the following order: font-size, width, and height. By default, these values are set to "14 480 810" respectively. Consequently, if you only wish to modify the font size, you must supply all three parameters, e.g. "11 480 810" or "12 480 810." This approach ensures that a wide range of window sizes can be accommodated to suit different screens.
 
 The place to put the arguments:
 Right-click on the Windows Abib icon;
@@ -75,11 +73,7 @@ Apply Changes:
 - Click Apply and OK to save the changes.
 
 Abib v410.2
-Bug fixed concerning incorrect behaviour when entering integer values for verses,
-that is just the verse number is entered, and you should go to that verse in the
-chapter you are in. This was broken because of the addition of the possibility of
-using negative numbers, which are interpreted as going back that number of verses,
-e.g. if you are at verse 20, and you enter -5, you will go to verse 15.
+Bug fixed concerning incorrect behaviour when entering integer values for verses, that is just the verse number is entered, and you should go to that verse in the chapter you are in. This was broken because of the addition of the possibility of using negative numbers, which are interpreted as going back that number of verses, e.g. if you are at verse 20, and you enter -5, you will go to verse 15.
 
 Abib v410.1
 Commentary removed because not ready yet.
@@ -146,11 +140,10 @@ Abib399
 There is no 399.
 
 Abib398
-Corrected many bugs concerning search keys with words that are
-not in the text.
+Corrected many bugs concerning search keys with words that are not in the text.
 Rationalised some of the book abbreviations.
 Assured centering of the Abib window on startup.
-Also, of the other windows except Find.
+Also, of some of the other windows except.
 
 Abib397
 Changes to About, Help, Readme, and Copyright windows.
@@ -175,13 +168,10 @@ Extensively refactored.  Nothing major to the logic.
 Except:
 Bugfix correcting Back and especially Forward not working properly.
 
-Another bug fixed regarding the following verses; Joshua 15:1,Job 7:1, Psalm 70:1,
-Psalm 92:1, Hosea 8:1, and Romans 8:1.
-These are all first verses of chapters that start with italicised first words.
-These were displayed incorrectly when viewed using Back and Forward.
+Another bug fixed regarding the following verses; Joshua 15:1,Job 7:1, Psalm 70:1, Psalm 92:1, Hosea 8:1, and Romans 8:1.
+These are all first verses of chapters that start with italicised first words, and were displayed incorrectly when viewed using Back and Forward.
 
-Some changes to the way that the Find process works and to the highlighting of
-the search key.
+Some changes to the way that the Find process works and to the highlighting of the search key.
 
 Abib3.9.1b
 Built with Python11.1 and Pyside6 to make the operation faster.

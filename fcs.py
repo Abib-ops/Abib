@@ -3,7 +3,7 @@
 ################################################################################
 ## Module containing various functions.
 ##
-## Used by Abib.py version 412.7 =>
+## Used by Abib.py (sh.CURRENT_VERSION) =>
 ################################################################################
 
 from json import load, loads, JSONDecodeError, dump
@@ -358,19 +358,19 @@ def tidy(text: str, parts: list) ->  str:
     full_names: list = ['deuteronomy', 'colossians', 'leviticus', 'micah']
 
     d: str = parts[0][0]
-    # print(f"918 d: {d}")
+    # print(f"361 d: {d}")
 
     if d in abbr:
         # Get the corresponding full name
         try:
             a: str = full_names[abbr.index(d)]
-            # print(f"920 '{d}' is an abbreviation for '{a}'.")
+            # print(f"367 '{d}' is an abbreviation for '{a}'.")
         except ValueError:
-            # print(f"922 '{d}' is not in the list.")
+            # print(f"369 '{d}' is not in the list.")
             raise ValueError("ValueError")
 
         text = f"{a}{text[1:]}"
-        # print(f"933 text: {text}")
+        # print(f"373 text: {text}")
 
     return text
 
@@ -382,7 +382,7 @@ def split_reference(reference_text: str) -> list:
 
     # First, split on delimiters (space, period, colon)
     intermediate_parts = re.split(r'[ .:]+', reference_text)
-    # print(f"865 Split reference: {reference_text} into {intermediate_parts}")
+    # print(f"385 Split reference: {reference_text} into {intermediate_parts}")
 
     parts_list = []
 
@@ -393,7 +393,7 @@ def split_reference(reference_text: str) -> list:
         # Use regex to separate letters and digits if mixed
         if part_number == 0 and part in sh.bibledict:
             parts_list.append(part)
-            # print(f"876 Part: {part} is a book name")
+            # print(f"396 Part: {part} is a book name")
         else:
             match = re.findall(r'[a-zA-Z]+|\d+', part)
             parts_list.extend(match)
@@ -411,6 +411,7 @@ def split_reference(reference_text: str) -> list:
 
     return parts_list
 
+
 def check_roman_chapter_adjacent(reference_text: str) -> str:
     """Check if the reference text can be split further into a book, chapter, and verse.
     Specifically, if the first part of the reference text is a book in sh.bibledict adjacent
@@ -421,31 +422,31 @@ def check_roman_chapter_adjacent(reference_text: str) -> str:
     div: int = 0
     divis: int
     reference_parts = split_reference(reference_text)
-    # print(f"948 Reference parts: {reference_parts}")
+    # print(f"425 Reference parts: {reference_parts}")
 
     # len_parts: int = len(reference_parts)
-    # print(f"951 len_parts: {len_parts}")
+    # print(f"428 len_parts: {len_parts}")
 
     try:
         # Do this part only if the book name is invalid.
         if reference_parts[0] not in sh.bibledict and reference_parts[0][0] in sh.bibledict:
             reference_text = tidy(reference_text, reference_parts)
-            # print(f"956 After fcs.tidy: reference_text: {reference_text}")
+            # print(f"434 After fcs.tidy: reference_text: {reference_text}")
     except IndexError:
-        return '958 Error: No reference parts.'
+        return '436 Error: No reference parts.'
 
     reference_parts = split_reference(reference_text)
     len_parts = len(reference_parts)
-    # print(f"948 Reference parts: {reference_parts}")
+    # print(f"440 Reference parts: {reference_parts}")
     ref = reference_parts[0]
     len_ref: int = len(ref)
-    # print(f"962 Reference text length: {len_ref} ref = {ref}")
+    # print(f"443 Reference text length: {len_ref} ref = {ref}")
 
     if (ref in sh.bibledict or isRoman(ref)) and ref != 'mi':
-        # print(f"965 ref: {ref} no need to split further.")
+        # print(f"446 ref: {ref} no need to split further.")
         return reference_text
     else:
-        # print(f"969 Reference text: {ref} needs to be split.")
+        # print(f"449 Reference text: {ref} needs to be split.")
         pass
 
         # Find the start of the roman numeral.
@@ -457,43 +458,41 @@ def check_roman_chapter_adjacent(reference_text: str) -> str:
 
         divis = len_ref - div
         roman_number: str = ref[-divis:]
-        # print(f"980 Roman number: {roman_number}")
-        # print(f"981 divis = {divis}")
-        # print(f"982 ref = {ref}")
+        # print(f"461 Roman number: {roman_number}")
+        # print(f"462 divis = {divis}")
+        # print(f"463 ref = {ref}")
 
         # Find the end of the bible book name.
         results = []
         for i in range(len_ref):
             if ref[:i] in sh.bibledict:
                 results.append(i)
-        # print(f"989 Results: {results}")
+        # print(f"470 Results: {results}")
 
         if results:
             rr1: str = ref[:results[-1]]
-            # print(f"993 results[-1] = {results[-1]}")
-            # print(f"994 Book name is: {rr1}")
+            # print(f"474 results[-1] = {results[-1]}")
+            # print(f"475 Book name is: {rr1}")
             if divis + results[-1] == len_ref:
                 if len_parts == 1:
                     reference_text = f"{rr1} {ref[-divis:]}"
                 elif len_parts == 2:
                     reference_text = f"{rr1} {ref[-divis:]}.{reference_parts[1]}"
-                # print(f"997 Reference text: {reference_text}")
+                # print(f"481 Reference text: {reference_text}")
                 reference_parts = split_reference(reference_text)
                 len_parts = len(reference_parts)
             elif divis + results[-1] > len_ref:
                 lbn: int =len(rr1)  # Length of the book name.
                 book = ref[:lbn]
-                # print(f"1001 Book name: {book}")
+                # print(f"487 Book name: {book}")
                 roman_number = ref[lbn:]
                 reference_text = f"{book} {roman_number}" # roman number is the chapter.
             else:
-                # print(f"1005 Reference text: {reference_text} is unchanged.")
+                # print(f"491 Reference text: {reference_text} is unchanged.")
                 pass
 
-            if sh.bibledict[rr1] - 1 in sh.onechapterbooks:
-                pass
-            else:
-                # print(f"1011 Reference parts: {reference_parts}")
+            if sh.bibledict[rr1] - 1 not in sh.onechapterbooks:
+                # print(f"495 Reference parts: {reference_parts} len_parts: {len_parts}")
                 match len_parts:
                     case 1:
                         reference_text = f"{rr1}"
@@ -503,8 +502,7 @@ def check_roman_chapter_adjacent(reference_text: str) -> str:
                         reference_text = f"{rr1} {roman_number}.{reference_parts[2]}"
                     case _:
                         reference_text = f"Error: {reference_text} is invalid."
-
-                # print(f"1012 Reference text @ end adj: {reference_text}")
+                # print(f"505 Reference text @ end adj: {reference_text}")
 
     return reference_text
 
