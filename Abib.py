@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.9.0 and python3.13.3 (64-bit).
 
-20/05/2025
+26/05/2025
 
 Note to self:  Check for the use of pass in the code.
 """
@@ -586,7 +586,7 @@ def check_for_updates(parent=None):
     """
     try:
         # Step 1: Fetch the latest release information from GitHub
-        response = requests.get(GITHUB_API_URL)
+        response = requests.get(GITHUB_API_URL, timeout=4)
         response.raise_for_status()
         data = response.json()
 
@@ -620,8 +620,12 @@ def check_for_updates(parent=None):
         else:
             QMessageBox.warning(parent, "Error", "Failed to fetch the latest version details.")
             return None
-    except requests.exceptions.RequestException as ere:
-        QMessageBox.critical(parent, "Error", f"Failed to check for updates: {str(ere)}")
+
+    except requests.exceptions.RequestException:
+        # network down, timeout, DNS failure, etc.
+        return None
+    except ValueError:
+        # invalid JSON
         return None
 
 
@@ -703,7 +707,17 @@ def run_installer(installer_path: str) -> bool:
 # Main update process
 def update_abib():
     # print("Checking for updates...")
-    update_available, version, exe_url = check_for_updates()
+    try:
+        result = check_for_updates()
+        # If check_for_updates() returned None, skip unpacking
+        if result is None:
+            return
+
+        update_available, version, exe_url = result
+    except TypeError:
+        # In case result isn’t iterable, bail out
+        return
+
     if not update_available:
         # print("No update available.")
         return
