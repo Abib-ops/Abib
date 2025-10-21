@@ -212,6 +212,21 @@ def remove_junk(text: str) -> str:
 
     return rex
 
+def update_devotional_font_size(new_size, filename="settings.json"):
+    """
+    Update the devotional font size in the settings file.
+    """
+    settings = load_settings_from_file(filename)
+    settings["devotional_font_size"] = new_size
+    save_settings_to_file(settings, filename)
+
+def get_devotional_font_size(filename="settings.json"):
+    """
+    Get the current devotional font size from settings.
+    """
+    settings = load_settings_from_file(filename)
+    return settings.get("devotional_font_size", 12)
+
 def convert_roman_to_integer(reference_text):
     """
     Converts all Roman numeral occurrences in the reference text to numeric values.
@@ -243,6 +258,26 @@ def load_settings_from_file(filename="settings.json"):
         "theme": "Light",
         "show_splash": False,
         "last_read_position": 0,
+        "devotional_font_size": 12,
+        # Window position and size settings
+        "main_window": {
+            "x": 0,
+            "y": 640,
+            "width": 640,
+            "height": 518
+        },
+        "devotional_window": {
+            "x": 0,
+            "y": 0,
+            "width": 640,
+            "height": 518
+        },
+        "pilgrims_progress_window": {
+            "x": 1283,
+            "y": 0,
+            "width": 737,
+            "height": 518
+        },
         "_comment": "This is a comment. It will be ignored by the program..."
     }
 
@@ -264,10 +299,17 @@ def load_settings_from_file(filename="settings.json"):
 
             # Add missing keys with their default values
             for key, value in default_settings.items():
-                settings_here.setdefault(key, value)
+                if isinstance(value, dict):
+                    # Handle nested dictionaries (like window settings)
+                    if key not in settings_here:
+                        settings_here[key] = value
+                    else:
+                        # Ensure all sub-keys exist
+                        for sub_key, sub_value in value.items():
+                            settings_here[key].setdefault(sub_key, sub_value)
+                else:
+                    settings_here.setdefault(key, value)
 
-            # print("Loaded settings:", settings_here)
-            # print("Settings file:", settings_here)
             return settings_here
 
     except JSONDecodeError:
@@ -276,6 +318,48 @@ def load_settings_from_file(filename="settings.json"):
     except Exception as err:
         print(f"Error loading settings: {err}. Using default settings.")
         return default_settings
+
+def save_window_geometry(window_name: str, x: int, y: int, width: int, height: int):
+    """Save window geometry to settings"""
+    # print(f"DEBUG: Saving geometry for {window_name}: x={x}, y={y}, w={width}, h={height}")
+
+    settings = load_settings_from_file()
+    # print(f"DEBUG: Current settings keys: {list(settings.keys())}")
+
+    if window_name not in settings:
+        settings[window_name] = {}
+
+    settings[window_name]["x"] = x
+    settings[window_name]["y"] = y
+    settings[window_name]["width"] = width
+    settings[window_name]["height"] = height
+
+    # print(f"DEBUG: Updated settings for {window_name}: {settings[window_name]}")
+
+    save_settings_to_file(settings)
+    # print(f"DEBUG: Settings saved to file")
+
+def get_window_geometry(window_name: str):
+    """Get window geometry from settings"""
+    settings = load_settings_from_file()
+    # print(f"DEBUG: Loading geometry for {window_name}")
+    # print(f"DEBUG: Available settings keys: {list(settings.keys())}")
+
+    if window_name in settings:
+        window_settings = settings[window_name]
+        # print(f"DEBUG: Found settings for {window_name}: {window_settings}")
+        result = (
+            window_settings.get("x", 100),
+            window_settings.get("y", 100),
+            window_settings.get("width", 640),
+            window_settings.get("height", 518)
+        )
+        # print(f"DEBUG: Returning geometry: {result}")
+        return result
+    else:
+        # Return default values
+        # print(f"DEBUG: No settings found for {window_name}, using defaults")
+        return 100, 100, 640, 518
 
 def isRoman(s: str) -> bool:
     """Regular expression to match valid Roman numerals"""

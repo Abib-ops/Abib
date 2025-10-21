@@ -62,7 +62,7 @@ Note to self:  Check for the use of 'pass' in the code.
 import re
 import time
 from os import environ
-from sys import exit, argv, setrecursionlimit
+from sys import exit, setrecursionlimit
 setrecursionlimit(200)
 
 # Suppress pygame welcome message
@@ -86,7 +86,7 @@ from PySide6.QtWidgets import (QMainWindow, QTextEdit, QVBoxLayout, QWidget, QDi
                                QStatusBar, QFileDialog, QCheckBox, QLabel)
 
 from PySide6.QtGui import (QAction, QMouseEvent, QKeyEvent, QSyntaxHighlighter, QIcon, QColor, QFont, QPixmap,
-                           QTextCursor, QTextCharFormat)
+                           QTextCursor, QTextCharFormat, QKeySequence, QShortcut)
 
 from PySide6.QtCore import Qt, QRect, QSize, QEvent, QTimer
 
@@ -745,6 +745,11 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
 
         # Load saved settings or initialise default ones.
+
+        # Load window geometry from settings
+        x6, y6, width6, height6 = fcs.get_window_geometry("main_window")
+        self.setGeometry(x6, y6, width6, height6)
+
         # self.feature = None
         self.text_edit_window = None
         self.text_edit = None
@@ -808,10 +813,11 @@ class MainWindow(QMainWindow):
         for _ in range(1, 32):
             self.nverses.append(str(_))
 
-        noa: int = len(argv)
+        # noa: int = len(argv)
         self.fontsize: int = 14
-        self.winwidth: int = 480  # Initial width of Abib Bible.
-        self.winheight: int = 810  # Initial height of Abib Bible.
+        # self.winwidth: int = width6  # Initial width of Abib Bible.
+        # self.winheight: int = height6  # Initial height of Abib Bible.
+        """
         if noa > 1:
             try:
                 self.fontsize = int(argv[1])
@@ -819,14 +825,15 @@ class MainWindow(QMainWindow):
                 self.winheight = int(argv[3])
             except ValueError:
                 pass
+        """
 
         self.initui()
 
     def initui(self) -> None:
         """Initialise Mainwindow GUI."""
 
-        w_origin, h_origin = centerer(self.winwidth, self.winheight)
-        self.setGeometry(w_origin, h_origin, self.winwidth, self.winheight)
+        # w_origin, h_origin = centerer(self.winwidth, self.winheight)
+        # self.setGeometry(w_origin, h_origin, self.winwidth, self.winheight)
 
         fixedfont: QFont = QFont("Cascadia Mono", self.fontsize, QFont.Weight.Medium)
         self.textEditor.setFont(fixedfont)
@@ -1083,7 +1090,7 @@ class MainWindow(QMainWindow):
         settings_action.triggered.connect(self.open_settings_dialog)
         help_menu.addAction(settings_action)
 
-        self.secondary_window = SecondaryWindow("Text to display", self.geometry())
+        self.secondary_window = SecondaryWindow("Text to display")
         self.secondary_window.text_display = QPlainTextEdit()
 
         # Apply theme from settings during initialisation.
@@ -1130,6 +1137,14 @@ class MainWindow(QMainWindow):
                 return True
 
         return super().eventFilter(source, event)
+
+    def closeEvent(self, event):
+        """Handle window close event - save geometry"""
+        geometry = self.geometry()
+        fcs.save_window_geometry("main_window",
+                                 geometry.x(), geometry.y(),
+                                 geometry.width(), geometry.height())
+        event.accept()
 
     def feature(self) -> None:
         """For a future feature key."""
@@ -2471,7 +2486,7 @@ class MainWindow(QMainWindow):
             self.settings["show_splash"] = dialog.splash_checkbox.isChecked()
 
             # DEBUG: Print settings before saving
-            print("Settings before saving:", self.settings)
+            # print("Settings before saving:", self.settings)
 
             # Save settings to the file
             fcs.save_settings_to_file(self.settings, user_settings_path)
@@ -2510,7 +2525,7 @@ class MainWindow(QMainWindow):
 
         if not self.secondary_window or not self.secondary_window.isVisible():
             # Create a new secondary window if it doesn't exist or is closed
-            self.secondary_window = SecondaryWindow(sme_text, self.geometry())
+            self.secondary_window = SecondaryWindow(sme_text)
             self.secondary_window.show()
         else:
             # If the window is already open, update its contents.
@@ -2601,11 +2616,10 @@ class MainWindow(QMainWindow):
 
 class SecondaryWindow(QDialog):
 
-    def __init__(self, text: str, parent_geometry: QRect = None):
+    def __init__(self, text: str):
         """
         Initialise the secondary window to display text.
         :param text: The text to display in the window.
-        :param parent_geometry: The geometry of the parent (primary) window for positioning.
         """
         super().__init__()
 
@@ -2613,33 +2627,35 @@ class SecondaryWindow(QDialog):
         if not isinstance(text, str):
             raise ValueError(f"Expected a string for 'text', but got {type(text).__name__}")
 
-        # Set default geometry if 'parent_geometry' is None
-        if parent_geometry is None:
-            parent_geometry = QRect(100, 100, 640, 480)  # Default example fallback
+        # Load window geometry from settings
+        x7, y7, width7, height7 = fcs.get_window_geometry("devotional_window")
 
         # Window setup
         self.setWindowTitle("C H Spurgeon's Morning and Evening Readings")
-        self.setGeometry(
-            parent_geometry.x() + parent_geometry.width() + 20,  # Adjacent to parent
-            parent_geometry.y(),
-            640,
-            518
-        )
+        self.setGeometry(x7, y7, width7, height7)
 
         self.text = text
+
+        # Load font size from settings
+        try:
+            self.fontsize = fcs.get_devotional_font_size()
+        except Exception as e7:
+            print(f"Failed to load font size: {e7}")
+            self.fontsize = 14  # fallback default
 
         # Text display
         self.text_display = QPlainTextEdit()
         self.text_display.setPlainText(text)
         self.text_display.setReadOnly(True)  # Make it read-only
 
-        # Apply the font from the main window
-        self.fontsize = 10
-        font: QFont = QFont("Cascadia Mono", self.fontsize, QFont.Weight.Medium)
-        self.text_display.setFont(font)
+        # Create keyboard shortcuts for font size changes
+        self.create_font_shortcuts()
+
+        # Set initial font
+        self.update_font()
 
         # Layout
-        layout = QVBoxLayout(self)
+        layout = QVBoxLayout()
         layout.addWidget(self.text_display)
 
         # Create a container for buttons
@@ -2655,7 +2671,6 @@ class SecondaryWindow(QDialog):
         self.left_button.clicked.connect(self.navigate_left)
         button_layout.addWidget(self.left_button)
 
-
         # Right navigation button
         self.right_button: QPushButton = QPushButton("→", self)
         self.right_button.setFixedSize(30, 30)  # Small square size
@@ -2664,6 +2679,53 @@ class SecondaryWindow(QDialog):
 
         # Add the button layout to the main layout
         layout.addLayout(button_layout)
+        self.setLayout(layout)
+
+    def create_font_shortcuts(self):
+        """Create keyboard shortcuts for font size changes"""
+        # Ctrl++ to increase font size
+        increase_shortcut = QShortcut(QKeySequence("Ctrl++"), self)
+        increase_shortcut.activated.connect(self.increase_font_size)
+
+        # Ctrl+= as alternative (since + requires Shift on many keyboards)
+        increase_alt_shortcut = QShortcut(QKeySequence("Ctrl+="), self)
+        increase_alt_shortcut.activated.connect(self.increase_font_size)
+
+        # Ctrl+- to decrease font size
+        decrease_shortcut = QShortcut(QKeySequence("Ctrl+-"), self)
+        decrease_shortcut.activated.connect(self.decrease_font_size)
+
+    def increase_font_size(self):
+        """Increase font size"""
+        self.fontsize = min(36, self.fontsize + 1)
+        self.update_font()
+
+    def decrease_font_size(self):
+        """Decrease font size"""
+        self.fontsize = max(6, self.fontsize - 1)
+        self.update_font()
+
+    def update_font(self):
+        """Update the text widget font and immediately save to settings"""
+        font: QFont = QFont("Cascadia Mono", self.fontsize, QFont.Weight.Medium)
+        self.text_display.setFont(font)
+
+        # Save font size to settings
+        try:
+            fcs.update_devotional_font_size(self.fontsize)
+        except Exception as e5:
+            print(f"Failed to save font size: {e5}")
+
+    def closeEvent(self, event):
+        """Handle window close event - save geometry"""
+        # Save window geometry
+        geometry = self.geometry()
+        fcs.save_window_geometry("devotional_window",
+                                 geometry.x(), geometry.y(),
+                                 geometry.width(), geometry.height())
+
+        print(f"Saved font size on close: {self.fontsize}")
+        event.accept()
 
     @staticmethod
     def navigate_left() -> None:
@@ -2845,7 +2907,10 @@ class TextDocumentWindow(QDialog):
         super().__init__()
         self.current_reference = None
         self.setWindowTitle("Text Document Viewer")
-        self.resize(800, 600)
+
+        # Load window geometry from settings
+        x8, y8, width8, height8 = fcs.get_window_geometry("pilgrims_progress_window")
+        self.setGeometry(x8, y8, width8, height8)
 
         # Load Bible data from a JSON file
         bible_data = fcs.load_json_dict("bible_data.json")
@@ -2951,6 +3016,14 @@ class TextDocumentWindow(QDialog):
 
         # Persist the settings to disk.
         fcs.save_settings_to_file(w.settings, user_settings_file)
+
+    def closeEvent(self, event):
+        """Handle window close event - save geometry"""
+        geometry = self.geometry()
+        fcs.save_window_geometry("pilgrims_progress_window",
+                                 geometry.x(), geometry.y(),
+                                 geometry.width(), geometry.height())
+        event.accept()
 
     def load_text_file(self, file_path1):
         """
