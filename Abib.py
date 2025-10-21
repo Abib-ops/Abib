@@ -54,9 +54,9 @@ Abib Bible Reader אביב
 
 Using PySide6-6.9.0 and python3.13.3 (64-bit).
 
-26/05/2025
+01/06/2025
 
-Note to self:  Check for the use of pass in the code.
+Note to self:  Check for the use of 'pass' in the code.
 """
 
 import re

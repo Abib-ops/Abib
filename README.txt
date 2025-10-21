@@ -4,11 +4,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v412.9
------------
+Abib v412.10
+------------
 
 Changelog.
 -----------
+Abib v412.10
+
+
 Abib 412.9
 Corrected error messages occurring when no internet connection is available at startup. So, in this case the update available check is ignored.
 
