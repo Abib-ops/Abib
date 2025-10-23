@@ -261,27 +261,31 @@ def load_settings_from_file(filename="settings.json"):
         "devotional_font_size": 12,
         # Window position and size settings
         "main_window": {
-            "x": 0,
-            "y": 640,
-            "width": 640,
-            "height": 518
+            "x": 50,
+            "y": 50,
+            "width": 500,
+            "height": 400
         },
         "devotional_window": {
-            "x": 0,
-            "y": 0,
-            "width": 640,
-            "height": 518
+            "x": 100,
+            "y": 100,
+            "width": 500,
+            "height": 400
         },
         "pilgrims_progress_window": {
-            "x": 1283,
+            "x": 0,
             "y": 0,
             "width": 737,
-            "height": 518
+            "height": 500
         },
         "_comment": "This is a comment. It will be ignored by the program..."
     }
 
     # Check if the file exists
+    settings_dir = Path(sh.user_settings_dir)
+    settings_dir.mkdir(parents=True, exist_ok=True)  # Create directory if it doesn't exist
+    filename = settings_dir / filename
+
     if not path.exists(filename):
         print("Settings file does not exist. Using default settings.")
         return default_settings
@@ -321,10 +325,10 @@ def load_settings_from_file(filename="settings.json"):
 
 def save_window_geometry(window_name: str, x: int, y: int, width: int, height: int):
     """Save window geometry to settings"""
-    # print(f"DEBUG: Saving geometry for {window_name}: x={x}, y={y}, w={width}, h={height}")
+    print(f"DEBUG: Saving geometry for {window_name}: x={x}, y={y}, w={width}, h={height}")
 
     settings = load_settings_from_file()
-    # print(f"DEBUG: Current settings keys: {list(settings.keys())}")
+    print(f"DEBUG: Current settings keys: {list(settings.keys())}")
 
     if window_name not in settings:
         settings[window_name] = {}
@@ -334,31 +338,31 @@ def save_window_geometry(window_name: str, x: int, y: int, width: int, height: i
     settings[window_name]["width"] = width
     settings[window_name]["height"] = height
 
-    # print(f"DEBUG: Updated settings for {window_name}: {settings[window_name]}")
+    print(f"DEBUG: Updated settings for {window_name}: {settings[window_name]}")
 
     save_settings_to_file(settings)
-    # print(f"DEBUG: Settings saved to file")
+    print(f"DEBUG: Settings saved to file")
 
 def get_window_geometry(window_name: str):
     """Get window geometry from settings"""
     settings = load_settings_from_file()
-    # print(f"DEBUG: Loading geometry for {window_name}")
-    # print(f"DEBUG: Available settings keys: {list(settings.keys())}")
+    print(f"DEBUG: Loading geometry for {window_name}")
+    print(f"DEBUG: Available settings keys: {list(settings.keys())}")
 
     if window_name in settings:
         window_settings = settings[window_name]
-        # print(f"DEBUG: Found settings for {window_name}: {window_settings}")
+        print(f"DEBUG: Found settings for {window_name}: {window_settings}")
         result = (
             window_settings.get("x", 100),
             window_settings.get("y", 100),
             window_settings.get("width", 640),
             window_settings.get("height", 518)
         )
-        # print(f"DEBUG: Returning geometry: {result}")
+        print(f"DEBUG: Returning geometry: {result}")
         return result
     else:
         # Return default values
-        # print(f"DEBUG: No settings found for {window_name}, using defaults")
+        print(f"DEBUG: No settings found for {window_name}, using defaults")
         return 100, 100, 640, 518
 
 def isRoman(s: str) -> bool:
@@ -372,8 +376,11 @@ def save_settings_to_file(the_settings, filename="settings.json"):
     """
     Save the given settings dictionary to a JSON file.
     """
-    # print(f"Saving settings to file: {filename}")
-    # print(f"Settings: {the_settings}")
+    print(f"Saving settings to file: {filename}")
+    print(f"Settings: {the_settings}")
+    settings_dir = Path(sh.user_settings_dir)
+    filename = settings_dir / filename
+
     try:
         # Explicitly annotate the file object
         with open(filename, "w") as file1:

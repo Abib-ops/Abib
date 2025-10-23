@@ -11,7 +11,7 @@ from os import getenv
 from json import loads
 from platform import system
 
-CURRENT_VERSION = "413.01"
+CURRENT_VERSION = "413.02"
 
 current_directory: Path = Path.cwd()
 str_cwd: str = str(current_directory)

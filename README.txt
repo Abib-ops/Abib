@@ -4,13 +4,17 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v413.01
+Abib v413.02
 ------------
 
 Changelog.
 -----------
+Abib v413.02
+Changes made to fix settings.json.
+
 Abib v413.01
 Changes to the Devotional, Main and Pilgrim's Progress windows made by the user should now persist.
+But it did not work.
 
 Abib 412.9
 Corrected error messages occurring when no internet connection is available at startup. So, in this case the update available check is ignored.
