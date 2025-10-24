@@ -52,9 +52,9 @@ Additional Bible-based resources are available at www.spurgeongems.org.
 
 Abib Bible Reader אביב
 
-Using PySide6-6.9.0 and python3.13.3 (64-bit).
+Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-21/10/2025
+24/10/2025
 
 Note to self:  Check for the use of 'pass' in the code.
 """
@@ -715,7 +715,7 @@ def update_abib():
 
         update_available, version, exe_url = result
     except TypeError:
-        # In case result isn’t iterable, bail out
+        # In case a result isn’t iterable, bail out
         return
 
     if not update_available:
@@ -735,6 +735,16 @@ def update_abib():
     print("Update completing. Installing New Version of Abib.")
     print("Closing down the old version of Abib...")
     exit(0)  # Exit the old instance of the application
+
+
+class NoZoomPlainTextEdit(QPlainTextEdit):
+    def wheelEvent(self, event):
+        # Block zoom when Ctrl is pressed
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            event.ignore()
+            return
+        # Allow normal scrolling
+        super().wheelEvent(event)
 
 
 class MainWindow(QMainWindow):
@@ -783,10 +793,22 @@ class MainWindow(QMainWindow):
         self.okButton: None = None
         self.dlg: None = None  # No external window yet.
         self.gent: None = None
-        self.textEditor: QPlainTextEdit = QPlainTextEdit()
+        # self.textEditor: QPlainTextEdit = QPlainTextEdit()
+        self.textEditor = NoZoomPlainTextEdit()
+
         # Store a reference to the secondary window to manage its lifecycle
         self.secondary_window = None
         self.feature = self.feature
+
+        # Create shortcuts
+        self.increase_font_shortcut = QShortcut(QKeySequence("Ctrl++"), self)
+        self.increase_font_shortcut.activated.connect(self.increase_font_size)
+
+        self.increase_font_shortcut = QShortcut(QKeySequence("Ctrl+="), self)
+        self.increase_font_shortcut.activated.connect(self.increase_font_size)
+
+        self.decrease_font_shortcut = QShortcut(QKeySequence("Ctrl+-"), self)
+        self.decrease_font_shortcut.activated.connect(self.decrease_font_size)
 
         #Qt.QTimer.singleShot(0, lambda: self.sme("PM", -1))  # Adjusted to yesterday evening's reading.
 
@@ -1102,6 +1124,8 @@ class MainWindow(QMainWindow):
         # Placeholder for the AboutWindow (lazy-loaded)
         self.about_window = None
 
+        self.apply_font_size()  # Set an initial font size from settings
+
     # noinspection PyUnresolvedReferences
     def eventFilter(self, source, event):
         """Custom event filter to handle key events on QLineEdit."""
@@ -1136,6 +1160,7 @@ class MainWindow(QMainWindow):
                     self.display_verse_input.clear()  # Clear the input field after submission
                 return True
 
+        # Pass the event to the parent class
         return super().eventFilter(source, event)
 
     def closeEvent(self, event):
@@ -1145,6 +1170,26 @@ class MainWindow(QMainWindow):
                                  geometry.x(), geometry.y(),
                                  geometry.width(), geometry.height())
         event.accept()
+
+    def increase_font_size(self):
+        current_size = fcs.get_bible_font_size()
+        new_size = min(current_size + 2, 72 )  # Max size of 72
+        fcs.update_bible_font_size(new_size)
+        # print(f"DEBUG: Increase Bible fontsize to: {new_size}")
+        self.apply_font_size()
+
+    def decrease_font_size(self):
+        current_size = fcs.get_bible_font_size()
+        new_size = max(current_size - 2, 8)  # Min size of 8
+        fcs.update_bible_font_size(new_size)
+        # print(f"DEBUG: Increase Bible fontsize to: {new_size}")
+        self.apply_font_size()
+
+    def apply_font_size(self):
+        self.fontsize = fcs.get_bible_font_size()
+        # Create a QFont object and apply it to the QPlainTextEdit
+        font = QFont("Cascadia Mono", self.fontsize)
+        self.textEditor.setFont(font)
 
     def feature(self) -> None:
         """For a future feature key."""
@@ -2486,7 +2531,7 @@ class MainWindow(QMainWindow):
             self.settings["show_splash"] = dialog.splash_checkbox.isChecked()
 
             # DEBUG: Print settings before saving
-            # print("Settings before saving:", self.settings)
+            # print(f"DEBUG: Settings before saving: {self.settings}")
 
             # Save settings to the file
             fcs.save_settings_to_file(self.settings, user_settings_path)
@@ -2614,7 +2659,23 @@ class MainWindow(QMainWindow):
 #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of MainWindow class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-class SecondaryWindow(QDialog):
+class NoZoomDialog(QDialog):
+    def eventFilter(self, obj, event):
+        # Block Ctrl+Wheel events on any child widget
+        if event.type() == QEvent.Type.Wheel:
+            if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+                event.ignore()
+                return True
+        return super().eventFilter(obj, event)
+
+    def showEvent(self, event):
+        # Install event filter on all child widgets when a dialog is shown
+        super().showEvent(event)
+        for child in self.findChildren(QWidget):
+            child.installEventFilter(self)
+
+
+class SecondaryWindow(NoZoomDialog):
 
     def __init__(self, text: str):
         """
@@ -2651,7 +2712,7 @@ class SecondaryWindow(QDialog):
         # Create keyboard shortcuts for font size changes
         self.create_font_shortcuts()
 
-        # Set initial font
+        # Set an initial font
         self.update_font()
 
         # Layout
@@ -2687,7 +2748,7 @@ class SecondaryWindow(QDialog):
         increase_shortcut = QShortcut(QKeySequence("Ctrl++"), self)
         increase_shortcut.activated.connect(self.increase_font_size)
 
-        # Ctrl+= as alternative (since + requires Shift on many keyboards)
+        # Ctrl+= as an alternative (since + requires Shift on many keyboards)
         increase_alt_shortcut = QShortcut(QKeySequence("Ctrl+="), self)
         increase_alt_shortcut.activated.connect(self.increase_font_size)
 
@@ -2697,7 +2758,7 @@ class SecondaryWindow(QDialog):
 
     def increase_font_size(self):
         """Increase font size"""
-        self.fontsize = min(36, self.fontsize + 1)
+        self.fontsize = min(72, self.fontsize + 1)
         self.update_font()
 
     def decrease_font_size(self):

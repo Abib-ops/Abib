@@ -14,7 +14,7 @@ import shared as sh
 from datetime import datetime, timedelta
 from os import path
 from pathlib import Path
-from shutil import copy2
+# from shutil import copy2
 
 import re
 
@@ -212,28 +212,14 @@ def remove_junk(text: str) -> str:
 
     return rex
 
-def update_devotional_font_size(new_size, filename="settings.json"):
-    """
-    Update the devotional font size in the settings file.
-    """
-    settings = load_settings_from_file(filename)
-    settings["devotional_font_size"] = new_size
-    save_settings_to_file(settings, filename)
-
-def get_devotional_font_size(filename="settings.json"):
-    """
-    Get the current devotional font size from settings.
-    """
-    settings = load_settings_from_file(filename)
-    return settings.get("devotional_font_size", 12)
-
 def convert_roman_to_integer(reference_text):
     """
     Converts all Roman numeral occurrences in the reference text to numeric values.
     Roman numerals are case-insensitive (e.g. IV == iv == 4).
     """
     # Regex to match Roman numerals (case-insensitive)
-    pattern = re.compile(r'\b(IV|IX|XL|XC|L|C|D|M|I|V|X)+\b', re.IGNORECASE)
+    # pattern = re.compile(r'\b(IV|IX|XL|XC|L|C|D|M|I|V|X)+\b', re.IGNORECASE)
+    pattern = re.compile(r'\b(XL|XC|IV|IX|[MDCLXVI])+\b', re.IGNORECASE)
 
     def replacer(matched):
         # Extract matched Roman numeral
@@ -248,6 +234,29 @@ def convert_roman_to_integer(reference_text):
     # Replace all valid Roman numerals in the reference text with their numeric equivalents
     return pattern.sub(replacer, reference_text)
 
+def isRoman(s: str) -> bool:
+    """Regular expression to match valid Roman numerals"""
+
+    roman_pattern = r"^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$"
+    s = s.upper()
+    return bool(re.match(roman_pattern, s))
+
+def update_devotional_font_size(new_size, filename="settings.json"):
+    """
+    Update the devotional font size in the settings file.
+    """
+    settings = load_settings_from_file(filename)
+    settings["devotional_font_size"] = new_size
+    save_settings_to_file(settings, filename)
+    # print(f"DEBUG: Updated devotional fontsize to: {new_size}")
+
+def get_devotional_font_size(filename="settings.json"):
+    """
+    Get the current devotional font size from settings.
+    """
+    settings = load_settings_from_file(filename)
+    return settings.get("devotional_font_size", 12)
+
 def load_settings_from_file(filename="settings.json"):
     """
     Load the settings dictionary from a JSON file.
@@ -259,6 +268,7 @@ def load_settings_from_file(filename="settings.json"):
         "show_splash": False,
         "last_read_position": 0,
         "devotional_font_size": 12,
+        "bible_font_size": 12,
         # Window position and size settings
         "main_window": {
             "x": 50,
@@ -267,23 +277,23 @@ def load_settings_from_file(filename="settings.json"):
             "height": 400
         },
         "devotional_window": {
-            "x": 100,
-            "y": 100,
-            "width": 500,
+            "x": 560,
+            "y": 50,
+            "width": 350,
             "height": 400
         },
         "pilgrims_progress_window": {
-            "x": 0,
-            "y": 0,
+            "x": 51,
+            "y": 485,
             "width": 737,
-            "height": 500
+            "height": 400
         },
         "_comment": "This is a comment. It will be ignored by the program..."
     }
 
     # Check if the file exists
     settings_dir = Path(sh.user_settings_dir)
-    settings_dir.mkdir(parents=True, exist_ok=True)  # Create directory if it doesn't exist
+    settings_dir.mkdir(parents=True, exist_ok=True)  # Create a directory if it doesn't exist
     filename = settings_dir / filename
 
     if not path.exists(filename):
@@ -308,7 +318,7 @@ def load_settings_from_file(filename="settings.json"):
                     if key not in settings_here:
                         settings_here[key] = value
                     else:
-                        # Ensure all sub-keys exist
+                        # Ensure all subkeys exist
                         for sub_key, sub_value in value.items():
                             settings_here[key].setdefault(sub_key, sub_value)
                 else:
@@ -325,10 +335,10 @@ def load_settings_from_file(filename="settings.json"):
 
 def save_window_geometry(window_name: str, x: int, y: int, width: int, height: int):
     """Save window geometry to settings"""
-    print(f"DEBUG: Saving geometry for {window_name}: x={x}, y={y}, w={width}, h={height}")
+    # print(f"DEBUG: Saving geometry for {window_name}: x={x}, y={y}, w={width}, h={height}")
 
     settings = load_settings_from_file()
-    print(f"DEBUG: Current settings keys: {list(settings.keys())}")
+    # print(f"DEBUG: Current settings keys: {list(settings.keys())}")
 
     if window_name not in settings:
         settings[window_name] = {}
@@ -338,46 +348,39 @@ def save_window_geometry(window_name: str, x: int, y: int, width: int, height: i
     settings[window_name]["width"] = width
     settings[window_name]["height"] = height
 
-    print(f"DEBUG: Updated settings for {window_name}: {settings[window_name]}")
+    # print(f"DEBUG: Updated settings for {window_name}: {settings[window_name]}")
 
     save_settings_to_file(settings)
-    print(f"DEBUG: Settings saved to file")
+    # print(f"DEBUG: Settings saved to file")
 
 def get_window_geometry(window_name: str):
     """Get window geometry from settings"""
     settings = load_settings_from_file()
-    print(f"DEBUG: Loading geometry for {window_name}")
-    print(f"DEBUG: Available settings keys: {list(settings.keys())}")
+    # print(f"DEBUG: Loading geometry for {window_name}")
+    # print(f"DEBUG: Available settings keys: {list(settings.keys())}")
 
     if window_name in settings:
         window_settings = settings[window_name]
-        print(f"DEBUG: Found settings for {window_name}: {window_settings}")
+        # print(f"DEBUG: Found settings for {window_name}: {window_settings}")
         result = (
             window_settings.get("x", 100),
             window_settings.get("y", 100),
             window_settings.get("width", 640),
             window_settings.get("height", 518)
         )
-        print(f"DEBUG: Returning geometry: {result}")
+        # print(f"DEBUG: Returning geometry: {result}")
         return result
     else:
         # Return default values
-        print(f"DEBUG: No settings found for {window_name}, using defaults")
+        # print(f"DEBUG: No settings found for {window_name}, using defaults")
         return 100, 100, 640, 518
-
-def isRoman(s: str) -> bool:
-    """Regular expression to match valid Roman numerals"""
-
-    roman_pattern = r"^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$"
-    s = s.upper()
-    return bool(re.match(roman_pattern, s))
 
 def save_settings_to_file(the_settings, filename="settings.json"):
     """
     Save the given settings dictionary to a JSON file.
     """
-    print(f"Saving settings to file: {filename}")
-    print(f"Settings: {the_settings}")
+    # print(f"DEBUG: Saving settings to file: {filename}")
+    # print(f"DEBUG: Settings: {the_settings}")
     settings_dir = Path(sh.user_settings_dir)
     filename = settings_dir / filename
 
@@ -388,6 +391,39 @@ def save_settings_to_file(the_settings, filename="settings.json"):
             dump(the_settings, file1, indent=4)  # Save as JSON with pretty formatting
     except IOError as e1:
         print(f"Error saving settings to file: {e1}")
+
+def setup_Abib_settings(abib_directory: Path) -> None:
+    """ Set up the Abib user folder containing the 'settings.json' file."""
+
+    # Create the Abib directory if it doesn't exist
+    abib_directory.mkdir(parents=True, exist_ok=True)
+
+    # Path to the settings file in the target directory
+    settings_file = abib_directory / "settings.json"
+
+    # Create an empty settings.json if it doesn't exist
+    if not settings_file.exists():
+        with open(settings_file, "w") as f:
+            f.write("{}")
+        print(f"Created empty settings.json in {abib_directory}")
+    else:
+        print(f"Settings.json already exists in {abib_directory}")
+
+def update_bible_font_size(new_size, filename="settings.json"):
+    """
+    Update the Bible font size in the settings file.
+    """
+    settings = load_settings_from_file(filename)
+    settings["bible_font_size"] = new_size
+    save_settings_to_file(settings, filename)
+    # print(f"DEBUG: Updated Bible fontsize to: {new_size}")
+
+def get_bible_font_size(filename="settings.json"):
+    """
+    Get the current Bible font size from settings.
+    """
+    settings = load_settings_from_file(filename)
+    return settings.get("bible_font_size", 12)
 
 def compare_versions(version1, version2):
     """
@@ -640,23 +676,3 @@ def get_date_file(date_index: int = 0, adjustment: int = 0) -> tuple:
 
     # Return the formatted date, morning/evening info, and updated date_index
     return formatted_date, morn_or_even, date_index
-
-def setup_Abib_settings(abib_directory: Path) -> None:
-    """ Set up the Abib user folder containing the 'settings.json' file."""
-
-    # Create the Abib directory if it doesn't exist
-    abib_directory.mkdir(parents=True, exist_ok=True)
-    # print(f"Created Abib directory: {abib_directory}")
-
-    # Path to the source settings.json file to copy (e.g. in your current working directory)
-    source_settings_file = Path("settings.json")
-    print(f"source_settings_file: {source_settings_file}")
-
-    # Copy the file to the target user directory ... But don't if it exists!
-    if source_settings_file.is_file():
-        print(f"Source settings.json found: {source_settings_file}")
-        if path.exists(abib_directory):
-            copy2(source_settings_file, abib_directory)
-            print(f"Copied settings.json to {abib_directory}")
-        else:
-            print(f"Abib settings.json was found: {abib_directory} ... Skipping copy.")

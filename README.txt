@@ -4,11 +4,38 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v413.02
+Abib v413.03
 ------------
 
 Changelog.
 -----------
+Abib v413.03
+Release version, bugs fixed, Main Devotional and Pilgrim's Progress windows now preserve their position and size.
+The font size is adjustable and persists for the Main and Devotional windows.
+Package                   Version
+------------------------- ---------
+python                    3.13.9
+pip                       25.2
+altgraph                  0.17.4
+certifi                   2025.10.5
+charset-normalizer        3.4.4
+idna                      3.11
+packaging                 25.0
+pefile                    2023.2.7
+pip                       25.2
+pygame                    2.6.1
+pyinstaller               6.16.0
+pyinstaller-hooks-contrib 2025.9
+PySide6                   6.10.0
+PySide6_Addons            6.10.0
+PySide6_Essentials        6.10.0
+pywin32-ctypes            0.2.3
+requests                  2.32.5
+roman                     5.1
+setuptools                80.9.0  <81  # Pin to avoid pygame warning
+shiboken6                 6.10.0
+urllib3                   2.5.0
+
 Abib v413.02
 Changes made to fix settings.json.
 
@@ -17,7 +44,8 @@ Changes to the Devotional, Main and Pilgrim's Progress windows made by the user 
 But it did not work.
 
 Abib 412.9
-Corrected error messages occurring when no internet connection is available at startup. So, in this case the update available check is ignored.
+Corrected error messages occurring when no internet connection is available at startup.
+So, in this case the update-available check is ignored.
 
 Abib 412.8
 Minor refactoring.
@@ -25,8 +53,9 @@ Minor refactoring.
 Abib v412.7
 Upgraded various packages associated with requirements.txt.
 These are needed for the pyinstaller build process.
-Git-Hub gave a warning about a security vulnerability:
-"setuptools has a path traversal vulnerability in PackageIndex.download that leads to Arbitrary File Write". This is now fixed.
+GitHub gave a warning about a security vulnerability:
+"setuptools has a path traversal vulnerability in PackageIndex.download that leads to Arbitrary File Write".
+This is now fixed.
 
 Abib v412.6
 Adjustment to the position of the scripture popup windows to suit 
@@ -70,7 +99,10 @@ Abib v410.3
 Bug fixed regarding installation.
 About.txt changed for cross-platform compatibility.
 
-The current implementation requires that you either provide no arguments or exactly three arguments, in the following order: font-size, width, and height. By default, these values are set to "14 480 810" respectively. Consequently, if you only wish to modify the font size, you must supply all three parameters, e.g. "11 480 810" or "12 480 810." This approach ensures that a wide range of window sizes can be accommodated to suit different screens.
+The current implementation requires that you either provide no arguments or exactly three arguments, in the
+following order: font-size, width, and height. By default, these values are set to "14 480 810" respectively.
+Consequently, if you only wish to modify the font size, you must supply all three parameters, e.g. "11 480 810"
+or "12 480 810." This approach ensures that a wide range of window sizes can be accommodated to suit different screens.
 
 The place to put the arguments:
 Right-click on the Windows Abib icon;
@@ -83,7 +115,10 @@ Apply Changes:
 - Click Apply and OK to save the changes.
 
 Abib v410.2
-Bug fixed concerning incorrect behaviour when entering integer values for verses, that is just the verse number is entered, and you should go to that verse in the chapter you are in. This was broken because of the addition of the possibility of using negative numbers, which are interpreted as going back that number of verses, e.g. if you are at verse 20, and you enter -5, you will go to verse 15.
+Bug fixed concerning incorrect behaviour when entering integer values for verses, that is just the verse number is
+entered, and you should go to that verse in the chapter you are in. This was broken because of the addition of the
+possibility of using negative numbers, which are interpreted as going back that number of verses, e.g. if you are at
+verse 20, and you enter -5, you will go to verse 15.
 
 Abib v410.1
 Commentary removed because not ready yet.
@@ -178,8 +213,9 @@ Extensively refactored.  Nothing major to the logic.
 Except:
 Bugfix correcting Back and especially Forward not working properly.
 
-Another bug fixed regarding the following verses; Joshua 15:1,Job 7:1, Psalm 70:1, Psalm 92:1, Hosea 8:1, and Romans 8:1.
-These are all first verses of chapters that start with italicised first words, and were displayed incorrectly when viewed using Back and Forward.
+Another bug fixed regarding the following verses; Joshua 15:1,Job 7:1, Psalm 70:1, Psalm 92:1, Hosea 8:1, and
+Romans 8:1.  These are all first verses of chapters that start with italicised first words and were displayed
+incorrectly when viewed using Back and Forward.
 
 Some changes to the way that the Find process works and to the highlighting of the search key.
 
