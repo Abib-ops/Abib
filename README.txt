@@ -4,8 +4,11 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v413.04
+Abib v413.05
 ------------
+
+Abib v413.05
+Same as v413.04 but now really gpg signed
 
 Abib v413.04
 Same as v413.03 but correctly gpg signed.
