@@ -14,9 +14,27 @@ import shared as sh
 from datetime import datetime, timedelta
 from os import path
 from pathlib import Path
-# from shutil import copy2
+from PySide6.QtWidgets import QApplication
+from typing import cast
 
 import re
+
+def get_screen_size() -> tuple[int, int]:
+    """Get the primary screen dimensions."""
+
+    app_instance = QApplication.instance()
+    if app_instance is None:
+        # If no QApplication exists, create a temporary one
+        temp_app = QApplication([])
+        width, height = temp_app.primaryScreen().size().toTuple()
+        temp_app.quit()
+        return width, height
+    else:
+        # Cast to QApplication to access primaryScreen()
+        app = cast(QApplication, app_instance)
+        width, height = app.primaryScreen().size().toTuple()
+        return width, height
+
 
 def split_strip(_key: str) -> tuple[int, str]:
     """Remove whitespace from '_key' entered as passage reference."""
@@ -32,10 +50,12 @@ def split_strip(_key: str) -> tuple[int, str]:
 
     return num, _key
 
-def create_pattern(key):
+
+def create_pattern(key: str) -> str:
     """Create a regex pattern based on the given key."""
 
     return rf"\b{key[:-2]}[s’][s’]" if key[-2:] == "s’" else rf"\b{key}\b"
+
 
 def punctuation_counter(text: str) -> int:
     """Count the number of punctuation characters in text."""
@@ -47,6 +67,7 @@ def punctuation_counter(text: str) -> int:
         num += k
 
     return num
+
 
 def repeat_find(rx: str, start: int, end: int) -> int:
     """Repeat find of lengthening text.
@@ -70,6 +91,7 @@ def repeat_find(rx: str, start: int, end: int) -> int:
 
     return sumb
 
+
 def repeat_find_keyinc(rx: str, start: int, end: int) -> int:
     """Repeat find of lengthening text.
 
@@ -89,6 +111,7 @@ def repeat_find_keyinc(rx: str, start: int, end: int) -> int:
 
     return sumb
 
+
 def readio(input_path: str, input_filename: str, file_length: int) -> list:
     """Read Bible files."""
 
@@ -103,6 +126,7 @@ def readio(input_path: str, input_filename: str, file_length: int) -> list:
 
     return output_listname
 
+
 def load_json_dict(file_dict: Any) -> Any:
     """Load a dictionary with JSON."""
 
@@ -111,6 +135,7 @@ def load_json_dict(file_dict: Any) -> Any:
         file1 = load(read_file)
 
     return file1
+
 
 def load_list_set_dict(input_filename: str, ref_dict: Any) -> dict[Any, set]:
     """Load a list_dict.txt/json file that is a dictionary of Bible words.
@@ -136,6 +161,7 @@ def load_list_set_dict(input_filename: str, ref_dict: Any) -> dict[Any, set]:
 
     return setdict
 
+
 def is_float_re(string_: str) -> bool:
     """Take a string and determine if it represents a float.
 
@@ -146,6 +172,7 @@ def is_float_re(string_: str) -> bool:
     m = re.match(pattern, string_)  # Use re.match directly
 
     return m is not None  # More Pythonic than `return True if m else False`
+
 
 def any_of_the_words_lookup(_key: str, _set: dict[str, set]) -> tuple[int, str]:
     """Takes '_key' and splits it into separate words in 'liszt',
@@ -164,6 +191,7 @@ def any_of_the_words_lookup(_key: str, _set: dict[str, set]) -> tuple[int, str]:
 
     return number_of_occurrences, _key
 
+
 def squeeze(char: str, s: str) -> str:
     """Remove duplicate characters. For example, '.....' is replaced with '.'."""
 
@@ -171,6 +199,7 @@ def squeeze(char: str, s: str) -> str:
         s = s.replace(char * 2, char)
 
     return s
+
 
 def remove_junk(text: str) -> str:
     """Remove junk characters from 'text'.
@@ -212,27 +241,24 @@ def remove_junk(text: str) -> str:
 
     return rex
 
-def convert_roman_to_integer(reference_text):
+
+def convert_roman_to_integer(reference_text: str) -> str:
     """
     Converts all Roman numeral occurrences in the reference text to numeric values.
     Roman numerals are case-insensitive (e.g. IV == iv == 4).
+    Returns the modified text with numerals replaced by integers.
     """
-    # Regex to match Roman numerals (case-insensitive)
-    # pattern = re.compile(r'\b(IV|IX|XL|XC|L|C|D|M|I|V|X)+\b', re.IGNORECASE)
     pattern = re.compile(r'\b(XL|XC|IV|IX|[MDCLXVI])+\b', re.IGNORECASE)
 
-    def replacer(matched):
-        # Extract matched Roman numeral
+    def replacer(matched: re.Match[str]) -> str:
         roman_numeral = matched.group(0)
         try:
-            # Use `fromRoman` to convert 'roman_numeral' to an integer
             return str(fromRoman(roman_numeral))
         except InvalidRomanNumeralError:
-            # In case of invalid Roman numerals, return the original text
             return roman_numeral
 
-    # Replace all valid Roman numerals in the reference text with their numeric equivalents
     return pattern.sub(replacer, reference_text)
+
 
 def isRoman(s: str) -> bool:
     """Regular expression to match valid Roman numerals"""
@@ -241,7 +267,8 @@ def isRoman(s: str) -> bool:
     s = s.upper()
     return bool(re.match(roman_pattern, s))
 
-def update_devotional_font_size(new_size, filename="settings.json"):
+
+def update_devotional_font_size(new_size: Any, filename="settings.json"):
     """
     Update the devotional font size in the settings file.
     """
@@ -250,14 +277,16 @@ def update_devotional_font_size(new_size, filename="settings.json"):
     save_settings_to_file(settings, filename)
     # print(f"DEBUG: Updated devotional fontsize to: {new_size}")
 
-def get_devotional_font_size(filename="settings.json"):
+
+def get_devotional_font_size(filename="settings.json") -> int:
     """
     Get the current devotional font size from settings.
     """
     settings = load_settings_from_file(filename)
     return settings.get("devotional_font_size", 12)
 
-def load_settings_from_file(filename="settings.json"):
+
+def load_settings_from_file(filename="settings.json") -> Any:
     """
     Load the settings dictionary from a JSON file.
     If the file is missing, empty, malformed, or has partial settings, return defaults.
@@ -333,6 +362,7 @@ def load_settings_from_file(filename="settings.json"):
         print(f"Error loading settings: {err}. Using default settings.")
         return default_settings
 
+
 def save_window_geometry(window_name: str, x: int, y: int, width: int, height: int):
     """Save window geometry to settings"""
     # print(f"DEBUG: Saving geometry for {window_name}: x={x}, y={y}, w={width}, h={height}")
@@ -353,11 +383,15 @@ def save_window_geometry(window_name: str, x: int, y: int, width: int, height: i
     save_settings_to_file(settings)
     # print(f"DEBUG: Settings saved to file")
 
-def get_window_geometry(window_name: str):
+
+def get_window_geometry(window_name: str) -> tuple[int, int, int, int]:
     """Get window geometry from settings"""
+
     settings = load_settings_from_file()
-    # print(f"DEBUG: Loading geometry for {window_name}")
-    # print(f"DEBUG: Available settings keys: {list(settings.keys())}")
+    print(f"DEBUG: Loading geometry for {window_name}")
+    print(f"DEBUG: Available settings keys: {list(settings.keys())}")
+    width, height = get_screen_size()
+    print(f"DEBUG: Screen size from fcs.py: {width}x{height}")
 
     if window_name in settings:
         window_settings = settings[window_name]
@@ -365,15 +399,24 @@ def get_window_geometry(window_name: str):
         result = (
             window_settings.get("x", 100),
             window_settings.get("y", 100),
-            window_settings.get("width", 640),
+            window_settings.get("width", 737),
             window_settings.get("height", 518)
         )
-        # print(f"DEBUG: Returning geometry: {result}")
+        if result[0] < 0:
+            result = (100, result[1], result[2], result[3])
+        if result[1] < 0:
+            result = (result[0], 100, result[2], result[3])
+        if result[0] + result[2] > width:
+            result = (0, result[1], 737, result[3])
+        if result[1] + result[3] > height:
+            result = (result[0], 100, result[2], 518)
+        print(f"DEBUG: Returning geometry of {window_name}: {result}")
         return result
     else:
         # Return default values
-        # print(f"DEBUG: No settings found for {window_name}, using defaults")
+        print(f"DEBUG: No settings found for {window_name}, using defaults")
         return 100, 100, 640, 518
+
 
 def save_settings_to_file(the_settings, filename="settings.json"):
     """
@@ -392,6 +435,7 @@ def save_settings_to_file(the_settings, filename="settings.json"):
     except IOError as e1:
         print(f"Error saving settings to file: {e1}")
 
+
 def setup_Abib_settings(abib_directory: Path) -> None:
     """ Set up the Abib user folder containing the 'settings.json' file."""
 
@@ -409,6 +453,7 @@ def setup_Abib_settings(abib_directory: Path) -> None:
     else:
         print(f"Settings.json already exists in {abib_directory}")
 
+
 def update_bible_font_size(new_size, filename="settings.json"):
     """
     Update the Bible font size in the settings file.
@@ -418,12 +463,14 @@ def update_bible_font_size(new_size, filename="settings.json"):
     save_settings_to_file(settings, filename)
     # print(f"DEBUG: Updated Bible fontsize to: {new_size}")
 
+
 def get_bible_font_size(filename="settings.json"):
     """
     Get the current Bible font size from settings.
     """
     settings = load_settings_from_file(filename)
     return settings.get("bible_font_size", 12)
+
 
 def compare_versions(version1, version2):
     """
@@ -458,6 +505,7 @@ def compare_versions(version1, version2):
 
     return 0  # versions are equal
 
+
 def clean_chap_prefix(reference_text: str) -> str:
     """Clean 'Chap' prefixes from the reference text."""
 
@@ -477,6 +525,7 @@ def clean_chap_prefix(reference_text: str) -> str:
     reference_text = reference_text.split(",")[0]
 
     return reference_text
+
 
 def tidy(text: str, parts: list) ->  str:
     """Tidy up the reference parts."""
@@ -500,6 +549,7 @@ def tidy(text: str, parts: list) ->  str:
         # print(f"373 text: {text}")
 
     return text
+
 
 def split_reference(reference_text: str) -> list:
     """
@@ -633,12 +683,14 @@ def check_roman_chapter_adjacent(reference_text: str) -> str:
 
     return reference_text
 
+
 def attach_book_name(reference_text: str, current_line: int) -> str:
     """Attach a book name to the floating-point reference."""
 
     z1 = sh.Info[current_line][0] + 1
     book_name = next((key for key, value in sh.bibledict.items() if value == z1), "")
     return f"{book_name} {reference_text}"
+
 
 def get_date_file(date_index: int = 0, adjustment: int = 0) -> tuple:
     """

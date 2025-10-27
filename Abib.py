@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-25/10/2025
+27/10/2025
 
 Note to self:  Check for the use of 'pass' in the code.
 """
@@ -1163,7 +1163,7 @@ class MainWindow(QMainWindow):
         # Pass the event to the parent class
         return super().eventFilter(source, event)
 
-    def closeEvent(self, event):
+    def closeEvent(self, event: Any):
         """Handle window close event - save geometry"""
         geometry = self.geometry()
         fcs.save_window_geometry("main_window",
@@ -1579,7 +1579,7 @@ class MainWindow(QMainWindow):
         # List of verses containing the searched for item.
         # Number of occurrences of the searchitem within the range x1 to x2.
 
-    def occurrent(self, x1: int, x2: int):
+    def occurrent(self, x1: int, x2: int) -> int:
         """Count occurrences of the item searched for."""
 
         if w.occurrence == 0:
@@ -3067,7 +3067,7 @@ class TextDocumentWindow(QDialog):
         }
 
     @staticmethod
-    def save_scroll_position(value):
+    def save_scroll_position(value: Any) -> None:
         """
         Save the current vertical scroll position immediately.
         """
@@ -3409,7 +3409,6 @@ class FindDialog(QDialog):
         self.ui.comboBox_1.setCurrentIndex(0)
         self.ui.comboBox_2.setCurrentIndex(sh.BOOKS_IN_THE_BIBLE - 1)
 
-
         QOk = QDialogButtonBox.StandardButton.Ok
         self.ui.buttonBox.button(QOk).setEnabled(True)
         self.ui.buttonBox.button(QOk).setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -3535,6 +3534,7 @@ if __name__ == '__main__':
         app.processEvents()
 
     width, height = app.primaryScreen().size().toTuple()
+    print(f"Screen size: {width}x{height}")
     half_width = width / 2
     half_height = height / 2
 

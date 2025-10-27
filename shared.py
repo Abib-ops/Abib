@@ -11,7 +11,7 @@ from os import getenv
 from json import loads
 from platform import system
 
-CURRENT_VERSION = "413.05"
+CURRENT_VERSION = "413.06"
 current_directory: Path = Path.cwd()
 str_cwd: str = str(current_directory)
 # settings_file: Path = current_directory / 'settings.json'
@@ -142,6 +142,7 @@ bibledict: dict[str, int] = {
 
 onechapterbooks: tuple[int, int, int, int, int] = (30, 56, 62, 63, 64)
 
+
 def readfile(input_path: str, input_filename: str, file_length: int) -> list:
     """File reading routine — reads a text file into a list."""
 
@@ -160,6 +161,7 @@ def readfile(input_path: str, input_filename: str, file_length: int) -> list:
         exit(err)  # Exit the program with an error message
 
     return output_listname
+
 
 # Read Info.txt
 Info = []

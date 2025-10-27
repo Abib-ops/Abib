@@ -4,17 +4,23 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v413.05
+Abib v413.06
 ------------
 
+Changelog.
+-----------
+Abib v413.06
+The display font size can no longer be zoomed up and down by holding down
+Ctrl and using the mouse wheel. From now on, use Ctrl+- and Ctrl++.
+Adjustments made to prevent windows being located outside the screen area over a restart.
+
 Abib v413.05
-Same as v413.04 but now really gpg signed
+Same as v413.04 but now really gpg signed.
+Which it turned out to be, and is now 'Verified' on GitHub.
 
 Abib v413.04
 Same as v413.03 but correctly gpg signed.
 
-Changelog.
------------
 Abib v413.03
 Release version, bugs fixed, Main Devotional and Pilgrim's Progress windows now preserve their position and size.
 The font size is adjustable and persists for the Main and Devotional windows.
@@ -51,7 +57,7 @@ But it did not work.
 
 Abib 412.9
 Corrected error messages occurring when no internet connection is available at startup.
-So, in this case the update-available check is ignored.
+So, in this case, the update-available check is ignored.
 
 Abib 412.8
 Minor refactoring.
