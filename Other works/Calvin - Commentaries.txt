@@ -423,9 +423,9 @@ General Introduction
    etc.). He quotes Aristotle on the distinction between anger and hatred
    (from "The Second Book on Rhetoric"), and refers with approval to his
    saying that the tongue should be an image of the understanding (Gal.
-   5:19, 1 Cor. 14:11). In the field of law, he speaks of Portius' law,
+   5:19, I Cor. 14:11). In the field of law, he speaks of Portius' law,
    Flavian law, the laws of Sempronius, and Valerius' law (Acts 16:35,
-   22:25, 1 Tim. 1:10). Herodotus, Pliny, Gellius, Homer all contributed a
+   Ac 22:25, I Tim. 1:10). Herodotus, Pliny, Gellius, Homer all contributed a
    discussion of the giant Og in Deut. 3:4. It is not always possible to
    tell whether Calvin is depending on his own memory of a quoted passage,
    or on a collection of quotations such as the Adagies of Erasmus. Calvin
@@ -731,8 +731,8 @@ General Introduction
    situation, when he cleanses the Temple (Matt. 21:13).
 
    As a critic Calvin recognized in the Bible a natural working of the
-   human mind which is not always too clear or too apt. Commenting on 1
-   Peter 3:14, And be not afraid of their terror, neither be troubled, he
+   human mind which is not always too clear or too apt. Commenting on
+   I Peter 3:14, And be not afraid of their terror, neither be troubled, he
    goes so far as to accuse Peter of misconstruing Isaiah (ch. 8). But he
    excuses Peter on the ground that he was only referring to the prophet
    for a purpose of his own, and not explaining "every word used by the
@@ -744,7 +744,7 @@ General Introduction
    expression of his own, adapted to the matter on hand." Paul more than
    once gets into difficulties by using "the Greek translators" (on Heb.
    10:5, 38), and at least once one cannot tell what prophet he is quoting
-   from (on 1 Cor. 15:54). When Stephen says in Acts 7:16 that the
+   from (on I Cor. 15:54). When Stephen says in Acts 7:16 that the
    patriarchs were taken to Shechem and buried in a sepulcher bought by
    Abraham, he clearly contradicts Gen. 50:13, Josh. 24:32. Calvin refers
    to Jerome's statement that the pilgrim Paula saw the tombs of the
@@ -752,12 +752,12 @@ General Introduction
    perhaps Moses was using "synecdoche," that is, Joseph stands for the
    patriarchs; or that perhaps Luke was following an old tradition. He
    ends the discussion with, Quare hic locus corrigendus est. Hence this
-   verse must be corrected! (See also on Josh. 24:32, Gen. 46:8, 47:31.)
+   verse must be corrected! (See also on Josh. 24:32, Gen. 46:8, Ge 47:31.)
    He also admits that when Luke made Paul speak Hebrew in Jerusalem, he
    may have been mistaken. Calvin thinks Paul spoke the common language of
    the day -- Aramaic (Acts 22:2). He thinks Mark is less accurate than
    Luke about Easter morning (on Mark 16:1), and that Matthew's version of
-   Jesus' denunciation in ch. 23:24 is defective (defecta est oratio apud
+   Jesus' denunciation in Mt 23:24 is defective (defecta est oratio apud
    Matthaeum). Even Christ himself does not quote Isaiah exactly, but
    applies his words to his own purpose (on Matt. 15:7).
 
@@ -784,9 +784,9 @@ General Introduction
    angels at the resurrection, he points to the writers' unconcern for
    exact information in such matters and draws the reader's attention to
    the gospel or law. In fact, he sets aside a discrepancy of a thousand,
-   between an account of Moses (Num. 25:90) and that of Paul, by remarking
+   between an account of Moses (Num. 25:9) and that of Paul, by remarking
    that the Biblical writers cared no more than the ancient Romans for
-   numerical minutiae (on 1 Cor. 10:8). Paul was concerned to warn the
+   numerical minutiae (on I Cor. 10:8). Paul was concerned to warn the
    church at Corinth against idolatry. What mattered was the reliability
    of the Bible with regard to the word of God and the promises of God,
    and not factual accuracy on detail.
@@ -1138,7 +1138,7 @@ General Introduction
    7:12). It proved, not God's grace, but his judgment which blinded the
    people and made them deaf to God's word. Calvin recognized no sure way
    to discriminate between a sign and an imposture except by the Word of
-   God as illumined by his Spirit (on 1 John 4:1 f.).
+   God as illumined by his Spirit (on I John 4:1 f.).
 
    Calvin was aware that men are always gaping for miracles (on John
    11:18). The more they feel their weakness before the powers of nature,
@@ -1150,9 +1150,9 @@ General Introduction
    "hope of gain." Calvin knew all this as a permanent temptation in the
    church. He insisted, therefore, repeatedly and strongly that miracle
    and doctrine go together (on Matt. 24:23, Mark 16:20), and refused to
-   identify God's power with the working of miracles (on 1 Thess. 1:4),
+   identify God's power with the working of miracles (on I Thess. 1:4),
    holding that the Word of God is superior to miracles (on John 4:48,
-   20:31). Christians languished and died in prisons without any miracle
+   John 20:31). Christians languished and died in prisons without any miracle
    to enable them to escape. These people lived, not by miracles, but by
    the Word of God, by their faithfulness to Christ. What they had
    available was not the hope of physical escape, but the greater miracle
@@ -1202,7 +1202,7 @@ General Introduction
    at the right hand of God the Father Almighty. If one abstracts the
    doctrine of predestination before the ages from the promises of God
    made by creation and fulfilled through the ages since, one does
-   violence to Calvin's mind on this matter (see especially on 2 Tim.
+   violence to Calvin's mind on this matter (see especially on II Tim.
    1:9-10, Titus 1:2).
 
    This introduction is not the place for a full exposition of such a
@@ -1288,12 +1288,12 @@ General Introduction
    Calvin knew this, and felt it adequately. He knew the misery of this
    body of death, and he knew also that a mind conjoined with this body
    must inevitably be overwhelmed by a life that is in fact a shadow of
-   death (on 2 Cor. 4:11-12). Sufferings of this life act as portents of
+   death (on II Cor. 4:11-12). Sufferings of this life act as portents of
    death, and before death, says Calvin, "all the powers of men succumb
-   with terror" (on 2 Cor. 1:8). Calvin was deeply impressed, doubtless in
+   with terror" (on 2Cor. 1:8). Calvin was deeply impressed, doubtless in
    himself as in others, with the elemental desire to live and the
-   shrinking of the flesh from its destruction (on 2 Cor. 5:1, Gal. 2:20,
-   2 Tim. 4:7). He knew how brave men are away from danger, and how they
+   shrinking of the flesh from its destruction (on 2Cor. 5:1, Gal. 2:20,
+   2Tim. 4:7). He knew how brave men are away from danger, and how they
    turn into trembling leaves when they meet it (on John 18:17). This was
    no academic matter with him. He knew it as a common human reality. And
    he knew that in the jaws of hell, it is only the Lord who gives true
@@ -1303,7 +1303,7 @@ General Introduction
    4. Jesus Christ
 
    The Commentaries contain numerous and weighty statements that we know
-   God in Christ. Commenting on 1 Peter 3:21, Calvin says, "Hence all
+   God in Christ. Commenting on 1Peter 3:21, Calvin says, "Hence all
    cogitation on God apart from Christ is an immense abyss which
    immediately swallows up our whole mind." In another place, speaking of
    the knowledge of God among the Athenians, he says that "the Lord
@@ -1378,9 +1378,9 @@ General Introduction
    orthodoxy by reminding himself that the Son of God put on humanity and
    shared our life freely and voluntarily. He even shows a predilection
    for the notion that he was "God clothed in human flesh" (on Luke
-   19:41), or "manifested in the flesh" (on John 1:1, 1 Tim. 3:16). "And
+   19:41), or "manifested in the flesh" (on John 1:1, 1Tim. 3:16). "And
    yet, in Christ we see the infinite glory of God united with our
-   polluted flesh so that they become one" (on 1 Tim. 3:16). Calvin's
+   polluted flesh so that they become one" (on 1Tim. 3:16). Calvin's
    concern for the encouragement of the church led him not only to
    emphasize Christ's common humanity but also to present it as a state of
    creaturely weakness. The human nature of Christ was not that of Adam
@@ -1399,7 +1399,7 @@ General Introduction
    Christ as the head of a church engaged in mortal combat with evil. It
    is hardly too much to say that Christ's divinity meant to Calvin above
    all that he, with the Father, was the source of the Christian life and
-   its blessings (on 2 Thess. 2:16). He insisted that the Biblical
+   its blessings (on 2Thess. 2:16). He insisted that the Biblical
    statements concerning Christ's relation to God are, as it were, not
    metaphysical but soteriological or "operational." They refer to his
    work, to what he is to us and for us. God himself we know by his saving
@@ -1421,7 +1421,7 @@ General Introduction
    which he is subject to temptation and harassment under the assaults of
    Satan. Calvin speaks of an inner and an outer mortification. The first
    has to do with the struggle against sin or unfaithfulness; the latter
-   with the struggle against the powers of this world (on 2 Cor. 4:10). It
+   with the struggle against the powers of this world (on 2Cor. 4:10). It
    is quite evident that these two go together, since the temptation to
    deny our Lord rises in the midst of fear of the evils to which men
    expose themselves in the hands of men when they set out to obey God and
@@ -1466,7 +1466,7 @@ General Introduction
    patience, and even to desire eagerly what they fear (on Luke 12:50).
    With Paul, he argues that if there be no resurrection of the dead,
    Christians, who are sheep meant for slaughter, are the most miserable
-   of men (on 1 Cor. 15:19). He regards the present life of the
+   of men (on 1Cor. 15:19). He regards the present life of the
    Christians, with all its travail and groanings, as unfulfilled unless
    our redemption culminates in the resurrection and "eternal felicity."
 
@@ -1482,7 +1482,7 @@ General Introduction
    of Christ" and the trials of the church. He does not postpone the
    destruction of death prophesied by Paul to the end, but speaks of it as
    having already occurred, as already realized in the deliverance of the
-   Christians from the power of death (on 1 Cor. 15:26). The Day of
+   Christians from the power of death (on 1Cor. 15:26). The Day of
    Judgment is even now anticipated in the present dread and terror deep
    in the lives of the ungodly, and in the present joy and exultation of
    the believers (on Rom. 2:5). The coming of Christ itself is anticipated
@@ -1498,7 +1498,7 @@ General Introduction
    pass away," by calling upon Christians to raise their faith "above
    heaven and earth," to Christ in God's heaven (on Matt. 24:35). He calls
    upon them so to meditate upon the last things as to receive patience
-   and perseverance in their trials (on 1 John 3:2). Their life is to be a
+   and perseverance in their trials (on 1John 3:2). Their life is to be a
    waiting, without any clairvoyance as to time and seasons. They are to
    live every day as though it were their last (as it might well have been
    under the cross), in the hope of Christ's coming, by which they are to
@@ -1509,7 +1509,7 @@ General Introduction
    its own peculiar rationale, and flourishes in spite of external
    circumstances, because it is the work of Christ and his Spirit. In this
    way, the eschatological statements of the Bible, with their several
-   "metaphors" (on 1 Cor. 15:52, Heb. 10:26-27), illuminate the life of
+   "metaphors" (on 1Cor. 15:52, Heb. 10:26-27), illuminate the life of
    the Christians, as well as point to their ultimate destiny with God.
    But here one must remember Calvin's concern with the present
    responsibilities of Christians and his whole ethical concern to which
@@ -2609,7 +2609,7 @@ General Introduction
    [22] See Autobiographical Sketch, p. 57.
 
    [23] Pp. 28f., 107f., 140f., 353, 366f. But see also on Deut. 13:1,
-   John 11:58.
+   John 1:45-51. Corrected to a possibly meant reference.
 
    [24] Doumergue, Emile, Jean Calvin, vol. 3, pp. 592 f.
 
@@ -2643,7 +2643,7 @@ General Introduction
    by whose contribution today our France lays claim to the palm of
    erudition" (O. Breen, John Calvin: A Study on French Humanism, p. 114).
    He refers to Budé often (I Cor. 4:13, II Cor. 1:13, Phil. 2:9, John
-   2:5, 6:7, etc.) as an authority on the languages and civilization of
+   2:5, John 6:7, etc.) as an authority on the languages and civilization of
    Greece and Rome. De asse at partibus eius of Budé was held in highest
    esteem as a source book on the subject. He was critical of the church
    and defended the primacy of Scripture and the cross for salvation, but
@@ -3008,7 +3008,7 @@ I The Bible
    law to be our guide and rule, and he binds it to his prophets.
 
    But the word of the Lord endured forever. And this is the word which by
-   the gospel is preached unto you. 1 Peter 1:25.
+   the gospel is preached unto you. 1Peter 1:25.
 
    The prophet teaches us, not what the Word of God is in itself, but how
    we are to think of it. Since man has emptied himself of life, he must
@@ -3083,7 +3083,7 @@ I The Bible
    All Scripture is given by the inspiration of God, and is profitable for
    doctrine, for reproof, for correction, for instruction in
    righteousness; that the man of God may be perfect, thoroughly furnished
-   unto all good works. 2 Tim. 3:16-17.
+   unto all good works. 2Tim. 3:16-17.
 
    All Scripture, or the whole of it; both phrases mean the same. He now
    continues with his praise of Scripture which had been much too brief.
@@ -3147,7 +3147,7 @@ I The Bible
    living by it and take hold of it?
 
    Beloved, believe not every spirit, but try spirits whether they are of
-   God; because many false prophets are gone out into the world. 1 John
+   God; because many false prophets are gone out into the world. 1John
    4:1.
 
    Many, as I said before, are so troubled by the discords and wranglings
@@ -3369,8 +3369,8 @@ I The Bible
   2. THE OLD AND THE NEW TESTAMENTS
 
    Now all these things happened unto them in examples: and they are
-   written for our admonition, upon whom the ends of the world are come. 1
-   Cor. 10:11.
+   written for our admonition, upon whom the ends of the world are come.
+   1Cor. 10:11.
 
    Now he repeats that all these things happened to the Israelites to
    serve us as types, examples by which God sets his judgments before our
@@ -3443,8 +3443,8 @@ I The Bible
 
    Of which salvation the prophets inquired and searched diligently, who
    prophesied of the grace that should come unto you: searching what, or
-   in what time, the Spirit of Christ which was in them did signify. 1
-   Peter 1:10-11.
+   in what time, the Spirit of Christ which was in them did signify.
+   1Peter 1:10-11.
 
    Peter sets high the value of salvation, by referring to the prophets
    who had been intent upon it with all their zeal; since the prophets
@@ -3521,7 +3521,7 @@ I The Bible
 
    Also we have a more sure word of prophecy; whereunto ye do well that ye
    take heed, as unto a light that shineth in a dark place, until the day
-   dawn, and the day-star rise in your hearts. 2 Peter 1:19.
+   dawn, and the day-star rise in your hearts. II Peter 1:19.
 
    Also we have. Here he teaches that the truth of the gospel is certain
    because it is founded upon the oracles of the prophets; and he does
@@ -3800,7 +3800,7 @@ I The Bible
 
    Moreover, this passage warns us that we receive God's promises only
    when they are confirmed by the blood of Christ. All God's promises are
-   Yea and Amen, as Paul testifies in 2 Cor. 1:20, only when by the blood
+   Yea and Amen, as Paul testifies in II Cor. 1:20, only when by the blood
    of Christ they are inscribed on our hearts as a seal; for, we hear God
    speaking to us only when we see Christ offering himself as a pledge in
    what is said to us. If we could only get it into our heads that the
@@ -3986,7 +3986,7 @@ I The Bible
    beginning of this matter, and that it is by no means futile if it leads
    us to pray for righteousness. For this reason, where Paul says that
    those who do the law are justified, he also denies that anyone can be
-   justified through the law (Rom. 2:13; 3:9-10).
+   justified through the law (Rom. 2:13; Rom. 3:9-10).
 
    This passage abolishes all the fictions which the papists have invented
    in order to obtain salvation. Their error is not merely that by their
@@ -4140,7 +4140,7 @@ I The Bible
    But now arises the question: If the gospel be to some a deadly odor of
    death, and if Christ be the rock of offense and the stone of stumbling
    set for the ruin of many, why is it that the law alone is blamed for
-   what it has in common with the gospel (2 Cor. 2:16, Luke 2:34, 1 Peter
+   what it has in common with the gospel (2 Cor. 2:16, Luke 2:34, I Peter
    2:8)? If one answers that the gospel does not work death in itself, or
    that it is the occasion rather than the cause of death, since its own
    nature is to save all men, one does not get rid of the difficulty,
@@ -4206,7 +4206,7 @@ I The Bible
    done away in Christ. But even unto this day, when Moses is read, the
    veil is upon their heart; nevertheless, when it shall turn to the Lord,
    the veil shall be taken away. Now the Lord is that Spirit; and where
-   the Spirit of the Lord is, there is liberty. 2 Cor. 3:14-17.
+   the Spirit of the Lord is, there is liberty. II Cor. 3:14-17.
 
    He puts the whole blame upon them [the Jews]; for it was because of
    their blindness that they were unable to benefit from the teaching of
@@ -4618,7 +4618,7 @@ II The Knowledge of God
    indeed see the essence of the Spirit, but he did have certain, clear,
    and unambiguous evidence that the Spirit of God dwelt in Christ.
 
-   In the second place we may ask, Who was that Lord? John (ch. 12:41)
+   In the second place we may ask, Who was that Lord? John (John 12:41)
    teaches that he was Christ; and this is true because God never revealed
    himself to the fathers except in his eternal Word, his only-begotten
    Son. Yet, in my judgment, it is wrong to restrict this vision to the
@@ -5375,7 +5375,7 @@ II The Knowledge of God
    than burnt offerings. Hos. 6:6.
 
    This passage is especially important because it was cited twice by the
-   Son of God (Matt. 9:13 and 12:17). . . . For a better understanding of
+   Son of God (Matt. 9:13 and Mt 12:17). . . . For a better understanding of
    the prophet's meaning, we must first notice that under the terms
    sacrifice and burnt offerings the outward worship of God and all formal
    ceremonies are included. The part is put for the whole (synecdoche).
@@ -5804,7 +5804,7 @@ III Jesus Christ
    things to come, by a greater and more perfect tabernacle, not made with
    hands, that is to say, not of this building; neither by the blood of
    goats and calves, but by his own blood he entered in once into the holy
-   place, having obtained eternal redemption for us. Heb. 9:8-9,11-12.
+   place, having obtained eternal redemption for us. Heb. 9:8,9,11,12.
 
    The Greek word for figure is parabole which in my judgment is about the
    same as antitupon. The apostle means that the Tabernacle was a
@@ -5935,7 +5935,7 @@ III Jesus Christ
    contrasted with the human senses which cannot grasp the wonder of
    Christ.
 
-   The prophet used a similar metaphor in ch. 11:1: a branch will come
+   The prophet used a similar metaphor in Isa. 11:1: a branch will come
    from the trunk of Jesse. He compared the house of David to a dry trunk
    with no strength in it and no beauty; and he did not name the royal
    house, but Jesse whose name by itself was obscure. Here he adds in
@@ -6321,7 +6321,7 @@ III Jesus Christ
 
    Ye have heard how I said unto you, I go away and come again unto you.
    If ye loved me, you would rejoice, because I said, I go unto the
-   Father; for my Father is greater than I. John 14:28.
+   Father; for my Father is greater than I (John 14:28).
 
    This passage has been variously distorted. The Arians, in order to
    prove that Christ is beneath (second to) God, objected that he is less
@@ -6340,7 +6340,7 @@ III Jesus Christ
    Unless he lead us to God, we only imagine a mutilated Christ, cut into
    half.
 
-   Of a similar import is 1 Cor. 15:24, where Paul says that Christ will
+   Of a similar import is I Cor 15:24, where Paul says that Christ will
    turn over the Kingdom to God and the Father, that he be all in all.
    Obviously, Christ does reign not only in his human nature, but as God
    manifest in the flesh. How then will he put aside his Kingship?
@@ -7088,7 +7088,7 @@ III Jesus Christ
 
    This verse is taken from Ps. 110, which can be made to apply only to
    Christ. We know very well from the story of Uzziah's leprosy, that even
-   the kings had no right to act as priests (2 Chron. 26:18). Since it is
+   the kings had no right to act as priests (2Chron 26:18). Since it is
    clear that neither David nor the kings who followed him were ordained
    to be priests, it follows that here we have a prophecy of a new
    kingship and a new priesthood, in which king and priest were to be one.
@@ -7230,7 +7230,7 @@ III Jesus Christ
 
    In firmness (firmly). 'emeth means sometimes certainty, sometimes
    truth. Here the prophet means that Christ's Kingdom will be firm and
-   enduring, even as Daniel (2:44; 7:14) bore witness, and the Evangelist
+   enduring, even as Daniel (Da 2:44; Da 7:14) bore witness, and the Evangelist
    also: Of his kingdom there will be no end (Luke 1:33). This permanence
    distinguishes it from the ordinary kingdoms. For although they are
    established with great and plentiful resources, they totter or sink by
@@ -8027,7 +8027,7 @@ IV The Christian Life
 
    And when all things shall be subdued unto him, then shall the Son also
    himself be subject unto him that put all things under him, that God may
-   be all in all. 1 Cor. 15:28.
+   be all in all. 1Cor 15:28.
 
    Will God be all in all also in the devil and the ungodly? Far from it,
    unless perhaps we choose to accept "to be" as meaning to be known and
@@ -8065,7 +8065,7 @@ IV The Christian Life
   2. THE CHRISTIAN WARFARE
 
    But let us, who are of the day, be sober, putting on the breastplate of
-   faith and love, and for a helmet the hope of salvation. 1 Thess. 5:8.
+   faith and love, and for a helmet the hope of salvation. 1Thess 5:8.
 
    Paul adds this in order that he may shake us the better out of our
    torpor. He calls us as it were to arms, to impress upon us that it is
@@ -8158,7 +8158,7 @@ IV The Christian Life
 
    Thou therefore endure hardship as a good soldier of Christ. No man that
    warreth entangleth himself with the affairs of this life: that he may
-   please him who hath chosen him to be a soldier. 2 Tim. 2:3-4.
+   please him who hath chosen him to be a soldier. 2Tim 2:3-4.
 
    It was very necessary to add this second warning. For, anyone who
    offers to obey Christ, must be ready to endure hardship; there is no
@@ -8299,7 +8299,7 @@ IV The Christian Life
    conform to the image of Christ, who is the first-born among the
    brethren." [85] Moreover, we know that since the Head and the members
    are united, the name Christ sometimes includes the whole body. This is
-   evident from 1 Cor. 12:12, where, speaking of the church, the apostle
+   evident from 1Cor 12:12, where, speaking of the church, the apostle
    finally concludes that being in Christ is like being [a member] in the
    human body. Therefore, as Christ suffered once in himself, so he now
    suffers every day in his members; and the sufferings which the Father
@@ -8535,7 +8535,7 @@ IV The Christian Life
 
    And the multitude rose up together against them; and the magistrates
    rent off their [the apostles'] clothes, and commanded to beat them.
-   Acts 6:22.
+   Acts 16:22.
 
    When Luke tells us how a crowd gathered together, how some nobodies --
    in fact jugglers and those who put their bodies on sale, whose sordid
@@ -8597,7 +8597,7 @@ IV The Christian Life
    in heaviness through manifold temptations, that the trial of your
    faith, being more precious than of gold that perisheth though it be
    tried with fire, might be found unto praise and honor and glory at the
-   appearing of Jesus Christ. 1 Peter 1:6-7.
+   appearing of Jesus Christ. 1Peter 1:6-7.
 
    Even though the ending of the Greek verb is unclear, the sense of the
    passage requires that we read you exult rather than exult! The phrase
@@ -8689,7 +8689,7 @@ IV The Christian Life
 
    Searching what, or what manner of time, the Spirit of Christ which was
    in them did signify, when it testified beforehand the sufferings of
-   Christ, and the glory that should follow. 1 Peter 1:11.
+   Christ, and the glory that should follow. 1Peter 1:11.
 
    Peter tells his readers that their sufferings had been foretold long
    before by the Spirit, so that they may endure them with a calm spirit.
@@ -8734,8 +8734,8 @@ IV The Christian Life
    Beloved, think it not strange concerning the fiery trial which is to
    try you, as though some strange thing happened unto you; but rejoice,
    inasmuch as ye are partakers of Christ's sufferings, that, when his
-   glory shall be revealed, ye may be glad also with exceeding joy. 1
-   Peter 4:12-13.
+   glory shall be revealed, ye may be glad also with exceeding joy.
+   1Peter 4:12-13.
 
    There is a great deal said about afflictions in this epistle. We have
    explained the reason for this elsewhere. However, we must notice that
@@ -8787,7 +8787,7 @@ IV The Christian Life
    unto their prayers; but the face of the Lord is against them that do
    evil. And who is he that will harm you, if ye be followers of that
    which is good? But and if ye suffer for righteousness' sake, happy are
-   ye, and be not afraid of their terror, neither be troubled. 1 Peter
+   ye, and be not afraid of their terror, neither be troubled. 1Peter
    3:12-14.
 
    It ought to be enough to take the sting out of whatever evil we suffer
@@ -8854,8 +8854,8 @@ IV The Christian Life
 
    For it is better, if the will of God be so, that ye suffer for
    well-doing, than for evil-doing. For Christ also hath once suffered for
-   sins, the just for the unjust, that he might bring us to God. . . . 1
-   Peter 3:17-18.
+   sins, the just for the unjust, that he might bring us to God. . . .
+   1Peter 3:17-18.
 
    For it is better. This phrase qualifies not only the next sentence, but
    also the whole passage. Peter has spoken of the confession of faith,
@@ -8899,7 +8899,7 @@ IV The Christian Life
    what sense they are called innocent.
 
    Yet if any man suffer as a Christian, let him not be ashamed: but let
-   him glorify God on this behalf. 1 Peter 4:16.
+   him glorify God on this behalf. 1Peter 4:16.
 
    After having forbidden Christians to hurt or do any harm so that they
    may not, like the unbelievers, arouse the world's hatred by their
@@ -9372,7 +9372,7 @@ V Faith
    does not profane what God has sanctified for our salvation.
 
    But continue thou in those things which thou hast learned and hast been
-   assured of, knowing of whom thou hast learned them. 2 Tim. 3:14.
+   assured of, knowing of whom thou hast learned them. 2Tim 3:14.
 
    He commands Timothy to stay put, even when evil is on the rampage and
    scatters destruction very far and wide. And surely this is the real
@@ -9453,8 +9453,7 @@ V Faith
    by the power of God which has been given to him.
 
    For I know whom I have believed, and am persuaded that he is able to
-   keep that which I have committed unto him against that day. 2 Tim.
-   1:12.
+   keep that which I have committed unto him against that day. 2Tim 1:12.
 
    This is the only refuge of the godly; whenever the world counts them
    condemned and without hope; it is enough that God approves of them.
@@ -9662,7 +9661,7 @@ V Faith
    believed simply because it is his Word). Faith indeed has its own
    sight, but it is not fixed on things upon this world and earth. For
    this reason, it is said to be a demonstration of things invisible and
-   not seen (Heb. 15:1). Paul, also, who contrasts it with sight (2 Cor.
+   not seen (Heb. 11.27)?. Paul, also, who contrasts it with sight (2 Cor.
    5:7) points out that faith, without holding to a consideration of the
    state of things present, or looking about at things visible in this
    world, hangs on to the mouth of God; and putting its confidence in the
@@ -10151,7 +10150,7 @@ V Faith
    spirits fail.
 
    He gives this consolation greater credibility and authority by an
-   appeal to the witness of the prophet Habakkuk, ch. 2:4. But since he
+   appeal to the witness of the prophet Habakkuk, Hab 2:4. But since he
    follows the Greek version and departs somewhat from the words of the
    prophet, I shall first explain the latter, and then compare both with
    what is said by the apostle.

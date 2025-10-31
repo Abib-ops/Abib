@@ -11,7 +11,7 @@ from os import getenv
 from json import loads
 from platform import system
 
-CURRENT_VERSION = "413.06"
+CURRENT_VERSION = "414.01"
 current_directory: Path = Path.cwd()
 str_cwd: str = str(current_directory)
 # settings_file: Path = current_directory / 'settings.json'
@@ -65,7 +65,7 @@ bibledict: dict[str, int] = {
         '1chro': 13, '1chron': 13, '1chroni': 13, '1chronic': 13, '1cr': 13,
         'ichro': 13, 'ichron': 13, 'ichroni': 13, 'ichronic': 13, 'icr': 13,
         'ichronicles': 13, 'ich': 13, 'ichr': 13, 'ichronicle': 13, 'ic': 13,
-        '2chronicles': 14, '2ch': 14, '2chr': 14, '2chronicle': 14, '2c': 14,
+        '2chronicles': 14, '2ch': 14, '2chr': 14, '2chronicle': 14, '2c': 14, '2chron': 14,
         'iichronicles': 14, 'iich': 14, 'iichr': 14, 'iichronicle': 14, 'iic': 14,
         'ezra': 15, 'ezr': 15, 'ez': 15,
         'nehemiah': 16, 'ne': 16, 'neh': 16, 'nehe': 16, 'neem': 16,

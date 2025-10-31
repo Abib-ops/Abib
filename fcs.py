@@ -80,7 +80,7 @@ def repeat_find(rx: str, start: int, end: int) -> int:
     numb: int
     sumb: int = 0
     repeats: int = 0
-    while flag is True:
+    while flag:
         text: str = rx[start:end + sumb]
         numb = punctuation_counter(text)
         sumb += numb

@@ -1,129 +1,151 @@
-************
-ABIB README:
-************
+# Abib Bible Reader
 
-Description.
-------------
+A lightweight, fast desktop Bible reader with powerful navigation and search, plus Spurgeon’s Morning and Evening daily readings. Designed for a small, adjustable footprint that works well alongside sermons (e.g., YouTube, Zoom) and personal study.
 
-Abib Bible Reader is a Bible reading tool which allows you to quickly move to different Bible references, 
-useful when following an online sermon, the screen footprint is low and fully adjustable. 
-There is a comprehensive 'Find' facility, and Spurgeon's Morning and Evening Readings is included.
-Although further features are being planned, it is fully operational in its current state. 
-(By Donna and me)
-
-The Abib Bible Reader is a simple tool designed to make Bible reading easier and more convenient. 
-It allows you to quickly move between different Bible references, 
-which can be particularly helpful when following along with an online sermon. 
-The interface is compact and adjustable, so it can fit neatly on your screen without taking up too much space.
-It also includes a handy search feature to help you find specific passages quickly, 
-as well as Spurgeon's _Morning and Evening_ readings for daily inspiration. 
-While there are plans to add more features in the future, 
-Abib Bible Reader is fully functional and ready to use as it is. 
-(By GPT-4o)
-
-**Discover the Abib Bible Reader** – a powerful, user-friendly tool designed to enhance your Bible reading experience. 
-Effortlessly navigate to any Bible reference in seconds, 
-making it a perfect companion for online sermons or personal study. 
-Its compact, 
-adjustable interface ensures it fits seamlessly into your workflow without taking up unnecessary screen space.
-Enjoy the convenience of a comprehensive search feature to quickly locate specific verses or passages. 
-Plus, deepen your spiritual journey with included readings from Spurgeon's uplifting _Morning and Evening_ devotionals.
-Fully operational and ready for use, Abib Bible Reader is continually improving with exciting features on the horizon. 
-Start using it today and transform the way you read, study, and engage with the Bible!
-(Also GPT-4o in less humble mode)
+This README consolidates and updates project information. It keeps useful details from existing docs and adds sections requested: overview, requirements, setup/run, scripts, environment variables, tests, project structure, and license. Unknowns are marked as TODO.
 
 
-Installing the Abib Bible App.
-------------------------------
+## Overview
+- Platform: Desktop GUI (cross‑platform; primary target Windows)
+- Language: Python
+- GUI framework: PySide6 (Qt for Python)
+- Other key libs: pygame (sound for error), requests, roman
+- Packaging: PyInstaller (for building distributables)
+- Entry point: `Abib.py`
+- Data: KJV/PCE text and indices, Spurgeon’s Morning/Evening, other resources in repo
 
-If you have Windows, the installer provided will simply install everything, just double-click on it, and follow the instructions.
-
-There may be a Linux executable available soon, but for the present, please use the source code to run with Python. 
-
-So, on Linux, if you have Windows, copy the whole 'C:\Program Files\Abib' folder to a USB key and then do the following:
-
-Suppose your username is andrew, your USB key may be mounted under '/media/andrew/a_volume_name'. 
-So first, you need to get this full path. 
-You can store it in a shell variable to make it easy:
-
-ls /media/andrew
-
-The usb mount point is variable and '/media' is deprecated in many modern Linux distributions.
-
-Run mount to find the mount point.
-
-See or find the right entry in the output, and now save it in the source directory variable (s_dir):
-
-s_dir=/media/andrew/my_usb_drive
-
-Of course, replace my_usb_drive with the right name. Once you have this, enter this command:
-
-cp -r "$s_dir"/Abib /home/andrew/.Abib
-
-Possibly /home/username/.Abib where username is replaced with your linux username.
-
-Now you can run it by navigating to that folder and doing:
-
-$ python Abib.py
-
-------------------
-Cascadia Mono font
-------------------
-
-Please ensure that the Cascadia Mono font is installed on your device. 
-This will provide the designed appearance. 
-(You can do this before or after you install Abib.)
-
-You will find it in the 'C:\Program Files\Abib\font' folder. It is called CascadiaMono and is a Truetype Microsoft Windows font.
-
-How to install the Cascadia Mono font.
---------------------------------------
-
-For Windows 10: Type 'fonts' into the search box.
-
-Click on Font settings.
-
-Under Add fonts, there is a Drag and Drop to install box.
-
-So, using File Explorer, go to 'C:\Program Files\Abib\font' and there you will see the file CascadiaMono.ttf. 
-Drag the CascadiaMono file, from inside the font folder, into the box, and it will install automatically.
-
-If the font is installed already, you will do no harm, you will be warned with a message and can cancel.
-
-For Windows 11: Do nothing, the CascadiaMono font is built in.
-
-For arch-based linux distros.
------------------------------
-
-Do this:
-
-$ sudo pacman -S ttf-cascadia-code
-
-For other distributions, you can find the Cascadia Code font as a standard .ttf at:
-
-https://github.com/microsoft/cascadia-code/releases
-
-The file above can be installed on most modern operating systems, including Ubuntu. 
-For the latter, just double-click on the .ttf file to open the font manager/preview tool. 
-Hit ‘install’ to install on your Ubuntu system. 
-Thanks to Hal.
+Main features
+- Jump to references quickly (typed refs or UI controls)
+- Compact, resizable UI designed to sit beside livestreams/sermons
+- Comprehensive Find dialog with multiple search modes
+- Morning & Evening devotionals included
+- Persistent window geometry and font sizes via per‑user settings
 
 
-God Bless you.
+## Requirements
+- Operating system: Windows 10/11 recommended. PySide6 is cross‑platform and the app should run on macOS/Linux if dependencies install, but Windows is the focus.
+- Python: 3.13 (project has venv folders `venv_3_13` and `venv_3_14_0`; development is on Python 3.13+)
+- System font: Cascadia Mono (recommended for intended appearance)
+- Disk: ensure all repository data files are present in the same directory as `Abib.py` when running from source.
+
+Python dependencies (see `requirements.txt`)
+- PySide6/shiboken6 6.10.0
+- pygame 2.6.1
+- requests 2.32.5
+- roman 5.1
+- pyinstaller 6.16.0 (packaging only)
+- And related transitive packages listed in `requirements.txt`
 
 
-Photo Credit: Abibofgod.com for the splash screen.
+## Setup (from source)
+1) Clone or download this repository so that all files sit together.
+2) Optional: create and activate a virtual environment.
+   - Windows (PowerShell):
+     ```pwsh
+     py -3.13 -m venv .venv
+     .\.venv\Scripts\Activate.ps1
+     ```
+   - Linux/macOS:
+     ```bash
+     python3.13 -m venv .venv
+     source .venv/bin/activate
+     ```
+3) Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4) (Recommended) Install Cascadia Code/Mono font (see Font section below).
 
-Spurgeon's Morning and Evening Readings Obtained from www.spurgeon.org.
-Reformatted by Eternal Life Ministries.
-Additional Bible-based resources are available at www.spurgeongems.org.
 
-Copyright 2025 Andrew Kingston
+## Run
+From the project root (where `Abib.py` and the data files are):
+```bash
+python Abib.py
+```
+Notes
+- Run from the repository root so that required data files and images are found.
+- On first run, user settings are created under a per‑OS config directory (see Settings & Paths).
 
-This file is part of Abib Bible Reader.
 
-Abib is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+## Settings & Paths
+- The app stores per‑user settings in `settings.json` under an OS‑specific directory (handled in `shared.py`):
+  - Windows: `%APPDATA%\Abib\settings.json`
+  - macOS: `~/Library/Application Support/Abib/settings.json`
+  - Linux: `~/.config/Abib/settings.json`
+- The application expects assets like `images/abib_icon0.ico` and `images/Abib_barley.png` to exist relative to the working directory.
 
-Abib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with Abib.  If not, see <https://www.gnu.org/licenses/>.
+## Font (Cascadia Mono)
+For best results use Microsoft’s Cascadia Mono/Code font.
+- Windows 11: included by default.
+- Windows 10: open “Font settings”, then drag‑drop `CascadiaMono.ttf` to install.
+- Arch Linux: `sudo pacman -S ttf-cascadia-code`
+- Other distros/OS: download from https://github.com/microsoft/cascadia-code/releases and install the `.ttf`.
+
+The repository includes a `font/` folder; you can install from there if present.
+
+
+## Scripts and Packaging
+- Entry point: `Abib.py` contains `if __name__ == "__main__":` and starts a `QApplication` and `MainWindow`.
+- Sound: `pygame` is used for a simple error sound; the code suppresses the pygame startup prompt.
+- Packaging: PyInstaller is listed in requirements for building executables.
+  - Typical (example) command:
+    ```bash
+    pyinstaller --noconfirm --clean --windowed --name Abib Abib.py
+    ```
+  - This project does not currently include a `.spec` file in the repo. You may need to add data files (Bible text, JSONs, images, font, license) via `--add-data` options when packaging.
+  - TODO: Provide a maintained `.spec` file with the correct `datas` so packaged builds find all resources.
+
+
+## Environment variables
+- `PYGAME_HIDE_SUPPORT_PROMPT=1` is set in code to suppress pygame’s message (no action required).
+- `%APPDATA%` (Windows) is used by the app to locate the per‑user settings directory. You normally don’t need to change it.
+
+
+## Tests
+- No automated tests were found in the repository.
+- TODO: Add tests (e.g., for parsing of references, roman numeral conversion, window geometry persistence, and search functions in `fcs.py`).
+
+
+## Project structure (selected)
+The repo root includes these notable files and folders:
+- `Abib.py` – main application entry point (PySide6 GUI)
+- `fcs.py` – functions for searching, text utilities, settings I/O, and helpers
+- `shared.py` – shared constants, paths, and data loading of `Info.txt`
+- `find.py`, `find.ui`, `ui_find.py` – Find dialog UI and code generated from Qt Designer
+- Data files: `KJB_PCE.txt`, `PCE-*.txt`, `list_*.json`, `morning_evening.json`, `bible_data.json`, `Info.txt`, `Amap.txt`, `find_dict.txt`, `lower_dict.txt`, `stripped_dict.txt`, etc.
+- `images/` – icons and splash (e.g., `abib_icon0.ico`, `Abib_barley.png`)
+- `font/` – CascadiaMono font file(s)
+- `requirements.txt` – pinned dependencies
+- `LICENSE` – GPLv3 license
+- `README.txt`, `HELP.txt`, `ABOUT.txt` – additional documentation
+- `venv_3_13`, `venv_3_14_0` – local virtual environments (not required; you can create your own `.venv`)
+
+Run location
+- Run `python Abib.py` from the repository root so relative files are found. The code will exit with an error if expected assets (e.g., `images/abib_icon0.ico`) are missing.
+
+
+## Usage tips (quick)
+- Type references like `g50.7` for Genesis 50:7. A period `.` acts as the chapter/verse separator.
+- Use the Find dialog for whole‑word, multi‑word, or range‑scoped searches. The dialog is accessible from the UI.
+- Font size shortcuts: per `HELP.txt`, use `Ctrl +` and `Ctrl -` to adjust in supported windows.
+- Back/forward navigation is available for visited passages.
+
+For more detailed usage, see `HELP.txt`.
+
+
+## Release builds
+- Windows installer builds are sometimes provided externally (see `README.txt` and `HELP.txt`).
+- TODO: Document the authoritative release URL for update checks and downloads.
+
+
+## License
+Abib is free software, distributed under the GNU General Public License, version 3 or later. See `LICENSE` for details.
+
+
+## Credits
+- Bible text and resources: see `README.txt` and notes below.
+- Splash screen: Photo credit to abibofgod.com.
+- Spurgeon’s Morning and Evening readings were obtained from https://www.spurgeon.org and reformatted by Eternal Life Ministries. Additional Bible resources: https://www.spurgeongems.org.
+
+© 2025 Andrew Kingston

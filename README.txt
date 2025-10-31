@@ -4,11 +4,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v413.06
+Abib v414.01
 ------------
 
 Changelog.
 -----------
+Abib v414.01
+
+
 Abib v413.06
 The display font size can no longer be zoomed up and down by holding down
 Ctrl and using the mouse wheel. From now on, use Ctrl+- and Ctrl++.

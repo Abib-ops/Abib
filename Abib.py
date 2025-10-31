@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-27/10/2025
+30/10/2025
 
 Note to self:  Check for the use of 'pass' in the code.
 """
@@ -78,7 +78,7 @@ from itertools import chain
 from json import load, JSONDecodeError
 
 from roman import fromRoman
-from typing import Any
+from typing import Any, Dict, Set, List
 
 from PySide6.QtWidgets import (QMainWindow, QTextEdit, QVBoxLayout, QWidget, QDialogButtonBox, QApplication,
                                QToolBar, QPlainTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
@@ -124,7 +124,7 @@ theme_state = {
 mixer.init()
 
 
-def back_push(current_position) -> None:
+def back_push(current_position: int) -> None:
     """Push onto the back stack."""
 
     if len(back) == 0:
@@ -132,7 +132,8 @@ def back_push(current_position) -> None:
                   w.hiLita.length, w.no_f3_yet, w.occurring, w.key, w.dlg)
         back.append(saving)
     else:
-        if not(back[-1][0] == current_position and back[-1][1] == w.y):
+        last_item = back[-1]  # type: ignore
+        if not (last_item[0] == current_position and last_item[1] == w.y):
             saving = (current_position, w.y, w.hiLita.lineinc, w.hiLita.keyinc,
                       w.hiLita.fmt, w.hiLita.length, w.no_f3_yet,
                       w.occurring, w.key, w.dlg)
@@ -167,7 +168,8 @@ def forward_push(current_position) -> None:
                   w.hiLita.length, w.no_f3_yet, w.occurring, w.key, w.dlg)
         forward.append(saving)
     else:
-        if not(forward[-1][0] == current_position and forward[-1][1] == w.y):
+        last_item = forward[-1]  # type: ignore
+        if not (last_item[0] == current_position and last_item[1] == w.y):
             saving = (current_position, w.y, w.hiLita.lineinc, w.hiLita.keyinc,
                       w.hiLita.fmt, w.hiLita.length, w.no_f3_yet,
                       w.occurring, w.key, w.dlg)
@@ -211,7 +213,7 @@ def iterate_list(keywords: list[str], r_list: list) -> None:
             w.occur.append(coordinates)
 
 
-def findf3_ww_ac(x1: int, x2: int, numwords: int, _set: dict[str, set], r_list: list) -> None:
+def findf3_ww_ac(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list: list) -> None:
     """Match whole words (phrase)."""
 
     liszt = w.key.split(' ')
@@ -238,7 +240,7 @@ def findf3_ww_ac(x1: int, x2: int, numwords: int, _set: dict[str, set], r_list: 
     w.occurring = c
 
 
-def findf3_ww_all(x1: int, x2: int, numwords: int, _set: dict[str, set], r_list: list) -> None:
+def findf3_ww_all(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list: list) -> None:
     """Match all the words (phrase)."""
 
     liszt = w.key.split(' ')
@@ -375,11 +377,11 @@ def occurrent1() -> int:
     return current_position
 
 
-def findf3_ww_any(x1: int, x2: int, numwords: int, _set: dict[str, set], r_list: list) -> None:
+def findf3_ww_any(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list: list) -> None:
     """Match any word."""
 
     liszt: list[str] = w.key.split(' ')
-    s: set = set()
+    s: Set = set()
     s = s.union(_set[liszt[0]], _set[liszt[1]])
     if numwords > 2:
         for i in range(2, numwords):
@@ -686,6 +688,7 @@ def run_installer(installer_path: str) -> bool:
         """
     try:
         # Request elevated privileges to execute the installer
+        # noinspection PyUnresolvedReferences
         result = ctypes.windll.shell32.ShellExecuteW(
             None,  # No parent window
             "runas",  # Verb to request elevation
@@ -812,7 +815,7 @@ class MainWindow(QMainWindow):
 
         #Qt.QTimer.singleShot(0, lambda: self.sme("PM", -1))  # Adjusted to yesterday evening's reading.
 
-        self.nwin: list[str] = [
+        self.nwin: List[str] = [
             'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
             'Joshua', 'Judges', 'Ruth', 'I Samuel', 'II Samuel', 'I Kings',
             'II Kings', 'I Chronicles', 'II Chronicles', 'Ezra', 'Nehemiah',
@@ -828,10 +831,10 @@ class MainWindow(QMainWindow):
             'II John', 'III John', 'Jude', 'Revelation']
 
         # Set up for Genesis 1:1
-        self.nchapters: list[str] = []
+        self.nchapters: List[str] = []
         for _ in range(1, 51):
             self.nchapters.append(str(_))
-        self.nverses: list[str] = []
+        self.nverses: List[str] = []
         for _ in range(1, 32):
             self.nverses.append(str(_))
 
@@ -1017,12 +1020,24 @@ class MainWindow(QMainWindow):
         self.buttonf13.setToolTip("Ctrl + Shift + C")
         self.buttonf13.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        self.buttonf14 = QPushButton("Pilgrim's Progress")
-        self.buttonf14.setStyleSheet("QPushButton { text-align: left; }")
-        self.buttonf14.clicked.connect(self.feature)
-        grid.addWidget(self.buttonf14, 5, 2)
-        self.buttonf14.setToolTip("Ctrl + Shift + ?")
-        self.buttonf14.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        # Replace the bottom-right "Pilgrim's Progress" button with a combo box of Other Works
+        self.other_works_combo = QComboBox()
+        grid.addWidget(self.other_works_combo, 5, 2)
+        self.other_works_combo.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        # Populate the combo with .txt files from 'Other Works'
+        other_works_dir = Path(sh.str_cwd) / "Other Works"
+        files = sorted([p for p in other_works_dir.glob("*.txt") if p.is_file()])
+        self.other_works_map = {p.stem: str(p) for p in files}
+        if self.other_works_map:
+            self.other_works_combo.addItems(list(self.other_works_map.keys()))
+
+        # Default to Pilgrims-Progress if present
+        if "Pilgrims-Progress" in self.other_works_map:
+            self.other_works_combo.setCurrentText("Pilgrims-Progress")
+
+        # When selection changes, open or update the document reader window
+        self.other_works_combo.currentTextChanged.connect(self._open_other_work)
 
         container: QWidget = QWidget()
         container.setLayout(grid)
@@ -1192,15 +1207,42 @@ class MainWindow(QMainWindow):
         self.textEditor.setFont(font)
 
     def feature(self) -> None:
-        """For a future feature key."""
+        """Open the Other Works reader window for the currently selected item."""
+        current_stem = None
+        try:
+            current_stem = self.other_works_combo.currentText()
+        except Exception:
+            pass
+        if current_stem and hasattr(self, "other_works_map"):
+            self._open_other_work(current_stem)
+        else:
+            # Fallback: open default Pilgrims-Progress if available
+            other_works_dir = Path(sh.str_cwd) / "Other Works"
+            pp = other_works_dir / "Pilgrims-Progress.txt"
+            path = str(pp) if pp.exists() else None
+            if path:
+                if getattr(self, "text_edit_window", None) is None:
+                    self.text_edit_window = TextDocumentWindow(initial_file_path=path)
+                else:
+                    self.text_edit_window.load_text_file(path)
+                self.text_edit_window.show()
+                self.text_edit_window.raise_()
+                self.text_edit_window.activateWindow()
 
-        # print('Pilgrims-Progress')
-        # Persist the reference to the window
-        self.text_edit_window = TextDocumentWindow()  # Instantiate the window
-        self.text_edit_window.text_display = QTextEdit()
-        self.text_edit_window.text_display.setPlainText("Pilgrims-Progress Content.")
-        self.text_edit_window.show()  # Show the window
-        self.text_edit_window.highlight_references()
+    def _open_other_work(self, stem: str) -> None:
+        """Open or update the TextDocumentWindow for the selected Other Works item."""
+        if not stem or not hasattr(self, "other_works_map"):
+            return
+        path = self.other_works_map.get(stem)
+        if not path:
+            return
+        if getattr(self, "text_edit_window", None) is None:
+            self.text_edit_window = TextDocumentWindow(initial_file_path=path)
+        else:
+            self.text_edit_window.load_text_file(path)
+        self.text_edit_window.show()
+        self.text_edit_window.raise_()
+        self.text_edit_window.activateWindow()
 
     def show_about_dialog(self):
         """Show the 'About' window when Help -> About is clicked."""
@@ -1258,7 +1300,7 @@ class MainWindow(QMainWindow):
     def reload(self) -> None:
         """Reload KJB_PCE.txt"""
 
-        if w.otherFileFlag is True:
+        if w.otherFileFlag:
             # print('reloaded')
             w.otherFileFlag = False
             self.file_open(str(Path(sh.current_directory / 'KJB_PCE.txt')))
@@ -1318,14 +1360,14 @@ class MainWindow(QMainWindow):
             else:
                 self.find_f4()
 
-    def make_key_whole(self, _key: str, _dict: dict, _set: dict[str, set]) -> tuple[int, str]:
+    def make_key_whole(self, _key: str, _dict: Dict, _set: Dict[str, Set]) -> tuple[int, str]:
         """Make _key conform to Match whole word only.
 
         Return the number of whole words in _key.
         """
 
         numstart, _key = fcs.split_strip(_key)
-        words: list = _key.split()
+        words: List = _key.split()
         words = [item for item in words if item in _dict]
         _key = ''
         for i in words:
@@ -1345,8 +1387,8 @@ class MainWindow(QMainWindow):
         """
 
         p = "():,’;-?[].!<>"
-        ae: list[str] = ['aea', 'aeu', 'aes', 'aet', 'aene', 'aeno', 'AEno', 'AEne', 'Aeno', 'Aene']
-        ae_unicode: list[str] = ['æa', 'æu', 'æs', 'æt', 'æne', 'æno', 'Æno', 'Æne', 'Æno', 'Æne']
+        ae: List[str] = ['aea', 'aeu', 'aes', 'aet', 'aene', 'aeno', 'AEno', 'AEne', 'Aeno', 'Aene']
+        ae_unicode: List[str] = ['æa', 'æu', 'æs', 'æt', 'æne', 'æno', 'Æno', 'Æne', 'Æno', 'Æne']
         count = -1
         for _ in ae:
             count += 1
@@ -1422,9 +1464,9 @@ class MainWindow(QMainWindow):
                     self.statusBar.repaint()
             else:
                 tv = self.dlg.checks[0] == 1   # Raw
-                if tv is not True:
+                if not tv:
                     current_position = self.findf3_ww(x1, x2)
-                elif tv is True:
+                elif tv:
                     # Raw.
                     current_position = self.findf3_raw(current_position, x1, x2, keylow)
 
@@ -1436,10 +1478,10 @@ class MainWindow(QMainWindow):
         if w.key in ('q', 'Q'):
             self.display_verse_input.clear()
             exit()
-        if error_flag is not True:
+        if not error_flag:
             self.goto_line_find(current_position)
 
-    def iterate_regex(self, r: list, x1: int, x2: int) -> None:
+    def iterate_regex(self, r: List, x1: int, x2: int) -> None:
         """Iterate over R and find all the occurrences of key(s) in liszt."""
 
         w.occurring = 0
@@ -1492,8 +1534,8 @@ class MainWindow(QMainWindow):
             key: str = w.key
             # set_ and set_dict are dictionaries of words in the KJV Bible.
             # For each word, there is a set of verse/line numbers where the word occurs.
-            set_: dict[Any, set] = set_dict
-            r_list: list | tuple = Rstp
+            set_: Dict[Any, Set] = set_dict
+            r_list: List | tuple = Rstp
         else:
             assert self.dlg.checks[1] == 0      # The Case isn't checked.
             dic = strpd_low_dict
@@ -1544,7 +1586,7 @@ class MainWindow(QMainWindow):
 
         return current_position
 
-    def findf3_ww_1(self, x1: int, x2: int, _set: dict[str, set], r_list: list) -> None:
+    def findf3_ww_1(self, x1: int, x2: int, _set: Dict[str, Set], r_list: List) -> None:
         """Match the whole single word."""
 
         try:
@@ -2026,7 +2068,7 @@ class MainWindow(QMainWindow):
         # which could be roman numerals need to be distinguished from book names here.
         # If they are alone, they are probably meant as book abbreviations:
         # e.g. i -> Isaiah, l -> Leviticus, c -> Colossians, d -> Deuteronomy and m -> Micah.
-        roman_book: list = ['i', 'l', 'c', 'd', 'm']
+        roman_book: List = ['i', 'l', 'c', 'd', 'm']
         # So,
         if reference_text.lower() in roman_book:
             pass  # Here if it's a single letter that must not be converted to numeric.
@@ -2038,8 +2080,8 @@ class MainWindow(QMainWindow):
 
         # Check if the input is in a valid format:
         #   1. "book.chapter.verse" (e.g., genesis.1.2)
-        #   2. "chapter.verse" (e.g., 3.4)
-        #   3. A single integer (e.g., 7)
+        #   2. "chapter.verse" (e.g. 3.4)
+        #   3. A single integer (e.g. 7)
         reference_text = reference_text.replace(' ', '.')
         # print(f"2396 Reference Text: '{reference_text}'")
 
@@ -2138,7 +2180,7 @@ class MainWindow(QMainWindow):
         """Calculate the absolute position of a verse from the current line.
            Only allows valid positions within the same chapter."""
 
-        inf: list = sh.Info[current_line]
+        inf: List = sh.Info[current_line]
         current_chapter: int = inf[1]
         # print(f"2474 current_chapter: {current_chapter}")
         current_verse = inf[2]
@@ -2935,7 +2977,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
     def clear_highlight(self) -> None:
         """Clear highlight."""
 
-        if self.clear is True:
+        if self.clear:
             self._highlight_lines = {}
             self.rehighlight()
 
@@ -2964,10 +3006,11 @@ class SyntaxHighlighter(QSyntaxHighlighter):
 
 
 class TextDocumentWindow(QDialog):
-    def __init__(self):
+    def __init__(self, initial_file_path: str | None = None):
         super().__init__()
         self.current_reference = None
-        self.setWindowTitle("Text Document Viewer")
+        self.current_file_stem = None
+        self.setWindowTitle("Text Reader")
 
         # Load window geometry from settings
         x8, y8, width8, height8 = fcs.get_window_geometry("pilgrims_progress_window")
@@ -2981,21 +3024,25 @@ class TextDocumentWindow(QDialog):
         self.layout = QVBoxLayout()  # Directly set a layout for QDialog
         self.setLayout(self.layout)
 
+        # Main text editor
         self.text_edit = QTextEdit()
         self.text_edit.setFont(QFont("Cascadia Mono", 12))
-        self.text_edit.setReadOnly(True)  # Set to False if you want it editable
+        self.text_edit.setReadOnly(True)
         self.layout.addWidget(self.text_edit)
 
-        # Connect the vertical scroll bar signal to continuously save the scroll position
+        # Connect the vertical scroll bar to save a per-file scroll position
         self.text_edit.verticalScrollBar().valueChanged.connect(self.save_scroll_position)
 
-        # Display the content of Pilgrim's Progress file
-        self.load_text_file("Pilgrims-Progress.txt")
+        # Enable hover tracking
         self.text_edit.viewport().setMouseTracking(True)
         self.text_edit.viewport().installEventFilter(self)
         self.text_edit.viewport().setAttribute(Qt.WidgetAttribute.WA_Hover, True)
 
         self.popup_window = None  # Track if a popup exists
+
+        # Load an initial file if provided
+        if initial_file_path:
+            self.load_text_file(initial_file_path)
 
         self.canonical_books = {
             1: "Genesis",
@@ -3066,16 +3113,20 @@ class TextDocumentWindow(QDialog):
             66: "Revelation",
         }
 
-    @staticmethod
-    def save_scroll_position(value: Any) -> None:
+    def save_scroll_position(self, value: Any) -> None:
         """
-        Save the current vertical scroll position immediately.
+        Save the current vertical scroll position immediately, per file.
         """
-
-        # Update the settings dictionary with the new value
-        w.settings["last_read_position"] = value
-
-        # Persist the settings to disk.
+        stem = self.current_file_stem
+        # Ensure the dictionary for per-file positions exists
+        if "last_read_positions" not in w.settings:
+            w.settings["last_read_positions"] = {}
+        if stem:
+            w.settings["last_read_positions"][stem] = int(value)
+        else:
+            # Fallback: keep previous single-position behaviour
+            w.settings["last_read_position"] = int(value)
+        # Persist the settings to disk
         fcs.save_settings_to_file(w.settings, user_settings_file)
 
     def closeEvent(self, event):
@@ -3089,24 +3140,41 @@ class TextDocumentWindow(QDialog):
     def load_text_file(self, file_path1):
         """
         Load the content of the specified file and display it in the text editor.
-        Update the window title with the name of the loaded file.
+        Update the window title with the base name of the loaded file (no folder, no extension).
+        Restore the per-file last scroll position when available.
         """
-        # Get last read position; default to 0 if not set
-        last_position: int = w.settings.get("last_read_position", 0)
-        # print(f"Loaded last_read_position = {last_position}")
         try:
+            if not file_path1:
+                return
+            p = Path(file_path1)
+            stem = p.stem
+            self.current_file_stem = stem
+
+            # Determine the last position: prefer a per-file map, fallback to legacy single value
+            positions = w.settings.get("last_read_positions", {}) or {}
+            last_position = int(positions.get(stem, w.settings.get("last_read_position", 0)))
+
             with open(file_path1, 'r', encoding='utf-8') as file1:
                 content = file1.read()
                 self.text_edit.setText(content)
+                
+                # Highlight scripture references in the newly loaded text
+                self.highlight_references()
 
-                # Set the scrollbar to the last read position after loading the text
+                # Restore the scrollbar position after the text is set
                 QTimer.singleShot(100, lambda: self.text_edit.verticalScrollBar().setValue(last_position))
 
-                # Extract the file name from the file path
-                file_name = file_path1.removesuffix(".txt")
+                # Update the window title to the file's base name only
+                self.setWindowTitle(stem)
 
-                # Update the window title to match the file name
-                self.setWindowTitle(file_name)
+                # Keep selector in sync if present
+                if hasattr(self, 'file_selector'):
+                    idx = self.file_selector.findText(stem)
+                    # noinspection PyChainedComparisons
+                    if idx >= 0 and self.file_selector.currentIndex() != idx:
+                        self.file_selector.blockSignals(True)
+                        self.file_selector.setCurrentIndex(idx)
+                        self.file_selector.blockSignals(False)
         except FileNotFoundError:
             self.text_edit.setText("Error: File not found.")
         except Exception as e1:
@@ -3134,7 +3202,7 @@ class TextDocumentWindow(QDialog):
         text = self.text_edit.toPlainText()
 
         # Find all scripture references using a regex pattern
-        references: list = self.find_scripture_references(text)
+        references: List = self.find_scripture_references(text)
 
         # Highlight references
         cursor = self.text_edit.textCursor()
@@ -3265,18 +3333,23 @@ class TextDocumentWindow(QDialog):
 
     @staticmethod
     def find_scripture_references(text):
-        """Find scripture references using regex, supporting multiple verses."""
+        """Find scripture references using regex, including Roman numerals (I, II, III) and multiple verses."""
         references = []
-        pattern = (
-            r'(?:(?<=^)|(?<=[^\w]))'  # Start at the beginning or after a non-word character
-            r'([1-3]?\s?[A-Za-z]+)(?:\.)?\s+'  # Book name with an optional period
-            r'(?:(\d{1,3}):'  # Option A: With colon (capture chapter in group 2)
-            r'(\d{1,3}(?:(?:,\s*\d{1,3})+|(?:-\d{1,3}))?)'  # Capture verses in group 3
-            r'|'  # OR
-            r'(\d{1,3}(?:(?:,\s*\d{1,3})+|(?:-\d{1,3}))?)'  # Option B: Without a colon, capture verses in group 4
-            r')\b'
-        )
-        for match in re.finditer(pattern, text):
+        pattern = r"""
+            (?:(?<=^)|(?<=[^\w]))                 # Start at the beginning or after a non-word character
+            (                                       # Book capture (group 1)
+                (?:(?:[1-3]|i{1,3})\.?\s*)?       # Optional Arabic 1-3 or Roman I/II/III with optional dot and spaces
+                [A-Za-z]+                            # Book name/abbreviation letters
+            )\.?\s+                                 # Optional trailing period then at least one space
+            (?:                                     
+              (\d{1,3}):                           # Group 2: chapter when colon present
+              (\d{1,3}(?:(?:,\s*\d{1,3})+|(?:-\d{1,3}))?)  # Group 3: verses list or range
+             |                                       # OR
+              (\d{1,3}(?:(?:,\s*\d{1,3})+|(?:-\d{1,3}))?)  # Group 4: verses without colon (one-chapter books only)
+            )
+            \b
+        """
+        for match in re.finditer(pattern, text, re.IGNORECASE | re.VERBOSE):
             full_text = match.group(0).lstrip()  # remove any leading whitespace
             book = match.group(1)
             if match.group(3):  # Option A: chapter and verses provided
@@ -3285,7 +3358,10 @@ class TextDocumentWindow(QDialog):
             elif match.group(4):  # Option B: No colon; assume a one-chapter book if applicable
                 chapter = 1
                 verses = match.group(4)
-                if book.strip().lower() not in {"obad", "phlm", "2john", "3john", "jude"}:
+                # Only allow no-colon form for one-chapter books (Obadiah, Philemon, 2 John, 3 John, Jude)
+                normalized = TextDocumentWindow.normalize_book_input(book)
+                book_id = sh.bibledict.get(normalized)
+                if not book_id or (book_id - 1) not in sh.onechapterbooks:
                     continue
             else:
                 continue
@@ -3326,8 +3402,14 @@ class TextDocumentWindow(QDialog):
 
     @staticmethod
     def normalize_book_input(book_input: str) -> str:
-        # Convert to lowercase and remove non-alphanumeric characters.
-        return re.sub(r'\W+', '', book_input.lower())
+        # Normalize spacing/casing
+        s = book_input.strip().lower()
+        # Convert leading Roman numerals I/II/III to Arabic 1/2/3 (e.g. "ii tim" -> "2 tim")
+        s = re.sub(r'^(iii)(?=\b|\s|\.)', '3', s)
+        s = re.sub(r'^(ii)(?=\b|\s|\.)', '2', s)
+        s = re.sub(r'^(i)(?=\b|\s|\.)', '1', s)
+        # Remove non-alphanumeric characters.
+        return re.sub(r'\W+', '', s)
 
     def lookup_scripture(self, book, chapter, verses):
         # print(f"Looking up scripture for {book} {chapter}:{verses}")
@@ -3522,7 +3604,7 @@ if __name__ == '__main__':
     user_settings_path: str = str(user_settings_file)
 
     # Load settings if the file is found (default if not).
-    settings: dict = fcs.load_settings_from_file(user_settings_path)
+    settings: Dict = fcs.load_settings_from_file(user_settings_path)
 
     # Show the splash screen if enabled in settings
     splash_path = sh.current_directory / "images" / "Abib_barley.png"
@@ -3540,8 +3622,8 @@ if __name__ == '__main__':
 
     w: MainWindow = MainWindow()
 
-    back: list = []
-    forward: list = []
+    back = []
+    forward = []
 
     # integers
     x: int = 0
@@ -3574,7 +3656,7 @@ if __name__ == '__main__':
 
     update_abib()
 
-    book_bounds: list[int] = [
+    book_bounds: List[int] = [
         0, 1533, 2746, 3605, 4893, 5852, 6510, 7128, 7213, 8023,
         8718, 9534, 10253, 11195, 12017, 12297, 12703, 12870,
         13940, 16 , 17316, 17538, 17655, 18947, 20311, 20465,
@@ -3585,7 +3667,7 @@ if __name__ == '__main__':
         30267, 30375, 30480, 30541, 30646, 30659, 30673, 30698,
         31102]
 
-    starts_with_italics: list[int] = [6203, 13009, 14972, 15412, 22195, 28117]
+    starts_with_italics: List[int] = [6203, 13009, 14972, 15412, 22195, 28117]
 
     # -------------------------------------------------- #
     KJB_PCE_LASTLINE = 36199
@@ -3627,15 +3709,15 @@ if __name__ == '__main__':
     file_path = str(Path(sh.str_cwd) / "Amap.txt")
 
     # Pass the constructed path to the function
-    Amap: list = sh.readfile('', file_path, sh.EOF_AMAP)
+    Amap: List = sh.readfile('', file_path, sh.EOF_AMAP)
 
     Amap = Amap[17:]
 
-    Ps119: list[int] = [
+    Ps119: List[int] = [
         15907, 15915, 15923, 15931, 15939, 15947, 15955, 15963, 15971, 15979,
         15987, 15995, 16003, 16011, 16019, 16027, 16035, 16043, 16051, 16059,
         16067]
-    P119: list = []
+    P119: List = []
     for _ in Ps119:
         v: Any = Amap[_]
         P119.append(v)
@@ -3652,18 +3734,18 @@ if __name__ == '__main__':
         strpd_low_dict: Any = load(f)
 
     # Load dictionaries using fcs.load_list_set_dict
-    set_dict: dict[Any, set] = fcs.load_list_set_dict("list_dict.json", stripped_dict)
-    set_lowdict: dict[Any, set] = fcs.load_list_set_dict("list_lowdict.json", strpd_low_dict)
+    set_dict: Dict[Any, Set] = fcs.load_list_set_dict("list_dict.json", stripped_dict)
+    set_lowdict: Dict[Any, Set] = fcs.load_list_set_dict("list_lowdict.json", strpd_low_dict)
 
     # Read and process PCE-find.txt
     Rnew = fcs.readio('', str(Path(sh.base_dir / "PCE-find.txt")), sh.EOF_BIBLE_TEXT)
     Rnew = tuple(Rnew)
-    Rdic: dict[int, Any] = dict(enumerate(Rnew))  # Convert Rnew to dictionary.
+    Rdic: Dict[int, Any] = dict(enumerate(Rnew))  # Convert Rnew to dictionary.
 
     # Read and process PCE-lower.txt
     Rlow = fcs.readio('', str(Path(sh.base_dir / "PCE-lower.txt")), sh.EOF_BIBLE_TEXT)
     Rlow = tuple(Rlow)
-    Ldic: dict[int, Any] = dict(enumerate(Rlow))  # Convert Rlow to dictionary.
+    Ldic: Dict[int, Any] = dict(enumerate(Rlow))  # Convert Rlow to dictionary.
 
     # Read PCE-stripped.txt
     Rstp = fcs.readio('', str(Path(sh.base_dir / "PCE-stripped.txt")), sh.EOF_BIBLE_TEXT)
