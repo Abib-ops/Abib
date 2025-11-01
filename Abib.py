@@ -109,6 +109,7 @@ from settings_dialog import SettingsDialog
 from ui.themes import ThemeManager, ThemeState
 from services.audio import AudioService
 from services.settings import SettingsService
+from domain.scripture_refs import resolve_reference as parse_ref, calculate_book_line as calc_line
 
 try:
     from ctypes import windll  # Only exists on Windows.
@@ -1960,7 +1961,7 @@ class MainWindow(QMainWindow):
         bits = fcs.split_reference(reference_text)
         # print(f"2469 Split reference: {bits}")
 
-        book_num, chapter, verse = resolve_reference(bits)
+        book_num, chapter, verse = parse_ref(bits)
         # print(f"2064 book_num: {book_num} chapter: {chapter} verse: {verse}")
 
         if not book_num:
@@ -1970,7 +1971,7 @@ class MainWindow(QMainWindow):
             return -1
 
         try:
-            position = calculate_book_line(book_num, chapter, verse, current_line)
+            position = calc_line(book_num, chapter, verse, current_line)
             if position is not None:
                 return position
         except ValueError:
