@@ -103,8 +103,22 @@ The repository includes a `font/` folder; you can install from there if present.
 
 
 ## Tests
-- No automated tests were found in the repository.
-- TODO: Add tests (e.g., for parsing of references, roman numeral conversion, window geometry persistence, and search functions in `fcs.py`).
+Automated unit tests are included for core, non-Qt logic.
+
+How to run (no GUI required):
+- From the repo root:
+  - Windows (PowerShell):
+    - `python -m unittest discover -s tests -p "test_*.py"`
+  - Linux/macOS:
+    - `python3 -m unittest discover -s tests -p "test_*.py"`
+
+What’s covered
+- `domain.scripture_refs`: reference parsing and line calculation
+- `domain.reading_plans`: SME loading and reference extraction (tolerates missing/invalid JSON)
+
+Notes
+- Tests avoid importing PySide6 widgets and do not require a running Qt event loop.
+- Additional coverage is desirable for window geometry persistence and search helpers in `fcs.py`.
 
 
 ## Project structure (selected)
