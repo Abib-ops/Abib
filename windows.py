@@ -61,6 +61,9 @@ class SecondaryWindow(NoZoomDialog):
         self.text_display.setPlainText(text)
         self.text_display.setReadOnly(True)
 
+        # Keep references to QShortcut instances to satisfy Qt and linters
+        self._shortcuts = []
+
         # Create keyboard shortcuts for font size changes
         self.create_font_shortcuts()
 
@@ -98,17 +101,18 @@ class SecondaryWindow(NoZoomDialog):
 
     def create_font_shortcuts(self):
         """Create keyboard shortcuts for font size changes"""
+        # Ensure we keep references to shortcuts to prevent GC
         # Ctrl++ to increase font size
         increase_shortcut = QKeySequence("Ctrl++")
-        self.addAction(self._make_shortcut(increase_shortcut, self.increase_font_size))
+        self._shortcuts.append(self._make_shortcut(increase_shortcut, self.increase_font_size))
 
         # Ctrl+= alternative
         increase_alt = QKeySequence("Ctrl+=")
-        self.addAction(self._make_shortcut(increase_alt, self.increase_font_size))
+        self._shortcuts.append(self._make_shortcut(increase_alt, self.increase_font_size))
 
         # Ctrl+- to decrease font size
         decrease_shortcut = QKeySequence("Ctrl+-")
-        self.addAction(self._make_shortcut(decrease_shortcut, self.decrease_font_size))
+        self._shortcuts.append(self._make_shortcut(decrease_shortcut, self.decrease_font_size))
 
     def _make_shortcut(self, seq: QKeySequence, slot):
         from PySide6.QtGui import QShortcut
@@ -221,7 +225,7 @@ class AboutWindow(QMainWindow):
         winwidth: int = 480
         winheight: int = 810
 
-        # Fit and center for small screens
+        # Fit and centre for small screens
         winheight, winwidth = fit_to_screen(winheight, winwidth)
         w_origin, h_origin = center_on_screen(winwidth, winheight)
         self.setGeometry(w_origin, h_origin, winwidth, winheight)

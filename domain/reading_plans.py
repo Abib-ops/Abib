@@ -14,7 +14,7 @@ class DateFile:
     """Represents the Morning/Evening date selection state.
 
     Fields:
-      year: e.g., "Jan 01"
+      year: e.g. "Jan 01"
       time_of_day: "AM" or "PM"
       index: integer index used by fcs.get_date_file
     """
@@ -33,11 +33,11 @@ class ReadingPlans:
     """
 
     def __init__(self, sme_json_path: Optional[Path] = None) -> None:
-        # Determine JSON path in app directory by default
+        # Determine JSON path in-app directory by default
         self.sme_json_path = sme_json_path or (sh.base_dir / "morning_evening.json")
         self._sme_data: Dict[str, Dict[str, str]] = {}
 
-        # Initialise date state using fcs.get_date_file (tuple[str, str, int])
+        # Initialise the date state using fcs.get_date_file (tuple[str, str, int])
         year, time_of_day, index = fcs.get_date_file()
         self._date = DateFile(year, time_of_day, index)
 
@@ -55,7 +55,7 @@ class ReadingPlans:
             self._sme_data = {}
 
     def _advance(self, adjustment: int) -> None:
-        # Use fcs.get_date_file to advance based on current index
+        # Use fcs.get_date_file to advance based on the current index
         y, tod, idx = fcs.get_date_file(self._date.index, adjustment)
         self._date = DateFile(y, tod, idx)
 
@@ -73,12 +73,13 @@ class ReadingPlans:
         # Fetch reading
         try:
             a: str = self._sme_data[self._date.year][self._date.time_of_day]
-        except Exception:
-            return (f"No entry for {self._date.year} in {self._date.time_of_day}.", "")
+        except (KeyError, TypeError):
+            # Missing year/time_of_day keys or malformed data structure
+            return f"No entry for {self._date.year} in {self._date.time_of_day}.", ""
 
         # Extract scripture reference between the closing quote and newline of first line
         try:
-            # Should be the 2nd '"' at end of first line, before the reference
+            # Should be the 2nd '"' at the end of the first line, before the reference
             i: int = a[1:].index('"') + 2
             j: int = a.index('\n')
             sme_ref: str = a[i:j]
@@ -88,12 +89,12 @@ class ReadingPlans:
         sme_text = f"{self._date.year} — {self._date.time_of_day}\n\n{a}"
         return sme_text, sme_ref
 
-    # Expose current reference target without text if needed
+    # Expose the current reference target without text if needed
     def current_ref(self) -> str:
         try:
             a: str = self._sme_data[self._date.year][self._date.time_of_day]
             i: int = a[1:].index('"') + 2
             j: int = a.index('\n')
             return a[i:j]
-        except Exception:
+        except (KeyError, TypeError, ValueError):
             return ""

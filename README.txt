@@ -11,6 +11,17 @@ Changelog.
 -----------
 Abib v414.02
 Modified the convert_roman_to_integer function to fix a CodeQL issue.
+Refactored the code to remove duplicate code.
+Modularised the code. New modules:
+- fcs.py
+- shared.py
+- settings.py
+- update.py
+- version.py
+- windows.py
+- window_main.py
+- window_devotional.py
+- window_pilgrim.py
 
 Abib v414.01
 New books included.

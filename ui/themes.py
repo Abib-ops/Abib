@@ -63,6 +63,6 @@ class ThemeManager:
             return
         try:
             secondary_window.apply_theme(self.state.is_dark_mode)
-        except Exception:
-            # Be tolerant: secondary window might not be fully initialised.
+        except (AttributeError, RuntimeError):
+            # Be tolerant: secondary window might not be fully initialised or already deleted.
             pass

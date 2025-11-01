@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 import ctypes
 import subprocess
+from typing import Any, cast
 
 import requests
 from PySide6.QtWidgets import QMessageBox
@@ -100,11 +101,15 @@ def run_installer(installer_path: str) -> bool:
     Run the installer with elevated privileges using ShellExecute.
     """
     try:
-        result = ctypes.windll.shell32.ShellExecuteW(
+        # Help static analysis: cast windll to Any so ShellExecuteW is recognised on Windows
+        shell32 = cast(Any, ctypes.windll).shell32
+        # Use standard Inno Setup switches separated by spaces (commas are not required)
+        params = "/SILENT /VERYSILENT /NORESTART /SUPPRESSMSGBOXES"
+        result = shell32.ShellExecuteW(
             None,
             "runas",
             installer_path,
-            "/SILENT, /VERYSILENT, /NORESTART, /SUPPRESSMSGBOXES",
+            params,
             None,
             0,
         )

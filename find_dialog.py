@@ -6,11 +6,11 @@ from typing import Tuple
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
-from find import Ui_Dialog
+from find import UiDialog
 
 
 class FindDialog(QDialog):
-    """Find dialog extracted from Abib.py and made parent-aware.
+    """Find a dialog extracted from Abib.py and made parent-aware.
 
     This version avoids referencing the global `w` by using the provided parent
     MainWindow instance for data (nwin) and actions (findf3, close_find_window).
@@ -21,7 +21,7 @@ class FindDialog(QDialog):
         self._main = parent  # MainWindow reference
 
         # Create an instance of the GUI
-        self.ui = Ui_Dialog()
+        self.ui = UiDialog()
         # Run the .setupUi() method to show the GUI
         self.ui.setupUi(self)
 
@@ -43,11 +43,11 @@ class FindDialog(QDialog):
             self.ui.comboBox_1.addItems(self._main.nwin)
             self.ui.comboBox_2.addItems(self._main.nwin)
         self.ui.comboBox_1.setCurrentIndex(0)
-        # Expect BOOKS_IN_THE_BIBLE - 1 as last index
+        # Expect BOOKS_IN_THE_BIBLE - 1 as the last index
         try:
-            from shared import BOOKS_IN_THE_BIBLE  # local import to avoid heavy module import at top
+            from shared import BOOKS_IN_THE_BIBLE  # local import to avoid heavy module import at the top
             self.ui.comboBox_2.setCurrentIndex(BOOKS_IN_THE_BIBLE - 1)
-        except Exception:
+        except (ImportError, TypeError, ValueError):
             # Fallback if constant not available for any reason
             if self.ui.comboBox_2.count() > 0:
                 self.ui.comboBox_2.setCurrentIndex(self.ui.comboBox_2.count() - 1)
@@ -95,7 +95,7 @@ class FindDialog(QDialog):
         i, j = self.get_scope()
         self.get_checks()
         if hasattr(self._main, "findf3"):
-            # mirror previous behavior by setting parent's key and calling findf3
+            # mirror previous behaviour by setting parent's key and calling findf3
             setattr(self._main, "key", key)
             self._main.findf3(i, j)
         if hasattr(self._main, "close_find_window"):

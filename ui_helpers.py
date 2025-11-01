@@ -17,7 +17,7 @@ class NoZoomPlainTextEdit(QPlainTextEdit):
 
 
 def center_on_screen(width: int, height: int) -> tuple[int, int]:
-    """Return top-left coordinates to center a window of (width,height) on the primary screen."""
+    """Return top-left coordinates to centre a window of (width,height) on the primary screen."""
     screen_w, screen_h = fcs.get_screen_size()
     w_origin = max(0, int((screen_w - width) / 2))
     h_origin = max(0, int((screen_h - height) / 2))

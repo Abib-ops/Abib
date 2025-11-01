@@ -43,7 +43,7 @@ class Ui_Dialog(object):
 
     def setupUi(self, Dialog):
         if not Dialog.objectName():
-            Dialog.setObjectName(u"Dialog")
+            Dialog.setObjectName(u"dialog")
 
         Dialog.resize(400, 378)
         Dialog.setWindowOpacity(1.0)
@@ -194,22 +194,22 @@ class Ui_Dialog(object):
     # setupUi
 
     def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Find Options", None))
-        self.radiobutton_5.setText(QCoreApplication.translate("Dialog", u"Normal", None))
-        self.radiobutton_6.setText(QCoreApplication.translate("Dialog", u"Regular expression", None))
-        self.label_1.setText(QCoreApplication.translate("Dialog", u"Mode", None))
-        self.checkBox.setText(QCoreApplication.translate("Dialog", u"Match case", None))
-        self.label.setText(QCoreApplication.translate("Dialog", u"&Find what:", None))
-        self.pushButton_1.setText(QCoreApplication.translate("Dialog", u"X", None))
-        self.label_2.setText(QCoreApplication.translate("Dialog", u"Search Limits", None))
+        Dialog.setWindowTitle(QCoreApplication.translate("dialog", u"Find Options", None))
+        self.radiobutton_5.setText(QCoreApplication.translate("dialog", u"Normal", None))
+        self.radiobutton_6.setText(QCoreApplication.translate("dialog", u"Regular expression", None))
+        self.label_1.setText(QCoreApplication.translate("dialog", u"Mode", None))
+        self.checkBox.setText(QCoreApplication.translate("dialog", u"Match case", None))
+        self.label.setText(QCoreApplication.translate("dialog", u"&Find what:", None))
+        self.pushButton_1.setText(QCoreApplication.translate("dialog", u"X", None))
+        self.label_2.setText(QCoreApplication.translate("dialog", u"Search Limits", None))
         self.radiobutton_1.setText(QCoreApplication.translate(
-            "Dialog", u"Raw Search                      (Literal search - part words - anything)", None))
+            "dialog", u"Raw Search                      (Literal search - part words - anything)", None))
         self.radiobutton_2.setText(QCoreApplication.translate(
-            "Dialog", u"Match whole words          (Single word or phrase)", None))
+            "dialog", u"Match whole words          (Single word or phrase)", None))
         self.radiobutton_3.setText(QCoreApplication.translate(
-            "Dialog", u"All the words                    (Somewhere in the verse)", None))
+            "dialog", u"All the words                    (Somewhere in the verse)", None))
         self.radiobutton_4.setText(QCoreApplication.translate(
-            "Dialog", u"Any of the words             (With results sorted)", None))
+            "dialog", u"Any of the words             (With results sorted)", None))
         self.buttonBox.setProperty(".standardButtons", "")
     # retranslateUi
 

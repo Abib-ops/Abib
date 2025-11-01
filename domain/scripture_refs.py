@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Tuple, Optional
+from typing import Optional
 
-from roman import fromRoman
+from roman import fromRoman, InvalidRomanNumeralError
 
 import fcs
 import shared as sh
@@ -28,7 +28,7 @@ def resolve_reference(bits: list) -> tuple[Optional[int], Optional[int], Optiona
         if fcs.isRoman(bits[1]):
             try:
                 chapter = int(fromRoman(bits[1].upper()))
-            except Exception:
+            except (InvalidRomanNumeralError, ValueError, TypeError):
                 return book_number, None, None
         else:
             try:
@@ -42,7 +42,7 @@ def resolve_reference(bits: list) -> tuple[Optional[int], Optional[int], Optiona
         if fcs.isRoman(bits[2]):
             try:
                 verse = int(fromRoman(bits[2].upper()))
-            except Exception:
+            except (InvalidRomanNumeralError, ValueError, TypeError):
                 return book_number, chapter, None
         else:
             try:
@@ -53,11 +53,15 @@ def resolve_reference(bits: list) -> tuple[Optional[int], Optional[int], Optiona
     return book_number, chapter, verse
 
 
-def calculate_book_line(book: int, chapter: int, verse: int, current_line_num: int) -> int:
-    """Calculate and return a specific line index from sh.Info.
+def calculate_book_line(book: int, chapter: int, verse: int, _current_line_num: int) -> int:
+    """Return the absolute line index in sh.Info for the given reference.
 
-    book, chapter, verse are 1-based values; will be converted to 0-based for lookup.
-    Raises ValueError for invalid inputs or out-of-range.
+    Notes:
+    - The fourth parameter is unused and kept only for signature compatibility
+      with existing call sites.
+      It may be removed in a future clean-up.
+    - book, chapter, verse are 1-based values; converted to 0-based for lookup.
+    - Raises ValueError for invalid inputs or out-of-range.
     """
     # Subtract 1 from the book, chapter, and verse for a zero-based sh.Info index.
     book_id = int(book) - 1
