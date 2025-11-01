@@ -108,6 +108,7 @@ from windows import SecondaryWindow as ExtSecondaryWindow, AboutWindow as ExtAbo
 from settings_dialog import SettingsDialog
 from ui.themes import ThemeManager, ThemeState
 from services.audio import AudioService
+from services.settings import SettingsService
 
 try:
     from ctypes import windll  # Only exists on Windows.
@@ -543,8 +544,9 @@ class MainWindow(QMainWindow):
 
         # Load saved settings or initialise default ones.
 
-        # Load window geometry from settings
-        x6, y6, width6, height6 = fcs.get_window_geometry("main_window")
+        # Settings service and window geometry
+        self.settings_service = SettingsService()
+        x6, y6, width6, height6 = self.settings_service.get_window_geometry("main_window")
         self.setGeometry(x6, y6, width6, height6)
 
         # self.feature = None
@@ -554,8 +556,8 @@ class MainWindow(QMainWindow):
         self.command_history = None
         self.about_window = None
         self.is_dark_mode: None = None
-        # Use the already-loaded settings
-        self.settings = settings
+        # Use SettingsService-managed settings dict
+        self.settings = self.settings_service.settings
         # self.textEditor: None = None
         self.path1: None = None
         self.display_verse_input: None = None
@@ -2375,8 +2377,8 @@ class MainWindow(QMainWindow):
             # DEBUG: Print settings before saving
             # print(f"DEBUG: Settings before saving: {self.settings}")
 
-            # Save settings to the file
-            fcs.save_settings_to_file(self.settings, user_settings_path)
+            # Save settings via service
+            self.settings_service.save(self.settings)
 
             # Apply theme (if needed)
             self.set_theme(self.settings)
@@ -2395,9 +2397,9 @@ class MainWindow(QMainWindow):
             self.toggle_dark_mode()
             self.settings[theme_key] = 'Light'  # Ensure settings reflect this theme
 
-        # Save updated theme settings
+        # Save updated theme settings via service
         # print(f"Saving updated theme settings: {the_settings}")
-        fcs.save_settings_to_file(self.settings, user_settings_path)
+        self.settings_service.save(self.settings)
 
     def display_secondary_window(self, offset: int = 0) -> None:
         """Creates and displays the secondary window to show SME text.
@@ -2545,16 +2547,9 @@ if __name__ == '__main__':
     app: QApplication = QApplication()
     app.setApplicationName("Abib")
 
-    # If settings.json exists in the user's "APPDATA/Abib" folder, then do nothing.
-    user_settings_file = sh.user_settings_dir / "settings.json"  # User's settings.json.
-    if user_settings_file.exists():
-        pass
-    else:
-        fcs.setup_Abib_settings(sh.user_settings_dir)
-    user_settings_path: str = str(user_settings_file)
-
-    # Load settings if the file is found (default if not).
-    settings: Dict = fcs.load_settings_from_file(user_settings_path)
+    # Initialize settings service and load settings
+    settings_service = SettingsService()
+    settings: Dict = settings_service.settings
 
     # Show the splash screen if enabled in settings
     splash_path = sh.current_directory / "images" / "Abib_barley.png"
@@ -2572,7 +2567,7 @@ if __name__ == '__main__':
 
     w: MainWindow = MainWindow()
     # Provide the settings path to windows that is needed to persist user settings
-    w.user_settings_path = user_settings_path
+    w.user_settings_path = str(settings_service.user_settings_path)
 
     back = []
     forward = []
