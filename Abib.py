@@ -109,6 +109,7 @@ from settings_dialog import SettingsDialog
 from ui.themes import ThemeManager, ThemeState
 from services.audio import AudioService
 from services.settings import SettingsService
+from services.printing import PrintingService
 from domain.scripture_refs import resolve_reference as parse_ref, calculate_book_line as calc_line
 from ui.actions import setup_shortcuts, setup_menus_and_toolbars
 
@@ -594,6 +595,7 @@ class MainWindow(QMainWindow):
 
         # Services
         self.audio = AudioService()
+        self.printing = PrintingService()
 
         # Reading plans (SME) service
         from domain.reading_plans import ReadingPlans
@@ -2259,10 +2261,7 @@ class MainWindow(QMainWindow):
 
     def file_print(self) -> None:
         """File print routine."""
-
-        dlg: QPrintDialog = QPrintDialog()
-        if dlg.exec_():
-            self.textEditor.print_(dlg.printer())
+        self.printing.print_plain_text(self.textEditor, parent=self)
 
     def update_title(self) -> None:
         """Title update routine."""
