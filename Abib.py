@@ -69,7 +69,6 @@ setrecursionlimit(200)
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
 
 # Pygame is solely used for an error sound.
-from pygame import mixer
 
 from copy import deepcopy
 from pathlib import Path
@@ -95,7 +94,6 @@ from PySide6.QtGui import (QAction, QMouseEvent, QKeyEvent, QSyntaxHighlighter, 
 
 from PySide6.QtCore import Qt, QRect, QSize, QEvent
 
-from PySide6.QtPrintSupport import QPrintDialog
 
 import ctypes
 
@@ -904,27 +902,28 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event: Any):
         """Handle window close event - save geometry"""
         geometry = self.geometry()
-        fcs.save_window_geometry("main_window",
-                                 geometry.x(), geometry.y(),
-                                 geometry.width(), geometry.height())
+        self.settings_service.save_window_geometry(
+            "main_window",
+            geometry.x(), geometry.y(), geometry.width(), geometry.height()
+        )
         event.accept()
 
     def increase_font_size(self):
-        current_size = fcs.get_bible_font_size()
-        new_size = min(current_size + 2, 72 )  # Max size of 72
-        fcs.update_bible_font_size(new_size)
+        current_size = self.settings_service.get_bible_font_size()
+        new_size = min(current_size + 2, 72)  # Max size of 72
+        self.settings_service.update_bible_font_size(new_size)
         # print(f"DEBUG: Increase Bible fontsize to: {new_size}")
         self.apply_font_size()
 
     def decrease_font_size(self):
-        current_size = fcs.get_bible_font_size()
+        current_size = self.settings_service.get_bible_font_size()
         new_size = max(current_size - 2, 8)  # Min size of 8
-        fcs.update_bible_font_size(new_size)
-        # print(f"DEBUG: Increase Bible fontsize to: {new_size}")
+        self.settings_service.update_bible_font_size(new_size)
+        # print(f"DEBUG: Decrease Bible fontsize to: {new_size}")
         self.apply_font_size()
 
     def apply_font_size(self):
-        self.fontsize = fcs.get_bible_font_size()
+        self.fontsize = self.settings_service.get_bible_font_size()
         # Create a QFont object and apply it to the QPlainTextEdit
         font = QFont("Cascadia Mono", self.fontsize)
         self.textEditor.setFont(font)
@@ -2486,8 +2485,6 @@ if __name__ == '__main__':
     # Provide the settings path to windows that is needed to persist user settings
     w.user_settings_path = str(settings_service.user_settings_path)
 
-    back = []
-    forward = []
 
     # integers
     x: int = 0
