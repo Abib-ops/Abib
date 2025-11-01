@@ -248,7 +248,11 @@ def convert_roman_to_integer(reference_text: str) -> str:
     Roman numerals are case-insensitive (e.g. IV == iv == 4).
     Returns the modified text with numerals replaced by integers.
     """
-    pattern = re.compile(r'\b(XL|XC|IV|IX|[MDCLXVI])+\b', re.IGNORECASE)
+    # Pattern that matches valid Roman numerals without exponential backtracking
+    pattern = re.compile(
+        r'\bM{0,4}(?:CM|CD|D?C{0,3})(?:XC|XL|L?X{0,3})(?:IX|IV|V?I{0,3})\b',
+        re.IGNORECASE
+    )
 
     def replacer(matched: re.Match[str]) -> str:
         roman_numeral = matched.group(0)
@@ -358,7 +362,7 @@ def load_settings_from_file(filename="settings.json") -> Any:
     except JSONDecodeError:
         print("Settings file is malformed. Overwriting with default settings.")
         return default_settings
-    except Exception as err:
+    except (OSError, UnicodeDecodeError, PermissionError) as err:
         print(f"Error loading settings: {err}. Using default settings.")
         return default_settings
 

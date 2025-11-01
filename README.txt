@@ -4,13 +4,16 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.01
+Abib v414.02
 ------------
 
 Changelog.
 -----------
-Abib v414.01
+Abib v414.02
+Modified the convert_roman_to_integer function to fix a CodeQL issue.
 
+Abib v414.01
+New books included.
 
 Abib v413.06
 The display font size can no longer be zoomed up and down by holding down

@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-30/10/2025
+01/11/2025
 
 Note to self:  Check for the use of 'pass' in the code.
 """
@@ -79,8 +79,9 @@ from json import load, JSONDecodeError
 
 from roman import fromRoman
 from typing import Any, Dict, Set, List
+from text_window import TextDocumentWindow as ExternalTextDocumentWindow
 
-from PySide6.QtWidgets import (QMainWindow, QTextEdit, QVBoxLayout, QWidget, QDialogButtonBox, QApplication,
+from PySide6.QtWidgets import (QMainWindow, QVBoxLayout, QWidget, QDialogButtonBox, QApplication,
                                QToolBar, QPlainTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
                                QSplashScreen, QPushButton, QDialog, QSizePolicy, QSpacerItem, QHBoxLayout,
                                QStatusBar, QFileDialog, QCheckBox, QLabel)
@@ -88,32 +89,32 @@ from PySide6.QtWidgets import (QMainWindow, QTextEdit, QVBoxLayout, QWidget, QDi
 from PySide6.QtGui import (QAction, QMouseEvent, QKeyEvent, QSyntaxHighlighter, QIcon, QColor, QFont, QPixmap,
                            QTextCursor, QTextCharFormat, QKeySequence, QShortcut)
 
-from PySide6.QtCore import Qt, QRect, QSize, QEvent, QTimer
+from PySide6.QtCore import Qt, QRect, QSize, QEvent
 
 from PySide6.QtPrintSupport import QPrintDialog
 
-import requests
-import subprocess
 import ctypes
 
 import fcs
 import shared as sh
 
 from find import Ui_Dialog
+from ui_helpers import NoZoomPlainTextEdit, NoZoomDialog, center_on_screen, fit_to_screen
+from windows import SecondaryWindow as ExtSecondaryWindow, AboutWindow as ExtAboutWindow
+from settings_dialog import SettingsDialog
 
 try:
     from ctypes import windll  # Only exists on Windows.
 except ImportError:
     windll = None  # Linux or Mac if here.
-    pass
 
 CURRENT_VERSION = sh.CURRENT_VERSION
 
 try:
-    # Included in the try/except block for Mac/Linux
-    myappid = f'Abib Bible Reader.{CURRENT_VERSION}'
+    myappid = f"Abib Bible Reader.{CURRENT_VERSION}"
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-except Exception as e:
+except (AttributeError, OSError) as e:
+    # AttributeError: non-Windows (windll is None); OSError: Windows API failure
     print(f"Error setting APP ID: {e}")
 
 # Define global theme state
@@ -575,179 +576,9 @@ def resolve_reference(bits: list) -> tuple:
     return book_number, chapter, verse
 
 
-# Paths (can be dynamically defined within Abib at runtime)
-uninstaller_path = r"C:\Program Files\Abib\unins000.exe"
-upgrade_installer_path = Path.home() / "Downloads"
-new_version_path = r"C:\Program Files\Abib\Abib.exe"
-GITHUB_API_URL = "https://api.github.com/repos/Abib-ops/Abib/releases/latest"
+from updater import update_abib
 
 
-def check_for_updates(parent=None):
-    """
-    Check for updates, download the latest installer, and install it silently if a new version is available.
-    """
-    try:
-        # Step 1: Fetch the latest release information from GitHub
-        response = requests.get(GITHUB_API_URL, timeout=4)
-        response.raise_for_status()
-        data = response.json()
-
-        # Fetch the latest version and download URL
-        latest_version = data.get("tag_name", "").strip()
-        assets = data.get("assets", [])
-        exe_url = None
-
-        for asset in assets:
-            if asset.get("name", "").endswith(".exe"):  # Look for the Windows installer
-                exe_url = asset.get("browser_download_url")
-                break
-
-        # Step 2: Compare CURRENT_VERSION with latest_version
-        if latest_version and exe_url:
-            output: int = fcs.compare_versions(CURRENT_VERSION, latest_version)
-            if output == -1:  # A newer version is available
-                reply = QMessageBox.question(parent,
-                                                       "Update Available",
-                                                       f"A new version ({latest_version}) is available. Do you want to download and install it?",
-                                                       QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                                                       QMessageBox.StandardButton.No
-                                                       )
-                if reply == QMessageBox.StandardButton.Yes:
-                    return True, latest_version, exe_url
-                else:
-                    return False, "", ""
-            elif output >= 0:  # The current version is up to date.
-                return False, "", ""
-            return None
-        else:
-            QMessageBox.warning(parent, "Error", "Failed to fetch the latest version details.")
-            return None
-
-    except requests.exceptions.RequestException:
-        # network down, timeout, DNS failure, etc.
-        return None
-    except ValueError:
-        # invalid JSON
-        return None
-
-
-# Step 1: Download upgrade installer
-def download_upgrade(version, exe_url):
-    """
-    Download the upgrade installer from the provided URL and save it to the Downloads folder.
-
-    :param version: The latest version number (for naming the installer file).
-    :param exe_url: The URL of the installer executable file to download.
-    :return: True if the download was successful, False otherwise.
-    """
-    try:
-        print(f"Downloading the upgrade (version: {version}) from {exe_url}...")
-
-        # Make the GET request to download the file
-        response = requests.get(exe_url, stream=True)
-
-        # Check if the request was successful
-        if response.status_code == 200:
-            # Define the download path in the user's Downloads folder
-            download_path = Path.home() / "Downloads" / f"Abib_setup_{version}_win.exe"
-
-            # Save the file to the local Downloads folder
-            with open(download_path, "wb") as download_file:
-                for chunk in response.iter_content(chunk_size=1024):  # Stream chunks
-                    download_file.write(chunk)
-
-            print(f"Download complete. Installer saved to {download_path}")
-            return True
-
-        else:
-            print(f"Download failed. Status code: {response.status_code}")
-            return False
-
-    except requests.exceptions.RequestException as ee:
-        print(f"An error occurred while downloading the upgrade: {str(ee)}")
-        return False
-
-
-# Step 2: Initiate uninstaller
-def run_uninstaller():
-    print("Running Abib uninstaller...")
-    uninstall_process = subprocess.Popen([uninstaller_path, "/SILENT", "/VERYSILENT"])
-    uninstall_process.wait()
-    if uninstall_process.returncode == 0:
-        print("Uninstalled successfully.")
-    else:
-        print(f"Uninstallation failed with return code {uninstall_process.returncode}")
-        return False
-    return True
-
-
-# Step 3: Install the upgrade
-def run_installer(installer_path: str) -> bool:
-    """
-        Run the installer with elevated privileges using ShellExecute.
-        """
-    try:
-        # Request elevated privileges to execute the installer
-        # noinspection PyUnresolvedReferences
-        result = ctypes.windll.shell32.ShellExecuteW(
-            None,  # No parent window
-            "runas",  # Verb to request elevation
-            installer_path,  # Path to the installer
-            "/SILENT, /VERYSILENT, /NORESTART, /SUPPRESSMSGBOXES",  # Arguments for the installer (silent mode)
-            None,  # Default working directory
-            0  # Show the installer window (SW_SHOWNORMAL)
-        )
-        if result <= 32:
-            print(f"Failed to run the installer. Error code: {result}")
-            return False
-        print("Installer is running...")
-        return True
-    except Exception as ee:
-        print(f"An error occurred while running the installer: {ee}")
-        return False
-
-
-# Main update process
-def update_abib():
-    # print("Checking for updates...")
-    try:
-        result = check_for_updates()
-        # If check_for_updates() returned None, skip unpacking
-        if result is None:
-            return
-
-        update_available, version, exe_url = result
-    except TypeError:
-        # In case a result isn’t iterable, bail out
-        return
-
-    if not update_available:
-        # print("No update available.")
-        return
-    path_to_setup_exe = str(Path.home() / "Downloads" / f"Abib_setup_{version}_win.exe")
-    print("Update process started...")
-    if not download_upgrade(version, exe_url):
-        print("Update aborted: Could not download upgrade.")
-        return
-    if not run_uninstaller():
-        print("Update aborted: Could not uninstall current version.")
-        return
-    if not run_installer(path_to_setup_exe):
-        print("Update aborted: Could not run the installer.")
-        return
-    print("Update completing. Installing New Version of Abib.")
-    print("Closing down the old version of Abib...")
-    exit(0)  # Exit the old instance of the application
-
-
-class NoZoomPlainTextEdit(QPlainTextEdit):
-    def wheelEvent(self, event):
-        # Block zoom when Ctrl is pressed
-        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            event.ignore()
-            return
-        # Allow normal scrolling
-        super().wheelEvent(event)
 
 
 class MainWindow(QMainWindow):
@@ -792,6 +623,8 @@ class MainWindow(QMainWindow):
         self.buttonf12: None = None
         self.buttonf13: None = None
         self.buttonf14: None = None
+        self.other_works_combo: QComboBox | None = None
+        self.other_works_map: Dict[str, str] = {}
         self.statusBar: None = None
         self.okButton: None = None
         self.dlg: None = None  # No external window yet.
@@ -1038,6 +871,8 @@ class MainWindow(QMainWindow):
 
         # When selection changes, open or update the document reader window
         self.other_works_combo.currentTextChanged.connect(self._open_other_work)
+        # Also handle a user clicking the already-selected item (e.g., default on first click)
+        self.other_works_combo.activated.connect(lambda index: self._open_other_work(self.other_works_combo.itemText(index)))
 
         container: QWidget = QWidget()
         container.setLayout(grid)
@@ -1127,8 +962,11 @@ class MainWindow(QMainWindow):
         settings_action.triggered.connect(self.open_settings_dialog)
         help_menu.addAction(settings_action)
 
-        self.secondary_window = SecondaryWindow("Text to display")
-        self.secondary_window.text_display = QPlainTextEdit()
+        self.secondary_window = ExtSecondaryWindow(
+                    "Text to display",
+                    navigate_left_cb=lambda: self.display_secondary_window(-12),
+                    navigate_right_cb=lambda: self.display_secondary_window(12),
+                )
 
         # Apply theme from settings during initialisation.
         self.set_theme(self.settings)
@@ -1209,10 +1047,13 @@ class MainWindow(QMainWindow):
     def feature(self) -> None:
         """Open the Other Works reader window for the currently selected item."""
         current_stem = None
-        try:
-            current_stem = self.other_works_combo.currentText()
-        except Exception:
-            pass
+        combo = getattr(self, "other_works_combo", None)
+        if isinstance(combo, QComboBox):
+            try:
+                current_stem = combo.currentText()
+            except RuntimeError:
+                # The widget may have been deleted/disposed by Qt
+                current_stem = None
         if current_stem and hasattr(self, "other_works_map"):
             self._open_other_work(current_stem)
         else:
@@ -1222,7 +1063,7 @@ class MainWindow(QMainWindow):
             path = str(pp) if pp.exists() else None
             if path:
                 if getattr(self, "text_edit_window", None) is None:
-                    self.text_edit_window = TextDocumentWindow(initial_file_path=path)
+                    self.text_edit_window = ExternalTextDocumentWindow(initial_file_path=path, settings=self.settings, settings_path=getattr(self, "user_settings_path", None))
                 else:
                     self.text_edit_window.load_text_file(path)
                 self.text_edit_window.show()
@@ -1237,7 +1078,7 @@ class MainWindow(QMainWindow):
         if not path:
             return
         if getattr(self, "text_edit_window", None) is None:
-            self.text_edit_window = TextDocumentWindow(initial_file_path=path)
+            self.text_edit_window = ExternalTextDocumentWindow(initial_file_path=path, settings=self.settings, settings_path=getattr(self, "user_settings_path", None))
         else:
             self.text_edit_window.load_text_file(path)
         self.text_edit_window.show()
@@ -1249,7 +1090,7 @@ class MainWindow(QMainWindow):
 
         # Initialize AboutWindow if it hasn't been created
         if self.about_window is None:
-            self.about_window = AboutWindow()
+            self.about_window = ExtAboutWindow(f"Abib {CURRENT_VERSION}")
 
         self.about_window.show()
         self.about_window.raise_()  # Bring the "About" window to the front
@@ -2515,7 +2356,7 @@ class MainWindow(QMainWindow):
             try:
                 with open(path1, "r", encoding="utf-8") as f_open:
                     w.PCE_text = f_open.read()
-            except Exception as e3:
+            except (FileNotFoundError, PermissionError, OSError, UnicodeDecodeError) as e3:
                 self.dialog_critical(str(e3))
             else:
                 self.path1 = path1
@@ -2606,13 +2447,16 @@ class MainWindow(QMainWindow):
         # Get the SME text (from the sme method)
         try:
             sme_text = self.sme(offset)
-            # print('\n', sme_text)
-        except Exception as e4:
+        except (KeyError, IndexError, ValueError, TypeError) as e4:
             sme_text = f"Error: {e4}"
 
         if not self.secondary_window or not self.secondary_window.isVisible():
             # Create a new secondary window if it doesn't exist or is closed
-            self.secondary_window = SecondaryWindow(sme_text)
+            self.secondary_window = ExtSecondaryWindow(
+                sme_text,
+                navigate_left_cb=lambda: self.display_secondary_window(-12),
+                navigate_right_cb=lambda: self.display_secondary_window(12),
+            )
             self.secondary_window.show()
         else:
             # If the window is already open, update its contents.
@@ -2701,201 +2545,10 @@ class MainWindow(QMainWindow):
 #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of MainWindow class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-class NoZoomDialog(QDialog):
-    def eventFilter(self, obj, event):
-        # Block Ctrl+Wheel events on any child widget
-        if event.type() == QEvent.Type.Wheel:
-            if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-                event.ignore()
-                return True
-        return super().eventFilter(obj, event)
-
-    def showEvent(self, event):
-        # Install event filter on all child widgets when a dialog is shown
-        super().showEvent(event)
-        for child in self.findChildren(QWidget):
-            child.installEventFilter(self)
 
 
-class SecondaryWindow(NoZoomDialog):
-
-    def __init__(self, text: str):
-        """
-        Initialise the secondary window to display text.
-        :param text: The text to display in the window.
-        """
-        super().__init__()
-
-        # Validate 'text'
-        if not isinstance(text, str):
-            raise ValueError(f"Expected a string for 'text', but got {type(text).__name__}")
-
-        # Load window geometry from settings
-        x7, y7, width7, height7 = fcs.get_window_geometry("devotional_window")
-
-        # Window setup
-        self.setWindowTitle("C H Spurgeon's Morning and Evening Readings")
-        self.setGeometry(x7, y7, width7, height7)
-
-        self.text = text
-
-        # Load font size from settings
-        try:
-            self.fontsize = fcs.get_devotional_font_size()
-        except Exception as e7:
-            print(f"Failed to load font size: {e7}")
-            self.fontsize = 14  # fallback default
-
-        # Text display
-        self.text_display = QPlainTextEdit()
-        self.text_display.setPlainText(text)
-        self.text_display.setReadOnly(True)  # Make it read-only
-
-        # Create keyboard shortcuts for font size changes
-        self.create_font_shortcuts()
-
-        # Set an initial font
-        self.update_font()
-
-        # Layout
-        layout = QVBoxLayout()
-        layout.addWidget(self.text_display)
-
-        # Create a container for buttons
-        button_layout = QHBoxLayout()
-
-        # Add a spacer to push buttons to the right
-        spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-        button_layout.addSpacerItem(spacer)
-
-        # Left navigation button
-        self.left_button: QPushButton = QPushButton("←", self)
-        self.left_button.setFixedSize(30, 30)  # Small square size
-        self.left_button.clicked.connect(self.navigate_left)
-        button_layout.addWidget(self.left_button)
-
-        # Right navigation button
-        self.right_button: QPushButton = QPushButton("→", self)
-        self.right_button.setFixedSize(30, 30)  # Small square size
-        self.right_button.clicked.connect(self.navigate_right)
-        button_layout.addWidget(self.right_button)
-
-        # Add the button layout to the main layout
-        layout.addLayout(button_layout)
-        self.setLayout(layout)
-
-    def create_font_shortcuts(self):
-        """Create keyboard shortcuts for font size changes"""
-        # Ctrl++ to increase font size
-        increase_shortcut = QShortcut(QKeySequence("Ctrl++"), self)
-        increase_shortcut.activated.connect(self.increase_font_size)
-
-        # Ctrl+= as an alternative (since + requires Shift on many keyboards)
-        increase_alt_shortcut = QShortcut(QKeySequence("Ctrl+="), self)
-        increase_alt_shortcut.activated.connect(self.increase_font_size)
-
-        # Ctrl+- to decrease font size
-        decrease_shortcut = QShortcut(QKeySequence("Ctrl+-"), self)
-        decrease_shortcut.activated.connect(self.decrease_font_size)
-
-    def increase_font_size(self):
-        """Increase font size"""
-        self.fontsize = min(72, self.fontsize + 1)
-        self.update_font()
-
-    def decrease_font_size(self):
-        """Decrease font size"""
-        self.fontsize = max(6, self.fontsize - 1)
-        self.update_font()
-
-    def update_font(self):
-        """Update the text widget font and immediately save to settings"""
-        font: QFont = QFont("Cascadia Mono", self.fontsize, QFont.Weight.Medium)
-        self.text_display.setFont(font)
-
-        # Save font size to settings
-        try:
-            fcs.update_devotional_font_size(self.fontsize)
-        except Exception as e5:
-            print(f"Failed to save font size: {e5}")
-
-    def closeEvent(self, event):
-        """Handle window close event - save geometry"""
-        # Save window geometry
-        geometry = self.geometry()
-        fcs.save_window_geometry("devotional_window",
-                                 geometry.x(), geometry.y(),
-                                 geometry.width(), geometry.height())
-
-        print(f"Saved font size on close: {self.fontsize}")
-        event.accept()
-
-    @staticmethod
-    def navigate_left() -> None:
-        """Navigate to the left."""
-        os = -12
-        w.display_secondary_window(os)
-
-    @staticmethod
-    def navigate_right() -> None:
-        """Navigate to the right."""
-        os = 12  # 12 hours forward
-        w.display_secondary_window(os)
-
-    def update_content(self, new_text: str) -> None:
-        """
-        Updates the displayed content of the secondary window.
-        """
-        self.text_display.setPlainText(new_text)
-
-    def apply_theme(self, is_dark_mode: bool):
-        """
-        Apply light or dark theme to the text_display widget.
-        :param is_dark_mode: Whether to apply dark mode (True) or light mode (False).
-        """
-        if is_dark_mode:
-            self.text_display.setStyleSheet("""
-                QPlainTextEdit {
-                            background-color: #121212;  /* Dark background */
-                            color: #ffffff;  /* White text */
-                        }
-                    """)
-        else:
-            self.text_display.setStyleSheet("""
-                QPlainTextEdit {
-                            background-color: #ffffff;  /* Light background */
-                            color: #000000;  /* Black text */
-                        }
-                    """)
 
 
-class SettingsDialog(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        self.setWindowTitle("Settings")
-        self.layout = QVBoxLayout(self)
-
-        # Create the splash checkbox
-        self.splash_checkbox = QCheckBox("Show Splash Screen")
-        self.layout.addWidget(self.splash_checkbox)
-
-        # Create theme combobox
-        self.theme_combobox = QComboBox()
-        self.theme_combobox.addItems(["Light", "Dark"])
-        self.layout.addWidget(self.theme_combobox)
-
-        # Create the button box with correct typing
-        button_types = QDialogButtonBox.StandardButton
-        buttons = button_types.Ok | button_types.Cancel  # type: ignore
-        self.button_box = QDialogButtonBox(buttons)
-
-        # Connect the button box signals
-        self.button_box.accepted.connect(self.accept)
-        self.button_box.rejected.connect(self.reject)
-
-        # Add the button box to the layout
-        self.layout.addWidget(self.button_box)
 
 
 class AboutWindow(QMainWindow):
@@ -3005,461 +2658,6 @@ class SyntaxHighlighter(QSyntaxHighlighter):
             # print(f'Block {blockNumber} {KJV[blockNumber]}')
 
 
-class TextDocumentWindow(QDialog):
-    def __init__(self, initial_file_path: str | None = None):
-        super().__init__()
-        self.current_reference = None
-        self.current_file_stem = None
-        self.setWindowTitle("Text Reader")
-
-        # Load window geometry from settings
-        x8, y8, width8, height8 = fcs.get_window_geometry("pilgrims_progress_window")
-        self.setGeometry(x8, y8, width8, height8)
-
-        # Load Bible data from a JSON file
-        bible_data = fcs.load_json_dict("bible_data.json")
-        self.bible_data = bible_data
-
-        # Main layout and text editor
-        self.layout = QVBoxLayout()  # Directly set a layout for QDialog
-        self.setLayout(self.layout)
-
-        # Main text editor
-        self.text_edit = QTextEdit()
-        self.text_edit.setFont(QFont("Cascadia Mono", 12))
-        self.text_edit.setReadOnly(True)
-        self.layout.addWidget(self.text_edit)
-
-        # Connect the vertical scroll bar to save a per-file scroll position
-        self.text_edit.verticalScrollBar().valueChanged.connect(self.save_scroll_position)
-
-        # Enable hover tracking
-        self.text_edit.viewport().setMouseTracking(True)
-        self.text_edit.viewport().installEventFilter(self)
-        self.text_edit.viewport().setAttribute(Qt.WidgetAttribute.WA_Hover, True)
-
-        self.popup_window = None  # Track if a popup exists
-
-        # Load an initial file if provided
-        if initial_file_path:
-            self.load_text_file(initial_file_path)
-
-        self.canonical_books = {
-            1: "Genesis",
-            2: "Exodus",
-            3: "Leviticus",
-            4: "Numbers",
-            5: "Deuteronomy",
-            6: "Joshua",
-            7: "Judges",
-            8: "Ruth",
-            9: "1 Samuel",
-            10: "2 Samuel",
-            11: "1 Kings",
-            12: "2 Kings",
-            13: "1 Chronicles",
-            14: "2 Chronicles",
-            15: "Ezra",
-            16: "Nehemiah",
-            17: "Esther",
-            18: "Job",
-            19: "Psalms",
-            20: "Proverbs",
-            21: "Ecclesiastes",
-            22: "Song of Solomon",
-            23: "Isaiah",
-            24: "Jeremiah",
-            25: "Lamentations",
-            26: "Ezekiel",
-            27: "Daniel",
-            28: "Hosea",
-            29: "Joel",
-            30: "Amos",
-            31: "Obadiah",
-            32: "Jonah",
-            33: "Micah",
-            34: "Nahum",
-            35: "Habakkuk",
-            36: "Zephaniah",
-            37: "Haggai",
-            38: "Zechariah",
-            39: "Malachi",
-            40: "Matthew",
-            41: "Mark",
-            42: "Luke",
-            43: "John",
-            44: "Acts",
-            45: "Romans",
-            46: "1 Corinthians",
-            47: "2 Corinthians",
-            48: "Galatians",
-            49: "Ephesians",
-            50: "Philippians",
-            51: "Colossians",
-            52: "1 Thessalonians",
-            53: "2 Thessalonians",
-            54: "1 Timothy",
-            55: "2 Timothy",
-            56: "Titus",
-            57: "Philemon",
-            58: "Hebrews",
-            59: "James",
-            60: "1 Peter",
-            61: "2 Peter",
-            62: "1 John",
-            63: "2 John",
-            64: "3 John",
-            65: "Jude",
-            66: "Revelation",
-        }
-
-    def save_scroll_position(self, value: Any) -> None:
-        """
-        Save the current vertical scroll position immediately, per file.
-        """
-        stem = self.current_file_stem
-        # Ensure the dictionary for per-file positions exists
-        if "last_read_positions" not in w.settings:
-            w.settings["last_read_positions"] = {}
-        if stem:
-            w.settings["last_read_positions"][stem] = int(value)
-        else:
-            # Fallback: keep previous single-position behaviour
-            w.settings["last_read_position"] = int(value)
-        # Persist the settings to disk
-        fcs.save_settings_to_file(w.settings, user_settings_file)
-
-    def closeEvent(self, event):
-        """Handle window close event - save geometry"""
-        geometry = self.geometry()
-        fcs.save_window_geometry("pilgrims_progress_window",
-                                 geometry.x(), geometry.y(),
-                                 geometry.width(), geometry.height())
-        event.accept()
-
-    def load_text_file(self, file_path1):
-        """
-        Load the content of the specified file and display it in the text editor.
-        Update the window title with the base name of the loaded file (no folder, no extension).
-        Restore the per-file last scroll position when available.
-        """
-        try:
-            if not file_path1:
-                return
-            p = Path(file_path1)
-            stem = p.stem
-            self.current_file_stem = stem
-
-            # Determine the last position: prefer a per-file map, fallback to legacy single value
-            positions = w.settings.get("last_read_positions", {}) or {}
-            last_position = int(positions.get(stem, w.settings.get("last_read_position", 0)))
-
-            with open(file_path1, 'r', encoding='utf-8') as file1:
-                content = file1.read()
-                self.text_edit.setText(content)
-                
-                # Highlight scripture references in the newly loaded text
-                self.highlight_references()
-
-                # Restore the scrollbar position after the text is set
-                QTimer.singleShot(100, lambda: self.text_edit.verticalScrollBar().setValue(last_position))
-
-                # Update the window title to the file's base name only
-                self.setWindowTitle(stem)
-
-                # Keep selector in sync if present
-                if hasattr(self, 'file_selector'):
-                    idx = self.file_selector.findText(stem)
-                    # noinspection PyChainedComparisons
-                    if idx >= 0 and self.file_selector.currentIndex() != idx:
-                        self.file_selector.blockSignals(True)
-                        self.file_selector.setCurrentIndex(idx)
-                        self.file_selector.blockSignals(False)
-        except FileNotFoundError:
-            self.text_edit.setText("Error: File not found.")
-        except Exception as e1:
-            self.text_edit.setText(f"Error loading file: {e1}")
-
-    def get_chapter_text(self, book, chapter):
-        """
-        Retrieve the text of a specific chapter from the Bible data.
-        :param book: The name of the book (e.g. 'Genesis')
-        :param chapter: The chapter number as a string (e.g. '1')
-        :return: A concatenated string of all verses in the chapter.
-        """
-        if (
-                book in self.bible_data
-                and chapter in self.bible_data[book]
-        ):
-            # Combine all verses in the chapter
-            verses = self.bible_data[book][chapter]
-            return "\n".join(f"{verse_num}: {text}" for verse_num, text in verses.items())
-        else:
-            return f"Chapter {chapter} of {book} not found."
-
-    def highlight_references(self):
-        """Highlight scripture references in the text."""
-        text = self.text_edit.toPlainText()
-
-        # Find all scripture references using a regex pattern
-        references: List = self.find_scripture_references(text)
-
-        # Highlight references
-        cursor = self.text_edit.textCursor()
-        fmt = QTextCharFormat()
-        fmt.setForeground(QColor("blue"))
-        fmt.setFontUnderline(True)
-
-        # Clear previous formatting
-        cursor.select(QTextCursor.SelectionType.Document)
-        no_format = QTextCharFormat()
-        cursor.setCharFormat(no_format)
-
-        # Apply new highlights
-        for match in references:
-            start, length = match['start'], match['length']
-            cursor.setPosition(start)
-            cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor, length)
-            cursor.setCharFormat(fmt)
-
-    def eventFilter(self, obj, event):
-        if event.type() == QEvent.Type.Leave:
-            # The mouse has left the viewport, so close the popup
-            self.closePopup()
-        elif event.type() == QEvent.Type.MouseMove:
-            # Optionally, verify if the MouseMove event is outside your highlight area
-            # and close the popup if needed
-            cursor = self.text_edit.cursorForPosition(event.position().toPoint())
-            position = cursor.position()
-            text = self.text_edit.toPlainText()
-            references = self.find_scripture_references(text)
-            over_reference = any(ref['start'] <= position <= ref['start'] + ref['length'] for ref in references)
-            if not over_reference:
-                self.closePopup()
-            else:
-                self.handle_hover(event)
-        return super().eventFilter(obj, event)
-
-    def handle_hover(self, event):
-        """Detect whether a highlighted reference was hovered and display its text."""
-
-        # Get the mouse cursor position and associated text position.
-        cursor = self.text_edit.cursorForPosition(event.position().toPoint())
-        position = cursor.position()
-        text = self.text_edit.toPlainText()
-        references = self.find_scripture_references(text)
-
-        # Find a reference under the current mouse position.
-        hovered_reference = None
-        for ref in references:
-            if ref["start"] <= position <= ref["start"] + ref["length"]:
-                hovered_reference = ref
-                break
-
-        if hovered_reference is None:
-            # No reference under the mouse:
-            if self.popup_window is not None:
-                self.popup_window.close()
-                self.popup_window = None
-            self.current_reference = None
-            return
-
-        # Determine if the current hovered reference is the same as the previously stored one
-        same_reference = (
-                self.current_reference is not None and
-                self.current_reference["start"] == hovered_reference["start"] and
-                self.current_reference["length"] == hovered_reference["length"]
-        )
-
-        if same_reference:
-            # If the mouse is still within the current reference...
-            # Check whether the popup exists and is visible.
-            if self.popup_window is None or not self.popup_window.isVisible():
-                # The popup was closed externally (or never created), so re-create it.
-                pass  # Continue to creating it, below.
-            else:
-                # Update the popup's position.
-                cursor = self.text_edit.cursorForPosition(event.position().toPoint())
-                cursor_rect = self.text_edit.cursorRect(cursor)
-                global_cursor_top_left = self.text_edit.mapToGlobal(cursor_rect.topLeft())
-                text_edit_top_left = self.text_edit.mapToGlobal(self.text_edit.rect().topLeft())
-                popup_x = text_edit_top_left.x()
-                popup_y = global_cursor_top_left.y() + 60  # Adjust the vertical offset for a couple of lines down
-                self.popup_window.move(popup_x, popup_y)
-                return
-        else:
-            # Hovered reference differs from current_reference.
-            if self.popup_window is not None:
-                self.popup_window.close()
-                self.popup_window = None
-
-            # Update the current_reference to the new one.
-            self.current_reference = hovered_reference
-
-        # Create a new popup for the hovered/current reference.
-        self.popup_window = QWidget()
-        self.popup_window.setWindowFlags(Qt.WindowType.ToolTip)
-        self.popup_window.setStyleSheet("border: 2px solid blue;")
-
-        scriptures, canonical = self.get_scripture(hovered_reference)
-        scripture = scriptures + "\n" + canonical + " KJV"
-
-        label = QLabel(scripture, self.popup_window)
-        label.setFont(self.text_edit.font())
-        label.setWordWrap(True)
-        label.setFixedWidth(self.text_edit.width())
-        label.adjustSize()
-
-        layout = QVBoxLayout(self.popup_window)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(label)
-        self.popup_window.adjustSize()
-
-        # Position the popup relative to the cursor.
-        cursor = self.text_edit.cursorForPosition(event.position().toPoint())
-        cursor_rect = self.text_edit.cursorRect(cursor)
-        global_cursor_top_left = self.text_edit.mapToGlobal(cursor_rect.topLeft())
-        text_edit_top_left = self.text_edit.mapToGlobal(self.text_edit.rect().topLeft())
-        popup_x = text_edit_top_left.x()
-        popup_y = global_cursor_top_left.y() + 60  # Adjust vertical offset as needed
-        self.popup_window.move(popup_x, popup_y)
-
-        self.popup_window.show()
-
-    def closePopup(self):
-        if self.popup_window and self.popup_window.isVisible():
-            self.popup_window.close()
-            self.popup_window = None
-
-    @staticmethod
-    def find_scripture_references(text):
-        """Find scripture references using regex, including Roman numerals (I, II, III) and multiple verses."""
-        references = []
-        pattern = r"""
-            (?:(?<=^)|(?<=[^\w]))                 # Start at the beginning or after a non-word character
-            (                                       # Book capture (group 1)
-                (?:(?:[1-3]|i{1,3})\.?\s*)?       # Optional Arabic 1-3 or Roman I/II/III with optional dot and spaces
-                [A-Za-z]+                            # Book name/abbreviation letters
-            )\.?\s+                                 # Optional trailing period then at least one space
-            (?:                                     
-              (\d{1,3}):                           # Group 2: chapter when colon present
-              (\d{1,3}(?:(?:,\s*\d{1,3})+|(?:-\d{1,3}))?)  # Group 3: verses list or range
-             |                                       # OR
-              (\d{1,3}(?:(?:,\s*\d{1,3})+|(?:-\d{1,3}))?)  # Group 4: verses without colon (one-chapter books only)
-            )
-            \b
-        """
-        for match in re.finditer(pattern, text, re.IGNORECASE | re.VERBOSE):
-            full_text = match.group(0).lstrip()  # remove any leading whitespace
-            book = match.group(1)
-            if match.group(3):  # Option A: chapter and verses provided
-                chapter = int(match.group(2))
-                verses = match.group(3)
-            elif match.group(4):  # Option B: No colon; assume a one-chapter book if applicable
-                chapter = 1
-                verses = match.group(4)
-                # Only allow no-colon form for one-chapter books (Obadiah, Philemon, 2 John, 3 John, Jude)
-                normalized = TextDocumentWindow.normalize_book_input(book)
-                book_id = sh.bibledict.get(normalized)
-                if not book_id or (book_id - 1) not in sh.onechapterbooks:
-                    continue
-            else:
-                continue
-
-            references.append({
-                'text': full_text,
-                'book': book,
-                'chapter': chapter,
-                'verse': verses,
-                'start': match.start() + (len(match.group(0)) - len(full_text)),
-                'length': len(full_text)
-            })
-        return references
-
-    def get_scripture(self, reference):
-        """Takes a reference and returns the scripture text."""
-
-        book = reference['book']
-        chapter = reference['chapter']
-        verse = reference['verse']
-
-        # Lookup scripture from Bible data
-        scripture_text = self.lookup_scripture(book, chapter, verse)
-
-        normalized_book = self.normalize_book_input(book)
-        book_id = sh.bibledict.get(normalized_book)
-        if not book_id:
-            return "Scripture not found."
-
-        # Mapping from book numbers to canonical names.
-        full_book = self.canonical_books.get(book_id, book)
-        if book_id - 1 in sh.onechapterbooks:
-            full_reference = f"{full_book} {verse}"
-        else:
-            full_reference = f"{full_book} {chapter}:{verse}"
-
-        return scripture_text, full_reference
-
-    @staticmethod
-    def normalize_book_input(book_input: str) -> str:
-        # Normalize spacing/casing
-        s = book_input.strip().lower()
-        # Convert leading Roman numerals I/II/III to Arabic 1/2/3 (e.g. "ii tim" -> "2 tim")
-        s = re.sub(r'^(iii)(?=\b|\s|\.)', '3', s)
-        s = re.sub(r'^(ii)(?=\b|\s|\.)', '2', s)
-        s = re.sub(r'^(i)(?=\b|\s|\.)', '1', s)
-        # Remove non-alphanumeric characters.
-        return re.sub(r'\W+', '', s)
-
-    def lookup_scripture(self, book, chapter, verses):
-        # print(f"Looking up scripture for {book} {chapter}:{verses}")
-        normalized_book = self.normalize_book_input(book)
-        book_id = sh.bibledict.get(normalized_book)
-        if not book_id:
-            print(f"Book not found: {book}")
-            print(f"Normalized book: {normalized_book}")
-            print(f"Book ID: {book_id}")
-            return "Scripture not found."
-
-        # Mapping from book numbers to canonical names.
-        full_book = self.canonical_books.get(book_id, book)
-
-        chapter_data = self.bible_data.get(full_book, {}).get(str(chapter), {})
-
-        verse_numbers = []
-        # Split by comma in case we have multiple verses or ranges.
-        for part in verses.split(','):
-            part = part.strip()
-            if '-' in part:
-                try:
-                    start, end = part.split('-', 1)
-                    start = int(start.strip())
-                    end = int(end.strip())
-                    # Generate a list of verse numbers from start to end, inclusive.
-                    if start <= end:
-                        verse_numbers.extend(range(start, end + 1))
-                    else:
-                        verse_numbers.extend(range(start, end - 1, -1))
-                except ValueError:
-                    print(f"Scripture not found for {book} {chapter}:{part}")
-                    return "Scripture not found."
-            else:
-                try:
-                    verse_numbers.append(int(part))
-                except ValueError:
-                    print(f"Scripture not found for {book} {chapter}:{part}")
-                    return "Scripture not found."
-
-        results = []
-        for ve in verse_numbers:
-            verse_text = str(ve) + ' ' + chapter_data.get(str(ve))
-            if verse_text is None:
-                results.append(f"Verse {ve} not found.")
-            else:
-                results.append(verse_text)
-
-        # Join multiple verses with line breaks. Adjust as needed.
-        return "\n".join(results)
 
 
 class FindDialog(QDialog):
@@ -3621,6 +2819,8 @@ if __name__ == '__main__':
     half_height = height / 2
 
     w: MainWindow = MainWindow()
+    # Provide the settings path to windows that is needed to persist user settings
+    w.user_settings_path = user_settings_path
 
     back = []
     forward = []
