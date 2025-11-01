@@ -106,6 +106,7 @@ from find_dialog import FindDialog
 from ui_helpers import NoZoomPlainTextEdit, NoZoomDialog, center_on_screen, fit_to_screen
 from windows import SecondaryWindow as ExtSecondaryWindow, AboutWindow as ExtAboutWindow
 from settings_dialog import SettingsDialog
+from ui.themes import ThemeManager, ThemeState
 
 try:
     from ctypes import windll  # Only exists on Windows.
@@ -583,6 +584,9 @@ class MainWindow(QMainWindow):
         self.gent: None = None
         # self.textEditor: QPlainTextEdit = QPlainTextEdit()
         self.textEditor = NoZoomPlainTextEdit()
+
+        # Theme manager (extract dark mode logic)
+        self.theme = ThemeManager(ThemeState(is_dark_mode=theme_state.get("is_dark_mode", False)))
 
         # Store a reference to the secondary window to manage its lifecycle
         self.secondary_window = None
@@ -2449,44 +2453,25 @@ class MainWindow(QMainWindow):
             return f"No entry for {date_file[0]} in {date_file[1]}."
 
     def toggle_dark_mode(self):
-        """Apply or remove dark mode for the QPlainTextEdit widget."""
+        """Apply or remove dark mode using ThemeManager and sync global state."""
 
-        global theme_state  # Needed because of assignment.
+        global theme_state  # Preserve existing global for compatibility
 
-        # Toggle dark mode state
-        theme_state["is_dark_mode"] = not theme_state["is_dark_mode"]
-        # print(f"Dark mode toggled: {'On' if theme_state['is_dark_mode'] else 'Off'}.")
+        # Toggle via ThemeManager
+        is_dark = self.theme.toggle()
+        # Sync legacy global state for other code paths still using it
+        theme_state["is_dark_mode"] = is_dark
 
-        if self.textEditor is not None:
-            if theme_state["is_dark_mode"]:
-                # print("Applying dark mode to QPlainTextEdit widget.")
-                # Apply dark mode (only change background and text colour)
-                self.textEditor.setStyleSheet("""
-                        QPlainTextEdit {
-                            background-color: #121212;  /* Dark background */
-                            color: #ffffff;  /* White text */
-                        }
-                    """)
-            else:
-                # print("Applying light theme to QPlainTextEdit widget.")
-                # Revert to light mode (only change background and text colour)
-                self.textEditor.setStyleSheet("""
-                        QPlainTextEdit {
-                            background-color: #ffffff;  /* Light background */
-                            color: #000000;  /* Black text */
-                        }
-                    """)
-
+        # Apply to main editor and secondary window
+        self.theme.apply_to_editor(self.textEditor)
         self.update_text_display_theme()
 
     def update_text_display_theme(self) -> None:
-        """Update the text display theme based on the current theme 'theme_state'."""
+        """Update the text display theme using ThemeManager."""
 
-        # Ensure the secondary window and its text display exist
-        if self.secondary_window and self.secondary_window.text_display:
-            # Apply the theme
-            self.secondary_window.apply_theme(theme_state["is_dark_mode"])
-            # print(f"Theme applied is {theme_state['is_dark_mode']}")
+        # Apply to secondary window if available
+        if self.secondary_window and getattr(self.secondary_window, 'text_display', None):
+            self.theme.apply_to_secondary(self.secondary_window)
         else:
             # Fallback if secondary_window is not ready
             print("Error: Secondary window is not initialized or its text display is unavailable.")
