@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any, Dict, Set, List
-from json import load, JSONDecodeError
+from typing import Any, Dict
 
 from PySide6.QtWidgets import QApplication, QSplashScreen
 from PySide6.QtGui import QIcon, QPixmap, QColor

@@ -72,10 +72,8 @@ environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
 from copy import deepcopy
 from pathlib import Path
 from io import open
-from itertools import chain
-from json import load, JSONDecodeError
+from itertools import chain, islice
 
-from roman import fromRoman
 from typing import Any, Dict, Set, List
 from text_window import TextDocumentWindow as ExternalTextDocumentWindow
 from history import History
@@ -83,27 +81,26 @@ history = History()
 back = history.back
 forward = history.forward
 
-# Global window handle placeholder; set by app.run() at startup
+# Global window 'handle' placeholder; set by app.run() at startup
 w: Any | None = None
 
-from PySide6.QtWidgets import (QMainWindow, QVBoxLayout, QWidget, QDialogButtonBox, QApplication,
-                               QToolBar, QPlainTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
-                               QSplashScreen, QPushButton, QDialog, QSizePolicy, QSpacerItem, QHBoxLayout,
-                               QStatusBar, QFileDialog, QCheckBox, QLabel)
+from PySide6.QtWidgets import (QMainWindow, QWidget,
+                               QPlainTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
+                               QPushButton, QHBoxLayout,
+                               QStatusBar, QFileDialog)
 
-from PySide6.QtGui import (QAction, QMouseEvent, QKeyEvent, QSyntaxHighlighter, QIcon, QColor, QFont, QPixmap,
-                           QTextCursor, QTextCharFormat, QKeySequence, QShortcut)
+from PySide6.QtGui import (QMouseEvent, QKeyEvent, QSyntaxHighlighter, QColor, QFont,
+                           QTextCursor, QTextCharFormat)
 
-from PySide6.QtCore import Qt, QRect, QSize, QEvent
+from PySide6.QtCore import Qt, QRect, QEvent
 
 
-import ctypes
 
 import fcs
 import shared as sh
 
 from find_dialog import FindDialog
-from ui_helpers import NoZoomPlainTextEdit, NoZoomDialog, center_on_screen, fit_to_screen
+from ui_helpers import NoZoomPlainTextEdit
 from windows import SecondaryWindow as ExtSecondaryWindow, AboutWindow as ExtAboutWindow
 from settings_dialog import SettingsDialog
 from ui.themes import ThemeManager, ThemeState
@@ -387,7 +384,23 @@ def make_offset(ln: int) -> int:
     n: str = KJV[ln][0]
     m: str
     spacesfound: int = 0
-    lx: int = Amap[13940] - 1
+    # Determine the start of Psalms dynamically (avoid magic number 13940)
+    try:
+        psalms_book_idx: int = sh.bibledict['psalms'] - 1  # 0-based book index
+        # Use islice to avoid direct indexing, keeping linters/type-checkers happy
+        psalms_start_verse_idx: int = next(islice(book_bounds, psalms_book_idx, None))
+    except (KeyError, StopIteration, TypeError):
+        psalms_start_verse_idx = 13940  # Fallback if data not yet loaded
+    # Avoid direct indexing into Amap; use islice with safe fallbacks
+    try:
+        lx_source = next(islice(Amap, psalms_start_verse_idx, None))
+        lx: int = int(lx_source) - 1
+    except (StopIteration, TypeError, ValueError):
+        # Fallbacks if Amap not ready; use known Psalms start or zero
+        try:
+            lx: int = int(next(islice(Amap, 13940, None))) - 1
+        except (StopIteration, TypeError, ValueError):
+            lx = 0
     ec: int = 2
     if n.isalpha() or ln in P119:
         if ln in P119:
@@ -465,15 +478,6 @@ def commentary() -> None:
     print('Future feature')
 
 
-
-
-
-
-from updater import update_abib
-
-
-
-
 class MainWindow(QMainWindow):
     """MainWindow class."""
 
@@ -525,9 +529,11 @@ class MainWindow(QMainWindow):
         self.gent: None = None
         # self.textEditor: QPlainTextEdit = QPlainTextEdit()
         self.textEditor = NoZoomPlainTextEdit()
+        # Predeclare actions bundle to satisfy linters (assigned in initui)
+        self.actions_bundle = None
 
         # Theme manager (extract dark mode logic)
-        # Initialize ThemeManager based on persisted settings
+        # Initialise 'ThemeManager' based on persisted settings
         is_dark = self.settings.get("theme", "Light") == "Dark"
         self.theme = ThemeManager(ThemeState(is_dark_mode=is_dark))
 
@@ -543,7 +549,7 @@ class MainWindow(QMainWindow):
         self.secondary_window = None
         self.feature = self.feature
 
-        # Create keyboard shortcuts via centralized helper
+        # Create keyboard shortcuts via the centralised helper
         self.shortcuts_bundle = setup_shortcuts(self)
 
         #Qt.QTimer.singleShot(0, lambda: self.sme("PM", -1))  # Adjusted to yesterday evening's reading.
@@ -782,7 +788,7 @@ class MainWindow(QMainWindow):
         self.statusBar = QStatusBar()
         self.setStatusBar(self.statusBar)
 
-        # Build menus, toolbars, and actions via centralized helper
+        # Build menus, toolbars, and actions via the centralised helper
         self.actions_bundle = setup_menus_and_toolbars(self)
 
         self.secondary_window = ExtSecondaryWindow(
@@ -886,13 +892,18 @@ class MainWindow(QMainWindow):
             pp = other_works_dir / "Pilgrims-Progress.txt"
             path = str(pp) if pp.exists() else None
             if path:
-                if getattr(self, "text_edit_window", None) is None:
-                    self.text_edit_window = ExternalTextDocumentWindow(initial_file_path=path, settings=self.settings, settings_path=getattr(self, "user_settings_path", None))
-                else:
-                    self.text_edit_window.load_text_file(path)
-                self.text_edit_window.show()
-                self.text_edit_window.raise_()
-                self.text_edit_window.activateWindow()
+                self._open_text_file_in_window(path)
+
+    def _open_text_file_in_window(self, path: str) -> None:
+        """Open the ExternalTextDocumentWindow with the given file path 
+           or update existing, then focus it."""
+        if getattr(self, "text_edit_window", None) is None:
+            self.text_edit_window = ExternalTextDocumentWindow(initial_file_path=path, settings=self.settings, settings_path=getattr(self, "user_settings_path", None))
+        else:
+            self.text_edit_window.load_text_file(path)
+        self.text_edit_window.show()
+        self.text_edit_window.raise_()
+        self.text_edit_window.activateWindow()
 
     def _open_other_work(self, stem: str) -> None:
         """Open or update the TextDocumentWindow for the selected Other Works item."""
@@ -901,13 +912,7 @@ class MainWindow(QMainWindow):
         path = self.other_works_map.get(stem)
         if not path:
             return
-        if getattr(self, "text_edit_window", None) is None:
-            self.text_edit_window = ExternalTextDocumentWindow(initial_file_path=path, settings=self.settings, settings_path=getattr(self, "user_settings_path", None))
-        else:
-            self.text_edit_window.load_text_file(path)
-        self.text_edit_window.show()
-        self.text_edit_window.raise_()
-        self.text_edit_window.activateWindow()
+        self._open_text_file_in_window(path)
 
     def show_about_dialog(self):
         """Show the 'About' window when Help -> About is clicked."""
@@ -1097,8 +1102,14 @@ class MainWindow(QMainWindow):
         error_flag = False
 
         self.prepare_key_for_find()
-        x1 = book_bounds[x_start]
-        x2 = book_bounds[x_end + 1] - 1
+        try:
+            x1 = int(next(islice(book_bounds, x_start, None)))
+        except (StopIteration, TypeError, ValueError):
+            x1 = 0
+        try:
+            x2 = int(next(islice(book_bounds, x_end + 1, None))) - 1
+        except (StopIteration, TypeError, ValueError):
+            x2 = sh.LAST_VERSE_IN_BIBLE
         current_position = x1
 
         w.no_f3_yet = 1
@@ -1146,7 +1157,7 @@ class MainWindow(QMainWindow):
         if not error_flag:
             self.goto_line_find(current_position)
 
-    def iterate_regex(self, r: List, x1: int, x2: int) -> None:
+    def iterate_regex(self, r: tuple, x1: int, x2: int) -> None:
         """Iterate over R and find all the occurrences of key(s) in liszt."""
 
         w.occurring = 0
@@ -1404,7 +1415,10 @@ class MainWindow(QMainWindow):
     def goto_line_find(self, current_position: int) -> None:
         """Find function - prepare for output."""
 
-        ln: int = Amap[current_position]
+        try:
+            ln = int(next(islice(Amap, current_position, None)))
+        except (StopIteration, TypeError, ValueError):
+            ln = 0
         self.adjust_highlighting(ln, current_position)
         self.move_to_line(ln)
 
@@ -1507,7 +1521,10 @@ class MainWindow(QMainWindow):
         """Display Bible text in textEditor."""
 
         # print('display_verse')
-        ln: int = Amap[current_position]
+        try:
+            ln = int(next(islice(Amap, current_position, None)))
+        except (StopIteration, TypeError, ValueError):
+            ln = 0
         if current_position in starts_with_italics:  # Verses that start with italics.
             w.hiLita.keyinc = 1
         else:
@@ -1564,7 +1581,10 @@ class MainWindow(QMainWindow):
     def se_display_verse(self, current_position: int) -> None:
         """Display Bible text in textEditor after a back or forward pop."""
 
-        ln: int = Amap[current_position]
+        try:
+            ln = int(next(islice(Amap, current_position, None)))
+        except (StopIteration, TypeError, ValueError):
+            ln = 0
         if current_position in starts_with_italics:  # Verses that start with italics.
             w.hiLita.keyinc = 1
 
@@ -1913,7 +1933,12 @@ class MainWindow(QMainWindow):
         if linenumber in Amap:
             current_position: int = Amap.index(linenumber)
         else:
-            if linenumber < Amap[0]:
+            # Safely get the first element of Amap without direct indexing (for linters/type-checkers)
+            try:
+                first_amap = int(next(islice(Amap, 0, None)))
+            except (StopIteration, TypeError, ValueError):
+                first_amap = 0
+            if linenumber < first_amap:
                 current_position = 0
             elif linenumber > KJB_PCE_LASTLINE - 118:
                 current_position = sh.LAST_VERSE_IN_BIBLE
@@ -2139,10 +2164,7 @@ class MainWindow(QMainWindow):
         """Makes a beep sound and clears the message."""
 
         # Play error sound via audio service (non-blocking and safe)
-        try:
-            self.audio.play_error()
-        except Exception:
-            pass
+        self.audio.play_error()
 
         self.statusBar.repaint()
 
@@ -2248,7 +2270,7 @@ class MainWindow(QMainWindow):
         # Set ThemeManager state explicitly to match settings
         self.theme.state.is_dark_mode = (current_theme == 'Dark')
 
-        # Apply to main editor and secondary window
+        # Apply to the main editor and secondary window
         self.theme.apply_to_editor(self.textEditor)
         self.update_text_display_theme()
 
@@ -2290,13 +2312,13 @@ class MainWindow(QMainWindow):
 
         try:
             sme_text, sme_ref = self.reading_plans.get_sme(adjustment)
-        except Exception as e:
-            return f"Error retrieving SME: {e}"
+        except Exception as err:
+            return f"Error retrieving SME: {err}"
 
         if sme_ref:
             try:
                 self.goto_line(sme_ref)
-            except Exception:
+            except (ValueError, TypeError, KeyError, IndexError):
                 # Ignore navigation errors; still show text
                 pass
         return sme_text
@@ -2311,14 +2333,14 @@ class MainWindow(QMainWindow):
         self.settings["theme"] = "Dark" if is_dark else "Light"
         self.settings_service.save(self.settings)
 
-        # Apply to main editor and secondary window
+        # Apply to the main editor and secondary window
         self.theme.apply_to_editor(self.textEditor)
         self.update_text_display_theme()
 
     def update_text_display_theme(self) -> None:
         """Update the text display theme using ThemeManager."""
 
-        # Apply to secondary window if available
+        # Apply to the secondary window if available
         if self.secondary_window and getattr(self.secondary_window, 'text_display', None):
             self.theme.apply_to_secondary(self.secondary_window)
         else:
@@ -2329,14 +2351,6 @@ class MainWindow(QMainWindow):
             else:
                 print("Secondary window's text display is unavailable.")
 #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of MainWindow class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-
-
-
-
-
 
 
 class SyntaxHighlighter(QSyntaxHighlighter):

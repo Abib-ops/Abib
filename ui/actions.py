@@ -53,11 +53,21 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
     Mirrors the previous inline setup in Abib.MainWindow.initui, wiring the same
     icons, labels, status tips, and signal handlers.
     """
+    # Ensure a menu bar exists (some environments may not auto-create it early)
+    try:
+        mb = window.menuBar()
+    except Exception:
+        mb = None
+    if mb is None:
+        from PySide6.QtWidgets import QMenuBar  # local import to avoid unused when not needed
+        mb = QMenuBar(window)
+        window.setMenuBar(mb)
+
     # File toolbar/menu
     file_toolbar = QToolBar("File")
     file_toolbar.setIconSize(QSize(14, 14))
     window.addToolBar(file_toolbar)
-    file_menu = window.menuBar().addMenu("&File")
+    file_menu = mb.addMenu("&File")
 
     # Open file
     icon1_path = Path('images') / 'blue-folder-open-document.png'
@@ -84,8 +94,8 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
 
     # Edit toolbar/menu
     edit_toolbar = QToolBar("Edit")
-    edit_toolbar.setIconSize(window.iconSize() or edit_toolbar.iconSize())
-    edit_toolbar.setIconSize(window.iconSize())
+    # Use a fixed, small icon size consistent with File toolbar
+    edit_toolbar.setIconSize(QSize(14, 14))
     window.addToolBar(edit_toolbar)
     edit_menu = window.menuBar().addMenu("&Edit")
 
