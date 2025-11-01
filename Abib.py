@@ -107,6 +107,7 @@ from ui_helpers import NoZoomPlainTextEdit, NoZoomDialog, center_on_screen, fit_
 from windows import SecondaryWindow as ExtSecondaryWindow, AboutWindow as ExtAboutWindow
 from settings_dialog import SettingsDialog
 from ui.themes import ThemeManager, ThemeState
+from services.audio import AudioService
 
 try:
     from ctypes import windll  # Only exists on Windows.
@@ -127,7 +128,6 @@ theme_state = {
     "is_dark_mode": False  # Default is light mode
 }
 
-mixer.init()
 
 
 def back_push(current_position: int) -> None:
@@ -587,6 +587,9 @@ class MainWindow(QMainWindow):
 
         # Theme manager (extract dark mode logic)
         self.theme = ThemeManager(ThemeState(is_dark_mode=theme_state.get("is_dark_mode", False)))
+
+        # Services
+        self.audio = AudioService()
 
         # Reading plans (SME) service
         from domain.reading_plans import ReadingPlans
@@ -2274,15 +2277,11 @@ class MainWindow(QMainWindow):
     def beep(self, current_position: int, lm: float) -> None:
         """Makes a beep sound and clears the message."""
 
-        # Initialise Pygame's mixer
-        mixer.init()
-
-        # Load your sound effect file (e.g. 'sound.wav')
-        beep_sound = mixer.Sound('sound.mp3')
-        beep_sound.set_volume(0.5)  # Set volume to 50%
-
-        # Play the sound effect
-        beep_sound.play()
+        # Play error sound via audio service (non-blocking and safe)
+        try:
+            self.audio.play_error()
+        except Exception:
+            pass
 
         self.statusBar.repaint()
 
