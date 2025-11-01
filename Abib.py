@@ -56,7 +56,6 @@ Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
 01/11/2025
 
-Note to self:  Check for the use of 'pass' in the code.
 """
 
 import re
@@ -466,98 +465,8 @@ def commentary() -> None:
     print('Future feature')
 
 
-def calculate_book_line(book: str, chapter: int, verse: int, current_line_num: int) -> int:
-    """
-    This function calculates and returns a specific line index from the global variable
-    'sh.Info' based on the given book, chapter, and verse parameters.
-
-    The book, chapter, and verse values are adjusted to zero-based indexing before computation.
-    An error is raised if the values are invalid or out of range for the dataset referenced by
-    'sh.Info'.
-
-    :param book: The book identifier is provided as a string parsed into an integer.
-    :param chapter: The chapter number. Must be a positive integer.
-    :param verse: The verse number. Must be a positive integer.
-    :param current_line_num: The current line number. Must be a positive integer.
-    :return: The calculated line index corresponding to the book, chapter, and verse or defaults to current_line_num.
-    :rtype: int
-    :default: If the book, chapter, or verse is invalid or out of range for processing,
-              the line index will be set to current_line_num.
-    """
-    rv: int = current_line_num  # default return value.
-
-    # Subtract 1 from the book, chapter, and verse for a zero-based sh.Info index.
-    book_id = int(book) - 1
-    chapter = int(chapter) - 1
-    verse = int(verse) - 1
-
-    try:
-        if book_id < 0 or chapter < 0 or verse < 0:
-            message = f"Invalid chapter or verse range."
-            w.on_error(message, 750, True)
-            # print(message)
-            # Return the default index from sh.Info
-            return sh.Info.index([0, 0, 0])
-
-        # Return the calculated index from sh.Info
-        rv = sh.Info.index([book_id, chapter, verse])
-        return rv
-
-    except (ValueError, IndexError):
-        message = f"Invalid book, chapter, or verse."
-        w.on_error(message, 750, True)
-        # print(message)
-        # Return the default index from sh.Info
-        return rv
 
 
-def resolve_reference(bits: list) -> tuple:
-    """Resolve the book, chapter, and verse using fcs.isRoman."""
-
-    # Debugging: Show the split bits
-    # print(f"Resolving reference bits: {bits}")
-
-    # Step 1: Resolve the book name
-    book_number = sh.bibledict.get(bits[0].lower(), None)
-    # print(f"Book resolved to: {book_number}")
-    if not book_number:
-        return None, None, None
-
-    # Step 2: Resolve chapter (bits[1])
-    chapter = '1'
-    if len(bits) > 1:
-        if fcs.isRoman(bits[1]):  # If it's a Roman numeral
-            # print(f"Chapter is Roman: {bits[1]}")
-            chapter = fromRoman(bits[1].upper())  # Convert Roman numeral
-        else:  # Otherwise, try parsing it as an integer
-            try:
-                chapter = int(bits[1])
-                # print(f"Chapter is Integer: {chapter}")
-            except ValueError:
-                message = f"Invalid chapter: {bits[1]}"
-                w.on_error(message, 750, True)
-                # print(message)
-                return book_number, None, None
-
-    # Step 3: Resolve verse (bits[2])
-    verse = '1'
-    if len(bits) > 2:
-        if fcs.isRoman(bits[2]):  # If it's a Roman numeral
-            # print(f"Verse is Roman: {bits[2]}")
-            verse = fromRoman(bits[2].upper())  # Convert Roman numeral
-        else:  # Otherwise, try parsing it as an integer
-            try:
-                verse = int(bits[2])
-                # print(f"Verse is Integer: {verse}")
-            except ValueError:
-                message = f"Invalid verse: {bits[2]}"
-                w.on_error(message, 750, True)
-                # print(message)
-                return book_number, chapter, None
-
-    # Debugging: Show final resolved reference
-    # print(f"Resolved reference: (Book: {book_number}, Chapter: {chapter}, Verse: {verse})")
-    return book_number, chapter, verse
 
 
 from updater import update_abib
