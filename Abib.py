@@ -110,6 +110,7 @@ from ui.themes import ThemeManager, ThemeState
 from services.audio import AudioService
 from services.settings import SettingsService
 from domain.scripture_refs import resolve_reference as parse_ref, calculate_book_line as calc_line
+from ui.actions import setup_shortcuts, setup_menus_and_toolbars
 
 try:
     from ctypes import windll  # Only exists on Windows.
@@ -602,15 +603,8 @@ class MainWindow(QMainWindow):
         self.secondary_window = None
         self.feature = self.feature
 
-        # Create shortcuts
-        self.increase_font_shortcut = QShortcut(QKeySequence("Ctrl++"), self)
-        self.increase_font_shortcut.activated.connect(self.increase_font_size)
-
-        self.increase_font_shortcut = QShortcut(QKeySequence("Ctrl+="), self)
-        self.increase_font_shortcut.activated.connect(self.increase_font_size)
-
-        self.decrease_font_shortcut = QShortcut(QKeySequence("Ctrl+-"), self)
-        self.decrease_font_shortcut.activated.connect(self.decrease_font_size)
+        # Create keyboard shortcuts via centralized helper
+        self.shortcuts_bundle = setup_shortcuts(self)
 
         #Qt.QTimer.singleShot(0, lambda: self.sme("PM", -1))  # Adjusted to yesterday evening's reading.
 
@@ -848,85 +842,8 @@ class MainWindow(QMainWindow):
         self.statusBar = QStatusBar()
         self.setStatusBar(self.statusBar)
 
-        file_toolbar = QToolBar("File")
-        file_toolbar.setIconSize(QSize(14, 14))
-        self.addToolBar(file_toolbar)
-        file_menu = self.menuBar().addMenu("&File")
-
-        # Create a Path object for the file path.
-        icon1_path = Path('images') / 'blue-folder-open-document.png'
-        # Use str() to convert Path object to string for QIcon.
-        open_file_action = QAction(QIcon(str(icon1_path)), "Open file...", self)
-        open_file_action.setStatusTip("Open file")
-        open_file_action.triggered.connect(self.file_open)
-        file_menu.addAction(open_file_action)
-        file_toolbar.addAction(open_file_action)
-
-        icon2_path = Path('images') / 'printer.png'
-        print_action = QAction(QIcon(str(icon2_path)), "Print...", self)
-        print_action.setStatusTip("Print current page")
-        print_action.triggered.connect(self.file_print)
-        file_menu.addAction(print_action)
-        file_toolbar.addAction(print_action)
-
-        icon3_path = Path('images') / 'exit.png'
-        exit_action = QAction(QIcon(str(icon3_path)), "Exit", self)
-        exit_action.setStatusTip("Exit the program")
-        exit_action.triggered.connect(exit)
-        file_menu.addAction(exit_action)
-
-        edit_toolbar = QToolBar("Edit")
-        edit_toolbar.setIconSize(QSize(14, 14))
-        self.addToolBar(edit_toolbar)
-        edit_menu = self.menuBar().addMenu("&Edit")
-
-        icon4_path = Path('images') / 'document-copy.png'
-        copy_action = QAction(QIcon(str(icon4_path)), "Copy", self)
-        copy_action.setStatusTip("Copy selected text")
-        copy_action.triggered.connect(self.textEditor.copy)
-        edit_toolbar.addAction(copy_action)
-        edit_menu.addAction(copy_action)
-
-        icon5_path = Path('images') / 'selection-input.png'
-        select_action = QAction(QIcon(str(icon5_path)), "Select all", self)
-        select_action.setStatusTip("Select all text")
-        select_action.triggered.connect(self.textEditor.selectAll)
-        edit_menu.addAction(select_action)
-
-        help_menu = self.menuBar().addMenu("&Help")
-        icon6_path = Path('images') / 'license.png'
-        copyright_action = QAction(QIcon(str(icon6_path)), "LICENSE", self)
-        copyright_action.setStatusTip("License")
-        copyright_action.triggered.connect(self.copyright)
-        help_menu.addAction(copyright_action)
-
-        help_menu.addSeparator()
-        icon7_path = Path('images') / 'question.png'
-        help_action = QAction(QIcon(str(icon7_path)), "Abib Help", self)
-        help_action.setStatusTip("Help file")
-        help_action.triggered.connect(self.helper)
-        help_menu.addAction(help_action)
-
-        help_menu.addSeparator()
-        icon8_path = Path('images') / 'details.png'
-        readme_action = QAction(QIcon(str(icon8_path)), "Readme", self)
-        readme_action.setStatusTip("Readme file")
-        readme_action.triggered.connect(self.readme)
-        help_menu.addAction(readme_action)
-
-        help_menu.addSeparator()
-        icon9_path = Path('images') / 'about.png'
-        about_action = QAction(QIcon(str(icon9_path)), "About", self)
-        about_action.setStatusTip("About Abib")
-        about_action.triggered.connect(self.show_about_dialog)
-        help_menu.addAction(about_action)
-
-        help_menu.addSeparator()
-        icon10_path = Path('images') / 'settings.png'
-        settings_action = QAction(QIcon(str(icon10_path)), "Settings", self)
-        settings_action.setStatusTip("Settings")
-        settings_action.triggered.connect(self.open_settings_dialog)
-        help_menu.addAction(settings_action)
+        # Build menus, toolbars, and actions via centralized helper
+        self.actions_bundle = setup_menus_and_toolbars(self)
 
         self.secondary_window = ExtSecondaryWindow(
                     "Text to display",
