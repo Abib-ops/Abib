@@ -80,6 +80,10 @@ from json import load, JSONDecodeError
 from roman import fromRoman
 from typing import Any, Dict, Set, List
 from text_window import TextDocumentWindow as ExternalTextDocumentWindow
+from history import History
+history = History()
+back = history.back
+forward = history.forward
 
 from PySide6.QtWidgets import (QMainWindow, QVBoxLayout, QWidget, QDialogButtonBox, QApplication,
                                QToolBar, QPlainTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
@@ -98,7 +102,7 @@ import ctypes
 import fcs
 import shared as sh
 
-from find import Ui_Dialog
+from find_dialog import FindDialog
 from ui_helpers import NoZoomPlainTextEdit, NoZoomDialog, center_on_screen, fit_to_screen
 from windows import SecondaryWindow as ExtSecondaryWindow, AboutWindow as ExtAboutWindow
 from settings_dialog import SettingsDialog
@@ -126,75 +130,23 @@ mixer.init()
 
 
 def back_push(current_position: int) -> None:
-    """Push onto the back stack."""
-
-    if len(back) == 0:
-        saving = (current_position, w.y, w.hiLita.lineinc, w.hiLita.keyinc, w.hiLita.fmt,
-                  w.hiLita.length, w.no_f3_yet, w.occurring, w.key, w.dlg)
-        back.append(saving)
-    else:
-        last_item = back[-1]  # type: ignore
-        if not (last_item[0] == current_position and last_item[1] == w.y):
-            saving = (current_position, w.y, w.hiLita.lineinc, w.hiLita.keyinc,
-                      w.hiLita.fmt, w.hiLita.length, w.no_f3_yet,
-                      w.occurring, w.key, w.dlg)
-            back.append(saving)
+    """Push onto the back stack (delegates to History)."""
+    history.back_push(w, current_position)
 
 
 def back_pop() -> int:
-    """Pop from the back stack."""
-
-    current_position = 0
-    if back:
-        saving = back.pop()
-        current_position = saving[0]
-        w.y = saving[1]
-        w.hiLita.lineinc = saving[2]
-        w.hiLita.keyinc = saving[3]
-        w.hiLita.fmt = saving[4]
-        w.hiLita.length = saving[5]
-        w.no_f3_yet = saving[6]
-        w.occurring = saving[7]
-        w.key = saving[8]
-        w.dlg = saving[9]
-
-    return current_position
+    """Pop from the back stack (delegates to History)."""
+    return history.back_pop(w)
 
 
 def forward_push(current_position) -> None:
-    """Push onto the forward stack."""
-
-    if len(forward) == 0:
-        saving = (current_position, w.y, w.hiLita.lineinc, w.hiLita.keyinc, w.hiLita.fmt,
-                  w.hiLita.length, w.no_f3_yet, w.occurring, w.key, w.dlg)
-        forward.append(saving)
-    else:
-        last_item = forward[-1]  # type: ignore
-        if not (last_item[0] == current_position and last_item[1] == w.y):
-            saving = (current_position, w.y, w.hiLita.lineinc, w.hiLita.keyinc,
-                      w.hiLita.fmt, w.hiLita.length, w.no_f3_yet,
-                      w.occurring, w.key, w.dlg)
-            forward.append(saving)
+    """Push onto the forward stack (delegates to History)."""
+    history.forward_push(w, int(current_position))
 
 
 def forward_pop() -> int:
-    """Pop from the forward stack."""
-
-    current_position = 0
-    if len(forward) > 0:
-        saving = forward.pop()
-        current_position = saving[0]
-        w.y = saving[1]
-        w.hiLita.lineinc = saving[2]
-        w.hiLita.keyinc = saving[3]
-        w.hiLita.fmt = saving[4]
-        w.hiLita.length = saving[5]
-        w.no_f3_yet = saving[6]
-        w.occurring = saving[7]
-        w.key = saving[8]
-        w.dlg = saving[9]
-
-    return current_position
+    """Pop from the forward stack (delegates to History)."""
+    return history.forward_pop(w)
 
 
 def iterate_list(keywords: list[str], r_list: list) -> None:
@@ -2551,57 +2503,6 @@ class MainWindow(QMainWindow):
 
 
 
-class AboutWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle(f"Abib {CURRENT_VERSION}")
-
-        self.resize(480, 810)  # Set the initial window size
-        self.content = None
-        self.about_window = None
-
-        # Create a QLabel widget
-        self.label = QLabel(self)
-
-        # Load About.txt content
-        self.content = self.about()
-
-        # Set the contents of the QLabel
-        self.label.setText(self.content)
-
-        # Center align content
-        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.fontsize = 14
-        fixedfont: QFont = QFont("Cascadia Mono", self.fontsize, QFont.Weight.Bold)
-        self.label.setFont(fixedfont)
-
-        # Set the QLabel as the central widget
-        self.setCentralWidget(self.label)
-
-    def about(self) -> str:
-        """Load the 'About' content from ABOUT.txt."""
-
-        self.content: str = ""
-        try:
-            with open("ABOUT.txt", "r", encoding="utf-8") as file_about:
-                self.content = file_about.read()
-        except FileNotFoundError:
-            self.content = "ABOUT.txt file not found."
-        except UnicodeDecodeError:
-            self.content = "Error: Unable to decode ABOUT.txt. Please make sure the file encoding is UTF-8."
-
-        winwidth: int = 480
-        winheight: int = 810
-
-        # Allow for small screen sizes
-        winheight, winwidth = sizer(winheight, winwidth)
-
-        w_origin, h_origin = centerer(winwidth, winheight)
-        self.setGeometry(w_origin, h_origin, winwidth, winheight)
-        # w.otherFileFlag = True
-
-        return self.content
 
 
 class SyntaxHighlighter(QSyntaxHighlighter):
@@ -2660,132 +2561,6 @@ class SyntaxHighlighter(QSyntaxHighlighter):
 
 
 
-class FindDialog(QDialog):
-    """Find dialog."""
-
-    def __init__(self, parent=None) -> None:
-        super().__init__(parent)
-        # Create an instance of the GUI
-        self.ui = Ui_Dialog()
-        # Run the .setupUi() method to show the GUI
-        self.ui.setupUi(self)
-
-        # checks[0] is 1-4 for radiobuttons 1 to 4
-        # checks[1] is 0-1 for checkBox
-        # checks[2] is 5-6 for radiobuttons 5 & 6
-        self.checks = [1, 0, 5]
-        self.setGeometry(700, 300, 400, 378)
-
-        self.ui.lineEdit_1.setToolTip("press RETURN to find")
-        # self.ui.lineEdit_1.setEchoMode(QLineEdit.Normal)
-        self.ui.lineEdit_1.returnPressed.connect(self.getter)
-        self.ui.lineEdit_1.setClearButtonEnabled(False)
-        self.ui.lineEdit_1.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-
-        self.ui.pushButton_1.clicked.connect(self.ui.lineEdit_1.clear)
-
-        self.ui.comboBox_1.addItems(w.nwin)
-        self.ui.comboBox_2.addItems(w.nwin)
-        self.ui.comboBox_1.setCurrentIndex(0)
-        self.ui.comboBox_2.setCurrentIndex(sh.BOOKS_IN_THE_BIBLE - 1)
-
-        QOk = QDialogButtonBox.StandardButton.Ok
-        self.ui.buttonBox.button(QOk).setEnabled(True)
-        self.ui.buttonBox.button(QOk).setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.buttonBox.button(QOk).clicked.connect(self.getter)
-        QCancel = QDialogButtonBox.StandardButton.Cancel
-        self.ui.buttonBox.button(QCancel).setEnabled(True)
-        self.ui.buttonBox.button(QCancel).setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.buttonBox.button(QCancel).clicked.connect(w.close_find_window)
-
-        self.ui.lineEdit_1.setFocus()
-
-        self.ui.comboBox_1.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.comboBox_2.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_1.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_2.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_3.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_4.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_5.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_6.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.checkBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.ui.lineEdit_1.textChanged.connect(self.ui.lineEdit_1.setFocus)
-        self.ui.pushButton_1.hide()
-
-        # Dynamically show/hide the clear button based on text presence
-        self.ui.lineEdit_1.textChanged.connect(self.toggle_clear_button)
-
-    def toggle_clear_button(self):
-        if self.ui.lineEdit_1.text():
-            self.ui.pushButton_1.show()
-            self.ui.lineEdit_1.setFocus()
-        else:
-            self.ui.pushButton_1.hide()
-            self.ui.lineEdit_1.setFocus()
-
-    def getter(self) -> None:
-        """Get values from the find window and transfer to findf3."""
-
-        i: int
-        j: int
-        w.key = self.ui.lineEdit_1.text()
-        i, j = self.get_scope()
-        self.get_checks()
-        w.findf3(i, j)
-        w.close_find_window()
-
-    def get_scope(self) -> tuple[int, int]:
-        """Get the scope from the comboboxes."""
-
-        i: int = self.ui.comboBox_1.currentIndex()
-        j: int = self.ui.comboBox_2.currentIndex()
-        if i > j:
-            a: int = i
-            i = j
-            j = a
-            self.ui.comboBox_1.setCurrentIndex(i)
-            self.ui.comboBox_1.setCurrentIndex(j)
-
-        return i, j
-
-    def check_changed(self) -> None:
-        """Ensure that the checkBox is correct."""
-
-        if self.ui.checkBox.isChecked():
-            self.checks[1] = 1
-        else:
-            self.checks[1] = 0
-
-    def radiobutton1_4_changed(self) -> None:
-        """Ensure that radiobuttons 1 to 4 are correct."""
-
-        if self.ui.radiobutton_1.isChecked():
-            self.checks[0] = 1
-        elif self.ui.radiobutton_2.isChecked():
-            self.checks[0] = 2
-        elif self.ui.radiobutton_3.isChecked():
-            self.checks[0] = 3
-        elif self.ui.radiobutton_4.isChecked():
-            self.checks[0] = 4
-
-    def radiobutton5_6_changed(self) -> None:
-        """Ensure that radiobuttons 5 & 6 are correct."""
-
-        if self.ui.radiobutton_6.isChecked():
-            self.checks[2] = 6
-            self.ui.radiobutton_1.setChecked(True)
-            self.checks[0] = 1
-        else:
-            self.checks[2] = 5
-
-    def get_checks(self) -> None:
-        """Store the states of the checkboxes in the list checks."""
-
-        self.checks = [1, 0, 5]
-        self.check_changed()
-        self.radiobutton1_4_changed()
-        self.radiobutton5_6_changed()
 
 
 if __name__ == '__main__':
