@@ -6,14 +6,13 @@ from PySide6.QtWidgets import QApplication, QSplashScreen
 from PySide6.QtGui import QIcon, QPixmap, QColor
 
 import shared as sh
-import fcs
 
 from services.settings import SettingsService
 from services.data_loader import DataLoader
 from updater import update_abib
 
 # We purposefully import the Abib module so we can assign globals
-# that its functions expect (e.g., KJV, Amap, EOTNOC, etc.).
+# that its functions expect (e.g. KJV, Amap, EOTNOC, etc.).
 import Abib as AbibModule
 from Abib import MainWindow
 
@@ -36,30 +35,48 @@ def _init_screen_metrics(app: QApplication) -> None:
     AbibModule.half_height = height / 2
 
 
+def _assign_attrs(module, source, names) -> None:
+    """Assign a list of attribute names from source onto module."""
+    for name in names:
+        setattr(module, name, getattr(source, name))
+
+
 def _load_bible_text_and_maps(loader: DataLoader) -> None:
     data = loader.load_bible()
-    AbibModule.KJB_PCE_LASTLINE = data.KJB_PCE_LASTLINE
-    AbibModule.EOTNOC = data.EOTNOC
-    AbibModule.KJV = data.KJV
-    AbibModule.Amap = data.Amap
-    AbibModule.Ps119 = data.Ps119
-    AbibModule.P119 = data.P119
-    AbibModule.book_bounds = data.book_bounds
-    AbibModule.starts_with_italics = data.starts_with_italics
+    _assign_attrs(
+        AbibModule,
+        data,
+        [
+            "KJB_PCE_LASTLINE",
+            "EOTNOC",
+            "KJV",
+            "Amap",
+            "Ps119",
+            "P119",
+            "book_bounds",
+            "starts_with_italics",
+        ],
+    )
 
 
 def _load_search_indexes(loader: DataLoader) -> None:
     s = loader.load_search()
-    AbibModule.Rnew = s.Rnew
-    AbibModule.Rdic = s.Rdic
-    AbibModule.Rlow = s.Rlow
-    AbibModule.Ldic = s.Ldic
-    AbibModule.Rstp = s.Rstp
-    AbibModule.Rlsp = s.Rlsp
-    AbibModule.stripped_dict = s.stripped_dict
-    AbibModule.strpd_low_dict = s.strpd_low_dict
-    AbibModule.set_dict = s.set_dict
-    AbibModule.set_lowdict = s.set_lowdict
+    _assign_attrs(
+        AbibModule,
+        s,
+        [
+            "Rnew",
+            "Rdic",
+            "Rlow",
+            "Ldic",
+            "Rstp",
+            "Rlsp",
+            "stripped_dict",
+            "strpd_low_dict",
+            "set_dict",
+            "set_lowdict",
+        ],
+    )
 
 
 def _load_sme_metadata(loader: DataLoader) -> None:
@@ -101,7 +118,7 @@ def run() -> None:
     app: QApplication = QApplication()
     app.setApplicationName("Abib")
 
-    # Initialize settings service and load settings
+    # Initialise settings service and load settings
     settings_service = SettingsService()
     settings: Dict[str, Any] = settings_service.settings
 
@@ -112,7 +129,7 @@ def run() -> None:
 
     _init_screen_metrics(app)
 
-    # Create main window
+    # Create the main window
     w: MainWindow = MainWindow()
 
     # Provide the settings path to windows that need to persist user settings
@@ -130,7 +147,7 @@ def run() -> None:
     _load_search_indexes(loader)
     _load_sme_metadata(loader)
 
-    # Open Bible text into the editor
+    # Open Bible text with the editor
     w.file_open(str(sh.base_dir / "KJB_PCE.txt"))
 
     # Initialise runtime state on the window
