@@ -588,6 +588,10 @@ class MainWindow(QMainWindow):
         # Theme manager (extract dark mode logic)
         self.theme = ThemeManager(ThemeState(is_dark_mode=theme_state.get("is_dark_mode", False)))
 
+        # Reading plans (SME) service
+        from domain.reading_plans import ReadingPlans
+        self.reading_plans = ReadingPlans()
+
         # Store a reference to the secondary window to manage its lifecycle
         self.secondary_window = None
         self.feature = self.feature
@@ -2423,34 +2427,23 @@ class MainWindow(QMainWindow):
         self.update_text_display_theme()
 
     def sme(self, adjustment: int = 0) -> str:
-        """C H Spurgeon's Morning and Evening Readings."""
+        """C H Spurgeon's Morning and Evening Readings.
 
-        global date_file  # Needed because of assignment.
+        Delegates to ReadingPlans service and navigates to the referenced scripture.
+        """
 
-        date_file = fcs.get_date_file(date_file[2], adjustment)
-        # print(f"date_file: {date_file} adjustment: {adjustment}")
-
-        # Move to the Bible text reference at the end
-        # of the SME daily reading's first line.
-        a: str = sme_data[date_file[0]][date_file[1]]
-        i: int = a[1:].index('"')  # Should be the 2nd " at the end, before the reference.
-        j: int = a.index('\n')
-        i += 2
-        # print(a[i:j])
-        sme_ref: str = a[i:j]
-        self.goto_line(sme_ref)
-
-        # print(f"{date_file[0]} — {date_file[1]}")
-        # print(data[date_file[0]][morn_or_even])
-
-        sme_text = f"{date_file[0]} — {date_file[1]}\n\n{sme_data[date_file[0]][date_file[1]]}"
-        # print(sme_text)
-
-        # Return the text if it exists
         try:
-            return sme_text
-        except KeyError:
-            return f"No entry for {date_file[0]} in {date_file[1]}."
+            sme_text, sme_ref = self.reading_plans.get_sme(adjustment)
+        except Exception as e:
+            return f"Error retrieving SME: {e}"
+
+        if sme_ref:
+            try:
+                self.goto_line(sme_ref)
+            except Exception:
+                # Ignore navigation errors; still show text
+                pass
+        return sme_text
 
     def toggle_dark_mode(self):
         """Apply or remove dark mode using ThemeManager and sync global state."""
