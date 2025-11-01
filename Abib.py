@@ -125,10 +125,6 @@ except (AttributeError, OSError) as e:
     # AttributeError: non-Windows (windll is None); OSError: Windows API failure
     print(f"Error setting APP ID: {e}")
 
-# Define global theme state
-theme_state = {
-    "is_dark_mode": False  # Default is light mode
-}
 
 
 
@@ -589,7 +585,9 @@ class MainWindow(QMainWindow):
         self.textEditor = NoZoomPlainTextEdit()
 
         # Theme manager (extract dark mode logic)
-        self.theme = ThemeManager(ThemeState(is_dark_mode=theme_state.get("is_dark_mode", False)))
+        # Initialize ThemeManager based on persisted settings
+        is_dark = self.settings.get("theme", "Light") == "Dark"
+        self.theme = ThemeManager(ThemeState(is_dark_mode=is_dark))
 
         # Services
         self.audio = AudioService()
@@ -2300,21 +2298,20 @@ class MainWindow(QMainWindow):
             self.set_theme(self.settings)
 
     def set_theme(self, the_settings):
-        """Set the theme based on the value retrieved from settings."""
+        """Apply the theme from settings using ThemeManager without legacy globals."""
 
-        theme_key = 'theme'  # Key in the dictionary pointing to the theme.
-        current_theme = the_settings.get(theme_key, 'Light')  # Default to Light mode if not set
+        theme_key = 'theme'
+        current_theme = the_settings.get(theme_key, 'Light')
 
-        # Update the settings with the currently applied theme
-        if current_theme == 'Dark' and not theme_state["is_dark_mode"]:
-            self.toggle_dark_mode()
-            self.settings[theme_key] = 'Dark'  # Ensure settings reflect this theme
-        elif current_theme == 'Light' and theme_state["is_dark_mode"]:
-            self.toggle_dark_mode()
-            self.settings[theme_key] = 'Light'  # Ensure settings reflect this theme
+        # Set ThemeManager state explicitly to match settings
+        self.theme.state.is_dark_mode = (current_theme == 'Dark')
 
-        # Save updated theme settings via service
-        # print(f"Saving updated theme settings: {the_settings}")
+        # Apply to main editor and secondary window
+        self.theme.apply_to_editor(self.textEditor)
+        self.update_text_display_theme()
+
+        # Ensure settings reflect what's applied and persist
+        self.settings[theme_key] = 'Dark' if self.theme.state.is_dark_mode else 'Light'
         self.settings_service.save(self.settings)
 
     def display_secondary_window(self, offset: int = 0) -> None:
@@ -2363,14 +2360,14 @@ class MainWindow(QMainWindow):
         return sme_text
 
     def toggle_dark_mode(self):
-        """Apply or remove dark mode using ThemeManager and sync global state."""
-
-        global theme_state  # Preserve existing global for compatibility
+        """Toggle dark mode using ThemeManager and persist to settings."""
 
         # Toggle via ThemeManager
         is_dark = self.theme.toggle()
-        # Sync legacy global state for other code paths still using it
-        theme_state["is_dark_mode"] = is_dark
+
+        # Persist selection in settings
+        self.settings["theme"] = "Dark" if is_dark else "Light"
+        self.settings_service.save(self.settings)
 
         # Apply to main editor and secondary window
         self.theme.apply_to_editor(self.textEditor)
