@@ -84,6 +84,9 @@ history = History()
 back = history.back
 forward = history.forward
 
+# Global window handle placeholder; set by app.run() at startup
+w: Any | None = None
+
 from PySide6.QtWidgets import (QMainWindow, QVBoxLayout, QWidget, QDialogButtonBox, QApplication,
                                QToolBar, QPlainTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
                                QSplashScreen, QPushButton, QDialog, QSizePolicy, QSpacerItem, QHBoxLayout,
@@ -110,6 +113,36 @@ from services.settings import SettingsService
 from services.printing import PrintingService
 from domain.scripture_refs import resolve_reference as parse_ref, calculate_book_line as calc_line
 from ui.actions import setup_shortcuts, setup_menus_and_toolbars
+
+# ---- Module-level placeholders (populated at runtime by app.run) ----
+# These keep static analysis quiet and preserve runtime assignment from app.py
+KJV: tuple | list = ()
+Amap: list = []
+Ps119: list[int] = []
+P119: list = []
+book_bounds: list[int] = []
+starts_with_italics: list[int] = []
+KJB_PCE_LASTLINE: int = 0
+EOTNOC: str = ""
+Rnew: tuple = ()
+Rdic: dict = {}
+Rlow: tuple = ()
+Ldic: dict = {}
+Rstp: tuple = ()
+Rlsp: tuple = ()
+# Search dictionaries and sources
+stripped_dict: dict = {}
+strpd_low_dict: dict = {}
+set_dict: dict = {}
+set_lowdict: dict = {}
+# Screen metrics
+width: int = 0
+height: int = 0
+half_width: float = 0.0
+half_height: float = 0.0
+# Colours
+linehighlightcolor = None
+linetextcolor = None
 
 try:
     from ctypes import windll  # Only exists on Windows.
@@ -2456,185 +2489,6 @@ class SyntaxHighlighter(QSyntaxHighlighter):
 
 
 if __name__ == '__main__':
-
-    app: QApplication = QApplication()
-    app.setApplicationName("Abib")
-
-    # Initialize settings service and load settings
-    settings_service = SettingsService()
-    settings: Dict = settings_service.settings
-
-    # Show the splash screen if enabled in settings
-    splash_path = sh.current_directory / "images" / "Abib_barley.png"
-    if settings.get("show_splash", False):  # Default to False if the key is missing.
-        splash = QSplashScreen(QPixmap(splash_path))
-        splash.show()
-
-    if sh.system() == 'Windows':
-        app.processEvents()
-
-    width, height = app.primaryScreen().size().toTuple()
-    print(f"Screen size: {width}x{height}")
-    half_width = width / 2
-    half_height = height / 2
-
-    w: MainWindow = MainWindow()
-    # Provide the settings path to windows that is needed to persist user settings
-    w.user_settings_path = str(settings_service.user_settings_path)
-
-
-    # integers
-    x: int = 0
-    w.y = 0
-    w.hiLita.lineinc = 0
-    w.hiLita.keyinc = 0
-    w.hiLita.length = 1
-    w.no_f3_yet = 0
-    w.yend = 0
-    w.finding = 0
-    w.verse = 0
-    w.occurring = 0
-    w.occurrence = 0
-    w.occur = []
-    w.occurs = []
-    w.count = []
-    w.PCE_text = []
-    w.key = ' '
-    w.keym = ''
-    w.message = ''
-    w.store = ' '
-    # w.hiLita.clear = True
-    w.gent = None
-    w.otherFileFlag = True
-    # Initialise date_index (hours relative to today's date)
-    # w.date_index: int = 0
-
-    linehighlightcolor: QColor = QColor("#0138b7")
-    linetextcolor: QColor = QColor("#ffffff")
-
-    update_abib()
-
-    book_bounds: List[int] = [
-        0, 1533, 2746, 3605, 4893, 5852, 6510, 7128, 7213, 8023,
-        8718, 9534, 10253, 11195, 12017, 12297, 12703, 12870,
-        13940, 16 , 17316, 17538, 17655, 18947, 20311, 20465,
-        21738, 22095, 22292, 22365, 22511, 22532, 22580, 22685,
-        22732, 22788, 22841, 22879, 23090, 23145, 24216, 24894,
-        26045, 26924, 27931, 28364, 28801, 29058, 29207, 29362,
-        29466, 29561, 29650, 29697, 29810, 29893, 29939, 29964,
-        30267, 30375, 30480, 30541, 30646, 30659, 30673, 30698,
-        31102]
-
-    starts_with_italics: List[int] = [6203, 13009, 14972, 15412, 22195, 28117]
-
-    # -------------------------------------------------- #
-    KJB_PCE_LASTLINE = 36199
-    # Including about 70 blank lines at the end which are
-    # retained and 118 lines of copyright notice at the
-    # beginning which are removed below.
-    # Plus, there are about 182 lines comprising
-    # THE HOLY BIBLE title etc.
-    # TO THE MOST HIGH AND MIGHTY PRINCE JAMES,
-    # THE EPISTLE DEDICATORY
-    # THE TRANSLATORS TO THE READER
-    # THE NAMES AND ORDER OF THE BOOKS OF THE
-    # OLD AND NEW TESTAMENT, WITH ABBREVIATIONS.
-    #
-    # So, that is 31,102 + 70 + 118 + 182 + 66 BOOK TITLES +
-    # THE 1,189 CHAPTER TITLES AND BLANK LINES = 36,199
-    # -------------------------------------------------- #
-
-    # Construct full file path using pathlib
-    file_path = str(Path(sh.str_cwd) / "KJB_PCE.txt")
-    # Pass the constructed path to fcs.readio
-    KJV = fcs.readio('', file_path, KJB_PCE_LASTLINE)
-
-    EOTNOC: str = '****END OF THE NOTICE OF COPYRIGHT****\n'
-
-    i_: int = 0
-    try:
-        i_ = KJV.index(EOTNOC)
-    except ValueError:
-        print('Failed to find the line ', EOTNOC)
-        print('Cannot continue until this is put right.')
-        exit('Reinstalling the program should resolve this.')
-    KJV = KJV[i_ + 1:]
-    KJV = tuple(KJV)
-
-    assert (len(KJV) == KJB_PCE_LASTLINE - 118)
-
-    # Use pathlib to construct the path
-    file_path = str(Path(sh.str_cwd) / "Amap.txt")
-
-    # Pass the constructed path to the function
-    Amap: List = sh.readfile('', file_path, sh.EOF_AMAP)
-
-    Amap = Amap[17:]
-
-    Ps119: List[int] = [
-        15907, 15915, 15923, 15931, 15939, 15947, 15955, 15963, 15971, 15979,
-        15987, 15995, 16003, 16011, 16019, 16027, 16035, 16043, 16051, 16059,
-        16067]
-    P119: List = []
-    for _ in Ps119:
-        v: Any = Amap[_]
-        P119.append(v)
-
-    # Open KJB_PCE.txt
-    w.file_open(str(sh.base_dir / "KJB_PCE.txt"))
-
-    # Read stripped_dict.txt
-    with open("stripped_dict.txt", encoding="utf-8") as f:
-        stripped_dict: Any = load(f)
-
-    # Read strpd_low_dict.txt
-    with open("strpd_low_dict.txt", encoding="utf-8") as f:
-        strpd_low_dict: Any = load(f)
-
-    # Load dictionaries using fcs.load_list_set_dict
-    set_dict: Dict[Any, Set] = fcs.load_list_set_dict("list_dict.json", stripped_dict)
-    set_lowdict: Dict[Any, Set] = fcs.load_list_set_dict("list_lowdict.json", strpd_low_dict)
-
-    # Read and process PCE-find.txt
-    Rnew = fcs.readio('', str(Path(sh.base_dir / "PCE-find.txt")), sh.EOF_BIBLE_TEXT)
-    Rnew = tuple(Rnew)
-    Rdic: Dict[int, Any] = dict(enumerate(Rnew))  # Convert Rnew to dictionary.
-
-    # Read and process PCE-lower.txt
-    Rlow = fcs.readio('', str(Path(sh.base_dir / "PCE-lower.txt")), sh.EOF_BIBLE_TEXT)
-    Rlow = tuple(Rlow)
-    Ldic: Dict[int, Any] = dict(enumerate(Rlow))  # Convert Rlow to dictionary.
-
-    # Read PCE-stripped.txt
-    Rstp = fcs.readio('', str(Path(sh.base_dir / "PCE-stripped.txt")), sh.EOF_BIBLE_TEXT)
-    Rstp = tuple(Rstp)
-
-    # Read PCE-stripped_lower.txt
-    Rlsp = fcs.readio('', str(Path(sh.base_dir / "PCE-stripped_lower.txt")), sh.EOF_BIBLE_TEXT)
-    Rlsp = tuple(Rlsp)
-
-    try:
-        with open("morning_evening.json", "r", encoding="utf-8") as file:
-            sme_data = load(file)  # Load JSON data
-    except JSONDecodeError as e:
-        print(f"JSON file is invalid: {e}")
-
-    date_file: tuple = fcs.get_date_file()
-
-    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    # Plugin socket.
-    # Paste the plugin here for probably single use and run Abib to run
-    # it.  This enables utility plugins to use the functions of Abib.
-    # Beware of overwriting previous files accidentally.
-    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    # *** PLACE YOUR PLUGIN HERE (between the two lines) ***
-
-    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    # Set the application icon
-    app_icon: QIcon = QIcon(str(sh.icon_path))  # Convert the Path object to string for QIcon
-    app.setWindowIcon(app_icon)
-
-    w.show()
-    exit(app.exec())
-# This is a new line that ends the file.
+    # Bootstrap moved to app.run() for cleaner modularisation (PR10)
+    from app import run
+    run()
