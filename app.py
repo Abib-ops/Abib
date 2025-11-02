@@ -27,7 +27,7 @@ def _show_splash_if_enabled(settings: Dict[str, Any]) -> None:
 def _init_screen_metrics(app: QApplication) -> None:
     # Set global width/height used by Abib.sizer
     width, height = app.primaryScreen().size().toTuple()
-    print(f"Screen size: {width}x{height}")
+    # print(f"DEBUG: Screen size: {width}x{height}")
     # Expose to Abib module for sizer()
     AbibModule.width = width
     AbibModule.height = height

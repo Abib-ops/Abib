@@ -4,11 +4,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.02
+Abib v414.03
 ------------
 
 Changelog.
 -----------
+Abib v414.03
+Added Hodges Systematic Theology.
+
 Abib v414.02
 Modified the convert_roman_to_integer function to fix a CodeQL issue.
 Refactored the code to remove duplicate code.

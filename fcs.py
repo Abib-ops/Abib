@@ -392,10 +392,10 @@ def get_window_geometry(window_name: str) -> tuple[int, int, int, int]:
     """Get window geometry from settings"""
 
     settings = load_settings_from_file()
-    print(f"DEBUG: Loading geometry for {window_name}")
-    print(f"DEBUG: Available settings keys: {list(settings.keys())}")
+    # print(f"DEBUG: Loading geometry for {window_name}")
+    # print(f"DEBUG: Available settings keys: {list(settings.keys())}")
     width, height = get_screen_size()
-    print(f"DEBUG: Screen size from fcs.py: {width}x{height}")
+    # print(f"DEBUG: Screen size from fcs.py: {width}x{height}")
 
     if window_name in settings:
         window_settings = settings[window_name]
@@ -414,11 +414,11 @@ def get_window_geometry(window_name: str) -> tuple[int, int, int, int]:
             result = (0, result[1], 737, result[3])
         if result[1] + result[3] > height:
             result = (result[0], 100, result[2], 518)
-        print(f"DEBUG: Returning geometry of {window_name}: {result}")
+        # print(f"DEBUG: Returning geometry of {window_name}: {result}")
         return result
     else:
         # Return default values
-        print(f"DEBUG: No settings found for {window_name}, using defaults")
+        # print(f"DEBUG: No settings found for {window_name}, using defaults")
         return 100, 100, 640, 518
 
 
