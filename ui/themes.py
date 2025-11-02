@@ -6,13 +6,17 @@ from typing import Optional, Protocol
 try:
     # Import only the minimal Qt class we need to type the editor
     from PySide6.QtWidgets import QPlainTextEdit
-except Exception:  # pragma: no cover - allows importing this module without Qt
+except ImportError:  # pragma: no cover - allows importing this module without Qt
     QPlainTextEdit = object  # type: ignore
 
 
 @dataclass
 class ThemeState:
     is_dark_mode: bool = False
+
+
+class EditorWithStyleSheet(Protocol):
+    def setStyleSheet(self, style: str) -> None: ...
 
 
 class ThemeApplier(Protocol):
@@ -22,7 +26,7 @@ class ThemeApplier(Protocol):
 class ThemeManager:
     """Encapsulates dark/light theme state and application helpers.
 
-    This module centralizes the styling logic so the rest of the app avoids
+    This module centralises the styling logic so the rest of the app avoids
     manipulating global state directly and keeps UI code thin.
     """
 
@@ -36,7 +40,7 @@ class ThemeManager:
         return self.state.is_dark_mode
 
     # ---- Apply helpers ----
-    def apply_to_editor(self, editor: Optional[QPlainTextEdit]) -> None:
+    def apply_to_editor(self, editor: Optional[EditorWithStyleSheet]) -> None:
         if editor is None:
             return
         if self.state.is_dark_mode:
@@ -64,5 +68,5 @@ class ThemeManager:
         try:
             secondary_window.apply_theme(self.state.is_dark_mode)
         except (AttributeError, RuntimeError):
-            # Be tolerant: secondary window might not be fully initialised or already deleted.
+            # Be tolerant: the secondary window might not be fully initialised or already deleted.
             pass

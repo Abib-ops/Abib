@@ -1,21 +1,27 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Protocol
 
 try:
-    # Type hints only; importing lazily for environments without Qt
-    from PySide6.QtWidgets import QWidget, QPlainTextEdit
+    # Import minimal Qt types; allow this module to import without Qt
+    from PySide6.QtWidgets import QWidget
     from PySide6.QtPrintSupport import QPrintDialog
-except Exception:  # pragma: no cover - allow import without Qt
+except ImportError:  # pragma: no cover - allow import without Qt
     QWidget = object  # type: ignore
-    QPlainTextEdit = object  # type: ignore
     QPrintDialog = object  # type: ignore
+
+
+class EditorPrinter(Protocol):
+    """Protocol for editors/widgets that support Qt printing via print_."""
+
+    def print_(self, printer) -> None: ...
 
 
 class PrintingService:
     """Wraps Qt printing so UI code stays thin and testable."""
 
-    def print_plain_text(self, editor: Optional[QPlainTextEdit], parent: Optional[QWidget] = None) -> bool:
+    @staticmethod
+    def print_plain_text(editor: Optional[EditorPrinter], parent: Optional[QWidget] = None) -> bool:
         """Open a print dialog and print the given plain text editor.
 
         Returns True if a print job was accepted and attempted; False if canceled
@@ -25,11 +31,16 @@ class PrintingService:
             return False
         try:
             dlg = QPrintDialog(parent)
-            if hasattr(dlg, "exec_") and dlg.exec_():
-                # QPlainTextEdit provides print_(QPrinter)
+            # Support both exec() (PySide6) and exec_() (compat)
+            accepted = False
+            if hasattr(dlg, "exec"):
+                accepted = bool(dlg.exec())
+            elif hasattr(dlg, "exec_"):
+                accepted = bool(dlg.exec_())
+            if accepted:
                 editor.print_(dlg.printer())
                 return True
             return False
-        except Exception:
+        except (RuntimeError, AttributeError, TypeError):
             # Swallow printing errors; caller can show a status message if needed
             return False

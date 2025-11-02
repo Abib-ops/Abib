@@ -60,10 +60,12 @@ class SettingsService:
         self._settings = dict(settings)
 
     # ---- Window geometry helpers ----
-    def get_window_geometry(self, window_name: str) -> Tuple[int, int, int, int]:
+    @staticmethod
+    def get_window_geometry(window_name: str) -> Tuple[int, int, int, int]:
         return fcs.get_window_geometry(window_name)
 
-    def save_window_geometry(self, window_name: str, x: int, y: int, width: int, height: int) -> None:
+    @staticmethod
+    def save_window_geometry(window_name: str, x: int, y: int, width: int, height: int) -> None:
         fcs.save_window_geometry(window_name, x, y, width, height)
 
     # ---- Optional font helpers passthrough ----

@@ -1,156 +1,227 @@
 # Abib Bible Reader
 
-A lightweight, fast desktop Bible reader with powerful navigation and search, plus Spurgeon’s Morning and Evening daily readings. Designed for a small, adjustable footprint that works well alongside sermons (e.g., YouTube, Zoom) and personal study.
+A lightweight, fast desktop Bible reader focused on speed, small screen footprint, and powerful navigation/search.
 
-This README consolidates and updates project information. It keeps useful details from existing docs and adds sections requested: overview, requirements, setup/run, scripts, environment variables, tests, project structure, and license. Unknowns are marked as TODO.
+It includes Spurgeon’s Morning and Evening daily readings and is designed to sit neatly beside livestreams (YouTube, Zoom) and personal study.
+
+This README reflects the recent refactor and module layout. 
+It replaces older notes and consolidates information from README.txt and HELP.txt.
 
 
 ## Overview
-- Platform: Desktop GUI (cross‑platform; primary target Windows)
-- Language: Python
+- Platform: Desktop GUI (cross‑platform; primary focus Windows)
+- Language: Python 3.13
 - GUI framework: PySide6 (Qt for Python)
-- Other key libs: pygame (sound for error), requests, roman
-- Packaging: PyInstaller (for building distributables)
-- Entry point: `Abib.py`
-- Data: KJV/PCE text and indices, Spurgeon’s Morning/Evening, other resources in repo
+- Key libs: requests (update checks), pygame (short UI sound), roman
+- Packaging: PyInstaller (Windows builds)
+- Entry points (from source):
+  - Preferred: `python -m app` or `python app.py`
+  - Also supported: `python Abib.py` (delegates to app.run())
+- Data: KJV/PCE text and indices, Spurgeon’s Morning & Evening JSON, images, fonts, and helper lists bundled in the repo.
 
 Main features
-- Jump to references quickly (typed refs or UI controls)
-- Compact, resizable UI designed to sit beside livestreams/sermons
-- Comprehensive Find dialog with multiple search modes
-- Morning & Evening devotionals included
-- Persistent window geometry and font sizes via per‑user settings
+- Fast jump to scripture references (typed refs or UI controls)
+- Find dialog with whole‑word, any/all words, and range options
+- Morning & Evening devotional in a secondary window with easy next/previous navigation
+- Other Works library: Pilgrim’s Progress plus 9 classic books; open from the bottom‑right drop‑down
+- Theme support (Light/Dark) with a settings dialog
+- Small, resizable window suited to side‑by‑side viewing
+- Per‑user settings for window geometry and font sizes that persist across sessions
+- Optional splash screen
+- Built‑in update check against GitHub releases (Windows)
+
+
+## What changed recently (high‑level)
+- New bootstrap in `app.py` (centralised startup and screen metrics)
+- Services layer: `services.settings`, `services.data_loader`, `services.audio`, `services.printing`
+- UI helpers: `ui.actions` (menus/toolbars/shortcuts), `ui.themes` (ThemeManager)
+- Domain logic moved to `domain.*` (e.g., reading plans and scripture ref parsing)
+- Update check moved to `updater.py` using GitHub Releases API
+- Tests added for non‑GUI logic (see Tests)
 
 
 ## Requirements
-- Operating system: Windows 10/11 recommended. PySide6 is cross‑platform and the app should run on macOS/Linux if dependencies install, but Windows is the focus.
-- Python: 3.13 (project has venv folders `venv_3_13` and `venv_3_14_0`; development is on Python 3.13+)
-- System font: Cascadia Mono (recommended for intended appearance)
-- Disk: ensure all repository data files are present in the same directory as `Abib.py` when running from source.
+- OS: Windows 10/11 recommended. The code is largely cross‑platform, but Windows is the target for packaged builds.
+- Python: 3.13 (developed on 3.13.9)
+- Font: Cascadia Mono/Code recommended for the best alignment and appearance
+- Disk layout: run from the repository root so that data files and images are found next to the code
 
 Python dependencies (see `requirements.txt`)
 - PySide6/shiboken6 6.10.0
 - pygame 2.6.1
 - requests 2.32.5
 - roman 5.1
-- pyinstaller 6.16.0 (packaging only)
-- And related transitive packages listed in `requirements.txt`
+- pyinstaller 6.16.0 (for packaging)
+- And transitive packages pinned in `requirements.txt`
 
 
 ## Setup (from source)
-1) Clone or download this repository so that all files sit together.
+1) Clone or download this repository keeping all files together.
 2) Optional: create and activate a virtual environment.
-   - Windows (PowerShell):
-     ```pwsh
-     py -3.13 -m venv .venv
-     .\.venv\Scripts\Activate.ps1
-     ```
-   - Linux/macOS:
-     ```bash
-     python3.13 -m venv .venv
-     source .venv/bin/activate
-     ```
+   - Windows (PowerShell)
+     - `py -3.13 -m venv .venv`
+     - `.\.venv\Scripts\Activate.ps1`
+   - Linux/macOS
+     - `python3.13 -m venv .venv`
+     - `source .venv/bin/activate`
 3) Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4) (Recommended) Install Cascadia Code/Mono font (see Font section below).
+   - `pip install -r requirements.txt`
+4) (Recommended) Install the Cascadia Code/Mono font (see Font section).
 
 
 ## Run
-From the project root (where `Abib.py` and the data files are):
-```bash
-python Abib.py
-```
+From the project root (where the data files and images are):
+- Preferred: `python -m app`
+- Or: `python app.py`
+- Also works: `python Abib.py`
+
 Notes
-- Run from the repository root so that required data files and images are found.
-- On first run, user settings are created under a per‑OS config directory (see Settings & Paths).
+- Run from the repository root so required data files and images are found.
+- On the first run, user settings are created under your OS’s per‑user config directory (see Settings & Paths).
+- On Windows, an update check runs at startup and may offer to download a newer installer.
 
 
 ## Settings & Paths
-- The app stores per‑user settings in `settings.json` under an OS‑specific directory (handled in `shared.py`):
+- Per‑user settings are stored in `settings.json`:
   - Windows: `%APPDATA%\Abib\settings.json`
   - macOS: `~/Library/Application Support/Abib/settings.json`
   - Linux: `~/.config/Abib/settings.json`
-- The application expects assets like `images/abib_icon0.ico` and `images/Abib_barley.png` to exist relative to the working directory.
+- Settings include:
+  - `theme`: "Light" or "Dark"
+  - `show_splash`: whether to show the barley splash on startup
+  - Remembered window positions/sizes and font sizes (main/devotional)
+- Assets expected at runtime relative to the working directory, e.g.:
+  - `images/abib_icon0.ico` (application icon)
+  - `images/Abib_barley.png` (optional splash)
 
 
 ## Font (Cascadia Mono)
 For best results use Microsoft’s Cascadia Mono/Code font.
-- Windows 11: included by default.
-- Windows 10: open “Font settings”, then drag‑drop `CascadiaMono.ttf` to install.
+- Windows 11: included by default
+- Windows 10: open “Font settings”, then drag‑drop `CascadiaMono.ttf` to install
 - Arch Linux: `sudo pacman -S ttf-cascadia-code`
-- Other distros/OS: download from https://github.com/microsoft/cascadia-code/releases and install the `.ttf`.
+- Other: download from https://github.com/microsoft/cascadia-code/releases and install the `.ttf`
 
-The repository includes a `font/` folder; you can install from there if present.
+The repository includes a `font/` folder for convenience.
 
 
-## Scripts and Packaging
-- Entry point: `Abib.py` contains `if __name__ == "__main__":` and starts a `QApplication` and `MainWindow`.
-- Sound: `pygame` is used for a simple error sound; the code suppresses the pygame startup prompt.
-- Packaging: PyInstaller is listed in requirements for building executables.
-  - Typical (example) command:
-    ```bash
-    pyinstaller --noconfirm --clean --windowed --name Abib Abib.py
-    ```
-  - This project does not currently include a `.spec` file in the repo. You may need to add data files (Bible text, JSONs, images, font, license) via `--add-data` options when packaging.
-  - TODO: Provide a maintained `.spec` file with the correct `datas` so packaged builds find all resources.
+## Using Abib (quick guide)
+- Reference entry
+  - Type refs like `g50.7` for Genesis 50:7 (a period `.` separates chapter/verse)
+  - Book shortcuts are supported (see HELP.txt for many examples, e.g., `php` → Philippians)
+- Find dialog
+  - Whole‑word, any/all words, and range searches; open via the menu/toolbar
+- Navigation
+  - Back/forward through visited passages
+  - Morning & Evening: open the secondary window and use the left/right controls
+- Shortcuts
+  - Increase/decrease font size: `Ctrl+=`/`Ctrl++` and `Ctrl+-`
+  - Toggle theme: via Settings, or use the menu item if provided by your build
+- Printing
+  - File → Print… will print the visible text via the system print dialog
+
+See `HELP.txt` for detailed usage, tips, and reference formats.
+
+## Other Works (Pilgrim's Progress + 9 other texts)
+- Access: Click the bottom-right drop-down (button in older builds) in the main window to open these texts in a separate reader window. The default selection is Pilgrims-Progress.
+- Location: Files live under the `Other Works/` folder next to the app; each is a `.txt` file.
+- Included titles
+  - Pilgrims-Progress.txt — The Pilgrim's Progress (John Bunyan)
+  - The Holy War.txt — John Bunyan
+  - Institutes.txt — John Calvin
+  - Of Prayer - Calvin.txt — John Calvin
+  - Catechisms John Owen.txt — John Owen
+  - Pneumatologia.txt — John Owen
+  - Puritan Catechism.txt — Spurgeon’s Puritan Catechism
+  - Naves Topical Bible.txt — Nave’s topical index
+  - Election A. W. Pink.txt — A. W. Pink
+  - Election C. D. Cole.txt — C. D. Cole
+
+Note: Some builds may include additional titles; the drop-down lists whatever `.txt` files are present in `Other Works/`.
+
+
+## Data files expected beside the app
+- `KJB_PCE.txt` (Bible text)
+- `Amap.txt`, `Info.txt`
+- Search indexes: `PCE-find.txt`, `PCE-lower.txt`, `PCE-stripped.txt`, `PCE-stripped_lower.txt`
+- Dictionaries: `stripped_dict.txt`, `strpd_low_dict.txt`, `list_dict.json`, `list_lowdict.json`
+- Devotional: `morning_evening.json`
+- Images: `images/abib_icon0.ico`, `images/Abib_barley.png`, plus toolbar icons
+- Other Works: `Other Works/` folder containing Pilgrim’s Progress and 9 included books (see section above)
+- Optional: `font/` with CascadiaMono fonts
+
+
+## Packaging (PyInstaller)
+This project ships the source; Windows installers are built with PyInstaller.
+- Example command (from the project root):
+  - `pyinstaller --noconfirm --clean --windowed --name Abib app.py`
+- You may need to include data files explicitly using `--add-data` (the format differs by OS shell). Example on Windows PowerShell:
+  - `--add-data "KJB_PCE.txt;." --add-data "Amap.txt;." --add-data "Info.txt;."`
+  - `--add-data "PCE-find.txt;." --add-data "PCE-lower.txt;." --add-data "PCE-stripped.txt;." --add-data "PCE-stripped_lower.txt;."`
+  - `--add-data "stripped_dict.txt;." --add-data "strpd_low_dict.txt;." --add-data "list_dict.json;." --add-data "list_lowdict.json;."`
+  - `--add-data "morning_evening.json;." --add-data "images;images" --add-data "Other Works;Other Works" --add-data "font;font" --add-data "LICENSE;."`
+- A `.spec` file is recommended to keep these in one place. TODO: add a maintained spec to the repo.
 
 
 ## Environment variables
-- `PYGAME_HIDE_SUPPORT_PROMPT=1` is set in code to suppress pygame’s message (no action required).
-- `%APPDATA%` (Windows) is used by the app to locate the per‑user settings directory. You normally don’t need to change it.
+- `PYGAME_HIDE_SUPPORT_PROMPT=1` is set in code to suppress pygame’s console message.
+- `%APPDATA%` (Windows) is used by the app to locate the per‑user settings directory.
 
 
 ## Tests
-Automated unit tests are included for core, non-Qt logic.
+Automated tests cover core non‑Qt logic.
 
-How to run (no GUI required):
-- From the repo root:
-  - Windows (PowerShell):
-    - `python -m unittest discover -s tests -p "test_*.py"`
-  - Linux/macOS:
-    - `python3 -m unittest discover -s tests -p "test_*.py"`
+Run from the repo root:
+- Windows: `python -m unittest discover -s tests -p "test_*.py"`
+- Linux/macOS: `python3 -m unittest discover -s tests -p "test_*.py"`
 
-What’s covered
+Coverage highlights
 - `domain.scripture_refs`: reference parsing and line calculation
-- `domain.reading_plans`: SME loading and reference extraction (tolerates missing/invalid JSON)
+- `domain.reading_plans`: Morning & Evening loading and reference extraction; tolerant of missing/invalid JSON
 
 Notes
-- Tests avoid importing PySide6 widgets and do not require a running Qt event loop.
-- Additional coverage is desirable for window geometry persistence and search helpers in `fcs.py`.
+- Tests avoid importing Qt widgets and do not require a running event loop.
 
 
 ## Project structure (selected)
-The repo root includes these notable files and folders:
-- `Abib.py` – main application entry point (PySide6 GUI)
-- `fcs.py` – functions for searching, text utilities, settings I/O, and helpers
-- `shared.py` – shared constants, paths, and data loading of `Info.txt`
-- `find.py`, `find.ui`, `ui_find.py` – Find dialog UI and code generated from Qt Designer
-- Data files: `KJB_PCE.txt`, `PCE-*.txt`, `list_*.json`, `morning_evening.json`, `bible_data.json`, `Info.txt`, `Amap.txt`, `find_dict.txt`, `lower_dict.txt`, `stripped_dict.txt`, etc.
-- `images/` – icons and splash (e.g., `abib_icon0.ico`, `Abib_barley.png`)
-- `font/` – CascadiaMono font file(s)
-- `requirements.txt` – pinned dependencies
-- `LICENSE` – GPLv3 license
-- `README.txt`, `HELP.txt`, `ABOUT.txt` – additional documentation
-- `venv_3_13`, `venv_3_14_0` – local virtual environments (not required; you can create your own `.venv`)
+- `app.py` – application bootstrap and window creation
+- `Abib.py` – main window and core UI logic (still supports `python Abib.py`)
+- `domain/`
+  - `scripture_refs.py` – parse references and map to lines
+  - `reading_plans.py` – Spurgeon’s Morning & Evening service
+- `services/`
+  - `settings.py` – settings service and geometry helpers
+  - `data_loader.py` – centralised loading of Bible text and search indexes
+  - `audio.py` – safe wrapper for short UI sounds
+  - `printing.py` – Qt printing wrapper
+- `ui/`
+  - `actions.py` – menus, toolbars, and shortcuts
+  - `themes.py` – ThemeManager (Light/Dark)
+- Other UI and helpers: `find.py`, `find.ui`, `ui_find.py`, `find_dialog.py`, `text_window.py`, `settings_dialog.py`, `windows.py`, `ui_helpers.py`
+- Core helpers: `fcs.py`, `shared.py`
+- Updater: `updater.py` (GitHub Releases)
+- Data and assets: see Data files above
+- Docs: `README.txt`, `HELP.txt`, `ABOUT.txt`
+- Tests: `tests/` with unit tests for domain logic
 
 Run location
-- Run `python Abib.py` from the repository root so relative files are found. The code will exit with an error if expected assets (e.g., `images/abib_icon0.ico`) are missing.
+- Run from the repository root so relative data files and images are found. The app will exit with an error if essential assets (e.g., `images/abib_icon0.ico`) are missing.
 
 
-## Usage tips (quick)
-- Type references like `g50.7` for Genesis 50:7. A period `.` acts as the chapter/verse separator.
-- Use the Find dialog for whole‑word, multi‑word, or range‑scoped searches. The dialog is accessible from the UI.
-- Font size shortcuts: per `HELP.txt`, use `Ctrl +` and `Ctrl -` to adjust in supported windows.
-- Back/forward navigation is available for visited passages.
-
-For more detailed usage, see `HELP.txt`.
+## Troubleshooting
+- The app exits early or cannot find files
+  - Make sure you are running from the repository root and that required data files exist
+- Missing icons or splash
+  - Ensure the `images/` folder is present and contains the expected files
+- No sound on error
+  - pygame is optional; if unavailable or the sound file is missing, the app continues silently
+- Update prompt does not appear
+  - Network issues are tolerated; the app will continue without updating
 
 
 ## Release builds
-- Windows installer builds are sometimes provided externally (see `README.txt` and `HELP.txt`).
-- TODO: Document the authoritative release URL for update checks and downloads.
+- Official Windows installers (when available):
+  - https://github.com/Abib-ops/Abib/releases
 
 
 ## License
@@ -158,8 +229,8 @@ Abib is free software, distributed under the GNU General Public License, version
 
 
 ## Credits
-- Bible text and resources: see `README.txt` and notes below.
-- Splash screen: Photo credit to abibofgod.com.
-- Spurgeon’s Morning and Evening readings were obtained from https://www.spurgeon.org and reformatted by Eternal Life Ministries. Additional Bible resources: https://www.spurgeongems.org.
+- Bible text and resources: see `README.txt` and notes
+- Splash screen: Photo credit to abibofgod.com
+- Spurgeon’s Morning and Evening readings from https://www.spurgeon.org, reformatted by Eternal Life Ministries. Additional resources: https://www.spurgeongems.org
 
 © 2025 Andrew Kingston

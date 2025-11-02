@@ -147,11 +147,11 @@ def run() -> None:
     _load_search_indexes(loader)
     _load_sme_metadata(loader)
 
-    # Open Bible text with the editor
-    w.file_open(str(sh.base_dir / "KJB_PCE.txt"))
-
     # Initialise runtime state on the window
     _init_window_runtime_state(w)
+
+    # Open Bible text with the editor
+    w.file_open(str(sh.base_dir / "KJB_PCE.txt"))
 
     # Set the application icon (optional but preserved)
     app_icon: QIcon = QIcon(str(sh.icon_path))

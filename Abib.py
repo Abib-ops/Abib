@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-01/11/2025
+02/11/2025
 
 """
 
@@ -71,7 +71,6 @@ environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
 
 from copy import deepcopy
 from pathlib import Path
-from io import open
 from itertools import chain, islice
 
 from typing import Any, Dict, Set, List
@@ -2312,7 +2311,8 @@ class MainWindow(QMainWindow):
 
         try:
             sme_text, sme_ref = self.reading_plans.get_sme(adjustment)
-        except Exception as err:
+        except (KeyError, TypeError, ValueError) as err:
+            # Narrow exception handling to expected data/parsing issues
             return f"Error retrieving SME: {err}"
 
         if sme_ref:
@@ -2395,7 +2395,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         self.fmt = self._highlight_lines.get(blockNumber)
         if self.fmt is not None:
             # noinspection PyTypeChecker
-            self.position = w.y +  self.lineinc
+            self.position = w.y + self.lineinc
             if w.dlg is not None:
                 if w.dlg.checks[2] != 6:
                     self.length = len(w.key) + self.keyinc

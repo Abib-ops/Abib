@@ -9,8 +9,16 @@ import shared as sh
 try:
     # Import lazily available pygame mixer
     from pygame import mixer as _mixer  # type: ignore
-except Exception:  # pragma: no cover
+    try:
+        # Optional: specific pygame error type for finer exception handling
+        from pygame import error as PygameError  # type: ignore
+    except ImportError:  # pragma: no cover - fallback if pygame.error not available
+        class PygameError(Exception):
+            pass
+except ImportError:  # pragma: no cover
     _mixer = None  # type: ignore
+    class PygameError(Exception):
+        pass
 
 
 @dataclass
@@ -22,7 +30,7 @@ class AudioConfig:
 class AudioService:
     """Tiny wrapper around pygame.mixer to play short UI sounds.
 
-    - Lazy-initializes the mixer on first use.
+    - Lazy-initialises the mixer on first use.
     - Loads the sound file from the application base directory.
     - Fails gracefully if pygame or the sound file is unavailable.
     """
@@ -42,7 +50,7 @@ class AudioService:
         try:
             _mixer.init()
             self._initialized = True
-        except Exception:
+        except (PygameError, OSError, RuntimeError):
             self._load_failed = True
 
     def _ensure_sound_loaded(self) -> None:
@@ -56,7 +64,7 @@ class AudioService:
             sound_path = Path(sh.base_dir) / self.config.sound_filename
             self._sound = _mixer.Sound(str(sound_path))  # type: ignore[attr-defined]
             self._sound.set_volume(self.config.volume)
-        except Exception:
+        except (FileNotFoundError, PygameError, OSError, RuntimeError, AttributeError, TypeError, ValueError):
             self._load_failed = True
             self._sound = None
 
@@ -66,6 +74,6 @@ class AudioService:
         try:
             if self._sound is not None:
                 self._sound.play()
-        except Exception:
-            # Swallow all audio errors to not impact UX
+        except (PygameError, RuntimeError, AttributeError, TypeError, ValueError):
+            # Swallow expected audio errors to not impact UX
             pass
