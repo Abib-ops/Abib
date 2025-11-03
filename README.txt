@@ -4,11 +4,17 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.03
+Abib v414.04
 ------------
 
 Changelog.
 -----------
+Abib v414.04
+Added Commentary on Galatians and Small Catechism by Martin Luther.
+Conceived an addition of a number of PDF format books that I have downloaded.
+These will not be part of the standard distribution but will only be on the USB key,
+because of the size of the files.
+
 Abib v414.03
 Added Hodges Systematic Theology.
 
