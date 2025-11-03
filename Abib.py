@@ -85,7 +85,7 @@ w: Any | None = None
 
 from PySide6.QtWidgets import (QMainWindow, QWidget,
                                QPlainTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
-                               QPushButton, QHBoxLayout,
+                               QPushButton, QHBoxLayout, QInputDialog,
                                QStatusBar, QFileDialog)
 
 from PySide6.QtGui import (QMouseEvent, QKeyEvent, QSyntaxHighlighter, QColor, QFont,
@@ -466,15 +466,24 @@ def sizer(window_height: int, window_width: int) -> tuple[int, int]:
 
 
 def commentary() -> None:
-    """Commentary key."""
-
-    # Create an instance of CalvinCommentary
-    # calvincom = CalvinCommentary()
-
-    # Access a specific commentary
-    # book_name = "Genesis"
-    # print(f"{book_name} Commentary:", calvincom.get_commentary(book_name))
-    print('Future feature')
+    """Open a Calvin commentary file by letting the user choose from the Calvin folder."""
+    try:
+        calvin_dir = Path(sh.str_cwd) / "Calvin"
+        files = sorted([p for p in calvin_dir.glob("*.txt") if p.is_file()])
+        if not files:
+            QMessageBox.information(None, "Calvin Commentaries", "No commentary files found in the Calvin folder.")
+            return
+        labels = [p.name for p in files]
+        choice, ok = QInputDialog.getItem(None, "Calvin Commentaries", "Open:", labels, 0, False)
+        if ok and choice:
+            path = str(calvin_dir / choice)
+            try:
+                # Use main window method to open or update the external reader window
+                w._open_text_file_in_window(path)
+            except Exception as e:
+                print("Could not open commentary window:", e)
+    except Exception as e:
+        QMessageBox.warning(None, "Calvin Commentaries", f"An error occurred: {e}")
 
 
 class MainWindow(QMainWindow):
@@ -751,11 +760,11 @@ class MainWindow(QMainWindow):
         # Add the horizontal layout to the grid at row 5, column 0
         grid.addLayout(full_buttons_layout, 5, 0)
 
-        self.buttonf13 = QPushButton("")
+        self.buttonf13 = QPushButton("Calvin")
         self.buttonf13.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf13.clicked.connect(commentary)
         grid.addWidget(self.buttonf13, 5, 1)
-        self.buttonf13.setToolTip("Ctrl + Shift + C")
+        self.buttonf13.setToolTip("Open Calvin’s Commentaries (Ctrl+Shift+C)")
         self.buttonf13.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         # Replace the bottom-right "Pilgrim's Progress" button with a combo box of Other Works
