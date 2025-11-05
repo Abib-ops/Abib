@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-03/11/2025
+05/11/2025
 
 """
 
@@ -478,12 +478,12 @@ def commentary() -> None:
         if ok and choice:
             path = str(calvin_dir / choice)
             try:
-                # Use main window method to open or update the external reader window
-                w._open_text_file_in_window(path)
-            except Exception as e:
-                print("Could not open commentary window:", e)
-    except Exception as e:
-        QMessageBox.warning(None, "Calvin Commentaries", f"An error occurred: {e}")
+                # Use the main window method to open or update the external reader window
+                w.open_text_file_in_window(path)
+            except (RuntimeError, FileNotFoundError, OSError, ValueError, AttributeError) as e4:
+                print("Could not open commentary window:", e4)
+    except (OSError, RuntimeError, ValueError) as e5:
+        QMessageBox.warning(None, "Calvin Commentaries", f"An error occurred: {e5}")
 
 
 class MainWindow(QMainWindow):
@@ -555,7 +555,6 @@ class MainWindow(QMainWindow):
 
         # Store a reference to the secondary window to manage its lifecycle
         self.secondary_window = None
-        self.feature = self.feature
 
         # Create keyboard shortcuts via the centralised helper
         self.shortcuts_bundle = setup_shortcuts(self)
@@ -901,6 +900,10 @@ class MainWindow(QMainWindow):
             path = str(pp) if pp.exists() else None
             if path:
                 self._open_text_file_in_window(path)
+
+    def open_text_file_in_window(self, path: str) -> None:
+        """Public wrapper to open or update the external text reader window."""
+        self._open_text_file_in_window(path)
 
     def _open_text_file_in_window(self, path: str) -> None:
         """Open the ExternalTextDocumentWindow with the given file path 

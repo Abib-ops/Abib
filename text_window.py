@@ -5,8 +5,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Set
 
 from PySide6.QtCore import Qt, QEvent, QTimer, QPoint
-from PySide6.QtGui import QColor, QFont, QTextCursor, QTextCharFormat
-from PySide6.QtWidgets import QDialog, QLabel, QVBoxLayout, QTextEdit, QWidget
+from PySide6.QtGui import QColor, QFont, QTextCursor, QTextCharFormat, QPalette
+from PySide6.QtWidgets import QDialog, QLabel, QVBoxLayout, QPlainTextEdit, QWidget, QTextEdit
 
 import fcs
 import scripture
@@ -38,9 +38,27 @@ class TextDocumentWindow(QDialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        self.text_edit = QTextEdit()
+        self.text_edit = QPlainTextEdit()
         self.text_edit.setFont(QFont("Cascadia Mono", 12))
         self.text_edit.setReadOnly(True)
+        # Ensure readable colours regardless of global theme settings
+        is_dark = self.settings.get("theme", "Light") == "Dark"
+        if is_dark:
+            self.text_edit.setStyleSheet("QPlainTextEdit { background-color: #121212; color: #ffffff; }")
+            pal = self.text_edit.palette()
+            pal.setColor(QPalette.ColorRole.Base, QColor("#121212"))
+            pal.setColor(QPalette.ColorRole.Text, QColor("#ffffff"))
+            pal.setColor(QPalette.ColorRole.Highlight, QColor("#2a5adf"))
+            pal.setColor(QPalette.ColorRole.HighlightedText, QColor("#ffffff"))
+            self.text_edit.setPalette(pal)
+        else:
+            self.text_edit.setStyleSheet("QPlainTextEdit { background-color: #ffffff; color: #000000; }")
+            pal = self.text_edit.palette()
+            pal.setColor(QPalette.ColorRole.Base, QColor("#ffffff"))
+            pal.setColor(QPalette.ColorRole.Text, QColor("#000000"))
+            pal.setColor(QPalette.ColorRole.Highlight, QColor("#cce8ff"))
+            pal.setColor(QPalette.ColorRole.HighlightedText, QColor("#000000"))
+            self.text_edit.setPalette(pal)
         self.layout.addWidget(self.text_edit)
 
         # Save scroll position per file
@@ -63,6 +81,8 @@ class TextDocumentWindow(QDialog):
         self._highlight_timer.setInterval(25)
         self._highlight_timer.timeout.connect(self._process_highlight_batch)
         self._cancel_token: int = 0
+        # Extra selections for QPlainTextEdit highlighting
+        self._extra_selections: List[Any] = []
         # Trigger quick visible-range highlight on scroll
         self.text_edit.verticalScrollBar().valueChanged.connect(
             lambda _v: (lambda t=self._cancel_token: QTimer.singleShot(
@@ -74,6 +94,15 @@ class TextDocumentWindow(QDialog):
             self.load_text_file(initial_file_path)
 
         self.canonical_books = scripture.CANONICAL_BOOKS
+
+    def apply_theme(self, is_dark: bool) -> None:
+        """Apply a light/dark theme explicitly to the plain-text editor.
+        Safe to call at any time; keeps text readable regardless of OS palette.
+        """
+        if is_dark:
+            self.text_edit.setStyleSheet("QPlainTextEdit { background-color: #121212; color: #ffffff; }")
+        else:
+            self.text_edit.setStyleSheet("QPlainTextEdit { background-color: #ffffff; color: #000000; }")
 
     def save_scroll_position(self, value: Any) -> None:
         stem = self.current_file_stem
@@ -112,7 +141,7 @@ class TextDocumentWindow(QDialog):
 
             with open(file_path1, 'r', encoding='utf-8') as file1:
                 content = file1.read()
-                self.text_edit.setText(content)
+                self.text_edit.setPlainText(content)
                 self.setWindowTitle(stem)
                 self._start_lazy_highlighting(content)
                 QTimer.singleShot(100, lambda: self.text_edit.verticalScrollBar().setValue(last_position))
@@ -124,9 +153,9 @@ class TextDocumentWindow(QDialog):
                         self.file_selector.setCurrentIndex(idx)
                         self.file_selector.blockSignals(False)
         except FileNotFoundError:
-            self.text_edit.setText("Error: File not found.")
+            self.text_edit.setPlainText("Error: File not found.")
         except (OSError, UnicodeDecodeError, ValueError) as e1:
-            self.text_edit.setText(f"Error loading file: {e1}")
+            self.text_edit.setPlainText(f"Error loading file: {e1}")
 
     def highlight_references(self):
         text = self.text_edit.toPlainText()
@@ -148,16 +177,24 @@ class TextDocumentWindow(QDialog):
 
         cursor = self.text_edit.textCursor()
         cursor.select(QTextCursor.SelectionType.Document)
-        cursor.setCharFormat(QTextCharFormat())
+        # Explicitly set default text colour for entire document to avoid palette/stylesheet conflicts
+        clear_fmt = QTextCharFormat()
+        clear_fmt.setForeground(QColor("black"))
+        clear_fmt.setFontUnderline(False)
+        cursor.setCharFormat(clear_fmt)
 
         self._highlight_timer.stop()
         QTimer.singleShot(0, lambda t=token: self._highlight_visible_now() if t == self._cancel_token else None)
         self._highlight_timer.start()
+        # Apply any collected selections now
+        self.text_edit.setExtraSelections(getattr(self, '_extra_selections', []))
 
-    def _apply_highlights_for_refs(self, base: int, refs: List[Dict[str, Any]], cursor: QTextCursor, fmt: QTextCharFormat) -> None:
-        """Apply highlighting for a set of references on a line.
+    def _apply_highlights_for_refs(self, base: int, refs: List[Dict[str, Any]]) -> None:
+        """Collect highlighting ranges for a set of references on a line.
         Deduplicates by (start, length) using self._ref_index.
+        Applies both ExtraSelections and direct char formatting for robustness.
         """
+        selections: List[Any] = []
         for r in refs:
             start = base + r['start']
             length = r['length']
@@ -165,9 +202,54 @@ class TextDocumentWindow(QDialog):
             if key in self._ref_index:
                 continue
             self._ref_index.add(key)
-            cursor.setPosition(start)
-            cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor, length)
-            cursor.setCharFormat(fmt)
+            selections.append({'cursor_start': start, 'length': length})
+        # Apply selections
+        existing = getattr(self, '_extra_selections', [])
+        # Prepare a reusable format for direct application
+        fmt = QTextCharFormat()
+        blue = QColor(33, 96, 255)
+        fmt.setForeground(blue)
+        try:
+            fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.SingleUnderline)
+        except AttributeError:
+            pass
+        fmt.setFontUnderline(True)
+        try:
+            fmt.setUnderlineColor(blue)
+        except AttributeError:
+            pass
+        for extra in selections:
+            c = self.text_edit.textCursor()
+            c.setPosition(extra['cursor_start'])
+            c.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor, extra['length'])
+            # 1) Add an ExtraSelection (helps on some platforms)
+            es = self._make_extra_selection(c)
+            existing.append(es)
+            # 2) Also directly apply char format to ensure visibility everywhere
+            c.setCharFormat(fmt)
+        self._extra_selections = existing
+
+    @staticmethod
+    def _make_extra_selection(cursor: QTextCursor):
+        sel = QTextEdit.ExtraSelection()
+        sel.cursor = cursor
+        fmt = QTextCharFormat()
+        # Explicit, high-contrast formatting for visibility across themes
+        blue = QColor(33, 96, 255)  # slightly lighter blue for contrast
+        fmt.setForeground(blue)
+        # Set both underline style and flag for maximum compatibility
+        try:
+            fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.SingleUnderline)
+        except AttributeError:
+            pass
+        fmt.setFontUnderline(True)
+        try:
+            fmt.setUnderlineColor(blue)
+        except AttributeError:
+            # Older Qt bindings may not support underline color; ignore
+            pass
+        sel.format = fmt
+        return sel
 
     def _move_popup_to_cursor(self, event, y_offset: int = 60) -> None:
         """Position the tooltip popup relative to the mouse cursor within the text edit.
@@ -194,11 +276,7 @@ class TextDocumentWindow(QDialog):
             self._highlight_timer.stop()
             return
 
-        fmt = QTextCharFormat()
-        fmt.setForeground(QColor("blue"))
-        fmt.setFontUnderline(True)
-
-        cursor = self.text_edit.textCursor()
+        # Do not reset _extra_selections here; accumulate batches so visible highlights are preserved
         for i in range(self._next_line_index, end_index):
             if token != self._cancel_token:
                 return
@@ -209,8 +287,10 @@ class TextDocumentWindow(QDialog):
             refs = self.find_scripture_references(line)
             if not refs:
                 continue
-            self._apply_highlights_for_refs(base, refs, cursor, fmt)
+            self._apply_highlights_for_refs(base, refs)
         self._next_line_index = end_index
+        # Apply the current batch of selections
+        self.text_edit.setExtraSelections(self._extra_selections)
         if self._next_line_index >= len(self._lines):
             self._highlight_timer.stop()
 
@@ -246,10 +326,8 @@ class TextDocumentWindow(QDialog):
         i1 = pos_to_line(max(0, top_pos - 200))
         i2 = pos_to_line(min(bot_pos + 200, self._line_offsets[-1] + len(self._lines[-1])))
 
-        fmt = QTextCharFormat()
-        fmt.setForeground(QColor("blue"))
-        fmt.setFontUnderline(True)
-        cursor = self.text_edit.textCursor()
+        # Reset and rebuild only visible selections
+        self._extra_selections = []
 
         for i in range(i1, min(i2 + 1, len(self._lines))):
             line = self._lines[i]
@@ -257,7 +335,9 @@ class TextDocumentWindow(QDialog):
                 continue
             base = self._line_offsets[i]
             refs = self.find_scripture_references(line)
-            self._apply_highlights_for_refs(base, refs, cursor, fmt)
+            self._apply_highlights_for_refs(base, refs)
+        # Apply updated selections for the visible range
+        self.text_edit.setExtraSelections(self._extra_selections)
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.Type.Leave:

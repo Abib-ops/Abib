@@ -4,13 +4,16 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.05
+Abib v414.06
 ------------
 
 Changelog.
 -----------
+Abib v414.06
+Bugfix
+
 Abib v414.05
-Added Calvin commentaries button to access the Calvin commentaries.
+Added a 'Calvin' button for access to those 45 Calvin commentaries.
 
 Abib v414.04
 Added 'Commentary on Galatians' and 'Small Catechism' by Martin Luther.
