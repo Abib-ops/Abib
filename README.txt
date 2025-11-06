@@ -4,16 +4,24 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.06
+Abib v414.07
 ------------
 
 Changelog.
 -----------
+Abib v414.07
+Changed README.md to be more concise and less technical.
+Improved Dark mode functionality.
+Changed the "Calvin" button's name to "Commentaries".
+Changed the "The Pilgrim's Progress" combo box to default to the last item viewed.
+Fixed the splashscreen bug.
+Removed some unnecessary files.
+
 Abib v414.06
 Bugfix
 
 Abib v414.05
-Added a 'Calvin' button for access to those 45 Calvin commentaries.
+Uses the spare button for Calvin Commentaries Access.
 
 Abib v414.04
 Added 'Commentary on Galatians' and 'Small Catechism' by Martin Luther.

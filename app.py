@@ -4,6 +4,7 @@ from typing import Any, Dict
 
 from PySide6.QtWidgets import QApplication, QSplashScreen
 from PySide6.QtGui import QIcon, QPixmap, QColor
+from PySide6.QtCore import Qt
 
 import shared as sh
 
@@ -17,11 +18,25 @@ import Abib as AbibModule
 from Abib import MainWindow
 
 
-def _show_splash_if_enabled(settings: Dict[str, Any]) -> None:
-    splash_path = sh.current_directory / "images" / "Abib_barley.png"
-    if settings.get("show_splash", False):  # Default to False if the key is missing.
-        splash = QSplashScreen(QPixmap(splash_path))
+def _show_splash_if_enabled(settings: Dict[str, Any]) -> QSplashScreen | None:
+    """Create and show the splash screen if enabled in settings, returning it to keep it alive.
+    The caller is responsible for finishing/closing it once the main window is ready.
+    """
+    try:
+        if not settings.get("show_splash", False):
+            return None
+        splash_path = sh.current_directory / "images" / "Abib_barley.png"
+        pix = QPixmap(str(splash_path))
+        splash = QSplashScreen(pix) if not pix.isNull() else QSplashScreen()
+        # Allow clicks to pass through so the user can interact with the main window beneath
+        try:
+            splash.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+        except Exception:
+            pass
         splash.show()
+        return splash
+    except Exception:
+        return None
 
 
 def _init_screen_metrics(app: QApplication) -> None:
@@ -122,7 +137,12 @@ def run() -> None:
     settings_service = SettingsService()
     settings: Dict[str, Any] = settings_service.settings
 
-    _show_splash_if_enabled(settings)
+    splash = _show_splash_if_enabled(settings)
+    # Expose splash so other modules (e.g., Settings) can control its lifetime
+    try:
+        AbibModule.splash = splash
+    except Exception:
+        pass
 
     if sh.system() == 'Windows':
         app.processEvents()
@@ -158,6 +178,9 @@ def run() -> None:
     app.setWindowIcon(app_icon)
 
     w.show()
+
+    # Keep the splash visible until the user disables it in Settings.
+    # Do not auto-finish here.
 
     # Start the event loop
     from sys import exit as _exit

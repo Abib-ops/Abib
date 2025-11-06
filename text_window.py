@@ -98,11 +98,74 @@ class TextDocumentWindow(QDialog):
     def apply_theme(self, is_dark: bool) -> None:
         """Apply a light/dark theme explicitly to the plain-text editor.
         Safe to call at any time; keeps text readable regardless of OS palette.
+        Also ensures the document text colour updates immediately without needing reload.
         """
         if is_dark:
             self.text_edit.setStyleSheet("QPlainTextEdit { background-color: #121212; color: #ffffff; }")
+            pal = self.text_edit.palette()
+            pal.setColor(QPalette.ColorRole.Base, QColor("#121212"))
+            pal.setColor(QPalette.ColorRole.Text, QColor("#ffffff"))
+            pal.setColor(QPalette.ColorRole.Highlight, QColor("#2a5adf"))
+            pal.setColor(QPalette.ColorRole.HighlightedText, QColor("#ffffff"))
+            self.text_edit.setPalette(pal)
         else:
             self.text_edit.setStyleSheet("QPlainTextEdit { background-color: #ffffff; color: #000000; }")
+            pal = self.text_edit.palette()
+            pal.setColor(QPalette.ColorRole.Base, QColor("#ffffff"))
+            pal.setColor(QPalette.ColorRole.Text, QColor("#000000"))
+            pal.setColor(QPalette.ColorRole.Highlight, QColor("#cce8ff"))
+            pal.setColor(QPalette.ColorRole.HighlightedText, QColor("#000000"))
+            self.text_edit.setPalette(pal)
+
+        # Ensure the document text colour follows the theme immediately.
+        # Previously, the load routine applied an explicit foreground colour to the whole document,
+        # which prevented palette/stylesheet changes from taking effect until reload.
+        try:
+            cursor = self.text_edit.textCursor()
+            # Preserve caret/selection
+            orig_pos = int(cursor.position())
+            orig_anchor = int(cursor.anchor())
+
+            cursor.beginEditBlock()
+            cursor.select(QTextCursor.SelectionType.Document)
+            # Explicitly set the whole document's foreground to match the theme
+            fmt = QTextCharFormat()
+            fmt.setForeground(QColor("#ffffff" if is_dark else "#000000"))
+            cursor.setCharFormat(fmt)
+            cursor.endEditBlock()
+            # Force immediate repaint to ensure a colour change is visible without delay
+            try:
+                self.text_edit.viewport().update()
+            except (AttributeError, RuntimeError):
+                pass
+
+            # Restore caret/selection
+            c2 = self.text_edit.textCursor()
+            c2.setPosition(orig_anchor)
+            if orig_anchor != orig_pos:
+                c2.setPosition(orig_pos, QTextCursor.MoveMode.KeepAnchor)
+            else:
+                c2.setPosition(orig_pos, QTextCursor.MoveMode.MoveAnchor)
+            self.text_edit.setTextCursor(c2)
+
+            # Reapply highlight formats for scripture references to keep them visible
+            fmt_hl = TextDocumentWindow._make_highlight_format()
+            for sel in getattr(self, "_extra_selections", []):
+                try:
+                    c = self.text_edit.textCursor()
+                    start = sel.cursor.selectionStart()
+                    end = sel.cursor.selectionEnd()
+                    c.setPosition(start)
+                    c.setPosition(end, QTextCursor.MoveMode.KeepAnchor)
+                    c.setCharFormat(fmt_hl)
+                except (AttributeError, RuntimeError):
+                    # Ignore cases where underlying Qt objects are already deleted or missing attributes
+                    pass
+            # Re-apply the ExtraSelections overlay too
+            self.text_edit.setExtraSelections(getattr(self, "_extra_selections", []))
+        except (RuntimeError, AttributeError):
+            # Be tolerant: theme changes should not crash the app and ignore deleted Qt objects or missing attributes
+            pass
 
     def save_scroll_position(self, value: Any) -> None:
         stem = self.current_file_stem
@@ -175,13 +238,6 @@ class TextDocumentWindow(QDialog):
             running += len(ln) + 1
         self._next_line_index = 0
 
-        cursor = self.text_edit.textCursor()
-        cursor.select(QTextCursor.SelectionType.Document)
-        # Explicitly set default text colour for entire document to avoid palette/stylesheet conflicts
-        clear_fmt = QTextCharFormat()
-        clear_fmt.setForeground(QColor("black"))
-        clear_fmt.setFontUnderline(False)
-        cursor.setCharFormat(clear_fmt)
 
         self._highlight_timer.stop()
         QTimer.singleShot(0, lambda t=token: self._highlight_visible_now() if t == self._cancel_token else None)
@@ -206,18 +262,7 @@ class TextDocumentWindow(QDialog):
         # Apply selections
         existing = getattr(self, '_extra_selections', [])
         # Prepare a reusable format for direct application
-        fmt = QTextCharFormat()
-        blue = QColor(33, 96, 255)
-        fmt.setForeground(blue)
-        try:
-            fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.SingleUnderline)
-        except AttributeError:
-            pass
-        fmt.setFontUnderline(True)
-        try:
-            fmt.setUnderlineColor(blue)
-        except AttributeError:
-            pass
+        fmt = TextDocumentWindow._make_highlight_format()
         for extra in selections:
             c = self.text_edit.textCursor()
             c.setPosition(extra['cursor_start'])
@@ -225,14 +270,13 @@ class TextDocumentWindow(QDialog):
             # 1) Add an ExtraSelection (helps on some platforms)
             es = self._make_extra_selection(c)
             existing.append(es)
-            # 2) Also directly apply char format to ensure visibility everywhere
+            # 2) Also directly apply the char format to ensure visibility everywhere
             c.setCharFormat(fmt)
         self._extra_selections = existing
 
     @staticmethod
-    def _make_extra_selection(cursor: QTextCursor):
-        sel = QTextEdit.ExtraSelection()
-        sel.cursor = cursor
+    def _make_highlight_format() -> QTextCharFormat:
+        """Create the standard format used to highlight scripture references."""
         fmt = QTextCharFormat()
         # Explicit, high-contrast formatting for visibility across themes
         blue = QColor(33, 96, 255)  # slightly lighter blue for contrast
@@ -246,8 +290,15 @@ class TextDocumentWindow(QDialog):
         try:
             fmt.setUnderlineColor(blue)
         except AttributeError:
-            # Older Qt bindings may not support underline color; ignore
+            # Older Qt bindings may not support underline colour; ignore
             pass
+        return fmt
+
+    @staticmethod
+    def _make_extra_selection(cursor: QTextCursor):
+        sel = QTextEdit.ExtraSelection()
+        sel.cursor = cursor
+        fmt = TextDocumentWindow._make_highlight_format()
         sel.format = fmt
         return sel
 

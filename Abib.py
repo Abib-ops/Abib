@@ -54,20 +54,15 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-05/11/2025
+06/11/2025
 
 """
 
 import re
 import time
-from os import environ
 from sys import exit, setrecursionlimit
 setrecursionlimit(200)
 
-# Suppress pygame welcome message
-environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
-
-# Pygame is solely used for an error sound.
 
 from copy import deepcopy
 from pathlib import Path
@@ -82,14 +77,16 @@ forward = history.forward
 
 # Global window 'handle' placeholder; set by app.run() at startup
 w: Any | None = None
+# Global splash screen reference (kept alive until the user disables it in settings)
+splash: Any | None = None
 
 from PySide6.QtWidgets import (QMainWindow, QWidget,
                                QPlainTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
                                QPushButton, QHBoxLayout, QInputDialog,
-                               QStatusBar, QFileDialog)
+                               QStatusBar, QFileDialog, QSplashScreen)
 
 from PySide6.QtGui import (QMouseEvent, QKeyEvent, QSyntaxHighlighter, QColor, QFont,
-                           QTextCursor, QTextCharFormat)
+                           QTextCursor, QTextCharFormat, QPixmap)
 
 from PySide6.QtCore import Qt, QRect, QEvent
 
@@ -152,8 +149,6 @@ try:
 except (AttributeError, OSError) as e:
     # AttributeError: non-Windows (windll is None); OSError: Windows API failure
     print(f"Error setting APP ID: {e}")
-
-
 
 
 def back_push(current_position: int) -> None:
@@ -759,17 +754,17 @@ class MainWindow(QMainWindow):
         # Add the horizontal layout to the grid at row 5, column 0
         grid.addLayout(full_buttons_layout, 5, 0)
 
-        self.buttonf13 = QPushButton("Calvin")
+        self.buttonf13 = QPushButton("Commentary")
         self.buttonf13.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf13.clicked.connect(commentary)
         grid.addWidget(self.buttonf13, 5, 1)
         self.buttonf13.setToolTip("Open Calvin’s Commentaries (Ctrl+Shift+C)")
         self.buttonf13.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        # Replace the bottom-right "Pilgrim's Progress" button with a combo box of Other Works
+        # Bottom-right: combo box of Other Works (no separate Reader button)
         self.other_works_combo = QComboBox()
-        grid.addWidget(self.other_works_combo, 5, 2)
         self.other_works_combo.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        grid.addWidget(self.other_works_combo, 5, 2)
 
         # Populate the combo with .txt files from 'Other Works'
         other_works_dir = Path(sh.str_cwd) / "Other Works"
@@ -778,8 +773,11 @@ class MainWindow(QMainWindow):
         if self.other_works_map:
             self.other_works_combo.addItems(list(self.other_works_map.keys()))
 
-        # Default to Pilgrims-Progress if present
-        if "Pilgrims-Progress" in self.other_works_map:
+        # Default selection: last viewed item if available; else Pilgrims-Progress; else leave as first item
+        last_work = self.settings.get("last_other_work") if isinstance(self.settings, dict) else None
+        if last_work and last_work in self.other_works_map:
+            self.other_works_combo.setCurrentText(last_work)
+        elif "Pilgrims-Progress" in self.other_works_map:
             self.other_works_combo.setCurrentText("Pilgrims-Progress")
 
         # When selection changes, open or update the document reader window
@@ -910,8 +908,20 @@ class MainWindow(QMainWindow):
            or update existing, then focus it."""
         if getattr(self, "text_edit_window", None) is None:
             self.text_edit_window = ExternalTextDocumentWindow(initial_file_path=path, settings=self.settings, settings_path=getattr(self, "user_settings_path", None))
+            # Apply the current theme to the new window and its editor
+            try:
+                self.text_edit_window.apply_theme(self.theme.state.is_dark_mode)
+            except (RuntimeError, AttributeError):
+                pass
+            # Apply palette to the window; ThemeManager handles internal safety
+            self.theme.apply_widget(self.text_edit_window)
         else:
             self.text_edit_window.load_text_file(path)
+            try:
+                self.text_edit_window.apply_theme(self.theme.state.is_dark_mode)
+            except (RuntimeError, AttributeError):
+                pass
+            self.theme.apply_widget(self.text_edit_window)
         self.text_edit_window.show()
         self.text_edit_window.raise_()
         self.text_edit_window.activateWindow()
@@ -923,7 +933,18 @@ class MainWindow(QMainWindow):
         path = self.other_works_map.get(stem)
         if not path:
             return
+        # Open/update the reader window
         self._open_text_file_in_window(path)
+        # Persist last selected work in settings so the combo defaults next launch
+        try:
+            if isinstance(self.settings, dict):
+                self.settings["last_other_work"] = stem
+                # Save via settings service if available
+                if getattr(self, "settings_service", None):
+                    self.settings_service.save(self.settings)
+        except (OSError, TypeError, ValueError, RuntimeError):
+            # Be tolerant: failure to persist should not break the opening
+            pass
 
     def show_about_dialog(self):
         """Show the 'About' window when Help -> About is clicked."""
@@ -931,7 +952,8 @@ class MainWindow(QMainWindow):
         # Initialize AboutWindow if it hasn't been created
         if self.about_window is None:
             self.about_window = ExtAboutWindow(f"Abib {CURRENT_VERSION}")
-
+        # Apply the theme palette to the About window (apply_widget is internally safe)
+        self.theme.apply_widget(self.about_window)
         self.about_window.show()
         self.about_window.raise_()  # Bring the "About" window to the front
         self.about_window.activateWindow()  # Give the "About" window focus
@@ -1001,6 +1023,8 @@ class MainWindow(QMainWindow):
 
         if self.dlg is None:
             self.dlg = FindDialog(self)
+            # Apply theme palette to Find dialog (apply_widget is internally safe)
+            self.theme.apply_widget(self.dlg)
             self.dlg.exec()
         else:
             self.show_find_window()
@@ -1010,8 +1034,12 @@ class MainWindow(QMainWindow):
 
         if self.dlg is None:
             self.dlg = FindDialog(self)
+            # Apply theme palette to Find dialog (apply_widget is internally safe)
+            self.theme.apply_widget(self.dlg)
             self.dlg.show()
         else:
+            # Ensure the theme is applied before showing
+            self.theme.apply_widget(self.dlg)
             self.dlg.show()
 
     def close_find_window(self) -> None:
@@ -2246,31 +2274,86 @@ class MainWindow(QMainWindow):
             self.setWindowTitle(title)
 
     def open_settings_dialog(self):
-        """Open the settings dialog and update settings if the user confirms."""
+        """Open the settings dialog and update settings if the user confirms.
+        Also, show/hide the splash screen immediately according to the checkbox.
+        """
 
         dialog = SettingsDialog(self)
 
         # Populate the settings dialog with current settings
-        dialog.splash_checkbox.setChecked(self.settings.get("show_splash", False))
+        prev_show_splash = bool(self.settings.get("show_splash", False))
+        dialog.splash_checkbox.setChecked(prev_show_splash)
         dialog.theme_combobox.setCurrentText(self.settings.get("theme", "Light"))
 
-        if dialog.exec():  # If the dialog is accepted (OK button).
+        # Ensure dialog follows current theme palette
+        self.theme.apply_widget(dialog)
 
-            # Get settings from the dialog and explicitly set show_splash
+        if dialog.exec():  # If the dialog is accepted (OK button)
+            # Capture new values
+            new_theme = dialog.theme_combobox.currentText()
+            new_show_splash = dialog.splash_checkbox.isChecked()
 
-            # Ensure the theme is updated
-            self.settings["theme"] = dialog.theme_combobox.currentText()
-            # Ensure the show_splash setting is updated
-            self.settings["show_splash"] = dialog.splash_checkbox.isChecked()
-
-            # DEBUG: Print settings before saving
-            # print(f"DEBUG: Settings before saving: {self.settings}")
+            # Update in-memory settings
+            self.settings["theme"] = new_theme
+            self.settings["show_splash"] = new_show_splash
 
             # Save settings via service
             self.settings_service.save(self.settings)
 
             # Apply theme (if needed)
             self.set_theme(self.settings)
+
+            # Manage splash visibility based on the checkbox change
+            # Use module-level globals maintained by app.run()
+            global splash, w
+            # If turning splash OFF, close any existing splash and clear the global reference
+            if prev_show_splash and not new_show_splash:
+                try:
+                    if splash is not None:
+                        # finish() ensures it hides relative to the main window; close() as fallback
+                        try:
+                            splash.finish(w)
+                        except (RuntimeError, AttributeError, TypeError):
+                            splash.close()
+                except (RuntimeError, AttributeError):
+                    pass
+                splash = None
+
+            # If turning splash ON, when it isn't visible, create and show it
+            if (not prev_show_splash) and new_show_splash:
+                try:
+                    # Only create if not already created
+                    if splash is None:
+                        splash_path = sh.current_directory / "images" / "Abib_barley.png"
+                        pix = QPixmap(str(splash_path))
+                        new_splash = QSplashScreen(pix) if not pix.isNull() else QSplashScreen()
+                        # Show the splash and store the global reference
+                        new_splash.show()
+                        splash = new_splash
+                except (RuntimeError, AttributeError, OSError):
+                    # If anything fails, silently ignore to avoid disrupting the UI
+                    pass
+
+    def _refresh_theme_across_ui(self) -> None:
+        """Apply the app palette, style the main editor, update secondary windows, and
+        re-theme any open dialogs/windows.
+         Centralised to avoid duplication."""
+        # Apply application-wide palette first so dialogs/menus follow suit
+        self.theme.apply_app_palette()
+        # Apply to the main editor and secondary window
+        self.theme.apply_to_editor(self.textEditor)
+        self.update_text_display_theme()
+        # Also refresh any currently open dialogs/windows
+        if getattr(self, 'dlg', None):
+            self.theme.apply_widget(self.dlg)
+        if getattr(self, 'about_window', None):
+            self.theme.apply_widget(self.about_window)
+        if getattr(self, 'text_edit_window', None):
+            try:
+                self.text_edit_window.apply_theme(self.theme.state.is_dark_mode)
+            except (RuntimeError, AttributeError):
+                pass
+            self.theme.apply_widget(self.text_edit_window)
 
     def set_theme(self, the_settings):
         """Apply the theme from settings using ThemeManager without legacy globals."""
@@ -2281,9 +2364,8 @@ class MainWindow(QMainWindow):
         # Set ThemeManager state explicitly to match settings
         self.theme.state.is_dark_mode = (current_theme == 'Dark')
 
-        # Apply to the main editor and secondary window
-        self.theme.apply_to_editor(self.textEditor)
-        self.update_text_display_theme()
+        # Apply the palette and refresh all open UI elements
+        self._refresh_theme_across_ui()
 
         # Ensure settings reflect what's applied and persist
         self.settings[theme_key] = 'Dark' if self.theme.state.is_dark_mode else 'Light'
@@ -2345,9 +2427,8 @@ class MainWindow(QMainWindow):
         self.settings["theme"] = "Dark" if is_dark else "Light"
         self.settings_service.save(self.settings)
 
-        # Apply to the main editor and secondary window
-        self.theme.apply_to_editor(self.textEditor)
-        self.update_text_display_theme()
+        # Apply the palette and refresh all open UI elements
+        self._refresh_theme_across_ui()
 
     def update_text_display_theme(self) -> None:
         """Update the text display theme using ThemeManager."""

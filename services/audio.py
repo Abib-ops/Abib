@@ -6,74 +6,77 @@ from typing import Optional
 
 import shared as sh
 
-try:
-    # Import lazily available pygame mixer
-    from pygame import mixer as _mixer  # type: ignore
-    try:
-        # Optional: specific pygame error type for finer exception handling
-        from pygame import error as PygameError  # type: ignore
-    except ImportError:  # pragma: no cover - fallback if pygame.error not available
-        class PygameError(Exception):
-            pass
+# Prefer Qt's own lightweight audio for short UI sounds
+try:  # pragma: no cover - import guarded for environments without Qt
+    from PySide6.QtCore import QUrl
+    from PySide6.QtMultimedia import QSoundEffect
 except ImportError:  # pragma: no cover
-    _mixer = None  # type: ignore
-    class PygameError(Exception):
-        pass
+    QSoundEffect = None  # type: ignore
+    QUrl = None  # type: ignore
 
 
 @dataclass
 class AudioConfig:
-    sound_filename: str = "sound.mp3"
-    volume: float = 0.5  # 50%
+    sound_filename: str = "sound.wav"  # Use a small WAV for best cross-platform reliability
+    volume: float = 0.5  # 0.0–1.0
 
 
 class AudioService:
-    """Tiny wrapper around pygame.mixer to play short UI sounds.
+    """Play a short UI sound using Qt’s audio stack (QSoundEffect).
 
-    - Lazy-initialises the mixer on first use.
-    - Loads the sound file from the application base directory.
-    - Fails gracefully if pygame or the sound file is unavailable.
+    - No external dependencies beyond PySide6.
+    - Lazily loads the sound and keeps a persistent effect instance.
+    - Fails gracefully if multimedia backends are unavailable.
     """
 
     def __init__(self, config: Optional[AudioConfig] = None) -> None:
         self.config = config or AudioConfig()
-        self._initialized = False
-        self._load_failed = False
-        self._sound = None
+        self._effect: Optional["QSoundEffect"] = None
+        self._load_failed: bool = False
+        # Lazy load on first play
 
-    def _init(self) -> None:
-        if self._initialized or self._load_failed:
+    def _ensure_loaded(self) -> None:
+        if self._load_failed or self._effect is not None:
             return
-        if _mixer is None:
+        # If Qt Multimedia is not available, disable audio gracefully
+        if QSoundEffect is None or QUrl is None:
             self._load_failed = True
             return
         try:
-            _mixer.init()
-            self._initialized = True
-        except (PygameError, OSError, RuntimeError):
-            self._load_failed = True
-
-    def _ensure_sound_loaded(self) -> None:
-        if self._load_failed:
-            return
-        if not self._initialized:
-            self._init()
-        if self._load_failed or not self._initialized or self._sound is not None:
-            return
-        try:
+            effect = QSoundEffect()
+            # Build file URL
             sound_path = Path(sh.base_dir) / self.config.sound_filename
-            self._sound = _mixer.Sound(str(sound_path))  # type: ignore[attr-defined]
-            self._sound.set_volume(self.config.volume)
-        except (FileNotFoundError, PygameError, OSError, RuntimeError, AttributeError, TypeError, ValueError):
+            url = QUrl.fromLocalFile(str(sound_path))
+            effect.setSource(url)
+            # Volume range is 0.0–1.0
+            try:
+                effect.setVolume(float(self.config.volume))
+            except (TypeError, ValueError, AttributeError):
+                # Older bindings may use int 0–100; attempt fallback
+                try:
+                    effect.setVolume(int(self.config.volume * 100))  # type: ignore[arg-type]
+                except (TypeError, ValueError, AttributeError):
+                    pass
+            # Keep a persistent instance so the backend stays initialised
+            self._effect = effect
+        except (RuntimeError, AttributeError, OSError):
+            # Any failure here disables audio but must never crash the app
+            self._effect = None
             self._load_failed = True
-            self._sound = None
 
     def play_error(self) -> None:
         """Play the error/beep sound if available. Non-blocking, no exceptions."""
-        self._ensure_sound_loaded()
+        self._ensure_loaded()
         try:
-            if self._sound is not None:
-                self._sound.play()
-        except (PygameError, RuntimeError, AttributeError, TypeError, ValueError):
-            # Swallow expected audio errors to not impact UX
+            if self._effect is not None:
+                # Restart the effect if it is already playing to ensure a fresh clicky beep
+                try:
+                    if getattr(self._effect, "isPlaying", None) and self._effect.isPlaying():  # type: ignore[func-returns-value]
+                        self._effect.stop()
+                except (AttributeError, RuntimeError, TypeError):
+                    # isPlaying() may not be present or may throw if the backend is missing
+                    pass
+                self._effect.play()
+        except (RuntimeError, AttributeError):
+            # Be tolerant: no audio should not impact UX
             pass
