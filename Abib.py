@@ -891,9 +891,9 @@ class MainWindow(QMainWindow):
         if current_stem and hasattr(self, "other_works_map"):
             self._open_other_work(current_stem)
         else:
-            # Fallback: open default Pilgrims-Progress if available
+            # Fallback: open default Pilgrims Progress if available
             other_works_dir = Path(sh.str_cwd) / "Other Works"
-            pp = other_works_dir / "The Pilgrim's Progress.txt"
+            pp = other_works_dir / "Pilgrims-Progress.txt"
             path = str(pp) if pp.exists() else None
             if path:
                 self._open_text_file_in_window(path)
