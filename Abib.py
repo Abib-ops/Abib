@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-06/11/2025
+08/11/2025
 
 """
 
@@ -62,7 +62,6 @@ import re
 import time
 from sys import exit, setrecursionlimit
 setrecursionlimit(200)
-
 
 from copy import deepcopy
 from pathlib import Path
@@ -894,7 +893,7 @@ class MainWindow(QMainWindow):
         else:
             # Fallback: open default Pilgrims-Progress if available
             other_works_dir = Path(sh.str_cwd) / "Other Works"
-            pp = other_works_dir / "Pilgrims-Progress.txt"
+            pp = other_works_dir / "The Pilgrim's Progress.txt"
             path = str(pp) if pp.exists() else None
             if path:
                 self._open_text_file_in_window(path)
@@ -2498,10 +2497,6 @@ class SyntaxHighlighter(QSyntaxHighlighter):
                 self.length = len(w.key) + self.keyinc
             self.setFormat(self.position, self.length, self.fmt)
             # print(f'Block {blockNumber} {KJV[blockNumber]}')
-
-
-
-
 
 
 if __name__ == '__main__':

@@ -299,7 +299,6 @@ def load_settings_from_file(filename="settings.json") -> Any:
     default_settings = {
         "theme": "Light",
         "show_splash": False,
-        "last_read_position": 0,
         "devotional_font_size": 12,
         "bible_font_size": 12,
         # Window position and size settings
@@ -315,7 +314,7 @@ def load_settings_from_file(filename="settings.json") -> Any:
             "width": 350,
             "height": 400
         },
-        "pilgrims_progress_window": {
+        "reader_window": {
             "x": 51,
             "y": 485,
             "width": 737,
@@ -356,6 +355,16 @@ def load_settings_from_file(filename="settings.json") -> Any:
                             settings_here[key].setdefault(sub_key, sub_value)
                 else:
                     settings_here.setdefault(key, value)
+
+            # Clean up deprecated/unused keys to keep settings lean and avoid confusion
+            changed = False
+            if "pilgrims_progress_window" in settings_here:
+                del settings_here["pilgrims_progress_window"]
+                changed = True
+
+            # Persist clean-up if anything was removed
+            if changed:
+                save_settings_to_file(settings_here)
 
             return settings_here
 

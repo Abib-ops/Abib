@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
-from typing import Tuple
+from typing import Tuple, Any, cast
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
-from find import UiDialog
+from ui_find import Ui_Dialog as UiDialog
 
 
 class FindDialog(QDialog):
@@ -32,11 +32,22 @@ class FindDialog(QDialog):
         self.setGeometry(700, 300, 400, 378)
 
         self.ui.lineEdit_1.setToolTip("press RETURN to find")
-        self.ui.lineEdit_1.returnPressed.connect(self.getter)
+        cast(Any, self.ui.lineEdit_1.returnPressed).connect(self.getter)
         self.ui.lineEdit_1.setClearButtonEnabled(False)
         self.ui.lineEdit_1.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        # Associate label mnemonic with the line edit (moved from ui_find.py)
+        self.ui.label.setBuddy(self.ui.lineEdit_1)
 
-        self.ui.pushButton_1.clicked.connect(self.ui.lineEdit_1.clear)
+        cast(Any, self.ui.pushButton_1.clicked).connect(lambda _b: self.ui.lineEdit_1.clear())
+        # Mirror Designer-time connections previously in ui_find.py
+        cast(Any, self.ui.radiobutton_5.clicked).connect(lambda _b: self.ui.radiobutton_4.show())
+        cast(Any, self.ui.radiobutton_5.clicked).connect(lambda _b: self.ui.radiobutton_3.show())
+        cast(Any, self.ui.radiobutton_5.clicked).connect(lambda _b: self.ui.radiobutton_2.show())
+        cast(Any, self.ui.radiobutton_5.clicked).connect(lambda _b: self.ui.radiobutton_1.show())
+        cast(Any, self.ui.radiobutton_6.clicked).connect(lambda _b: self.ui.radiobutton_1.hide())
+        cast(Any, self.ui.radiobutton_6.clicked).connect(lambda _b: self.ui.radiobutton_2.hide())
+        cast(Any, self.ui.radiobutton_6.clicked).connect(lambda _b: self.ui.radiobutton_3.hide())
+        cast(Any, self.ui.radiobutton_6.clicked).connect(lambda _b: self.ui.radiobutton_4.hide())
 
         # Populate book range comboboxes from the parent window state
         if hasattr(self._main, "nwin") and isinstance(self._main.nwin, list):
@@ -55,13 +66,13 @@ class FindDialog(QDialog):
         QOk = QDialogButtonBox.StandardButton.Ok
         self.ui.buttonBox.button(QOk).setEnabled(True)
         self.ui.buttonBox.button(QOk).setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.buttonBox.button(QOk).clicked.connect(self.getter)
+        cast(Any, self.ui.buttonBox.button(QOk).clicked).connect(lambda _b: self.getter())
         QCancel = QDialogButtonBox.StandardButton.Cancel
         self.ui.buttonBox.button(QCancel).setEnabled(True)
         self.ui.buttonBox.button(QCancel).setFocusPolicy(Qt.FocusPolicy.NoFocus)
         # Use parent's close handler
         if hasattr(self._main, "close_find_window"):
-            self.ui.buttonBox.button(QCancel).clicked.connect(self._main.close_find_window)
+            cast(Any, self.ui.buttonBox.button(QCancel).clicked).connect(lambda _b: self._main.close_find_window())
 
         self.ui.lineEdit_1.setFocus()
 
@@ -75,11 +86,11 @@ class FindDialog(QDialog):
         self.ui.radiobutton_6.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.ui.checkBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        self.ui.lineEdit_1.textChanged.connect(self.ui.lineEdit_1.setFocus)
+        cast(Any, self.ui.lineEdit_1.textChanged).connect(lambda _t: self.ui.lineEdit_1.setFocus())
         self.ui.pushButton_1.hide()
 
         # Dynamically show/hide the clear button based on text presence
-        self.ui.lineEdit_1.textChanged.connect(self.toggle_clear_button)
+        cast(Any, self.ui.lineEdit_1.textChanged).connect(lambda _t: self.toggle_clear_button())
 
     def toggle_clear_button(self) -> None:
         if self.ui.lineEdit_1.text():
@@ -95,7 +106,7 @@ class FindDialog(QDialog):
         i, j = self.get_scope()
         self.get_checks()
         if hasattr(self._main, "findf3"):
-            # mirror previous behaviour by setting parent's key and calling findf3
+            # mirror previous behaviour by setting the parent's key and calling findf3
             setattr(self._main, "key", key)
             self._main.findf3(i, j)
         if hasattr(self._main, "close_find_window"):

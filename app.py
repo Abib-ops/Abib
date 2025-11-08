@@ -22,21 +22,19 @@ def _show_splash_if_enabled(settings: Dict[str, Any]) -> QSplashScreen | None:
     """Create and show the splash screen if enabled in settings, returning it to keep it alive.
     The caller is responsible for finishing/closing it once the main window is ready.
     """
-    try:
-        if not settings.get("show_splash", False):
-            return None
-        splash_path = sh.current_directory / "images" / "Abib_barley.png"
-        pix = QPixmap(str(splash_path))
-        splash = QSplashScreen(pix) if not pix.isNull() else QSplashScreen()
-        # Allow clicks to pass through so the user can interact with the main window beneath
-        try:
-            splash.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
-        except Exception:
-            pass
-        splash.show()
-        return splash
-    except Exception:
+    if not settings.get("show_splash", False):
         return None
+    splash_path = sh.current_directory / "images" / "Abib_barley.png"
+    pix = QPixmap(str(splash_path))
+    splash = QSplashScreen(pix) if not pix.isNull() else QSplashScreen()
+    # Allow clicks to pass through so the user can interact with the main window beneath
+    try:
+        splash.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+    except (AttributeError, TypeError, RuntimeError):
+        # Ignore if the attribute is unavailable or not supported on this platform/Qt version
+        pass
+    splash.show()
+    return splash
 
 
 def _init_screen_metrics(app: QApplication) -> None:
@@ -138,11 +136,8 @@ def run() -> None:
     settings: Dict[str, Any] = settings_service.settings
 
     splash = _show_splash_if_enabled(settings)
-    # Expose splash so other modules (e.g., Settings) can control its lifetime
-    try:
-        AbibModule.splash = splash
-    except Exception:
-        pass
+    # Expose splash so other modules (e.g. Settings) can control its lifetime
+    AbibModule.splash = splash
 
     if sh.system() == 'Windows':
         app.processEvents()

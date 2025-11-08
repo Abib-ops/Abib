@@ -28,7 +28,7 @@ class TextDocumentWindow(QDialog):
         self.setWindowTitle("Text Reader")
 
         # Load window geometry from settings
-        x8, y8, width8, height8 = fcs.get_window_geometry("pilgrims_progress_window")
+        x8, y8, width8, height8 = fcs.get_window_geometry("reader_window")
         self.setGeometry(x8, y8, width8, height8)
 
         # Load Bible data
@@ -174,9 +174,6 @@ class TextDocumentWindow(QDialog):
             self.settings["last_read_positions"] = {}
         if stem:
             self.settings["last_read_positions"][stem] = int(value)
-        else:
-            # Fallback: keep previous single-position behaviour
-            self.settings["last_read_position"] = int(value)
         # Persist the settings to disk
         if self.settings_path:
             fcs.save_settings_to_file(self.settings, self.settings_path)
@@ -185,7 +182,7 @@ class TextDocumentWindow(QDialog):
 
     def closeEvent(self, event):
         geometry = self.geometry()
-        fcs.save_window_geometry("pilgrims_progress_window",
+        fcs.save_window_geometry("reader_window",
                                  geometry.x(), geometry.y(),
                                  geometry.width(), geometry.height())
         event.accept()
@@ -198,9 +195,9 @@ class TextDocumentWindow(QDialog):
             stem = p.stem
             self.current_file_stem = stem
 
-            # Determine the last position: prefer a per-file map, fallback to legacy single value
+            # Determine the last position from the per-file map; default to 0 if missing
             positions = self.settings.get("last_read_positions", {}) or {}
-            last_position = int(positions.get(stem, self.settings.get("last_read_position", 0)))
+            last_position = int(positions.get(stem, 0))
 
             with open(file_path1, 'r', encoding='utf-8') as file1:
                 content = file1.read()

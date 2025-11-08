@@ -1,3 +1,6 @@
+# flake8: noqa
+# pylint: skip-file
+# ruff: noqa
 # -*- coding: utf-8 -*-
 
 ################################################################################
@@ -8,11 +11,7 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect, Qt)
-# from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
-#                            QFont, QFontDatabase, QGradient, QIcon,
-#                            QImage, QKeySequence, QLinearGradient, QPainter,
-#                            QPalette, QPixmap, QRadialGradient, QTransform)
+from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect)
 from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QComboBox, QDialogButtonBox, QFrame,
                                QLabel, QLineEdit, QPushButton, QRadioButton, QWidget)
 
@@ -147,26 +146,7 @@ class Ui_Dialog(object):
         self.radiobutton_4.raise_()
         self.buttonBox.raise_()
 
-        # Allow focus only for lineEdit_1
-        self.lineEdit_1.setFocusPolicy(Qt.StrongFocus)
-
-        # Disable focus for all other widgets
-        self.frame.setFocusPolicy(Qt.NoFocus)
-        self.frame_2.setFocusPolicy(Qt.NoFocus)
-        self.frame_3.setFocusPolicy(Qt.NoFocus)
-        self.checkBox.setFocusPolicy(Qt.NoFocus)
-        self.pushButton_1.setFocusPolicy(Qt.NoFocus)
-        self.comboBox_1.setFocusPolicy(Qt.NoFocus)
-        self.comboBox_2.setFocusPolicy(Qt.NoFocus)
-        self.radiobutton_1.setFocusPolicy(Qt.NoFocus)
-        self.radiobutton_2.setFocusPolicy(Qt.NoFocus)
-        self.radiobutton_3.setFocusPolicy(Qt.NoFocus)
-        self.radiobutton_4.setFocusPolicy(Qt.NoFocus)
-        self.radiobutton_5.setFocusPolicy(Qt.NoFocus)
-        self.radiobutton_6.setFocusPolicy(Qt.NoFocus)
-        self.buttonBox.setFocusPolicy(Qt.NoFocus)
-
-        self.label.setBuddy(self.lineEdit_1)
+        # Behaviour moved to FindDialog; keep this file UI-only
 
         QWidget.setTabOrder(self.lineEdit_1, self.pushButton_1)
         # QWidget.setTabOrder(self.pushButton_1, self.radiobutton_1)
@@ -180,15 +160,6 @@ class Ui_Dialog(object):
         # QWidget.setTabOrder(self.comboBox_1, self.comboBox_2)
 
         self.retranslateUi(Dialog)
-        self.pushButton_1.clicked.connect(self.lineEdit_1.clear)
-        self.radiobutton_5.clicked.connect(self.radiobutton_4.show)
-        self.radiobutton_5.clicked.connect(self.radiobutton_3.show)
-        self.radiobutton_5.clicked.connect(self.radiobutton_2.show)
-        self.radiobutton_5.clicked.connect(self.radiobutton_1.show)
-        self.radiobutton_6.clicked.connect(self.radiobutton_1.hide)
-        self.radiobutton_6.clicked.connect(self.radiobutton_2.hide)
-        self.radiobutton_6.clicked.connect(self.radiobutton_3.hide)
-        self.radiobutton_6.clicked.connect(self.radiobutton_4.hide)
 
         QMetaObject.connectSlotsByName(Dialog)
     # setupUi
