@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Protocol
+from typing import Optional, Protocol, cast, Any, TYPE_CHECKING
 
 try:
     # Import only the minimal Qt classes we need to type the editor and widgets
@@ -13,6 +13,14 @@ except ImportError:  # pragma: no cover - allows importing this module without Q
     QWidget = object  # type: ignore
     QPalette = object  # type: ignore
     QColor = object  # type: ignore
+
+# Typing-only aliases to satisfy static analysers even when Qt is absent at runtime
+# Use real Qt types during static typing; fall back to Any at runtime without Qt.
+if TYPE_CHECKING:  # pragma: no cover - typing aid only
+    from PySide6.QtGui import QPalette as QPaletteT, QColor as QColorT  # type: ignore
+else:
+    from typing import Any as QPaletteT  # type: ignore
+    from typing import Any as QColorT  # type: ignore
 
 
 @dataclass
@@ -45,7 +53,8 @@ class ThemeManager:
         return self.state.is_dark_mode
 
     # ---- Palettes ----
-    def _build_dark_palette(self) -> QPalette:
+    @staticmethod
+    def _build_dark_palette() -> QPaletteT:
         pal = QPalette()
         # Window background and text
         pal.setColor(QPalette.ColorRole.Window, QColor(18, 18, 18))
@@ -64,9 +73,10 @@ class ThemeManager:
         # Tooltips
         pal.setColor(QPalette.ColorRole.ToolTipBase, QColor(40, 40, 40))
         pal.setColor(QPalette.ColorRole.ToolTipText, QColor(240, 240, 240))
-        return pal
+        return cast(QPaletteT, pal)
 
-    def _build_light_palette(self) -> QPalette:
+    @staticmethod
+    def _build_light_palette() -> QPaletteT:
         pal = QPalette()
         pal.setColor(QPalette.ColorRole.Window, QColor(255, 255, 255))
         pal.setColor(QPalette.ColorRole.WindowText, QColor(0, 0, 0))
@@ -80,21 +90,21 @@ class ThemeManager:
         pal.setColor(QPalette.ColorRole.HighlightedText, QColor(0, 0, 0))
         pal.setColor(QPalette.ColorRole.ToolTipBase, QColor(255, 255, 220))
         pal.setColor(QPalette.ColorRole.ToolTipText, QColor(0, 0, 0))
-        return pal
+        return cast(QPaletteT, pal)
 
     def apply_app_palette(self) -> None:
         """Apply the current theme's palette to the QApplication (if available)."""
         try:
             app = QApplication.instance()
-        except Exception:
+        except (RuntimeError, AttributeError, TypeError):
             app = None
         if not app:
             return
         pal = self._build_dark_palette() if self.state.is_dark_mode else self._build_light_palette()
-        app.setPalette(pal)
-        # ToolTip styling (Qt ignores palette for tooltip background sometimes)
+        QApplication.setPalette(cast(QPaletteT, pal))
+        # ToolTip styling (Qt ignores palette for a tooltip background sometimes)
         if self.state.is_dark_mode:
-            app.setStyleSheet(
+            cast(Any, app).setStyleSheet(
                 """
                 QToolTip { color: #f0f0f0; background-color: #282828; border: 1px solid #3a3a3a; }
                 QMenu { background-color: #222222; color: #f0f0f0; border: 1px solid #3a3a3a; }
@@ -106,7 +116,7 @@ class ThemeManager:
                 """
             )
         else:
-            app.setStyleSheet("")
+            cast(Any, app).setStyleSheet("")
 
     # ---- Apply helpers ----
     def apply_to_editor(self, editor: Optional[EditorWithStyleSheet]) -> None:
@@ -132,13 +142,14 @@ class ThemeManager:
             )
 
     def apply_widget(self, widget: Optional[QWidget]) -> None:
-        """Apply current palette to a specific widget (useful for dialogs)."""
+        """Apply the current palette to a specific widget (useful for dialogs)."""
         if widget is None:
             return
         pal = self._build_dark_palette() if self.state.is_dark_mode else self._build_light_palette()
         try:
-            widget.setPalette(pal)
-        except Exception:
+            cast(Any, widget).setPalette(cast(QPaletteT, pal))
+        except (AttributeError, RuntimeError, TypeError, ValueError):
+            # Be tolerant of the Qt object lifecycle and type issues but avoid swallowing all exceptions
             pass
 
     def apply_to_secondary(self, secondary_window: Optional[ThemeApplier]) -> None:

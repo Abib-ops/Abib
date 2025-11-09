@@ -24,7 +24,7 @@ class PrintingService:
     def print_plain_text(editor: Optional[EditorPrinter], parent: Optional[QWidget] = None) -> bool:
         """Open a print dialog and print the given plain text editor.
 
-        Returns True if a print job was accepted and attempted; False if canceled
+        Returns True if a print job was accepted and attempted; False if cancelled,
         or editor is None.
         """
         if editor is None:

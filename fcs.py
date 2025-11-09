@@ -19,6 +19,104 @@ from typing import cast
 
 import re
 
+
+def get_default_settings() -> Any:
+    """Return a fresh copy of Abib's default settings dictionary.
+    This centralises defaults so other components (e.g. Settings dialog reset)
+    can align with the same values used by load_settings_from_file.
+    """
+    return {
+        "theme": "Dark",
+        "show_splash": False,
+        "devotional_font_size": 12,
+        "bible_font_size": 12,
+        # Window position and size settings
+        "main_window": {
+            "x": 50,
+            "y": 50,
+            "width": 500,
+            "height": 400
+        },
+        "devotional_window": {
+            "x": 560,
+            "y": 50,
+            "width": 350,
+            "height": 400
+        },
+        "reader_window": {
+            "x": 51,
+            "y": 485,
+            "width": 737,
+            "height": 400
+        },
+        "_comment": "This is a comment. It will be ignored by the program...",
+        "last_other_work": "Election A. W. Pink",
+        "last_read_positions": {
+            "Pilgrims-Progress": 624,
+            "Institutes": 0,
+            "Naves Topical Bible": 0,
+            "Calvin - Commentaries": 0,
+            "Catechisms John Owen": 0,
+            "Commentary on Galatians Luther": 0,
+            "Election A. W. Pink": 0,
+            "Election C. D. Cole": 0,
+            "Of Prayer - Calvin": 0,
+            "Pneumatologia": 0,
+            "Puritan Catechism": 0,
+            "Sermons on Proverbs": 0,
+            "Small Catechism Luther": 0,
+            "Systematic Theology - Vol. I": 0,
+            "Systematic Theology - Vol. II": 0,
+            "Systematic Theology - Vol. III": 0,
+            "The Holy War": 0,
+            "calcom01": 15,
+            "calcom02": 15,
+            "calcom03": 15,
+            "calcom04": 15,
+            "calcom06": 15,
+            "calcom07": 15,
+            "calcom08": 15,
+            "calcom09": 15,
+            "calcom10": 15,
+            "calcom11": 30,
+            "calcom12": 30,
+            "calcom13": 30,
+            "calcom14": 30,
+            "calcom15": 30,
+            "calcom16": 30,
+            "calcom17": 36,
+            "calcom18": 36,
+            "calcom19": 36,
+            "calcom20": 36,
+            "calcom21": 15,
+            "calcom22": 15,
+            "calcom23": 15,
+            "calcom24": 15,
+            "calcom25": 15,
+            "calcom26": 15,
+            "calcom27": 15,
+            "calcom28": 15,
+            "calcom29": 15,
+            "calcom30": 15,
+            "calcom31": 15,
+            "calcom32": 15,
+            "calcom33": 15,
+            "calcom34": 15,
+            "calcom35": 15,
+            "calcom36": 15,
+            "calcom37": 15,
+            "calcom38": 15,
+            "calcom39": 15,
+            "calcom40": 0,
+            "calcom41": 15,
+            "calcom42": 15,
+            "calcom43": 15,
+            "calcom44": 15,
+            "calcom45": 15,
+            "calcom05": 15
+        }
+    }
+
 def get_screen_size() -> tuple[int, int]:
     """Get the primary screen dimensions."""
 
@@ -296,97 +394,7 @@ def load_settings_from_file(filename="settings.json") -> Any:
     If the file is missing, empty, malformed, or has partial settings, return defaults.
     """
     # Default settings
-    default_settings = {
-        "theme": "Dark",
-        "show_splash": False,
-        "devotional_font_size": 12,
-        "bible_font_size": 12,
-        # Window position and size settings
-        "main_window": {
-            "x": 50,
-            "y": 50,
-            "width": 500,
-            "height": 400
-        },
-        "devotional_window": {
-            "x": 560,
-            "y": 50,
-            "width": 350,
-            "height": 400
-        },
-        "reader_window": {
-            "x": 51,
-            "y": 485,
-            "width": 737,
-            "height": 400
-        },
-        "_comment": "This is a comment. It will be ignored by the program...",
-        "last_other_work": "Election A. W. Pink",
-        "last_read_positions": {
-            "Pilgrims-Progress": 624,
-            "Institutes": 0,
-            "Naves Topical Bible": 0,
-            "Calvin - Commentaries": 0,
-            "Catechisms John Owen": 0,
-            "Commentary on Galatians Luther": 0,
-            "Election A. W. Pink": 0,
-            "Election C. D. Cole": 0,
-            "Of Prayer - Calvin": 0,
-            "Pneumatologia": 0,
-            "Puritan Catechism": 0,
-            "Sermons on Proverbs": 0,
-            "Small Catechism Luther": 0,
-            "Systematic Theology - Vol. I": 0,
-            "Systematic Theology - Vol. II": 0,
-            "Systematic Theology - Vol. III": 0,
-            "The Holy War": 0,
-            "calcom01": 15,
-            "calcom02": 15,
-            "calcom03": 15,
-            "calcom04": 15,
-            "calcom06": 15,
-            "calcom07": 15,
-            "calcom08": 15,
-            "calcom09": 15,
-            "calcom10": 15,
-            "calcom11": 30,
-            "calcom12": 30,
-            "calcom13": 30,
-            "calcom14": 30,
-            "calcom15": 30,
-            "calcom16": 30,
-            "calcom17": 36,
-            "calcom18": 36,
-            "calcom19": 36,
-            "calcom20": 36,
-            "calcom21": 15,
-            "calcom22": 15,
-            "calcom23": 15,
-            "calcom24": 15,
-            "calcom25": 15,
-            "calcom26": 15,
-            "calcom27": 15,
-            "calcom28": 15,
-            "calcom29": 15,
-            "calcom30": 15,
-            "calcom31": 15,
-            "calcom32": 15,
-            "calcom33": 15,
-            "calcom34": 15,
-            "calcom35": 15,
-            "calcom36": 15,
-            "calcom37": 15,
-            "calcom38": 15,
-            "calcom39": 15,
-            "calcom40": 0,
-            "calcom41": 15,
-            "calcom42": 15,
-            "calcom43": 15,
-            "calcom44": 15,
-            "calcom45": 15,
-            "calcom05": 15
-        }
-    }
+    default_settings = get_default_settings()
 
     # Check if the file exists
     settings_dir = Path(sh.user_settings_dir)

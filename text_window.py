@@ -38,6 +38,17 @@ class TextDocumentWindow(QDialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
+        # One-click: Reset scroll for this text
+        try:
+            from PySide6.QtWidgets import QPushButton
+            self.reset_scroll_btn = QPushButton("Reset scroll for this text")
+            self.reset_scroll_btn.setToolTip("Set the saved position for this text to the top (0) and scroll there")
+            self.reset_scroll_btn.clicked.connect(self.reset_scroll_for_current_text)
+            self.layout.addWidget(self.reset_scroll_btn)
+        except (ImportError, AttributeError, RuntimeError, TypeError):
+            # If QPushButton is unavailable for any reason, skip the button gracefully
+            self.reset_scroll_btn = None
+
         self.text_edit = QPlainTextEdit()
         self.text_edit.setFont(QFont("Cascadia Mono", 12))
         self.text_edit.setReadOnly(True)
@@ -306,6 +317,47 @@ class TextDocumentWindow(QDialog):
             return
         stem = self.current_file_stem
         self._save_scroll_for(stem, value)
+
+    def reset_scroll_for_current_text(self) -> None:
+        """One-click action: reset the saved scroll for the current text to 0 and scroll to the top.
+        Preserves exact key behaviour; does not rename or migrate any settings keys.
+        """
+        stem = getattr(self, "current_file_stem", None)
+        if not stem:
+            return
+        try:
+            # Ensure dict exists
+            if not isinstance(self.settings.get("last_read_positions"), dict):
+                self.settings["last_read_positions"] = {}
+            self.settings["last_read_positions"][stem] = 0
+            # Persist the settings to disk
+            if self.settings_path:
+                fcs.save_settings_to_file(self.settings, self.settings_path)
+            else:
+                fcs.save_settings_to_file(self.settings)
+        except (ValueError, TypeError, OSError):
+            # Non-fatal: if persisting fails, still attempt to scroll to the top
+            pass
+        # Programmatically scroll to the top without triggering a save write-back race
+        try:
+            self._is_loading = True
+            sb = self.text_edit.verticalScrollBar()
+            try:
+                max_now = int(sb.maximum())
+            except (AttributeError, RuntimeError, TypeError, ValueError):
+                max_now = 0
+            if max_now > 0:
+                try:
+                    sb.setValue(0)
+                except (AttributeError, RuntimeError, TypeError, ValueError):
+                    pass
+                finally:
+                    self._is_loading = False
+            else:
+                # Use the async restorer to apply 0 once the layout is ready
+                self._restore_scroll_position_async(stem, 0)
+        except (AttributeError, RuntimeError):
+            self._is_loading = False
 
     def closeEvent(self, event):
         geometry = self.geometry()

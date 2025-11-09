@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-08/11/2025
+09/11/2025
 
 """
 
@@ -2273,8 +2273,10 @@ class MainWindow(QMainWindow):
             self.setWindowTitle(title)
 
     def open_settings_dialog(self):
-        """Open the settings dialog and update settings if the user confirms.
-        Also, show/hide the splash screen immediately according to the checkbox.
+        """Open the settings dialog.
+          Option B behavior:
+        - Clicking 'Reset to defaults' applies defaults immediately (persist + theme + splash).
+        - OK/Cancel then simply close the dialog; OK still saves any manual changes made after.
         """
 
         dialog = SettingsDialog(self)
@@ -2287,10 +2289,47 @@ class MainWindow(QMainWindow):
         # Ensure dialog follows current theme palette
         self.theme.apply_widget(dialog)
 
+        # Option B: apply defaults immediately when the reset button is clicked
+        def _apply_defaults_immediately() -> None:
+            # Read the current state to determine splash transition
+            prev = bool(self.settings.get("show_splash", False))
+            default_settings = fcs.get_default_settings()
+            defaults_show_splash = bool(default_settings.get("show_splash", False))
+
+            # Replace entire settings with defaults and persist immediately
+            try:
+                self.settings.clear()
+                self.settings.update(default_settings)
+            except (AttributeError, TypeError):
+                # Fallback: replace the reference if clear/update fails for any reason
+                self.settings = dict(default_settings)
+            self.settings_service.save(self.settings)
+
+            # Apply theme across UI right away
+            self.set_theme(self.settings)
+
+            # Manage splash visibility transitions immediately
+            self._update_splash_visibility(prev, defaults_show_splash)
+
+            # Prevent double-application on the OK path (Option A logic)
+            dialog.was_reset_to_defaults = False
+
+        try:
+            dialog.reset_defaults_btn.clicked.connect(_apply_defaults_immediately)
+        except (RuntimeError, AttributeError, TypeError):
+            # Ignore failures to connect signal due to Qt object state or missing attributes
+            pass
+
         if dialog.exec():  # If the dialog is accepted (OK button)
-            # Capture new values
-            new_theme = dialog.theme_combobox.currentText()
-            new_show_splash = dialog.splash_checkbox.isChecked()
+            # Determine new values; if the user pressed 'Reset to defaults', then use canonical defaults
+            # (In Option B we set was_reset_to_defaults = False after immediate applying.)
+            if getattr(dialog, "was_reset_to_defaults", False):
+                defaults = fcs.get_default_settings()
+                new_theme = defaults.get("theme", "Light")
+                new_show_splash = bool(defaults.get("show_splash", False))
+            else:
+                new_theme = dialog.theme_combobox.currentText()
+                new_show_splash = dialog.splash_checkbox.isChecked()
 
             # Update in-memory settings
             self.settings["theme"] = new_theme
@@ -2305,33 +2344,39 @@ class MainWindow(QMainWindow):
             # Manage splash visibility based on the checkbox change
             # Use module-level globals maintained by app.run()
             global splash, w
-            # If turning splash OFF, close any existing splash and clear the global reference
-            if prev_show_splash and not new_show_splash:
-                try:
-                    if splash is not None:
-                        # finish() ensures it hides relative to the main window; close() as fallback
-                        try:
-                            splash.finish(w)
-                        except (RuntimeError, AttributeError, TypeError):
-                            splash.close()
-                except (RuntimeError, AttributeError):
-                    pass
-                splash = None
+            # Update splash screen visibility based on prior and new states
+            self._update_splash_visibility(prev_show_splash, new_show_splash)
 
-            # If turning splash ON, when it isn't visible, create and show it
-            if (not prev_show_splash) and new_show_splash:
-                try:
-                    # Only create if not already created
-                    if splash is None:
-                        splash_path = sh.current_directory / "images" / "Abib_barley.png"
-                        pix = QPixmap(str(splash_path))
-                        new_splash = QSplashScreen(pix) if not pix.isNull() else QSplashScreen()
-                        # Show the splash and store the global reference
-                        new_splash.show()
-                        splash = new_splash
-                except (RuntimeError, AttributeError, OSError):
-                    # If anything fails, silently ignore to avoid disrupting the UI
-                    pass
+    @staticmethod
+    def _update_splash_visibility(prev_show: bool, new_show: bool) -> None:
+        """Show/hide the splash screen according to previous and new settings.
+        Encapsulates the duplicated logic used in the Settings dialog flows.
+        Safe against Qt object lifetime issues and missing resources.
+        """
+        global splash, w
+        # Turning splash OFF: finish/close and clear the global reference
+        if prev_show and not new_show:
+            try:
+                if splash is not None:
+                    try:
+                        splash.finish(w)
+                    except (RuntimeError, AttributeError, TypeError):
+                        splash.close()
+            except (RuntimeError, AttributeError):
+                pass
+            splash = None
+        # Turning splash ON: create if absent and show
+        if (not prev_show) and new_show:
+            try:
+                if splash is None:
+                    splash_path = sh.current_directory / "images" / "Abib_barley.png"
+                    pix = QPixmap(str(splash_path))
+                    new_splash = QSplashScreen(pix) if not pix.isNull() else QSplashScreen()
+                    new_splash.show()
+                    splash = new_splash
+            except (RuntimeError, AttributeError, OSError):
+                # Ignore failures to avoid disrupting the UI
+                pass
 
     def _refresh_theme_across_ui(self) -> None:
         """Apply the app palette, style the main editor, update secondary windows, and

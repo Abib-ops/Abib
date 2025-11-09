@@ -4,20 +4,29 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.09
+Abib v414.10
 ------------
 
 Changelog.
 -----------
 Abib v414.10
+Many improvements made to the code.
+
 The way that the "last_read_positions" values are updated and looked up before and
 after loading a new text was not robust (In settings.json).
-The reader window now restores the scroll position from settings.json when loading
-different texts. A token-based cancellation mechanism prevents stale timers from
-overriding the scroll position. The last file’s scroll position is saved before
-switching, ensuring correct restoration and no overwrites.
+The problem was fixed now works; the last read positions are now stored in a dictionary
+keyed by the book name.
+The "Reset to defaults" button now resets all settings to canonical defaults immediately.
+The in-memory settings object identity is preserved to update all open components without
+recreation. Tooltip text was updated to clarify immediate reset effects and restart
+requirements for some settings.
+
+Fixes an issue where a saved per-file reading position contained a typo. The reader now
+recognises and migrates the legacy key and correctly restores the saved position. Also,
+slightly increases the robustness of the restore timing for huge files.
 
 Abib v414.09
+Intermediate version.
 
 Abib v414.08
 Fixed the problem with "last_read_position", code now defaults to "0" if not found.
@@ -472,5 +481,14 @@ Additional Bible-based resources are available at www.spurgeongems.org.
 # along with Abib.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-Abib v414.11
-Fixes an issue where a saved per-file reading position for "Institutes" could be ignored if the key was previously stored as "Instiutes" (typo). The reader now recognizes and migrates the legacy key and correctly restores the saved position. Also slightly increases the robustness of the restore timing for very large files.
+Developer notes: Scripture reference indexing
+-------------------------------------------
+Abib’s scripture utilities use a 1-based contract for all public inputs and outputs:
+- resolve_reference(...) returns (book, chapter, verse) as 1-based integers when available.
+- calculate_book_line(book, chapter, verse, ...) expects 1-based integers.
+Internally, these are converted to 0-based indices only for lookup into shared.Info, which
+stores triples as [book_id, chapter_idx, verse_idx] with 0-based indexing.
+
+Examples
+- resolve_reference(["Genesis", "1", "1"]) -> (1, 1, 1)
+- calculate_book_line(1, 1, 1, _) -> index of [0, 0, 0] in shared.Info
