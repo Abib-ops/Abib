@@ -62,6 +62,7 @@ class TextDocumentWindow(QDialog):
         self.layout.addWidget(self.text_edit)
 
         # Save scroll position per file
+        self._is_loading: bool = False
         self.text_edit.verticalScrollBar().valueChanged.connect(self.save_scroll_position)
 
         # Hover tracking
@@ -81,6 +82,8 @@ class TextDocumentWindow(QDialog):
         self._highlight_timer.setInterval(25)
         self._highlight_timer.timeout.connect(self._process_highlight_batch)
         self._cancel_token: int = 0
+        # Cancellation token for async scroll restore to avoid stale apply when switching files
+        self._restore_token: int = 0
         # Extra selections for QPlainTextEdit highlighting
         self._extra_selections: List[Any] = []
         # Trigger quick visible-range highlight on scroll
@@ -99,7 +102,18 @@ class TextDocumentWindow(QDialog):
         """Apply a light/dark theme explicitly to the plain-text editor.
         Safe to call at any time; keeps text readable regardless of OS palette.
         Also ensures the document text colour updates immediately without needing reload.
+        Scroll position is preserved and not saved while theming is applied.
         """
+        # Preserve scroll and suppress saving while applying theme formatting
+        sb = self.text_edit.verticalScrollBar()
+        try:
+            saved_scroll = int(sb.value())
+            saved_max = int(sb.maximum())
+        except (AttributeError, RuntimeError, TypeError, ValueError):
+            saved_scroll, saved_max = 0, 0
+        prev_loading = getattr(self, "_is_loading", False)
+        self._is_loading = True
+
         if is_dark:
             self.text_edit.setStyleSheet("QPlainTextEdit { background-color: #121212; color: #ffffff; }")
             pal = self.text_edit.palette()
@@ -166,19 +180,132 @@ class TextDocumentWindow(QDialog):
         except (RuntimeError, AttributeError):
             # Be tolerant: theme changes should not crash the app and ignore deleted Qt objects or missing attributes
             pass
+        finally:
+            # Restore the previous scroll position without triggering a save
+            try:
+                max_now = int(sb.maximum())
+            except (AttributeError, RuntimeError, TypeError, ValueError):
+                max_now = saved_max
+            try:
+                target = 0 if max_now == 0 else max(0, min(saved_scroll, max_now))
+                sb.setValue(target)
+            except (AttributeError, RuntimeError, TypeError, ValueError):
+                pass
+            # Release the guard but keep the previous state intact
+            self._is_loading = prev_loading
+
+    def _save_scroll_for(self, stem: Any, value: Any) -> None:
+        """Persist the scroll position for a given file _stem, safely.
+        Creates the per-file map if needed and writes to settings.json.
+        """
+        try:
+            if not stem:
+                return
+            # Ensure the dictionary for per-file positions exists and is a dict
+            if not isinstance(self.settings.get("last_read_positions"), dict):
+                self.settings["last_read_positions"] = {}
+            self.settings["last_read_positions"][stem] = int(value)
+            # Persist the settings to disk
+            if self.settings_path:
+                fcs.save_settings_to_file(self.settings, self.settings_path)
+            else:
+                fcs.save_settings_to_file(self.settings)
+        except (ValueError, TypeError, OSError):
+            # Be tolerant: failing to save the scroll should never crash the app
+            pass
+
+    def _get_saved_position(self, stem: str) -> int:
+        """Return the saved scroll position for the given _stem using the exact key match only.
+        No case-insensitive matching, no corrections, and no key changes/migrations.
+        Defaults to 0 if the key is not present or settings are malformed.
+        """
+        try:
+            positions = self.settings.get("last_read_positions")
+            if not isinstance(positions, dict):
+                return 0
+            if stem in positions:
+                return int(positions.get(stem, 0))
+        except (ValueError, TypeError, AttributeError):
+            pass
+        return 0
+
+    def _restore_scroll_position_async(self, _stem: str, desired: int, timeout_ms: int = 6000, interval_ms: int = 50) -> None:
+        """Restore the scroll position after the document is laid out.
+        Waits until the scrollbar exposes a non-zero range before applying the saved value.
+        Keeps _is_loading True until applied to suppress saves.
+        Uses a cancellation token so that stale timers from a previous file cannot override the
+        current document's scroll position.
+        """
+        try:
+            desired = int(desired) if desired is not None else 0
+        except (ValueError, TypeError):
+            desired = 0
+
+        # New restore cycle: increment token and capture it locally
+        self._restore_token += 1
+        token = self._restore_token
+
+        # Use a countdown of attempts to avoid infinite retries
+        attempts = max(int(timeout_ms // max(1, interval_ms)), 1)
+        scrollbar = self.text_edit.verticalScrollBar()
+
+        def try_apply():
+            nonlocal attempts
+            # Abort if a newer restore has started
+            if token != getattr(self, "_restore_token", token):
+                return
+            try:
+                # If the editor is gone, stop (and only clear the flag if still current)
+                if self.text_edit is None or scrollbar is None:
+                    if token == getattr(self, "_restore_token", token):
+                        self._is_loading = False
+                    return
+            except (AttributeError, RuntimeError):
+                if token == getattr(self, "_restore_token", token):
+                    self._is_loading = False
+                return
+
+            attempts -= 1
+            try:
+                maximum = int(scrollbar.maximum())
+            except (AttributeError, RuntimeError, TypeError, ValueError):
+                maximum = 0
+
+            # Consider layout ready only when the scrollbar has a non-zero range
+            ready = (maximum > 0)
+
+            if ready:
+                try:
+                    target = 0 if maximum == 0 else max(0, min(desired, maximum))
+                    scrollbar.setValue(target)
+                except (AttributeError, RuntimeError, TypeError, ValueError):
+                    pass
+                finally:
+                    # Done with programmatic changes
+                    if token == getattr(self, "_restore_token", token):
+                        self._is_loading = False
+                return
+
+            if attempts <= 0:
+                # Give up gracefully; ensure the flag is cleared for the current token only
+                if token == getattr(self, "_restore_token", token):
+                    self._is_loading = False
+                return
+
+            # Retry shortly
+            QTimer.singleShot(interval_ms, try_apply)
+
+        # Kick off the first attempt soon to allow initial layout
+        QTimer.singleShot(interval_ms, try_apply)
 
     def save_scroll_position(self, value: Any) -> None:
+        """Slot for scrollbar valueChanged: save only during user-driven scrolls.
+        Suppressed while a document is programmatically loading/restoring.
+        """
+        if getattr(self, "_is_loading", False):
+            return
         stem = self.current_file_stem
-        # Ensure the dictionary for per-file positions exists
-        if "last_read_positions" not in self.settings:
-            self.settings["last_read_positions"] = {}
-        if stem:
-            self.settings["last_read_positions"][stem] = int(value)
-        # Persist the settings to disk
-        if self.settings_path:
-            fcs.save_settings_to_file(self.settings, self.settings_path)
-        else:
-            fcs.save_settings_to_file(self.settings)
+        self._save_scroll_for(stem, value)
 
     def closeEvent(self, event):
         geometry = self.geometry()
@@ -191,20 +318,43 @@ class TextDocumentWindow(QDialog):
         try:
             if not file_path1:
                 return
+            # Before switching to a new text, record the current text's scroll position
+            try:
+                prev_stem = getattr(self, "current_file_stem", None)
+                if prev_stem:
+                    sb_prev = self.text_edit.verticalScrollBar()
+                    try:
+                        prev_value = int(sb_prev.value())
+                        prev_max = int(sb_prev.maximum())
+                    except (AttributeError, RuntimeError, TypeError, ValueError):
+                        prev_value, prev_max = 0, 0
+                    if prev_max > 0:
+                        # Avoid overwriting a good non-zero with an early zero
+                        existing = self._get_saved_position(prev_stem)
+                        if (prev_value != 0) or (existing == 0):
+                            self._save_scroll_for(prev_stem, prev_value)
+            except (ValueError, TypeError, OSError, AttributeError, RuntimeError):
+                # Non-fatal: failure to save the previous scroll should not block loading
+                pass
+
             p = Path(file_path1)
             stem = p.stem
+
+            # Set the loading guard to suppress save events during programmatic changes
+            self._is_loading = True
             self.current_file_stem = stem
 
             # Determine the last position from the per-file map; default to 0 if missing
-            positions = self.settings.get("last_read_positions", {}) or {}
-            last_position = int(positions.get(stem, 0))
+            last_position = self._get_saved_position(stem)
 
             with open(file_path1, 'r', encoding='utf-8') as file1:
                 content = file1.read()
                 self.text_edit.setPlainText(content)
                 self.setWindowTitle(stem)
                 self._start_lazy_highlighting(content)
-                QTimer.singleShot(100, lambda: self.text_edit.verticalScrollBar().setValue(last_position))
+                # Restore the saved scroll position once the document layout is ready.
+                # _restore_scroll_position_async will clear _is_loading when done.
+                self._restore_scroll_position_async(stem, last_position)
 
                 if hasattr(self, 'file_selector'):
                     idx = self.file_selector.findText(stem)

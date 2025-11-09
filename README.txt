@@ -9,12 +9,21 @@ Abib v414.09
 
 Changelog.
 -----------
-Abib v414.09
+Abib v414.10
+The way that the "last_read_positions" values are updated and looked up before and
+after loading a new text was not robust (In settings.json).
+The reader window now restores the scroll position from settings.json when loading
+different texts. A token-based cancellation mechanism prevents stale timers from
+overriding the scroll position. The last file’s scroll position is saved before
+switching, ensuring correct restoration and no overwrites.
 
+Abib v414.09
 
 Abib v414.08
 Fixed the problem with "last_read_position", code now defaults to "0" if not found.
-Some other changes to the "settings.json" file.
+The current code uses "last_read_positions" per file and defaults to 0 when no entry exists.
+Safe to ignore or remove the old single-value key from the "settings.json" file.
+
 Found and removed a few spurious '|' characters in the bible_data.json file.
 This was showing up in the reader window while hovering over certain references.
 Lots of work was done on the book texts, making references work better.
@@ -462,3 +471,6 @@ Additional Bible-based resources are available at www.spurgeongems.org.
 # You should have received a copy of the GNU General Public License
 # along with Abib.  If not, see <https://www.gnu.org/licenses/>.
 #
+
+Abib v414.11
+Fixes an issue where a saved per-file reading position for "Institutes" could be ignored if the key was previously stored as "Instiutes" (typo). The reader now recognizes and migrates the legacy key and correctly restores the saved position. Also slightly increases the robustness of the restore timing for very large files.
