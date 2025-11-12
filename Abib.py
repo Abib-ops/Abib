@@ -465,14 +465,24 @@ def commentary() -> None:
         calvin_dir = Path(sh.str_cwd) / "Calvin"
         files = sorted([p for p in calvin_dir.glob("*.txt") if p.is_file()])
         if not files:
-            QMessageBox.information(None, "Calvin Commentaries", "No commentary files found in the Calvin folder.")
+            QMessageBox.information(
+                None,
+                "Calvin Commentaries",
+                "No commentary files found in the Calvin folder."
+            )
             return
-        labels = [p.name for p in files]
-        choice, ok = QInputDialog.getItem(None, "Calvin Commentaries", "Open:", labels, 0, False)
+        labels = sorted(p.name for p in files)
+        choice, ok = QInputDialog.getItem(
+            w,  # parent to keep it on top of the main window
+            "Calvin Commentaries",
+            "Open:",
+            labels,
+            0,
+            False,
+        )
         if ok and choice:
             path = str(calvin_dir / choice)
             try:
-                # Use the main window method to open or update the external reader window
                 w.open_text_file_in_window(path)
             except (RuntimeError, FileNotFoundError, OSError, ValueError, AttributeError) as e4:
                 print("Could not open commentary window:", e4)
@@ -782,8 +792,9 @@ class MainWindow(QMainWindow):
         # When selection changes, open or update the document reader window
         self.other_works_combo.currentTextChanged.connect(self._open_other_work)
         # Also handle a user clicking the already-selected item (e.g., default on first click)
-        self.other_works_combo.activated.connect(lambda index: self._open_other_work(self.other_works_combo.itemText(index)))
-
+        self.other_works_combo.activated.connect(
+            lambda index: self._open_other_work(self.other_works_combo.itemText(index))
+        )
         container: QWidget = QWidget()
         container.setLayout(grid)
         self.setCentralWidget(container)
@@ -906,12 +917,16 @@ class MainWindow(QMainWindow):
         """Open the ExternalTextDocumentWindow with the given file path 
            or update existing, then focus it."""
         if getattr(self, "text_edit_window", None) is None:
-            self.text_edit_window = ExternalTextDocumentWindow(initial_file_path=path, settings=self.settings, settings_path=getattr(self, "user_settings_path", None))
+            self.text_edit_window = ExternalTextDocumentWindow(
+                initial_file_path=path,
+                settings=self.settings,
+                settings_path=getattr(self, "user_settings_path", None)
+            )
             # When the user clicks a scripture reference in the reader, navigate here
             try:
                 self.text_edit_window.referenceActivated.connect(self._on_reader_reference_activated)
                 setattr(self.text_edit_window, "_connected_to_main", True)
-            except Exception:
+            except (AttributeError, RuntimeError, TypeError):
                 pass
             # Apply the current theme to the new window and its editor
             try:
@@ -927,7 +942,7 @@ class MainWindow(QMainWindow):
                 if not getattr(self.text_edit_window, "_connected_to_main", False):
                     self.text_edit_window.referenceActivated.connect(self._on_reader_reference_activated)
                     setattr(self.text_edit_window, "_connected_to_main", True)
-            except Exception:
+            except (AttributeError, RuntimeError, TypeError):
                 pass
             try:
                 self.text_edit_window.apply_theme(self.theme.state.is_dark_mode)
@@ -948,9 +963,9 @@ class MainWindow(QMainWindow):
                 self.show()
                 self.raise_()
                 self.activateWindow()
-            except Exception:
+            except (RuntimeError, AttributeError):
                 pass
-        except Exception:
+        except (ValueError, TypeError, KeyError, IndexError, RuntimeError):
             # Be resilient: if parsing fails, ignore silently
             pass
 

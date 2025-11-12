@@ -284,21 +284,15 @@ class TextDocumentWindow(QDialog):
                 c2.setPosition(orig_pos, QTextCursor.MoveMode.MoveAnchor)
             self.text_edit.setTextCursor(c2)
 
-            # Reapply highlight formats for scripture references to keep them visible
-            fmt_hl = TextDocumentWindow._make_highlight_format()
-            for sel in getattr(self, "_extra_selections", []):
-                try:
-                    c = self.text_edit.textCursor()
-                    start = sel.cursor.selectionStart()
-                    end = sel.cursor.selectionEnd()
-                    c.setPosition(start)
-                    c.setPosition(end, QTextCursor.MoveMode.KeepAnchor)
-                    c.setCharFormat(fmt_hl)
-                except (AttributeError, RuntimeError):
-                    # Ignore cases where underlying Qt objects are already deleted or missing attributes
-                    pass
-            # Re-apply the ExtraSelections overlay too
-            self.text_edit.setExtraSelections(getattr(self, "_extra_selections", []))
+            # Rebuild highlights for the visible region so references remain highlighted
+            # Some theme operations (palette/stylesheet/char format) can clear visual overlays.
+            # Using our existing fast visible-range highlighter guarantees fresh selections
+            # and re-applies underline/colour formatting without rescanning the whole file.
+            try:
+                self._highlight_visible_now()
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                # Be resilient: highlighting should never block theming
+                pass
         except (RuntimeError, AttributeError):
             # Be tolerant: theme changes should not crash the app and ignore deleted Qt objects or missing attributes
             pass
@@ -567,7 +561,7 @@ class TextDocumentWindow(QDialog):
         # Apply any collected selections now
         self.text_edit.setExtraSelections(getattr(self, '_extra_selections', []))
 
-    def _apply_highlights_for_refs(self, base: int, refs: List[Dict[str, Any]]) -> None:
+    def _apply_highlights_for_refs(self, base: int, refs: List[Dict[str, Any]], *, allow_existing: bool = False) -> None:
         """Collect highlighting ranges for a set of references on a line.
         Deduplicates by (start, length) using self._ref_index.
         Applies both ExtraSelections and direct char formatting for robustness.
@@ -577,16 +571,21 @@ class TextDocumentWindow(QDialog):
             start = base + r['start']
             length = r['length']
             key = (start, length)
-            if key in self._ref_index:
+            is_new = key not in self._ref_index
+            if is_new:
+                self._ref_index.add(key)
+                # Keep an absolute-position copy for fast hover lookup
+                r_abs = dict(r)
+                r_abs['abs_start'] = start
+                # Ensure length is present (some refs may already include length)
+                r_abs['length'] = length
+                self._all_references.append(r_abs)
+                self._refs_sorted = False
+            elif not allow_existing:
+                # Skip duplicates during initial accumulation to avoid bloating selections.
+                # When rebuilding visible highlights (allow_existing=True), still build selections
+                # so formatting is reapplied after operations like theme changes.
                 continue
-            self._ref_index.add(key)
-            # Keep an absolute-position copy for fast hover lookup
-            r_abs = dict(r)
-            r_abs['abs_start'] = start
-            # Ensure length is present (some refs may already include length)
-            r_abs['length'] = length
-            self._all_references.append(r_abs)
-            self._refs_sorted = False
             selections.append({'cursor_start': start, 'length': length})
         # Apply selections
         existing = getattr(self, '_extra_selections', [])
@@ -674,14 +673,8 @@ class TextDocumentWindow(QDialog):
         if self._next_line_index >= len(self._lines):
             self._highlight_timer.stop()
             # Finished collecting references; sort once for binary search hover
-            if self._all_references and not self._refs_sorted:
-                try:
-                    self._all_references.sort(key=lambda r: r.get('abs_start', 0))
-                except Exception:
-                    # Be resilient: if any item lacks abs_start, coerce to 0
-                    self._all_references = [r for r in self._all_references if 'abs_start' in r]
-                    self._all_references.sort(key=lambda r: r['abs_start'])
-                self._refs_sorted = True
+            # Delegate sorting to the shared helper to avoid duplicate logic
+            self._ensure_refs_sorted()
 
     def _highlight_visible_now(self) -> None:
         if not self._lines:
@@ -724,7 +717,8 @@ class TextDocumentWindow(QDialog):
                 continue
             base = self._line_offsets[i]
             refs = self.find_scripture_references(line)
-            self._apply_highlights_for_refs(base, refs)
+            # Rebuild selections even if they already exist in index so formatting is refreshed
+            self._apply_highlights_for_refs(base, refs, allow_existing=True)
         # Apply updated selections for the visible range
         self.text_edit.setExtraSelections(self._extra_selections)
 
@@ -732,7 +726,7 @@ class TextDocumentWindow(QDialog):
         if not self._refs_sorted and self._all_references:
             try:
                 self._all_references.sort(key=lambda r: r.get('abs_start', 0))
-            except Exception:
+            except (TypeError, AttributeError):
                 self._all_references = [r for r in self._all_references if 'abs_start' in r]
                 self._all_references.sort(key=lambda r: r['abs_start'])
             self._refs_sorted = True
@@ -773,7 +767,7 @@ class TextDocumentWindow(QDialog):
             # Cancel any pending hover when the cursor leaves the widget
             try:
                 self._hover_timer.stop()
-            except Exception:
+            except (RuntimeError, AttributeError):
                 pass
             self._pending_hover_pos = None
             self.closePopup()
@@ -781,7 +775,7 @@ class TextDocumentWindow(QDialog):
             # Handle clicks on highlighted references to open them in the main Bible window
             try:
                 pos = event.position().toPoint()
-            except Exception:
+            except (AttributeError, RuntimeError, TypeError):
                 pos = QPoint(0, 0)
             cursor = self.text_edit.cursorForPosition(pos)
             position = cursor.position()
@@ -806,7 +800,7 @@ class TextDocumentWindow(QDialog):
                 # Emit signal to let the main window navigate to this reference
                 try:
                     self.referenceActivated.emit(nav_ref)
-                except Exception:
+                except (RuntimeError, AttributeError, TypeError):
                     pass
                 # Close any existing popup after activating
                 self.closePopup()

@@ -11,6 +11,9 @@ Changelog.
 -----------
 Abib v414.11
 Each reader file/book has its own stored screen position and size, plus the scroll position.
+So, the settings.json file is now much larger.
+The scripture references in the reader window when clicked appear in the main Bible window.
+Hover response time slightly improved.
 
 Abib v414.10
 Many improvements made to the code.
