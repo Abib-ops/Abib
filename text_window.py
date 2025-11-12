@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 from typing import Any, Dict, List, Set
 
-from PySide6.QtCore import Qt, QEvent, QTimer, QPoint
+from PySide6.QtCore import Qt, QEvent, QTimer, QPoint, Signal
 from PySide6.QtGui import QColor, QFont, QTextCursor, QTextCharFormat, QPalette
 from PySide6.QtWidgets import QDialog, QLabel, QVBoxLayout, QPlainTextEdit, QWidget, QTextEdit
 
@@ -14,6 +15,9 @@ import shared as sh
 
 
 class TextDocumentWindow(QDialog):
+    # Emitted when the user clicks a highlighted scripture reference.
+    # Payload is a canonical reference string like "John 3:16" or "Jude 5".
+    referenceActivated = Signal(str)
     def __init__(self, initial_file_path: str | None = None,
                  settings: Dict[str, Any] | None = None,
                  settings_path: str | None = None) -> None:
@@ -27,7 +31,9 @@ class TextDocumentWindow(QDialog):
         self.current_file_stem = None
         self.setWindowTitle("Text Reader")
 
-        # Load window geometry from settings
+        # Load initial window geometry from legacy/global reader_window.
+        # Per-file geometry (stored in last_read_positions) will be applied
+        # when a file is actually loaded.
         x8, y8, width8, height8 = fcs.get_window_geometry("reader_window")
         self.setGeometry(x8, y8, width8, height8)
 
@@ -97,6 +103,8 @@ class TextDocumentWindow(QDialog):
         self._restore_token: int = 0
         # Extra selections for QPlainTextEdit highlighting
         self._extra_selections: List[Any] = []
+        # Track whether the reference list is sorted by abs_start
+        self._refs_sorted: bool = True
         # Trigger quick visible-range highlight on scroll
         self.text_edit.verticalScrollBar().valueChanged.connect(
             lambda _v: (lambda t=self._cancel_token: QTimer.singleShot(
@@ -104,10 +112,113 @@ class TextDocumentWindow(QDialog):
             ))()
         )
 
+        # Debounced hover handling to avoid heavy work on every mouse move
+        self._hover_timer: QTimer = QTimer(self)
+        try:
+            self._hover_timer.setSingleShot(True)
+        except (AttributeError, RuntimeError):
+            pass
+        self._hover_timer.setInterval(35)
+        # Store only a QPoint (copy) from the mouse event to avoid using a deleted QMouseEvent later
+        self._pending_hover_pos: QPoint | None = None
+        self._hover_timer.timeout.connect(self._do_hover)
+
         if initial_file_path:
             self.load_text_file(initial_file_path)
 
         self.canonical_books = scripture.CANONICAL_BOOKS
+
+    # -------- Settings helpers for per-file scroll + geometry --------
+    def _ensure_positions_dict(self) -> None:
+        try:
+            if not isinstance(self.settings.get("last_read_positions"), dict):
+                self.settings["last_read_positions"] = {}
+        except (AttributeError, TypeError):
+            # Ensure the dictionary exists even if settings are malformed
+            self.settings["last_read_positions"] = {}
+
+    @staticmethod
+    def _safe_geometry_tuple(x: int | None, y: int | None, w: int | None, h: int | None) -> tuple[int, int, int, int] | None:
+        try:
+            if None in (x, y, w, h):
+                return None
+            sx, sy = fcs.get_screen_size()
+            gx = int(x)
+            gy = int(y)
+            gw = int(w)
+            gh = int(h)
+            # Basic sanity clamps similar to fcs.get_window_geometry
+            if gx < 0:
+                gx = 100
+            if gy < 0:
+                gy = 100
+            if gx + gw > sx:
+                gx = max(0, sx - max(640, gw))
+                gw = min(gw, sx)
+            if gy + gh > sy:
+                gy = max(0, sy - max(400, gh))
+                gh = min(gh, sy)
+            return gx, gy, gw, gh
+        except (ValueError, TypeError, AttributeError):
+            return None
+
+    def _read_entry_components(self, stem: str) -> tuple[int, tuple[int, int, int, int] | None]:
+        """Read per-file entry as (scroll, geometry or None).
+        Accepts legacy int (scroll only) or list [scroll, x, y, w, h].
+        """
+        try:
+            positions = self.settings.get("last_read_positions")
+            if not isinstance(positions, dict):
+                return 0, None
+            if stem not in positions:
+                return 0, None
+            entry = positions.get(stem)
+            # Legacy: a single int means scroll only
+            if isinstance(entry, int):
+                return int(entry), None
+            # New format: list/tuple with at least 5 numbers
+            if isinstance(entry, (list, tuple)) and len(entry) >= 5:
+                scroll = int(entry[0])
+                geom = self._safe_geometry_tuple(int(entry[1]), int(entry[2]), int(entry[3]), int(entry[4]))
+                return scroll, geom
+            # Some partially migrated forms: try to coerce the first value as scroll
+            if isinstance(entry, (list, tuple)) and len(entry) >= 1:
+                scroll = int(entry[0])
+                geom = None
+                if len(entry) >= 5:
+                    geom = self._safe_geometry_tuple(entry[1], entry[2], entry[3], entry[4])
+                return scroll, geom
+        except (ValueError, TypeError, AttributeError):
+            pass
+        return 0, None
+
+    def _write_entry(self, stem: str, scroll: int | None = None, geometry: tuple[int, int, int, int] | None = None) -> None:
+        """Persist the per-file entry ensuring format [scroll, x, y, w, h].
+        Existing values are preserved if a component is not provided.
+        """
+        if not stem:
+            return
+        try:
+            self._ensure_positions_dict()
+            cur_scroll, cur_geom = self._read_entry_components(stem)
+            new_scroll = cur_scroll if scroll is None else int(scroll)
+            new_geom = cur_geom if geometry is None else self._safe_geometry_tuple(*geometry)
+
+            # If geometry is still None, fall back to current window geometry
+            if new_geom is None:
+                g = self.geometry()
+                new_geom = (int(g.x()), int(g.y()), int(g.width()), int(g.height()))
+
+            self.settings["last_read_positions"][stem] = [int(new_scroll), int(new_geom[0]), int(new_geom[1]), int(new_geom[2]), int(new_geom[3])]
+
+            # Persist
+            if self.settings_path:
+                fcs.save_settings_to_file(self.settings, self.settings_path)
+            else:
+                fcs.save_settings_to_file(self.settings)
+        except (ValueError, TypeError, AttributeError, OSError):
+            # Non-fatal
+            pass
 
     def apply_theme(self, is_dark: bool) -> None:
         """Apply a light/dark theme explicitly to the plain-text editor.
@@ -212,15 +323,8 @@ class TextDocumentWindow(QDialog):
         try:
             if not stem:
                 return
-            # Ensure the dictionary for per-file positions exists and is a dict
-            if not isinstance(self.settings.get("last_read_positions"), dict):
-                self.settings["last_read_positions"] = {}
-            self.settings["last_read_positions"][stem] = int(value)
-            # Persist the settings to disk
-            if self.settings_path:
-                fcs.save_settings_to_file(self.settings, self.settings_path)
-            else:
-                fcs.save_settings_to_file(self.settings)
+            # Update only the scroll component; preserve geometry
+            self._write_entry(stem, scroll=int(value), geometry=None)
         except (ValueError, TypeError, OSError):
             # Be tolerant: failing to save the scroll should never crash the app
             pass
@@ -231,14 +335,27 @@ class TextDocumentWindow(QDialog):
         Defaults to 0 if the key is not present or settings are malformed.
         """
         try:
-            positions = self.settings.get("last_read_positions")
-            if not isinstance(positions, dict):
-                return 0
-            if stem in positions:
-                return int(positions.get(stem, 0))
+            scroll, _geom = self._read_entry_components(stem)
+            return int(scroll)
         except (ValueError, TypeError, AttributeError):
-            pass
-        return 0
+            return 0
+
+    def _apply_saved_geometry(self, stem: str) -> None:
+        """Apply saved per-file geometry if present; otherwise use the legacy
+        reader_window geometry as a fallback.
+        """
+        try:
+            _scroll, geom = self._read_entry_components(stem)
+            if geom is None:
+                x8, y8, width8, height8 = fcs.get_window_geometry("reader_window")
+                self.setGeometry(x8, y8, width8, height8)
+            else:
+                x, y, w, h = geom
+                self.setGeometry(x, y, w, h)
+        except (ValueError, TypeError, AttributeError, OSError):
+            # Fallback to legacy geometry on any error
+            x8, y8, width8, height8 = fcs.get_window_geometry("reader_window")
+            self.setGeometry(x8, y8, width8, height8)
 
     def _restore_scroll_position_async(self, _stem: str, desired: int, timeout_ms: int = 6000, interval_ms: int = 50) -> None:
         """Restore the scroll position after the document is laid out.
@@ -326,15 +443,8 @@ class TextDocumentWindow(QDialog):
         if not stem:
             return
         try:
-            # Ensure dict exists
-            if not isinstance(self.settings.get("last_read_positions"), dict):
-                self.settings["last_read_positions"] = {}
-            self.settings["last_read_positions"][stem] = 0
-            # Persist the settings to disk
-            if self.settings_path:
-                fcs.save_settings_to_file(self.settings, self.settings_path)
-            else:
-                fcs.save_settings_to_file(self.settings)
+            # Set scroll to 0, preserve geometry
+            self._write_entry(stem, scroll=0, geometry=None)
         except (ValueError, TypeError, OSError):
             # Non-fatal: if persisting fails, still attempt to scroll to the top
             pass
@@ -360,10 +470,14 @@ class TextDocumentWindow(QDialog):
             self._is_loading = False
 
     def closeEvent(self, event):
-        geometry = self.geometry()
-        fcs.save_window_geometry("reader_window",
-                                 geometry.x(), geometry.y(),
-                                 geometry.width(), geometry.height())
+        # Save per-file geometry so each text remembers its own window placement
+        try:
+            stem = getattr(self, "current_file_stem", None)
+            if stem:
+                g = self.geometry()
+                self._write_entry(stem, geometry=(int(g.x()), int(g.y()), int(g.width()), int(g.height())))
+        except (ValueError, TypeError, AttributeError, RuntimeError, OSError):
+            pass
         event.accept()
 
     def load_text_file(self, file_path1):
@@ -385,6 +499,12 @@ class TextDocumentWindow(QDialog):
                         existing = self._get_saved_position(prev_stem)
                         if (prev_value != 0) or (existing == 0):
                             self._save_scroll_for(prev_stem, prev_value)
+                    # Always capture the current geometry for the previous stem
+                    try:
+                        gprev = self.geometry()
+                        self._write_entry(prev_stem, geometry=(int(gprev.x()), int(gprev.y()), int(gprev.width()), int(gprev.height())))
+                    except (ValueError, TypeError, AttributeError, RuntimeError, OSError):
+                        pass
             except (ValueError, TypeError, OSError, AttributeError, RuntimeError):
                 # Non-fatal: failure to save the previous scroll should not block loading
                 pass
@@ -403,6 +523,8 @@ class TextDocumentWindow(QDialog):
                 content = file1.read()
                 self.text_edit.setPlainText(content)
                 self.setWindowTitle(stem)
+                # Apply any saved per-file geometry for this stem
+                self._apply_saved_geometry(stem)
                 self._start_lazy_highlighting(content)
                 # Restore the saved scroll position once the document layout is ready.
                 # _restore_scroll_position_async will clear _is_loading when done.
@@ -429,6 +551,7 @@ class TextDocumentWindow(QDialog):
 
         self._all_references.clear()
         self._ref_index.clear()
+        self._refs_sorted = True
         self._lines = content.split('\n')
         self._line_offsets = []
         running = 0
@@ -457,6 +580,13 @@ class TextDocumentWindow(QDialog):
             if key in self._ref_index:
                 continue
             self._ref_index.add(key)
+            # Keep an absolute-position copy for fast hover lookup
+            r_abs = dict(r)
+            r_abs['abs_start'] = start
+            # Ensure length is present (some refs may already include length)
+            r_abs['length'] = length
+            self._all_references.append(r_abs)
+            self._refs_sorted = False
             selections.append({'cursor_start': start, 'length': length})
         # Apply selections
         existing = getattr(self, '_extra_selections', [])
@@ -501,12 +631,12 @@ class TextDocumentWindow(QDialog):
         sel.format = fmt
         return sel
 
-    def _move_popup_to_cursor(self, event, y_offset: int = 60) -> None:
+    def _move_popup_to_cursor(self, pos: QPoint, y_offset: int = 60) -> None:
         """Position the tooltip popup relative to the mouse cursor within the text edit.
         Extracted from duplicated blocks to avoid code repetition.
         """
         # Compute target position based on cursor rect and editor origin
-        cursor = self.text_edit.cursorForPosition(event.position().toPoint())
+        cursor = self.text_edit.cursorForPosition(pos)
         cursor_rect = self.text_edit.cursorRect(cursor)
         global_cursor_top_left = self.text_edit.mapToGlobal(cursor_rect.topLeft())
         text_edit_top_left = self.text_edit.mapToGlobal(self.text_edit.rect().topLeft())
@@ -543,6 +673,15 @@ class TextDocumentWindow(QDialog):
         self.text_edit.setExtraSelections(self._extra_selections)
         if self._next_line_index >= len(self._lines):
             self._highlight_timer.stop()
+            # Finished collecting references; sort once for binary search hover
+            if self._all_references and not self._refs_sorted:
+                try:
+                    self._all_references.sort(key=lambda r: r.get('abs_start', 0))
+                except Exception:
+                    # Be resilient: if any item lacks abs_start, coerce to 0
+                    self._all_references = [r for r in self._all_references if 'abs_start' in r]
+                    self._all_references.sort(key=lambda r: r['abs_start'])
+                self._refs_sorted = True
 
     def _highlight_visible_now(self) -> None:
         if not self._lines:
@@ -589,32 +728,109 @@ class TextDocumentWindow(QDialog):
         # Apply updated selections for the visible range
         self.text_edit.setExtraSelections(self._extra_selections)
 
+    def _ensure_refs_sorted(self) -> None:
+        if not self._refs_sorted and self._all_references:
+            try:
+                self._all_references.sort(key=lambda r: r.get('abs_start', 0))
+            except Exception:
+                self._all_references = [r for r in self._all_references if 'abs_start' in r]
+                self._all_references.sort(key=lambda r: r['abs_start'])
+            self._refs_sorted = True
+
+    def _ref_at_position(self, pos: int):
+        """Binary search for a reference covering the absolute document position.
+        Returns the reference dict with keys including 'abs_start',
+        'length', 'book', 'chapter', 'verse' or None.
+        """
+        refs = self._all_references
+        if not refs:
+            return None
+        self._ensure_refs_sorted()
+        lo, hi = 0, len(refs) - 1
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            r = refs[mid]
+            start = r.get('abs_start', 0)
+            end = start + int(r.get('length', 0))
+            if pos < start:
+                hi = mid - 1
+            elif pos > end:
+                lo = mid + 1
+            else:
+                return r
+        return None
+
+    def _do_hover(self):
+        if self._pending_hover_pos is None:
+            return
+        try:
+            self.handle_hover(self._pending_hover_pos)
+        finally:
+            self._pending_hover_pos = None
+
     def eventFilter(self, obj, event):
         if event.type() == QEvent.Type.Leave:
+            # Cancel any pending hover when the cursor leaves the widget
+            try:
+                self._hover_timer.stop()
+            except Exception:
+                pass
+            self._pending_hover_pos = None
             self.closePopup()
-        elif event.type() == QEvent.Type.MouseMove:
-            cursor = self.text_edit.cursorForPosition(event.position().toPoint())
+        elif event.type() == QEvent.Type.MouseButtonPress:
+            # Handle clicks on highlighted references to open them in the main Bible window
+            try:
+                pos = event.position().toPoint()
+            except Exception:
+                pos = QPoint(0, 0)
+            cursor = self.text_edit.cursorForPosition(pos)
             position = cursor.position()
-            text = self.text_edit.toPlainText()
-            references = self.find_scripture_references(text)
-            over_reference = any(ref['start'] <= position <= ref['start'] + ref['length'] for ref in references)
+            ref = self._ref_at_position(position)
+            if ref is not None:
+                # Build a navigation-friendly reference string using the first verse only
+                # to ensure compatibility with MainWindow.goto_line parsing.
+                book = ref.get('book')
+                chapter = ref.get('chapter')
+                verse_str = str(ref.get('verse'))
+                # Extract the first verse number from possible ranges/lists like "16-18, 21"
+                m = re.search(r"\d+", verse_str or "")
+                first_verse = m.group(0) if m else verse_str
+                # Normalise to canonical book name
+                normalized_book = self.normalize_book_input(book) if isinstance(book, str) else book
+                book_id = sh.bibledict.get(normalized_book)
+                full_book = self.canonical_books.get(book_id, book)
+                if book_id and (book_id - 1) in sh.onechapterbooks:
+                    nav_ref = f"{full_book} {first_verse}"
+                else:
+                    nav_ref = f"{full_book} {chapter}:{first_verse}"
+                # Emit signal to let the main window navigate to this reference
+                try:
+                    self.referenceActivated.emit(nav_ref)
+                except Exception:
+                    pass
+                # Close any existing popup after activating
+                self.closePopup()
+        elif event.type() == QEvent.Type.MouseMove:
+            # Copy the QPoint from the event immediately. Qt may delete the event after this method returns.
+            pos = event.position().toPoint()
+            cursor = self.text_edit.cursorForPosition(pos)
+            position = cursor.position()
+            # O(log N) lookup using precomputed ranges
+            over_reference = self._ref_at_position(position) is not None
             if not over_reference:
                 self.closePopup()
             else:
-                self.handle_hover(event)
+                # Debounce actual hover processing to prevent floods
+                self._pending_hover_pos = pos
+                if not self._hover_timer.isActive():
+                    self._hover_timer.start()
         return super().eventFilter(obj, event)
 
-    def handle_hover(self, event):
-        cursor = self.text_edit.cursorForPosition(event.position().toPoint())
+    def handle_hover(self, pos: QPoint):
+        # Convert a stored mouse position to a cursor and document position
+        cursor = self.text_edit.cursorForPosition(pos)
         position = cursor.position()
-        text = self.text_edit.toPlainText()
-        references = self.find_scripture_references(text)
-
-        hovered_reference = None
-        for ref in references:
-            if ref["start"] <= position <= ref["start"] + ref["length"]:
-                hovered_reference = ref
-                break
+        hovered_reference = self._ref_at_position(position)
 
         if hovered_reference is None:
             if self.popup_window is not None:
@@ -625,15 +841,15 @@ class TextDocumentWindow(QDialog):
 
         same_reference = (
             self.current_reference is not None and
-            self.current_reference["start"] == hovered_reference["start"] and
-            self.current_reference["length"] == hovered_reference["length"]
+            self.current_reference.get("abs_start") == hovered_reference.get("abs_start") and
+            self.current_reference.get("length") == hovered_reference.get("length")
         )
 
         if same_reference:
             if self.popup_window is None or not self.popup_window.isVisible():
                 pass
             else:
-                self._move_popup_to_cursor(event, y_offset=60)
+                self._move_popup_to_cursor(pos, y_offset=60)
                 return
         else:
             if self.popup_window is not None:
@@ -659,7 +875,7 @@ class TextDocumentWindow(QDialog):
         layout.addWidget(label)
         self.popup_window.adjustSize()
 
-        self._move_popup_to_cursor(event, y_offset=60)
+        self._move_popup_to_cursor(pos, y_offset=60)
 
         self.popup_window.show()
 

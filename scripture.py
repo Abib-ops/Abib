@@ -172,6 +172,69 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
                 "length": length,
             }
         )
+
+        # Handle semicolon-separated continuations inheriting book and possibly chapter,
+        # e.g. "John 3:16; 4:5, 12-15" or one-chapter books like "Jude 5; 7-9".
+        # We scan forward from the end of this match for additional segments starting with ';'.
+        pos = m.end()
+        last_book_display = book_raw
+        last_chapter = chapter
+        # Pattern for later segments: ; <chapter>:<verses> OR ; <verses-only>
+        cont_re = re.compile(
+            r"^\s*;\s*(?:(?P<chap>\d{1,3})\s*[:.]\s*(?P<vers>\d{1,3}(?:\s*[-–]\s*\d{1,3})?(?:\s*,\s*\d{1,3}(?:\s*[-–]\s*\d{1,3})?)*)|(?P<vers_only>\d{1,3}(?:\s*[-–]\s*\d{1,3})?(?:\s*,\s*\d{1,3}(?:\s*[-–]\s*\d{1,3})?)*))",
+            re.IGNORECASE,
+        )
+        while pos < len(text):
+            tail = text[pos:]
+            m2 = cont_re.match(tail)
+            if not m2:
+                break
+            seg_full = m2.group(0)
+            seg_lstripped = seg_full.lstrip()
+            seg_lead = len(seg_full) - len(seg_lstripped)
+            start2 = pos + seg_lead
+            # Determine chapter and verses
+            if m2.group("chap") and m2.group("vers"):
+                try:
+                    chapter2 = int(m2.group("chap"))
+                except ValueError:
+                    chapter2 = None
+                verses2 = m2.group("vers")
+                if chapter2 is None:
+                    break
+                last_chapter = chapter2
+                references.append(
+                    {
+                        "text": seg_lstripped,
+                        "book": last_book_display,
+                        "chapter": chapter2,
+                        "verse": re.sub(r"[\s)\];:.,]+$", "", verses2.strip()),
+                        "start": start2,
+                        "length": len(seg_lstripped),
+                    }
+                )
+            else:
+                # verse-only continuation
+                verses2 = m2.group("vers_only")
+                chap_for_vers_only: int | None = None
+                if last_chapter is not None:
+                    chap_for_vers_only = last_chapter
+                elif (sh.bibledict.get(normalized) or 0) and (book_id - 1) in sh.onechapterbooks:
+                    chap_for_vers_only = 1
+                if chap_for_vers_only is None:
+                    # cannot resolve chapter for this continuation; stop chaining
+                    break
+                references.append(
+                    {
+                        "text": seg_lstripped,
+                        "book": last_book_display,
+                        "chapter": chap_for_vers_only,
+                        "verse": re.sub(r"[\s)\];:.,]+$", "", verses2.strip()),
+                        "start": start2,
+                        "length": len(seg_lstripped),
+                    }
+                )
+            pos += len(seg_full)
     return references
 
 

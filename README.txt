@@ -4,11 +4,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.10
+Abib v414.11
 ------------
 
 Changelog.
 -----------
+Abib v414.11
+Each reader file/book has its own stored screen position and size, plus the scroll position.
+
 Abib v414.10
 Many improvements made to the code.
 

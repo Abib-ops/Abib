@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-09/11/2025
+12/11/2025
 
 """
 
@@ -907,6 +907,12 @@ class MainWindow(QMainWindow):
            or update existing, then focus it."""
         if getattr(self, "text_edit_window", None) is None:
             self.text_edit_window = ExternalTextDocumentWindow(initial_file_path=path, settings=self.settings, settings_path=getattr(self, "user_settings_path", None))
+            # When the user clicks a scripture reference in the reader, navigate here
+            try:
+                self.text_edit_window.referenceActivated.connect(self._on_reader_reference_activated)
+                setattr(self.text_edit_window, "_connected_to_main", True)
+            except Exception:
+                pass
             # Apply the current theme to the new window and its editor
             try:
                 self.text_edit_window.apply_theme(self.theme.state.is_dark_mode)
@@ -916,6 +922,13 @@ class MainWindow(QMainWindow):
             self.theme.apply_widget(self.text_edit_window)
         else:
             self.text_edit_window.load_text_file(path)
+            # Ensure the signal is connected even if the window already existed
+            try:
+                if not getattr(self.text_edit_window, "_connected_to_main", False):
+                    self.text_edit_window.referenceActivated.connect(self._on_reader_reference_activated)
+                    setattr(self.text_edit_window, "_connected_to_main", True)
+            except Exception:
+                pass
             try:
                 self.text_edit_window.apply_theme(self.theme.state.is_dark_mode)
             except (RuntimeError, AttributeError):
@@ -924,6 +937,22 @@ class MainWindow(QMainWindow):
         self.text_edit_window.show()
         self.text_edit_window.raise_()
         self.text_edit_window.activateWindow()
+
+    def _on_reader_reference_activated(self, ref: str) -> None:
+        """Navigate the Bible main window to the clicked reference from the reader window."""
+        try:
+            # Use existing navigation, which handles all parsing and UI updates
+            self.goto_line(ref)
+            # Bring the main window to the front so the user sees the context
+            try:
+                self.show()
+                self.raise_()
+                self.activateWindow()
+            except Exception:
+                pass
+        except Exception:
+            # Be resilient: if parsing fails, ignore silently
+            pass
 
     def _open_other_work(self, stem: str) -> None:
         """Open or update the TextDocumentWindow for the selected Other Works item."""

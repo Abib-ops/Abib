@@ -26,16 +26,15 @@ def get_default_settings() -> Any:
     can align with the same values used by load_settings_from_file.
     """
     return {
-        "theme": "Dark",
-        "show_splash": False,
+        "theme": "Light",
+        "show_splash": "false",
         "devotional_font_size": 12,
         "bible_font_size": 12,
-        # Window position and size settings
         "main_window": {
-            "x": 50,
-            "y": 50,
-            "width": 500,
-            "height": 400
+            "x": 1618,
+            "y": 134,
+            "width": 555,
+            "height": 1051
         },
         "devotional_window": {
             "x": 560,
@@ -43,77 +42,71 @@ def get_default_settings() -> Any:
             "width": 350,
             "height": 400
         },
-        "reader_window": {
-            "x": 51,
-            "y": 485,
-            "width": 737,
-            "height": 400
-        },
         "_comment": "This is a comment. It will be ignored by the program...",
-        "last_other_work": "Election A. W. Pink",
+        "last_other_work": "Pilgrims-Progress",
         "last_read_positions": {
-            "Pilgrims-Progress": 624,
-            "Institutes": 0,
-            "Naves Topical Bible": 0,
-            "Calvin - Commentaries": 0,
-            "Catechisms John Owen": 0,
-            "Commentary on Galatians Luther": 0,
-            "Election A. W. Pink": 0,
-            "Election C. D. Cole": 0,
-            "Of Prayer - Calvin": 0,
-            "Pneumatologia": 0,
-            "Puritan Catechism": 0,
-            "Sermons on Proverbs": 0,
-            "Small Catechism Luther": 0,
-            "Systematic Theology - Vol. I": 0,
-            "Systematic Theology - Vol. II": 0,
-            "Systematic Theology - Vol. III": 0,
-            "The Holy War": 0,
-            "calcom01": 15,
-            "calcom02": 15,
-            "calcom03": 15,
-            "calcom04": 15,
-            "calcom06": 15,
-            "calcom07": 15,
-            "calcom08": 15,
-            "calcom09": 15,
-            "calcom10": 15,
-            "calcom11": 30,
-            "calcom12": 30,
-            "calcom13": 30,
-            "calcom14": 30,
-            "calcom15": 30,
-            "calcom16": 30,
-            "calcom17": 36,
-            "calcom18": 36,
-            "calcom19": 36,
-            "calcom20": 36,
-            "calcom21": 15,
-            "calcom22": 15,
-            "calcom23": 15,
-            "calcom24": 15,
-            "calcom25": 15,
-            "calcom26": 15,
-            "calcom27": 15,
-            "calcom28": 15,
-            "calcom29": 15,
-            "calcom30": 15,
-            "calcom31": 15,
-            "calcom32": 15,
-            "calcom33": 15,
-            "calcom34": 15,
-            "calcom35": 15,
-            "calcom36": 15,
-            "calcom37": 15,
-            "calcom38": 15,
-            "calcom39": 15,
-            "calcom40": 0,
-            "calcom41": 15,
-            "calcom42": 15,
-            "calcom43": 15,
-            "calcom44": 15,
-            "calcom45": 15,
-            "calcom05": 15
+            "Pilgrims-Progress": [624, 0, 0, 0, 0],
+            "Institutes": [0, 0, 0, 0, 0],
+            "Naves Topical Bible": [0, 0, 0, 0, 0],
+            "Calvin - Commentaries": [0, 0, 0, 0, 0],
+            "Catechisms John Owen": [0, 0, 0, 0, 0],
+            "Commentary on Galatians Luther": [0, 0, 0, 0, 0],
+            "Election A. W. Pink": [0, 0, 0, 0, 0],
+            "Election C. D. Cole": [980, 0, 0, 0, 0],
+            "Of Prayer - Calvin": [0, 0, 0, 0, 0],
+            "Pneumatologia": [0, 0, 0, 0, 0],
+            "Puritan Catechism": [0, 0, 0, 0, 0],
+            "Sermons on Proverbs": [0, 0, 0, 0, 0],
+            "Small Catechism Luther": [0, 0, 0, 0, 0],
+            "Systematic Theology - Vol. I": [0, 0, 0, 0, 0],
+            "Systematic Theology - Vol. II": [0, 0, 0, 0, 0],
+            "Systematic Theology - Vol. III": [0, 0, 0, 0, 0],
+            "The Holy War": [0, 0, 0, 0, 0],
+            "calcom01": [15, 0, 0, 0, 0],
+            "calcom02": [15, 0, 0, 0, 0],
+            "calcom03": [15, 0, 0, 0, 0],
+            "calcom04": [15, 0, 0, 0, 0],
+            "calcom05": [15, 0, 0, 0, 0],
+            "calcom06": [15, 0, 0, 0, 0],
+            "calcom07": [15, 0, 0, 0, 0],
+            "calcom08": [15, 0, 0, 0, 0],
+            "calcom09": [15, 0, 0, 0, 0],
+            "calcom10": [15, 0, 0, 0, 0],
+            "calcom11": [15, 0, 0, 0, 0],
+            "calcom12": [30, 0, 0, 0, 0],
+            "calcom13": [30, 0, 0, 0, 0],
+            "calcom14": [30, 0, 0, 0, 0],
+            "calcom15": [30, 0, 0, 0, 0],
+            "calcom16": [30, 0, 0, 0, 0],
+            "calcom17": [36, 0, 0, 0, 0],
+            "calcom18": [36, 0, 0, 0, 0],
+            "calcom19": [36, 0, 0, 0, 0],
+            "calcom20": [36, 0, 0, 0, 0],
+            "calcom21": [15, 0, 0, 0, 0],
+            "calcom22": [15, 0, 0, 0, 0],
+            "calcom23": [15, 0, 0, 0, 0],
+            "calcom24": [15, 0, 0, 0, 0],
+            "calcom25": [15, 0, 0, 0, 0],
+            "calcom26": [15, 0, 0, 0, 0],
+            "calcom27": [15, 0, 0, 0, 0],
+            "calcom28": [15, 0, 0, 0, 0],
+            "calcom29": [15, 0, 0, 0, 0],
+            "calcom30": [15, 0, 0, 0, 0],
+            "calcom31": [15, 0, 0, 0, 0],
+            "calcom32": [15, 0, 0, 0, 0],
+            "calcom33": [15, 0, 0, 0, 0],
+            "calcom34": [15, 0, 0, 0, 0],
+            "calcom35": [15, 0, 0, 0, 0],
+            "calcom36": [15, 0, 0, 0, 0],
+            "calcom37": [15, 0, 0, 0, 0],
+            "calcom38": [15, 0, 0, 0, 0],
+            "calcom39": [15, 0, 0, 0, 0],
+            "calcom40": [0, 0, 0, 0, 0],
+            "calcom41": [15, 0, 0, 0, 0],
+            "calcom42": [15, 0, 0, 0, 0],
+            "calcom43": [15, 0, 0, 0, 0],
+            "calcom44": [15, 0, 0, 0, 0],
+            "calcom45": [15, 0, 0, 0, 0],
         }
     }
 
@@ -673,6 +666,67 @@ def split_reference(reference_text: str) -> list:
         parts_list = parts_list[:-1]
 
     return parts_list
+
+
+def normalize_semicolon_refs(reference_text: str) -> str:
+    """
+    Normalise semicolon-separated scripture references so that any segment
+    without an explicit book name inherits the book from the previous segment,
+    and if a segment starts with only a verse/range, inherit the chapter too.
+
+    Examples
+    - "John 3:16; 4:2" -> "John 3:16; John 4:2"
+    - "John 10:14-16; 25-28" -> "John 10:14-16; John 10:25-28"
+    - "1 Cor 2:3; 4:5" -> "1 Cor 2:3; 1 Cor 4:5"
+
+    If the first segment does not include a recognisable book, the string is
+    returned unchanged.
+    """
+    if ";" not in reference_text:
+        return reference_text
+
+    segments = [seg.strip() for seg in reference_text.split(";")]
+    last_book_display: str | None = None
+    last_chapter: str | None = None
+
+    normalized: list[str] = []
+    for seg in segments:
+        if not seg:
+            continue
+        seg_stripped = seg.strip()
+        parts = split_reference(seg_stripped)
+        if parts and parts[0].lower() in sh.bibledict:
+            # Segment begins with a book -> reset inheritance anchors
+            m = re.match(r"^\s*([1-4]?\s*[A-Za-z]+(?:\s+[A-Za-z]+)*)", seg_stripped)
+            last_book_display = m.group(1) if m else parts[0]
+            # Update last_chapter when present like Book 10:...
+            chap_match = re.match(r"^[^0-9]*?(\d+)\s*[:.]", seg_stripped)
+            last_chapter = chap_match.group(1) if chap_match else None
+            normalized.append(seg_stripped)
+            continue
+
+        # No leading book in this segment
+        if last_book_display:
+            # Detect forms: chapter:verse..., or just verse/range
+            chap_verse_match = re.match(r"^\s*(\d+)\s*[:.]\s*(.+)$", seg_stripped)
+            if chap_verse_match:
+                # Has chapter explicitly -> inherit book only
+                last_chapter = chap_verse_match.group(1)
+                normalized_seg = f"{last_book_display} {seg_stripped}"
+                normalized.append(normalized_seg)
+            else:
+                # Starts with verse or range only (e.g. "25-28")
+                if last_chapter:
+                    normalized_seg = f"{last_book_display} {last_chapter}:{seg_stripped}"
+                else:
+                    # No known chapter to inherit; best effort — inherit book only
+                    normalized_seg = f"{last_book_display} {seg_stripped}"
+                normalized.append(normalized_seg)
+        else:
+            # No prior book to inherit from; leave as-is
+            normalized.append(seg_stripped)
+
+    return "; ".join(normalized)
 
 
 def check_roman_chapter_adjacent(reference_text: str) -> str:

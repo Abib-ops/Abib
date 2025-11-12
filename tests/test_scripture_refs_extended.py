@@ -71,6 +71,44 @@ class TestScriptureRefsExtended(unittest.TestCase):
             idx_1_1 = calculate_book_line(1, 1, 1, 0)
             self.assertIsInstance(idx_1_1, int)
 
+    def test_semicolon_reference_inherits_book_and_chapter(self):
+        from scripture import find_scripture_references
+        text = "See John 10:14-16; 25-28 for context."
+        refs = find_scripture_references(text)
+        # Expect two references: John 10:14-16 and John 10:25-28
+        self.assertGreaterEqual(len(refs), 2)
+        self.assertEqual(refs[0]["book"].lower().startswith("john"), True)
+        self.assertEqual(refs[0]["chapter"], 10)
+        self.assertEqual(refs[0]["verse"], "14-16")
+        self.assertEqual(refs[1]["book"].lower().startswith("john"), True)
+        self.assertEqual(refs[1]["chapter"], 10)
+        self.assertEqual(refs[1]["verse"], "25-28")
+
+    def test_semicolon_reference_chapter_then_chapter(self):
+        from scripture import find_scripture_references
+        text = "Cross refs: John 3:16; 4:2"
+        refs = find_scripture_references(text)
+        self.assertGreaterEqual(len(refs), 2)
+        self.assertEqual(refs[0]["book"].lower().startswith("john"), True)
+        self.assertEqual(refs[0]["chapter"], 3)
+        self.assertEqual(refs[0]["verse"], "16")
+        self.assertEqual(refs[1]["book"].lower().startswith("john"), True)
+        self.assertEqual(refs[1]["chapter"], 4)
+        self.assertEqual(refs[1]["verse"], "2")
+
+    def test_semicolon_reference_one_chapter_book(self):
+        from scripture import find_scripture_references
+        text = "See Jude 5; 7-9 for examples."
+        refs = find_scripture_references(text)
+        # Expect Jude 5 and Jude 7-9 (chapter implicitly 1)
+        self.assertGreaterEqual(len(refs), 2)
+        self.assertEqual(refs[0]["book"].lower().startswith("jude"), True)
+        self.assertEqual(refs[0]["chapter"], 1)
+        self.assertEqual(refs[0]["verse"], "5")
+        self.assertEqual(refs[1]["book"].lower().startswith("jude"), True)
+        self.assertEqual(refs[1]["chapter"], 1)
+        self.assertEqual(refs[1]["verse"], "7-9")
+
 
 if __name__ == "__main__":
     unittest.main()

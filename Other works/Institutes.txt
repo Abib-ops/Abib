@@ -9439,7 +9439,7 @@ BOOK FIRST.
    unto me? The Lord taketh my part with them that help me." "Though an
    host should encamp against me, my heart shall not fear." "Yea, though I
    walk through the valley of the shadow of death, I will fear no evil."
-   (Ps. 118:6; Ps. 27:3; Ps. 23:4).
+   (Ps. 118:6; 27:3; 23:4).
 
    How comes it, I ask, that their confidence never fails, but just that
    while the world apparently revolves at random, they know that God is
@@ -9899,7 +9899,7 @@ BOOK FIRST.
    people are severely condemned for perverting the order sanctioned by
    God, and perfidiously revolting from the family of David. And yet we
    know it was God's will that Jeroboam should be anointed. Hence the
-   apparent contradiction in the words of Hosea (Hos 8:4; Hos 13:11),
+   apparent contradiction in the words of Hosea (Hos 8:4; 13:11),
    because, while God complained that that kingdom was erected without his
    knowledge, and against his will, he elsewhere declares, that he had
    given King Jeroboam in his anger. How shall we reconcile the two
@@ -9975,8 +9975,8 @@ BOOK FIRST.
    Ordine, Lib. 1. and 2., where he admirably discusses the question,
    Whether the order of Divine Providence includes all good and evil?
 
-   [139] 2 Sam. 12:12; Jer. 1:25; Is. 5:26; Is. 10:5; Is. 19:25;
-   2 Sam. 16:10; 1 Kings 11:31; 1 Sam. 2:34.
+   [139] 2 Sam. 12:12; Jer. 1:25; Is. 5:26; 10:5; 19:25; 2 Sam. 16:10;
+   1 Kings 11:31; 1 Sam. 2:34.
 
    [140] The French is, "Car ils meslent perversment le commandement de
    Dieu avec son vouloir secret, veu qu'il appert par exemples infinis
@@ -10480,20 +10480,20 @@ BOOK FIRST.
    same thing appears more clearly from the mode of renovation. For the
    spirit, which is contrasted with the old man, and the flesh, denotes
    not only the grace by which the sensual or inferior part of the soul is
-   corrected, but includes a complete reformation of all its parts (Eph.
-   4:23). And, accordingly, Paul enjoins not only that gross appetites be
-   suppressed, but that we be renewed in the spirit of our mind (Eph.
-   4:23), as he elsewhere tells us to be transformed by the renewing of
-   our mind (Rom. 12:2). Hence it follows, that that part in which the
-   dignity and excellence of the soul are most conspicuous, has not only
-   been wounded, but so corrupted, that mere cure is not sufficient. There
-   must be a new nature. How far sin has seized both on the mind and
-   heart, we shall shortly see. Here I only wished briefly to observe,
-   that the whole man, from the crown of the head to the sole of the foot,
-   is so deluged, as it were, that no part remains exempt from sin, and,
-   therefore, everything which proceeds from him is imputed as sin. Thus
-   Paul says, that all carnal thoughts and affections are enmity against
-   God, and consequently death (Rom. 8:7).
+   corrected, but includes a complete reformation of all its parts
+   (Eph. 4:23). And, accordingly, Paul enjoins not only that gross
+   appetites be suppressed, but that we be renewed in the spirit of our
+   mind (Eph. 4:23), as he elsewhere tells us to be transformed by the
+   renewing of our mind (Rom. 12:2). Hence it follows, that that part in
+   which the dignity and excellence of the soul are most conspicuous, has
+   not only been wounded, but so corrupted, that mere cure is not
+   sufficient. There must be a new nature. How far sin has seized both on
+   the mind and heart, we shall shortly see. Here I only wished briefly to
+   observe, that the whole man, from the crown of the head to the sole of
+   the foot, is so deluged, as it were, that no part remains exempt from
+   sin, and, therefore, everything which proceeds from him is imputed as
+   sin. Thus Paul says, that all carnal thoughts and affections are enmity
+   against God, and consequently death (Rom. 8:7).
 
    10. Let us have done, then, with those who dare to inscribe the name of
    God on their vices, because we say that men are born vicious. The
@@ -11118,8 +11118,8 @@ BOOK FIRST.
    sweet, indeed, to have so much virtue of our own as to be able to rest
    in ourselves; but let the many solemn passages by which our pride is
    sternly humbled, deter us from indulging this vain confidence: "Cursed
-   be the man that trusteth in man, and maketh flesh his arm." (Jer.
-   17:5). "He delighteth not in the strength of the horse; he taketh not
+   be the man that trusteth in man, and maketh flesh his arm." (Jer. 17:5).
+   "He delighteth not in the strength of the horse; he taketh not
    pleasure in the legs of a man. The Lord taketh pleasure in those that
    fear him, in those that hope in his mercy," (Ps. 147:10, 11). "He
    giveth power to the faint; and to them that have no might he increaseth
@@ -11444,10 +11444,10 @@ BOOK FIRST.
    establish the fact, not by argument, but by Scripture. Most admirable
    to this effect is the passage which I lately quoted from John, when he
    says, "In him was life; and the life was the light of men. And the
-   light shineth in darkness; and the darkness comprehended it not," (John
-   1:4, 5). He intimates that the human soul is indeed irradiated with a
-   beam of divine light, so that it is never left utterly devoid of some
-   small flame, or rather spark, though not such as to enable it to
+   light shineth in darkness; and the darkness comprehended it not,"
+   (John 1:4, 5). He intimates that the human soul is indeed irradiated
+   with a beam of divine light, so that it is never left utterly devoid of
+   some small flame, or rather spark, though not such as to enable it to
    comprehend God. And why so? Because its acuteness is, in reference to
    the knowledge of God, mere blindness. When the Spirit describes men
    under the term darkness, he declares them void of all power of
@@ -11486,12 +11486,12 @@ BOOK FIRST.
    (Deut. 29:2, 3, 4). Would the expression have been stronger had he
    called us mere blocks in regard to the contemplation of divine things?
    Hence the Lord, by the mouth of the Prophet, promises to the Israelites
-   as a singular favour, "I will give them an heart to know me," (Jer.
-   24:7); intimating, that in spiritual things the human mind is wise only
-   in so far as he enlightens it. This was also clearly confirmed by our
-   Saviour when he said, "No man can come to me, except the Father which
-   has sent me draw him," (John 6:44). Nay, is not he himself the living
-   image of his Father, in which the full brightness of his glory is
+   as a singular favour, "I will give them an heart to know me,"
+   (Jer. 24:7); intimating, that in spiritual things the human mind is wise
+   only in so far as he enlightens it. This was also clearly confirmed by
+   our Saviour when he said, "No man can come to me, except the Father
+   which has sent me draw him," (John 6:44). Nay, is not he himself the
+   living image of his Father, in which the full brightness of his glory is
    manifested to us? Therefore, how far our faculty of knowing God extends
    could not be better shown than when it is declared, that though his
    image is so plainly exhibited, we have not eyes to perceive it. What?
@@ -11528,9 +11528,9 @@ BOOK FIRST.
    Apostle had previously declared, that "Eye has not seen, nor ear heard,
    neither have entered into the heart of man, the things which God has
    prepared for them that love him;" nay, that the wisdom of the world is
-   a kind of veil by which the mind is prevented from beholding God (1
-   Cor. 2:9). What would we more? The Apostle declares that God has "made
-   foolish the wisdom of this world," (1 Cor. 1:20); and shall we
+   a kind of veil by which the mind is prevented from beholding God
+   (1 Cor. 2:9). What would we more? The Apostle declares that God has
+   "made foolish the wisdom of this world," (1 Cor. 1:20); and shall we
    attribute to it an acuteness capable of penetrating to God, and the
    hidden mysteries of his kingdom? Far from us be such presumption!
 
@@ -11802,11 +11802,11 @@ BOOK FIRST.
    10), afterwards retracted his exposition as unsound and inconsistent.
    And, indeed if we admit that men, without grace, have any motions to
    good, however feeble, what answer shall we give to the apostles who
-   declares that "we are incapable of thinking a good thought?" (2 Cor.
-   3:6). What answer shall we give to the Lord, who declares, by Moses,
-   that "every imagination of man's heart is only evil continually?" (Gen.
-   8:21). Since the blunder has thus arisen from an erroneous view of a
-   single passage, it seems unnecessary to dwell upon it. Let us rather
+   declares that "we are incapable of thinking a good thought?"
+   (2 Cor. 3:6). What answer shall we give to the Lord, who declares, by
+   Moses, that "every imagination of man's heart is only evil continually?"
+   (Gen. 8:21). Since the blunder has thus arisen from an erroneous view of
+   a single passage, it seems unnecessary to dwell upon it. Let us rather
    give due weight to our Saviour's words, "Whosoever committeth sin is
    the servant of sin," (John 8:34). We are all sinners by nature,
    therefore we are held under the yoke of sin. But if the whole man is
@@ -12031,10 +12031,10 @@ BOOK FIRST.
    evil consequences. Thus, too, had Isaiah prophesied of the kingdom of
    Christ, when the Lord promised to the Church, that though darkness
    should "cover the earth, and gross darkness the people," yet that he
-   should "arise" upon it, and "his glory" should be seen upon it (Isaiah
-   40:2). When it is thus declared that divine light is to arise on the
-   Church alone, all without the Church is left in blindness and darkness.
-   I will not enumerate all that occurs throughout Scripture, and
+   should "arise" upon it, and "his glory" should be seen upon it
+   (Isaiah 40:2). When it is thus declared that divine light is to arise on
+   the Church alone, all without the Church is left in blindness and
+   darkness. I will not enumerate all that occurs throughout Scripture, and
    particularly in the Psalms and Prophetical writings, as to the vanity
    of man. There is much in what David says, "Surely men of low degree are
    vanity, and men of high degree are a lie: to be laid in the balance,
@@ -12297,24 +12297,24 @@ BOOK FIRST.
    work of God, because, as the Apostle testifies, we are not "sufficient
    of ourselves to think any thing as of ourselves," (2 Cor. 3:5).
    Accordingly, he elsewhere says, not merely that God assists the weak or
-   corrects the depraved will, but that he worketh in us to will (Phil.
-   2:13). From this it is easily inferred, as I have said, that everything
-   good in the will is entirely the result of grace. In the same sense,
-   the Apostle elsewhere says, "It is the same God which worketh all in
-   all," (I Cor. 12:6). For he is not there treating of universal
+   corrects the depraved will, but that he worketh in us to will
+   (Phil. 2:13). From this it is easily inferred, as I have said, that
+   everything good in the will is entirely the result of grace. In the same
+   sense, the Apostle elsewhere says, "It is the same God which worketh all
+   in all," (I Cor. 12:6). For he is not there treating of universal
    government, but declaring that all the good qualities which believers
    possess are due to God. In using the term "all," he certainly makes God
    the author of spiritual life from its beginning to its end. This he had
    previously taught in different terms, when he said that there is "one
-   Lord Jesus Christ, by whom are all things, and we by him," (1 Cor.
-   8:6); thus plainly extolling the new creation, by which everything of
-   our common nature is destroyed. There is here a tacit antithesis
-   between Adam and Christ, which he elsewhere explains more clearly when
-   he says, "We are his workmanship, created in Christ Jesus unto good
-   works, which God has before ordained that we should walk in them,"
-   (Eph. 2:10). His meaning is to show in this way that our salvation is
-   gratuitous because the beginning of goodness is from the second
-   creation which is obtained in Christ. If any, even the minutest,
+   Lord Jesus Christ, by whom are all things, and we by him,"
+   (1 Cor. 8:6); thus plainly extolling the new creation, by which
+   everything of our common nature is destroyed. There is here a tacit
+   antithesis between Adam and Christ, which he elsewhere explains more
+   clearly when he says, "We are his workmanship, created in Christ Jesus
+   unto good works, which God has before ordained that we should walk in
+   them," (Eph. 2:10). His meaning is to show in this way that our
+   salvation is gratuitous because the beginning of goodness is from the
+   second creation which is obtained in Christ. If any, even the minutest,
    ability were in ourselves, there would also be some merit. But to show
    our utter destitution, he argues that we merit nothing, because we are
    created in Christ Jesus unto good works, which God has prepared; again
@@ -12506,25 +12506,25 @@ BOOK FIRST.
    pleased so to work in us as to guide, turn, and govern our heart by his
    Spirit, and reign in it as his own possession. Ezekiel promises that a
    new spirit will be given to the elect, not merely that they may be able
-   to walk in his precepts, but that they may really walk in them (Ezek.
-   11:19; 36:27). And the only meaning which can be given to our Saviour's
-   words, "Every man, therefore, that has heard and learned of the Father,
-   cometh unto me," (John 6:45), is, that the grace of God is effectual in
-   itself. This Augustine maintains in his book De Prædestinatione Sancta.
-   This grace is not bestowed on all promiscuously, according to the
-   common brocard (of Occam, if I mistake not), that it is not denied to
-   any one who does what in him lies. Men are indeed to be taught that the
-   favour of God is offered, without exception, to all who ask it; but
-   since those only begin to ask whom heaven by grace inspires, even this
-   minute portion of praise must not be withheld from him. It is the
-   privilege of the elect to be regenerated by the Spirit of God, and then
-   placed under his guidance and government. Wherefore Augustine justly
-   derides some who arrogate to themselves a certain power of willing, as
-   well as censures others who imagine that that which is a special
-   evidence of gratuitous election is given to all (August. de Verbis
-   Apost. Serm. 21). He says, "Nature is common to all, but not grace;"
-   and he calls it a showy acuteness "which shines by mere vanity, when
-   that which God bestows, on whom he will is attributed generally to
+   to walk in his precepts, but that they may really walk in them
+   (Ezek. 11:19; 36:27). And the only meaning which can be given to our
+   Saviour's words, "Every man, therefore, that has heard and learned of
+   the Father, cometh unto me," (John 6:45), is, that the grace of God is
+   effectual in itself. This Augustine maintains in his book De
+   Prædestinatione Sancta. This grace is not bestowed on all promiscuously,
+   according to the common brocard (of Occam, if I mistake not), that it is
+   not denied to any one who does what in him lies. Men are indeed to be
+   taught that the favour of God is offered, without exception, to all who
+   ask it; but since those only begin to ask whom heaven by grace inspires,
+   even this minute portion of praise must not be withheld from him. It is
+   the privilege of the elect to be regenerated by the Spirit of God, and
+   then placed under his guidance and government. Wherefore Augustine
+   justly derides some who arrogate to themselves a certain power of
+   willing, as well as censures others who imagine that that which is a
+   special evidence of gratuitous election is given to all (August. de
+   Verbis Apost. Serm. 21). He says, "Nature is common to all, but not
+   grace;" and he calls it a showy acuteness "which shines by mere vanity,
+   when that which God bestows, on whom he will is attributed generally to
    all." Elsewhere he says, "How came you? By believing. Fear, lest by
    arrogating to yourself the merit of finding the right way, you perish
    from the right way. I came, you say, by free choice, came by my own
@@ -12596,12 +12596,12 @@ BOOK FIRST.
 
    12. In support of this view, some make an ignorant and false
    application of the Apostle's words: "I laboured more abundantly than
-   they all: yet not I, but the grace of God which was with me," (1 Cor.
-   15:10). The meaning they give them is, that as Paul might have seemed
-   to speak somewhat presumptuously in preferring himself to all the other
-   apostles, he corrects the expression so far by referring the praise to
-   the grace of God, but he, at the same time, calls himself a co-operator
-   with grace. It is strange that this should have proved a
+   they all: yet not I, but the grace of God which was with me,"
+   (1 Cor. 15:10). The meaning they give them is, that as Paul might have
+   seemed to speak somewhat presumptuously in preferring himself to all the
+   other apostles, he corrects the expression so far by referring the praise
+   to the grace of God, but he, at the same time, calls himself a
+   co-operator with grace. It is strange that this should have proved a
    stumbling-block to so many writers, otherwise respectable. The Apostle
    says not that the grace of God laboured with him so as to make him a
    co-partner in the labour. He rather transfers the whole merit of the
@@ -12912,23 +12912,23 @@ BOOK FIRST.
    reprobate, whenever the Lord, in the course of his providence, has any
    purpose to accomplish in them, will sufficiently appear from a single
    passage. It is repeatedly said in the First Book of Samuel, that an
-   evil spirit from the Lord came upon Saul, and troubled him (1 Sam.
-   16:14; 18:10; 19:9). It were impious to apply this to the Holy Spirit.
-   An impure spirit must therefore be called a spirit from the Lord,
-   because completely subservient to his purpose, being more an instrument
-   in acting than a proper agent. We should also add what Paul says, "God
-   shall send them strong delusion, that they should believe a lie: that
-   they all might be damned who believed not the truth," (2 Thess. 2:11,
-   12). But in the same transaction there is always a wide difference
-   between what the Lord does, and what Satan and the ungodly design to
-   do. The wicked instruments which he has under his hand and can turn as
-   he pleases, he makes subservient to his own justice. They, as they are
-   wicked, give effect to the iniquity conceived in their wicked minds.
-   Every thing necessary to vindicate the majesty of God from calumny, and
-   cut off any subterfuge on the part of the ungodly, has already been
-   expounded in the Chapters on Providence (Book 1 Chapter 16-18). Here I
-   only meant to show, in a few words, how Satan reigns in the reprobate,
-   and how God works in both.
+   evil spirit from the Lord came upon Saul, and troubled him
+   (1 Sam. 16:14; 18:10; 19:9). It were impious to apply this to the Holy
+   Spirit. An impure spirit must therefore be called a spirit from the
+   Lord, because completely subservient to his purpose, being more an
+   instrument in acting than a proper agent. We should also add what Paul
+   says, "God shall send them strong delusion, that they should believe a
+   lie: that they all might be damned who believed not the truth,"
+   (2 Thess. 2:11, 12). But in the same transaction there is always a wide
+   difference between what the Lord does, and what Satan and the ungodly
+   design to do. The wicked instruments which he has under his hand and can
+   turn as he pleases, he makes subservient to his own justice. They, as
+   they are wicked, give effect to the iniquity conceived in their wicked
+   minds. Every thing necessary to vindicate the majesty of God from
+   calumny, and cut off any subterfuge on the part of the ungodly, has
+   already been expounded in the Chapters on Providence (Book 1 Chapter
+   16-18). Here I only meant to show, in a few words, how Satan reigns in
+   the reprobate, and how God works in both.
 
    6. In those actions, which in themselves are neither good nor bad, and
    concern the corporeal rather than the spiritual life, the liberty which
@@ -12960,10 +12960,10 @@ BOOK FIRST.
    Joseph (whom he thought to be some heathen Egyptian), "God Almighty
    give you mercy before the man," (Gen. 43:14). In like manner, the whole
    Church confesses that when the Lord was pleased to pity his people, he
-   made them also to be pitied of all them that carried them captives (Ps.
-   106:46). In like manner, when his anger was kindled against Saul, so
-   that he prepared himself for battle, the cause is stated to have been,
-   that a spirit from God fell upon him (1 Sam. 11:6). who dissuaded
+   made them also to be pitied of all them that carried them captives
+   (Ps. 106:46). In like manner, when his anger was kindled against Saul,
+   so that he prepared himself for battle, the cause is stated to have
+   been, that a spirit from God fell upon him (1 Sam. 11:6). who dissuaded
    Absalom from adopting the counsel of Ahithophel, which was wont to be
    regarded as an oracle? (2 Sam. 17:14). Who disposed Rehoboam to adopt
    the counsel of the young men? (1 Kings 12:10). Who caused the approach
@@ -13030,10 +13030,10 @@ BOOK FIRST.
    [173] The French adds, "se retractant de l'autre sentence;" retracting
    the other sentiment.
 
-   [174] Ezek. 7:26; Psalm 107:40; Job 12:20, 24; Isiah 63:17; Exod. 4:21;
-   7:3; 10:1; 3:19.
+   [174] Ezek. 7:26; Psalm 107:40; Job 12:20, 24; Isaiah 63:17;
+   Exod. 4:21; 7:3; 10:1; 3:19.
 
-   [175] Isa. 5:26; 7:18; Ezek. 12:13; 17:20; Jer. 2:.23; Isa. 10:15.
+   [175] Isa. 5:26; 7:18; Ezek. 12:13; 17:20; Jer. 2:23; Isa. 10:15.
 
    [176] The French adds, "D'où procede cela sinon que Dieu besongne tant
    d'une part que d'autre?"--Whence this, but that God interferes thus far
