@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public Licence
 along with Abib.  If not, see <https://www.gnu.org/licenses/>.
 
 For linux use:
-Make sure python is up to date in your distro
+Make sure python is up to date in your distro (But < 3.14)
 Copy the Abib folder from the installation media or download to the home folder
 Navigate to the folder where you have put Abib
 do
@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-12/11/2025
+13/11/2025
 
 """
 
@@ -88,8 +88,6 @@ from PySide6.QtGui import (QMouseEvent, QKeyEvent, QSyntaxHighlighter, QColor, Q
                            QTextCursor, QTextCharFormat, QPixmap)
 
 from PySide6.QtCore import Qt, QRect, QEvent
-
-
 
 import fcs
 import shared as sh
@@ -244,6 +242,12 @@ def check_count_sort(liszt: list[str], r_list: list) -> None:
     w.count = []
     iterate_list(liszt, r_list)
     lo = len(w.occur)
+
+    # If no occurrences found, set occurring to 0 and return early
+    if lo == 0:
+        w.occurring = 0
+        return
+
     for i in range(lo):
         w.count.append(len(w.occur[i]))
 
@@ -267,7 +271,7 @@ def check_count_sort(liszt: list[str], r_list: list) -> None:
             ts.append(woks)
             k += 1
             j = i
-        elif (i != j) or (k == lo-1):
+        elif (i != j) or (k == lo - 1):
             t.reverse()
             ts.reverse()
             newt.append(t)
@@ -520,7 +524,8 @@ class MainWindow(QMainWindow):
         self.comboBox_2: None = None
         self.comboBox_3: None = None
         self.hiLita: None = None
-        self.buttonQ: None = None
+        # Theme toggle button (replaces the old Quit button in the UI)
+        self.buttonTheme: None = None
         self.buttonf3: None = None
         self.buttonf4: None = None
         self.buttonf5: None = None
@@ -668,12 +673,13 @@ class MainWindow(QMainWindow):
         self.display_verse_input.returnPressed.connect(self.goto_line)
         self.okButton.clicked.connect(self.goto_line)
 
-        self.buttonQ = QPushButton("Quit")
-        self.buttonQ.setStyleSheet("QPushButton { text-align: left; }")
-        self.buttonQ.clicked.connect(exit)
-        grid.addWidget(self.buttonQ, 2, 2)
-        self.buttonQ.setToolTip("Close Abib")
-        self.buttonQ.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        # Theme toggle button (Light/Dark), replacing the old Quit button
+        self.buttonTheme = QPushButton("Light/Dark")
+        self.buttonTheme.setStyleSheet("QPushButton { text-align: left; }")
+        self.buttonTheme.clicked.connect(self.toggle_dark_mode)
+        grid.addWidget(self.buttonTheme, 2, 2)
+        self.buttonTheme.setToolTip("Toggle Light/Dark theme")
+        self.buttonTheme.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         # Create a horizontal layout for Find and Find Next buttons
         find_buttons_layout = QHBoxLayout()
