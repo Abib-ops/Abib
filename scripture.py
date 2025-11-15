@@ -120,6 +120,15 @@ _PATTERN = rf"""
     (?=[\s);:,.]|$)
 """
 
+# Compile once for performance; allows scanning whole documents efficiently
+_PATTERN_RE = re.compile(_PATTERN, re.IGNORECASE | re.VERBOSE)
+
+# Precompile continuation pattern at module scope (used for semicolon-separated segments)
+_CONTINUATION_RE = re.compile(
+    r"^\s*;\s*(?:(?P<chap>\d{1,3})\s*[:.]\s*(?P<vers>\d{1,3}(?:\s*[-–]\s*\d{1,3})?(?:\s*,\s*\d{1,3}(?:\s*[-–]\s*\d{1,3})?)*)|(?P<vers_only>\d{1,3}(?:\s*[-–]\s*\d{1,3})?(?:\s*,\s*\d{1,3}(?:\s*[-–]\s*\d{1,3})?)*))",
+    re.IGNORECASE,
+)
+
 
 def find_scripture_references(text: str) -> List[Dict[str, Any]]:
     """Find scripture references in a given text.
@@ -127,7 +136,7 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
     Returns a list of dicts: {text, book, chapter, verse, start, length}
     """
     references: List[Dict[str, Any]] = []
-    for m in re.finditer(_PATTERN, text, re.IGNORECASE | re.VERBOSE):
+    for m in _PATTERN_RE.finditer(text):
         full = m.group(0)
         lstripped = full.lstrip()
         lead = len(full) - len(lstripped)
@@ -180,15 +189,22 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
         last_book_display = book_raw
         last_chapter = chapter
         # Pattern for later segments: ; <chapter>:<verses> OR ; <verses-only>
-        cont_re = re.compile(
-            r"^\s*;\s*(?:(?P<chap>\d{1,3})\s*[:.]\s*(?P<vers>\d{1,3}(?:\s*[-–]\s*\d{1,3})?(?:\s*,\s*\d{1,3}(?:\s*[-–]\s*\d{1,3})?)*)|(?P<vers_only>\d{1,3}(?:\s*[-–]\s*\d{1,3})?(?:\s*,\s*\d{1,3}(?:\s*[-–]\s*\d{1,3})?)*))",
-            re.IGNORECASE,
-        )
         while pos < len(text):
             tail = text[pos:]
-            m2 = cont_re.match(tail)
+            m2 = _CONTINUATION_RE.match(tail)
             if not m2:
                 break
+            # No-regex-change guard: if vers-only continuation (e.g. "; 1") is
+            # immediately followed by a book name (e.g. "Cor."), treat it as a new
+            # reference instead of a continuation.
+            # This avoids swallowing the leading
+            # digit of a new book like "1 Cor.".
+            if m2.group("vers_only"):
+                after = tail[len(m2.group(0)) :]
+                # skip whitespace
+                after = re.sub(r"^\s+", "", after)
+                if after and after[0].isalpha():
+                    break
             seg_full = m2.group(0)
             seg_lstripped = seg_full.lstrip()
             seg_lead = len(seg_full) - len(seg_lstripped)

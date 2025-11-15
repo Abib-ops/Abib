@@ -99,6 +99,8 @@ class TextDocumentWindow(QDialog):
         self._highlight_timer.setInterval(25)
         self._highlight_timer.timeout.connect(self._process_highlight_batch)
         self._cancel_token: int = 0
+        # Whether we are in whole-document parse mode (Option A)
+        self._whole_document_mode: bool = False
         # Cancellation token for async scroll restore to avoid stale apply when switching files
         self._restore_token: int = 0
         # Extra selections for QPlainTextEdit highlighting
@@ -543,9 +545,30 @@ class TextDocumentWindow(QDialog):
         self._cancel_token += 1
         token = self._cancel_token
 
+        # Reset state
         self._all_references.clear()
         self._ref_index.clear()
         self._refs_sorted = True
+        self._extra_selections = []
+        self.text_edit.setExtraSelections(self._extra_selections)
+
+        # Clear any previously applied inline formatting (e.g. from older sessions)
+        try:
+            c = self.text_edit.textCursor()
+            c.beginEditBlock()
+            c.select(QTextCursor.SelectionType.Document)
+            clear_fmt = QTextCharFormat()
+            try:
+                clear_fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.NoUnderline)
+            except AttributeError:
+                pass
+            clear_fmt.setFontUnderline(False)
+            c.mergeCharFormat(clear_fmt)
+            c.endEditBlock()
+        except (RuntimeError, AttributeError, TypeError):
+            pass
+
+        # Still keep line info for viewport math and mapping
         self._lines = content.split('\n')
         self._line_offsets = []
         running = 0
@@ -554,22 +577,41 @@ class TextDocumentWindow(QDialog):
             running += len(ln) + 1
         self._next_line_index = 0
 
+        # Option A: Parse the entire document so \s can bridge newlines
+        self._whole_document_mode = True
+        try:
+            refs = self.find_scripture_references(content)
+        except (RuntimeError, ValueError, TypeError, AttributeError):
+            refs = []
 
+        for r in refs:
+            start = int(r.get('start', 0))
+            length = int(r.get('length', 0))
+            key = (start, length)
+            if key in self._ref_index:
+                continue
+            self._ref_index.add(key)
+            r_abs = dict(r)
+            r_abs['abs_start'] = start
+            r_abs['length'] = length
+            self._all_references.append(r_abs)
+            self._refs_sorted = False
+
+        # No per-line batch processing in whole-document mode
         self._highlight_timer.stop()
         QTimer.singleShot(0, lambda t=token: self._highlight_visible_now() if t == self._cancel_token else None)
-        self._highlight_timer.start()
-        # Apply any collected selections now
-        self.text_edit.setExtraSelections(getattr(self, '_extra_selections', []))
 
     def _apply_highlights_for_refs(self, base: int, refs: List[Dict[str, Any]], *, allow_existing: bool = False) -> None:
         """Collect highlighting ranges for a set of references on a line.
         Deduplicates by (start, length) using self._ref_index.
-        Applies both ExtraSelections and direct char formatting for robustness.
+        Applies ExtraSelections for highlighting.
         """
         selections: List[Any] = []
         for r in refs:
-            start = base + r['start']
-            length = r['length']
+            # Support either relative ('start') or absolute ('abs_start') inputs
+            r_start = r.get('start', r.get('abs_start', 0))
+            start = base + int(r_start)
+            length = int(r.get('length', 0))
             key = (start, length)
             is_new = key not in self._ref_index
             if is_new:
@@ -586,20 +628,42 @@ class TextDocumentWindow(QDialog):
                 # When rebuilding visible highlights (allow_existing=True), still build selections
                 # so formatting is reapplied after operations like theme changes.
                 continue
-            selections.append({'cursor_start': start, 'length': length})
+            # Build contiguous selection segments that exclude indentation immediately after line breaks
+            text = r.get('text', '')
+            if not isinstance(text, str) or not text:
+                selections.append({'cursor_start': start, 'length': length})
+            else:
+                local_i = 0
+                seg_abs_start = start
+                total_len = len(text)
+                while local_i < total_len:
+                    ch = text[local_i]
+                    if ch == '\r' or ch == '\n':
+                        # End the current segment before the newline
+                        if seg_abs_start < start + local_i:
+                            selections.append({'cursor_start': seg_abs_start, 'length': (start + local_i) - seg_abs_start})
+                        # Skip CRLF as a pair
+                        local_i += 1
+                        if ch == '\r' and local_i < total_len and text[local_i] == '\n':
+                            local_i += 1
+                        # Skip indentation spaces/tabs at the start of the new line
+                        while local_i < total_len and text[local_i] in (' ', '\t'):
+                            local_i += 1
+                        seg_abs_start = start + local_i
+                        continue
+                    local_i += 1
+                # Tail segment
+                if seg_abs_start < start + total_len:
+                    selections.append({'cursor_start': seg_abs_start, 'length': (start + total_len) - seg_abs_start})
         # Apply selections
         existing = getattr(self, '_extra_selections', [])
-        # Prepare a reusable format for direct application
-        fmt = TextDocumentWindow._make_highlight_format()
         for extra in selections:
             c = self.text_edit.textCursor()
             c.setPosition(extra['cursor_start'])
             c.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor, extra['length'])
-            # 1) Add an ExtraSelection (helps on some platforms)
+            # Add an ExtraSelection for the matching range
             es = self._make_extra_selection(c)
             existing.append(es)
-            # 2) Also directly apply the char format to ensure visibility everywhere
-            c.setCharFormat(fmt)
         self._extra_selections = existing
 
     @staticmethod
@@ -645,6 +709,10 @@ class TextDocumentWindow(QDialog):
             self.popup_window.move(popup_x, popup_y)
 
     def _process_highlight_batch(self) -> None:
+        # In whole-document mode we don't do per-line batch processing
+        if getattr(self, '_whole_document_mode', False):
+            self._highlight_timer.stop()
+            return
         if not self._lines:
             self._highlight_timer.stop()
             return
@@ -677,14 +745,7 @@ class TextDocumentWindow(QDialog):
             self._ensure_refs_sorted()
 
     def _highlight_visible_now(self) -> None:
-        if not self._lines:
-            text = self.text_edit.toPlainText()
-            if not text:
-                return
-            if len(text) < 20000:
-                self._start_lazy_highlighting(text)
-            return
-
+        # Compute the visible document range in absolute positions
         viewport = self.text_edit.viewport()
         top_pt = QPoint(0, 0)
         bottom_pt = QPoint(viewport.width() - 1, viewport.height() - 1)
@@ -693,32 +754,55 @@ class TextDocumentWindow(QDialog):
         top_pos = top_cursor.position()
         bot_pos = bot_cursor.position()
 
-        def pos_to_line(pos: int) -> int:
-            lo, hi = 0, len(self._line_offsets) - 1
-            ans = 0
-            while lo <= hi:
-                mid = (lo + hi) // 2
-                if self._line_offsets[mid] <= pos:
-                    ans = mid
-                    lo = mid + 1
-                else:
-                    hi = mid - 1
-            return ans
+        # If we have no precomputed references (e.g. very first call), trigger parsing
+        if not self._all_references:
+            text = self.text_edit.toPlainText()
+            if text:
+                self._start_lazy_highlighting(text)
+            return
 
-        i1 = pos_to_line(max(0, top_pos - 200))
-        i2 = pos_to_line(min(bot_pos + 200, self._line_offsets[-1] + len(self._lines[-1])))
-
-        # Reset and rebuild only visible selections
+        # Reset and rebuild only visible selections from precomputed absolute references
         self._extra_selections = []
 
-        for i in range(i1, min(i2 + 1, len(self._lines))):
-            line = self._lines[i]
-            if not line:
+        # Expand the visible range a bit to avoid edge flicker
+        visible_start = max(0, top_pos - 200)
+        visible_end = bot_pos + 200
+
+        # Ensure refs sorted once
+        self._ensure_refs_sorted()
+
+        refs = self._all_references
+
+        # Binary search to find the first reference near the visible start
+        lo, hi = 0, len(refs) - 1
+        start_idx = 0
+        search_key = max(0, visible_start - 100)
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            s = int(refs[mid].get('abs_start', 0))
+            if s < search_key:
+                lo = mid + 1
+            else:
+                start_idx = mid
+                hi = mid - 1
+
+        # Iterate forward adding selections within range
+        batch: List[Dict[str, Any]] = []
+        for i in range(start_idx, len(refs)):
+            r = refs[i]
+            s = int(r.get('abs_start', 0))
+            l = int(r.get('length', 0))
+            if s > visible_end:
+                break
+            e = s + l
+            if e < visible_start:
                 continue
-            base = self._line_offsets[i]
-            refs = self.find_scripture_references(line)
-            # Rebuild selections even if they already exist in index so formatting is refreshed
-            self._apply_highlights_for_refs(base, refs, allow_existing=True)
+            batch.append(r)
+
+        if batch:
+            # Build selections using absolute positions, allow_existing to refresh formatting
+            self._apply_highlights_for_refs(0, batch, allow_existing=True)
+
         # Apply updated selections for the visible range
         self.text_edit.setExtraSelections(self._extra_selections)
 
@@ -893,11 +977,22 @@ class TextDocumentWindow(QDialog):
         if not book_id:
             return "Scripture not found.", ""
 
+        # Use canonical book name for display
         full_book = self.canonical_books.get(book_id, book)
+
+        # Sanitise verse for display: collapse any internal whitespace (incl. CR/LF)
+        verse_str = str(verse)
+        # Replace any sequence of whitespace (spaces, tabs, CR/LF) with a single space
+        verse_clean = re.sub(r"\s+", " ", verse_str).strip()
+
+        # Build a single-line canonical reference string
         if book_id - 1 in sh.onechapterbooks:
-            full_reference = f"{full_book} {verse}"
+            full_reference = f"{full_book} {verse_clean}"
         else:
-            full_reference = f"{full_book} {chapter}:{verse}"
+            full_reference = f"{full_book} {chapter}:{verse_clean}"
+
+        # Final safety: ensure no accidental newlines remain in full_reference
+        full_reference = re.sub(r"\s+", " ", full_reference).strip()
         return scripture_text, full_reference
 
     @staticmethod

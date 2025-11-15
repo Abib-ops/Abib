@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-13/11/2025
+15/11/2025
 
 """
 
@@ -85,7 +85,7 @@ from PySide6.QtWidgets import (QMainWindow, QWidget,
                                QStatusBar, QFileDialog, QSplashScreen)
 
 from PySide6.QtGui import (QMouseEvent, QKeyEvent, QSyntaxHighlighter, QColor, QFont,
-                           QTextCursor, QTextCharFormat, QPixmap)
+                           QTextCursor, QTextCharFormat, QPixmap, QKeySequence, QShortcut)
 
 from PySide6.QtCore import Qt, QRect, QEvent
 
@@ -539,6 +539,10 @@ class MainWindow(QMainWindow):
         self.buttonf13: None = None
         self.buttonf14: None = None
         self.other_works_combo: QComboBox | None = None
+        # Predeclare UI elements that are instantiated in initui to satisfy linters
+        self.last_work_btn: QPushButton | None = None
+        # Keyboard shortcut for reopening the last Other Work (predeclared for linters)
+        self.shortcut_last_work: QShortcut | None = None
         self.other_works_map: Dict[str, str] = {}
         self.statusBar: None = None
         self.okButton: None = None
@@ -776,10 +780,23 @@ class MainWindow(QMainWindow):
         self.buttonf13.setToolTip("Open Calvin’s Commentaries (Ctrl+Shift+C)")
         self.buttonf13.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        # Bottom-right: combo box of Other Works (no separate Reader button)
+        # Bottom-right: combo box of Other Works (with a quick "Last" button)
         self.other_works_combo = QComboBox()
         self.other_works_combo.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        grid.addWidget(self.other_works_combo, 5, 2)
+
+        # Create a small horizontal layout to hold the combo and the Last button
+        other_works_layout = QHBoxLayout()
+        other_works_layout.setContentsMargins(0, 0, 0, 0)
+        other_works_layout.addWidget(self.other_works_combo)
+
+        # Option A: Add a one-click button to jump to the last read item
+        self.last_work_btn = QPushButton("Last")
+        self.last_work_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.last_work_btn.setToolTip("Open the last read book (Ctrl+L)")
+        self.last_work_btn.clicked.connect(self._select_last_other_work)
+        other_works_layout.addWidget(self.last_work_btn)
+
+        grid.addLayout(other_works_layout, 5, 2)
 
         # Populate the combo with .txt files from 'Other Works'
         other_works_dir = Path(sh.str_cwd) / "Other Works"
@@ -801,6 +818,15 @@ class MainWindow(QMainWindow):
         self.other_works_combo.activated.connect(
             lambda index: self._open_other_work(self.other_works_combo.itemText(index))
         )
+
+        # Option B: Keyboard shortcut to jump to the last read Other Work
+        try:
+            self.shortcut_last_work = QShortcut(QKeySequence("Ctrl+L"), self)
+            self.shortcut_last_work.setContext(Qt.ShortcutContext.WindowShortcut)
+            self.shortcut_last_work.activated.connect(self._select_last_other_work)
+        except (RuntimeError, AttributeError, TypeError):
+            # If shortcuts aren't available on this platform/Qt version, ignore gracefully
+            pass
         container: QWidget = QWidget()
         container.setLayout(grid)
         self.setCentralWidget(container)
@@ -993,6 +1019,45 @@ class MainWindow(QMainWindow):
                     self.settings_service.save(self.settings)
         except (OSError, TypeError, ValueError, RuntimeError):
             # Be tolerant: failure to persist should not break the opening
+            pass
+
+    def _select_last_other_work(self) -> None:
+        """Re-select and open the last read Other Works item in the combo box.
+
+        Implements Option A (button) and is also used by Option B (Ctrl+L shortcut).
+        """
+        try:
+            if not hasattr(self, "other_works_map"):
+                return
+            last_work = self.settings.get("last_other_work") if isinstance(self.settings, dict) else None
+            if not last_work:
+                return
+            if last_work not in self.other_works_map:
+                return
+
+            # Find the index in the combo for robustness
+            idx = self.other_works_combo.findText(last_work)
+            if idx < 0:
+                return
+
+            # If it's already selected, Qt won't emit signals; open explicitly
+            if self.other_works_combo.currentIndex() == idx:
+                self._open_other_work(last_work)
+                return
+
+            # Otherwise, switch selection without emitting signals twice, then open explicitly
+            try:
+                self.other_works_combo.blockSignals(True)
+                self.other_works_combo.setCurrentIndex(idx)
+            finally:
+                try:
+                    self.other_works_combo.blockSignals(False)
+                except (RuntimeError, AttributeError, TypeError):
+                    pass
+            # Ensure the reader opens even if a platform doesn't emit currentTextChanged
+            self._open_other_work(last_work)
+        except (RuntimeError, AttributeError, KeyError, TypeError, ValueError):
+            # Be silent on any unexpected issue
             pass
 
     def show_about_dialog(self):
@@ -2421,7 +2486,8 @@ class MainWindow(QMainWindow):
                 if splash is None:
                     splash_path = sh.current_directory / "images" / "Abib_barley.png"
                     pix = QPixmap(str(splash_path))
-                    new_splash = QSplashScreen(pix) if not pix.isNull() else QSplashScreen()
+                    # Use size().isEmpty() instead of isNull() to avoid stub/type warnings
+                    new_splash = QSplashScreen(pix) if not pix.size().isEmpty() else QSplashScreen()
                     new_splash.show()
                     splash = new_splash
             except (RuntimeError, AttributeError, OSError):

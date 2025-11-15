@@ -26,7 +26,8 @@ def _show_splash_if_enabled(settings: Dict[str, Any]) -> QSplashScreen | None:
         return None
     splash_path = sh.current_directory / "images" / "Abib_barley.png"
     pix = QPixmap(str(splash_path))
-    splash = QSplashScreen(pix) if not pix.isNull() else QSplashScreen()
+    # Use size().isEmpty() to test validity to avoid stub/type warnings on isNull()
+    splash = QSplashScreen(pix) if not pix.size().isEmpty() else QSplashScreen()
     # Allow clicks to pass through so the user can interact with the main window beneath
     try:
         splash.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)

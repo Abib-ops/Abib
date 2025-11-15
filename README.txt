@@ -4,13 +4,20 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.12
+Abib v414.13
 ------------
 
 Changelog.
 -----------
+Abib v414.13
+Improved the detection of references that span two lines.
+Completed work on Institutes - John Calvin. Also, Arminianism.
+Added a new button to the reader window combobox 'Last' to return to the last viewed file.
+
+
 Abib v414.12
 Many changes, added new books to the reader window.
+Work on books and texts ensuring highlighting of the scripture references.
 
 Abib v414.11
 Each reader file/book has its own stored screen position and size, plus the scroll position.
