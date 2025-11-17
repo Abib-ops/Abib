@@ -48,6 +48,12 @@ def get_default_settings() -> Any:
             "width": 736,
             "height": 599,
         },
+        # Map of the 'Other Works' file stems to string booleans "true"/"false" indicating
+        # whether they should be shown in the reader window combo box.
+        # This map is generated and kept in sync at the application startup based on
+        # the contents of the "Other Works" folder.
+        # Defaults are "false".
+        "show_work":{},
         "_comment": "This is a comment. It will be ignored by the program...",
         "last_other_work": "Pilgrims-Progress",
         "last_read_positions": {

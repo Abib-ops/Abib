@@ -1,5 +1,5 @@
 # check_refs.py
-# Run from the Abib repo root:  C:\Projects\Abib
+# Run from the Abib repo root: C:\Projects\Abib
 
 import json
 from pathlib import Path
@@ -7,7 +7,14 @@ from pathlib import Path
 import scripture  # uses the project’s scripture.py
 
 # Path to the target file
-TARGET = Path(r"Other Works\Works of Jonathan Edwards Vol II.txt")
+NAME = "Call to the Unconverted.txt"
+TARGET = Path(rf"Other Works\{NAME}")
+print(f"Target file: {TARGET}")
+if not TARGET.is_file():
+    raise FileNotFoundError(
+        f"Target file not found: {TARGET}. "
+        "Place the target file in the 'Other Works' folder or use Option A below."
+    )
 
 # Load bible_data.json (canonical book -> chapter(str) -> verse(str) -> text)
 BIBLE_JSON = Path("bible_data.json")
@@ -50,7 +57,7 @@ print(f"Total references detected: {len(refs)}")
 print(f"Problems found: {len(problems)}")
 
 # Emit a concise report file (CSV-like)
-out = Path("integrity_report_WJE_Vol_II.txt")
+out = Path(rf"integrity_report_{NAME}")
 with out.open("w", encoding="utf-8") as f:
     f.write("kind\tbook\tchapter\tverses\tmissing_or_info\tstart\tlength\tref_text\n")
     for p in problems:

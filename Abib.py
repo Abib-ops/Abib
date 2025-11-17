@@ -809,8 +809,8 @@ class MainWindow(QMainWindow):
         other_works_dir = Path(sh.str_cwd) / "Other Works"
         files = sorted([p for p in other_works_dir.glob("*.txt") if p.is_file()])
         self.other_works_map = {p.stem: str(p) for p in files}
-        if self.other_works_map:
-            self.other_works_combo.addItems(list(self.other_works_map.keys()))
+        # Populate combo filtered by settings['show_work'] values
+        self._refresh_other_works_combo()
 
         # Default selection: last viewed item if available; else Pilgrims-Progress; else leave as first item
         last_work = self.settings.get("last_other_work") if isinstance(self.settings, dict) else None
@@ -861,6 +861,71 @@ class MainWindow(QMainWindow):
         self.about_window = None
 
         self.apply_font_size()  # Set an initial font size from settings
+
+    def _refresh_other_works_combo(self) -> None:
+        """Repopulate the Other Works combo according to settings['show_work'] filter."""
+        if not self.other_works_combo:
+            return
+        self.other_works_combo.blockSignals(True)
+        try:
+            self.other_works_combo.clear()
+            allowed: List[str] = []
+            try:
+                show_map = dict(self.settings.get("show_work") or {})
+            except (TypeError, ValueError, AttributeError):
+                # If settings are not a mapping, or the value cannot be cast to dict,
+                # fall back to an empty mapping without swallowing unrelated errors.
+                show_map = {}
+            for stem in sorted(self.other_works_map.keys()):
+                if str(show_map.get(stem, "false")).lower() == "true":
+                    allowed.append(stem)
+            if allowed:
+                self.other_works_combo.addItems(allowed)
+        finally:
+            self.other_works_combo.blockSignals(False)
+
+    def _build_show_works_menu(self, settings_menu) -> None:
+        """Populate the given Settings submenu with a tickable list of Other Works.
+
+        Toggling an item updates settings['show_work'] and refreshes the combo box.
+        """
+        # Clear any prior dynamic actions after the first static action (Open Settings...)
+        # We'll rebuild from scratch to reflect file system and settings changes.
+        # Remove all actions after the first if the first is our 'Open Settings...' action
+        actions = settings_menu.actions()
+        # Keep the first (Open Settings...) if present, clear the rest
+        for act in actions[1:]:
+            settings_menu.removeAction(act)
+
+        # Separator between Open Settings and the list
+        settings_menu.addSeparator()
+
+        show_map = dict(self.settings.get("show_work") or {})
+        # Ensure keys exist for current files
+        for stem in sorted(self.other_works_map.keys()):
+            if stem not in show_map:
+                show_map[stem] = "false"
+
+        # Build checkable actions
+        from PySide6.QtGui import QAction
+        for stem in sorted(self.other_works_map.keys()):
+            checked = str(show_map.get(stem, "false")).lower() == "true"
+            act = QAction(stem, self)
+            act.setCheckable(True)
+            act.setChecked(checked)
+
+            def _make_toggler(name: str):
+                def _toggle(_checked: bool):
+                    # Update settings with string booleans
+                    show_map_local = dict(self.settings.get("show_work") or {})
+                    show_map_local[name] = "true" if _checked else "false"
+                    self.settings["show_work"] = show_map_local
+                    self.settings_service.save(self.settings)
+                    self._refresh_other_works_combo()
+                return _toggle
+
+            act.toggled.connect(_make_toggler(stem))
+            settings_menu.addAction(act)
 
     # noinspection PyUnresolvedReferences
     def eventFilter(self, source, event):

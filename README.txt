@@ -6,9 +6,11 @@ Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
 Abib v414.15
 ------------
-More work on Works of Jonathan Edwards Vol II.txt
+Finished work on Works of Jonathan Edwards Vol II.txt
 "Last" push-button reduced in size.
 Improved the detection of references in the reader texts.
+Select the texts you want on your Reader window combo box list,
+in the new Help -->  Settings > Tick the ones you want.
 
 Changelog.
 -----------

@@ -139,10 +139,21 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
 
     help_menu.addSeparator()
     icon10_path = Path('images') / 'settings.png'
-    settings_action = QAction(QIcon(str(icon10_path)), "Settings", window)
-    settings_action.setStatusTip("Settings")
+    # Create a Settings submenu under Help
+    settings_menu = help_menu.addMenu(QIcon(str(icon10_path)), "Settings")
+    # First item: open the full Settings dialog
+    settings_action = QAction("Open Settings...", window)
+    settings_action.setStatusTip("Open Settings dialog")
     settings_action.triggered.connect(window.open_settings_dialog)
-    help_menu.addAction(settings_action)
+    settings_menu.addAction(settings_action)
+    # Build tickable list of Other Works under the Settings submenu
+    # This will add a separator and one checkable QAction per work
+    try:
+        if hasattr(window, "_build_show_works_menu"):
+            window._build_show_works_menu(settings_menu)
+    except Exception:
+        # If dynamic building fails, ignore to keep the app functional
+        pass
 
     actions = [
         open_file_action, print_action, exit_action,

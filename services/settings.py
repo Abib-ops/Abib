@@ -6,6 +6,7 @@ from typing import Any, Dict, Optional, Tuple
 
 import fcs
 import shared as sh
+from os import PathLike
 
 
 @dataclass
@@ -48,6 +49,34 @@ class SettingsService:
     def load(self) -> Dict[str, Any]:
         path_str = str(self.paths.settings_file)
         self._settings = fcs.load_settings_from_file(path_str)
+
+        # Synchronize the "show_work" map with files present in "Other Works".
+        try:
+            other_works_dir: Path | str | PathLike[str] = Path(sh.str_cwd) / "Other Works"
+            stems_on_disk = set(
+                p.stem for p in Path(other_works_dir).glob("*.txt") if p.is_file()
+            )
+        except Exception:
+            stems_on_disk = set()
+
+        show_map: Dict[str, Any] = dict(self._settings.get("show_work") or {})
+        changed = False
+
+        # Add new entries defaulting to "false"
+        for stem in stems_on_disk:
+            if stem not in show_map:
+                show_map[stem] = "false"
+                changed = True
+
+        # Remove entries no longer present on disk
+        for stale in list(show_map.keys() - stems_on_disk):
+            show_map.pop(stale, None)
+            changed = True
+
+        if changed:
+            self._settings["show_work"] = show_map
+            # Persist the synchronized settings
+            fcs.save_settings_to_file(self._settings, path_str)
         return self._settings
 
     def save(self, settings: Optional[Dict[str, Any]] = None) -> None:
