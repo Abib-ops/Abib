@@ -4,11 +4,19 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.13
+Abib v414.15
 ------------
+More work on Works of Jonathan Edwards Vol II.txt
+"Last" push-button reduced in size.
+Improved the detection of references in the reader texts.
 
 Changelog.
 -----------
+Abib v414.14
+PDF folder included properly.
+Work done on Works of Jonathan Edwards Vol II.txt
+Added The Works of Thomas Brook to the "pdf" folder.
+
 Abib v414.13
 Improved the detection of references that span two lines.
 Completed work on Institutes - John Calvin. Also, Arminianism.

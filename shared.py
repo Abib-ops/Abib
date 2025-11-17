@@ -11,7 +11,7 @@ from os import getenv
 from json import loads
 from platform import system
 
-CURRENT_VERSION = "414.13"
+CURRENT_VERSION = "414.15"
 current_directory: Path = Path.cwd()
 str_cwd: str = str(current_directory)
 # settings_file: Path = current_directory / 'settings.json'
@@ -44,14 +44,14 @@ EOF_BIBLE_TEXT = LAST_VERSE_IN_BIBLE + 1
 EOF_AMAP = EOF_INFO = EOF_BIBLE_TEXT + 17
 
 bibledict: dict[str, int] = {
-        'genesis': 1, 'ge': 1, 'gen': 1, 'g': 1, 'gene': 1, 'ot': 1,
-        'exodus': 2, 'ex': 2, 'exo': 2, 'e': 2, 'exod': 2,
-        'leviticus': 3, 'le': 3, 'lev': 3, 'levi': 3, 'l': 3, 'levt': 3, 'levtics': 3,
-        'numbers': 4, 'nu': 4, 'num': 4, 'number': 4, 'n': 4, 'numb': 4,
-        'deuteronomy': 5, 'de': 5, 'deut': 5, 'deu': 5, 'd': 5,
-        'joshua': 6, 'jos': 6, 'josh': 6, 'j': 6,
+        'genesis': 1, 'ge': 1, 'gen': 1, 'gene': 1, 'ot': 1,
+        'exodus': 2, 'ex': 2, 'exo': 2, 'exod': 2,
+        'leviticus': 3, 'le': 3, 'lev': 3, 'levi': 3, 'levt': 3, 'levtics': 3,
+        'numbers': 4, 'nu': 4, 'num': 4, 'number': 4, 'numb': 4,
+        'deuteronomy': 5, 'de': 5, 'deut': 5, 'deu': 5,
+        'joshua': 6, 'jos': 6, 'josh': 6,
         'judges': 7, 'jdg': 7, 'ju': 7, 'jud': 7, 'judg': 7, 'judge': 7,
-        'ruth': 8, 'ru': 8, 'rut': 8, 'r': 8,
+        'ruth': 8, 'ru': 8, 'rut': 8,
         '1samuel': 9, '1s': 9, '1sa': 9, '1sam': 9, '1bk': 9, 'ibk': 9,
         'Isamuel': 9, 'Isam': 9,
         'isamuel': 9, 'isam': 9,
@@ -71,25 +71,25 @@ bibledict: dict[str, int] = {
         'nehemiah': 16, 'ne': 16, 'neh': 16, 'nehe': 16, 'neem': 16,
         'esther': 17, 'es': 17, 'est': 17, 'esth': 17, 'esthe': 17, 'esta': 17,
         'job': 18, 'jb': 18,
-        'psalms': 19, 'psalm': 19, 'ps': 19, 'psa': 19, 'p': 19,
+        'psalms': 19, 'psalm': 19, 'psal': 19, 'ps': 19, 'psa': 19,
         'proverbs': 20, 'pr': 20, 'pro': 20, 'prov': 20, 'proverb': 20,
         'ecclesiastes': 21, 'ec': 21, 'ecc': 21, 'eccl': 21, 'ecclesiaste': 21, 'eccles': 21,
         'songofsolomon': 22, 'songofsongs': 22, 'so': 22, 'son': 22, 'song': 22,
-        'sos': 22, 'songs': 22, 's': 22, 'ss': 22, 'ca': 22, 'canticles': 22, 'sng': 22,
-        'isaiah': 23, 'isai': 23, 'esaias': 23, 'i': 23, 'is': 23, 'isa': 23, 'ish': 23,
+        'sos': 22, 'songs': 22, 'ss': 22, 'ca': 22, 'canticles': 22, 'sng': 22,
+        'isaiah': 23, 'isai': 23, 'esaias': 23, 'is': 23, 'isa': 23, 'ish': 23,
         'jeremiah': 24, 'je': 24, 'jer': 24, 'jeremy': 24,
         'lamentations': 25, 'la': 25, 'lam': 25, 'lamentation': 25, 'lame': 25,
         'ezekiel': 26, 'eze': 26, 'ezek': 26, 'ezk': 26, 'zek': 26,
         'daniel': 27, 'da': 27, 'dan': 27, 'dani': 27,
-        'hosea': 28, 'ho': 28, 'hos': 28, 'h': 28, 'hose': 28,
+        'hosea': 28, 'ho': 28, 'hos': 28, 'hose': 28,
         'joel': 29, 'joe': 29, 'jol': 29,
-        'amos': 30, 'am': 30, 'amo': 30, 'a': 30,
-        'obadiah': 31, 'ob': 31, 'oba': 31, 'obad': 31, 'o': 31,
+        'amos': 30, 'am': 30, 'amo': 30,
+        'obadiah': 31, 'ob': 31, 'oba': 31, 'obad': 31,
         'jonah': 32, 'jon': 32, 'jona': 32,
-        'micah': 33, 'mi': 33, 'mic': 33, 'm': 33, 'mica': 33,
+        'micah': 33, 'mi': 33, 'mic': 33, 'mica': 33,
         'nahum': 34, 'na': 34, 'nah': 34, 'nam': 34,
         'habakkuk': 35, 'hab': 35, 'haba': 35, 'habak': 35, 'ha': 35, 'hb': 35,
-        'zephaniah': 36, 'zp': 36, 'zep': 36, 'zeph': 36, 'z': 36, 'ze': 36,
+        'zephaniah': 36, 'zp': 36, 'zep': 36, 'zeph': 36, 'ze': 36,
         'haggai': 37, 'hag': 37, 'hagg': 37, 'hg': 37, 'haggi': 37,
         'zechariah': 38, 'zc': 38, 'zec': 38, 'zech': 38,
         'malachi': 39, 'mal': 39, 'mala': 39, 'malac': 39, 'ma': 39,
@@ -106,7 +106,7 @@ bibledict: dict[str, int] = {
         'galatians': 48, 'ga': 48, 'gal': 48, 'galatian': 48, 'gala': 48,
         'ephesians': 49, 'ep': 49, 'eph': 49, 'ephesian': 49, 'ephe': 49,
         'philippians': 50, 'php': 50, 'philip': 50, 'phil': 50, 'ph': 50, 'phili': 50,
-        'colossians': 51, 'co': 51, 'col': 51, 'colossian': 51, 'c': 51,
+        'colossians': 51, 'co': 51, 'col': 51, 'colossian': 51, 'colos': 51, 'coloss': 51,
         '1thessalonians': 52, '1th': 52, '1the': 52, '1thess': 52,
         '1thessalonian': 52, '1t': 52, '1thes': 52,
         'ithessalonians': 52, 'ith': 52, 'ithe': 52, 'ithess': 52,
@@ -119,7 +119,7 @@ bibledict: dict[str, int] = {
         'itimothy': 54, 'iti': 54, 'itim': 54,
         '2timothy': 55, '2ti': 55, '2tim': 55,
         'iitimothy': 55, 'iiti': 55, 'iitim': 55,
-        'titus': 56, 'ti': 56, 'tit': 56, 't': 56,
+        'titus': 56, 'ti': 56, 'tit': 56,
         'philemon': 57, 'phm': 57, 'phi': 57, 'phl': 57, 'phile': 57, 'philo': 57, "phlm": 57,
         'hebrews': 58, 'he': 58, 'heb': 58, 'hebrew': 58, 'hebr': 58,
         'james': 59, 'ja': 59, 'jas': 59, 'jam': 59, 'jame': 59, 'jim': 59, 'jamo': 59,

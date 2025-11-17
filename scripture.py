@@ -107,17 +107,23 @@ def normalize_book_input(book_input: str) -> str:
 
 
 # Precompile the reference pattern used by both UI and scanner
-_ord_re = r"(?:(?:[1-3]|i{1,3})\.?\s*)?"  # 1/2/3 or i/ii/iii with optional dot
+# Define a broader whitespace class that includes common Unicode spaces seen in ebooks/PDFs.
+_WS = r"[\s\u00A0\u202F\u2007\u2009\u200A\u2000-\u2006]"
+
+_ord_re = rf"(?:(?:[1-3]|i{{1,3}})\.?{_WS}*)?"  # 1/2/3 or i/ii/iii with optional dot
 _book_re = r"[A-Za-z]+"  # validated later
-_arabic_re = r"(?P<chap_a>\d{1,3})\s*:\s*(?P<vers_a>\d{1,3}(?:\s*[-–]\s*\d{1,3})?(?:\s*,\s*\d{1,3}(?:\s*[-–]\s*\d{1,3})?)*)"
-_roman_re = r"(?P<chap_r>[ivxlcdm]+)\.?\s*(?:v(?:er\.)?\s*)?(?P<vers_r>\d{1,3}(?:\s*[-–]\s*\d{1,3})?(?:\s*,\s*\d{1,3}(?:\s*[-–]\s*\d{1,3})?)*)"
-_nochap_re = r"(?P<vers_only>\d{1,3}(?:\s*[-–]\s*\d{1,3})?(?:\s*,\s*\d{1,3}(?:\s*[-–]\s*\d{1,3})?)*)"
+# Allow colon or dot between Arabic chapter and verse, e.g. 22:17 or 22.17
+_arabic_re = rf"(?P<chap_a>\d{{1,3}}){_WS}*[:.]{_WS}*(?P<vers_a>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*)"
+# Allow optional dot or colon after Roman chapter, e.g., xxii. 17 or xxii:17 or xxii 17
+_roman_re = rf"(?P<chap_r>[ivxlcdm]+){_WS}*[:.]?{_WS}*(?:v(?:er\.)?{_WS}*)?(?P<vers_r>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*)"
+_nochap_re = rf"(?P<vers_only>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*)"
 
 _PATTERN = rf"""
     (?<!\w)
-    (?P<book>{_ord_re}{_book_re})\.?\s+
+    (?P<book>{_ord_re}{_book_re})\.?{_WS}*
     (?:{_arabic_re}|{_roman_re}|{_nochap_re})
-    (?=[\s);:,.]|$)
+    # Allow quotes or allowed punctuation to immediately follow
+    (?=(?:{_WS}|[);:,.\"'“”‘’]|$))
 """
 
 # Compile once for performance; allows scanning whole documents efficiently
@@ -125,7 +131,7 @@ _PATTERN_RE = re.compile(_PATTERN, re.IGNORECASE | re.VERBOSE)
 
 # Precompile continuation pattern at module scope (used for semicolon-separated segments)
 _CONTINUATION_RE = re.compile(
-    r"^\s*;\s*(?:(?P<chap>\d{1,3})\s*[:.]\s*(?P<vers>\d{1,3}(?:\s*[-–]\s*\d{1,3})?(?:\s*,\s*\d{1,3}(?:\s*[-–]\s*\d{1,3})?)*)|(?P<vers_only>\d{1,3}(?:\s*[-–]\s*\d{1,3})?(?:\s*,\s*\d{1,3}(?:\s*[-–]\s*\d{1,3})?)*))",
+    rf"^{_WS}*;{_WS}*(?:(?P<chap>\d{{1,3}}){_WS}*[:.]{_WS}*(?P<vers>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*)|(?P<vers_only>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*))",
     re.IGNORECASE,
 )
 
@@ -136,20 +142,34 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
     Returns a list of dicts: {text, book, chapter, verse, start, length}
     """
     references: List[Dict[str, Any]] = []
-    for m in _PATTERN_RE.finditer(text):
+
+    scan_pos = 0
+    n = len(text)
+    while scan_pos < n:
+        m = _PATTERN_RE.search(text, scan_pos)
+        if not m:
+            break
+
         full = m.group(0)
-        lstripped = full.lstrip()
+        # Strip leading whitespace using the broadened whitespace class
+        lstripped = re.sub(rf"^{_WS}+", "", full)
         lead = len(full) - len(lstripped)
         book_raw = m.group("book")
         normalized = normalize_book_input(book_raw)
         book_id = sh.bibledict.get(normalized)
+
+        # If this candidate doesn't map to a valid book, advance one character from
+        # the match start so we can discover overlapping matches (e.g. after list markers like "o. ")
         if not book_id:
+            scan_pos = m.start() + 1
             continue
 
+        # Determine chapter/verses
         if m.group("chap_a") and m.group("vers_a"):
             try:
                 chapter = int(m.group("chap_a"))
             except ValueError:
+                scan_pos = m.start() + 1
                 continue
             verses = m.group("vers_a")
         elif m.group("chap_r") and m.group("vers_r"):
@@ -157,18 +177,24 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
             try:
                 chapter = fromRoman(chap_rom)
             except (InvalidRomanNumeralError, ValueError):
+                scan_pos = m.start() + 1
                 continue
             verses = m.group("vers_r")
         elif m.group("vers_only"):
             if (book_id - 1) not in sh.onechapterbooks:
+                # Not a one-chapter book; treat as false match and continue overlapping scan
+                scan_pos = m.start() + 1
                 continue
             chapter = 1
             verses = m.group("vers_only")
         else:
+            scan_pos = m.start() + 1
             continue
 
-        verses = verses.strip()
-        verses = re.sub(r"[\s)\];:.,]+$", "", verses)
+        # Clean and trim verses using broadened whitespace class
+        verses = re.sub(rf"^{_WS}+", "", verses)
+        verses = re.sub(rf"(?:{_WS}|[)\];:.,\"'“”‘’])+$", "", verses)
+
         start = m.start() + lead
         length = len(lstripped)
         references.append(
@@ -185,72 +211,57 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
         # Handle semicolon-separated continuations inheriting book and possibly chapter,
         # e.g. "John 3:16; 4:5, 12-15" or one-chapter books like "Jude 5; 7-9".
         # We scan forward from the end of this match for additional segments starting with ';'.
-        pos = m.end()
-        last_book_display = book_raw
+        tail_pos = m.end()
         last_chapter = chapter
-        # Pattern for later segments: ; <chapter>:<verses> OR ; <verses-only>
-        while pos < len(text):
-            tail = text[pos:]
+        while tail_pos < n:
+            tail = text[tail_pos:]
             m2 = _CONTINUATION_RE.match(tail)
             if not m2:
                 break
-            # No-regex-change guard: if vers-only continuation (e.g. "; 1") is
-            # immediately followed by a book name (e.g. "Cor."), treat it as a new
-            # reference instead of a continuation.
-            # This avoids swallowing the leading
-            # digit of a new book like "1 Cor.".
+            # Guard: if vers-only continuation (e.g. "; 1") is immediately followed by a plausible
+            # new book token (digit or capitalised word),
+            # stop continuation so the next main scan can pick it up.
             if m2.group("vers_only"):
                 after = tail[len(m2.group(0)) :]
-                # skip whitespace
-                after = re.sub(r"^\s+", "", after)
-                if after and after[0].isalpha():
+                after = re.sub(rf"^{_WS}+", "", after)
+                if after and (after[0].isdigit() or after[0].isupper()):
                     break
+
             seg_full = m2.group(0)
             seg_lstripped = seg_full.lstrip()
             seg_lead = len(seg_full) - len(seg_lstripped)
-            start2 = pos + seg_lead
-            # Determine chapter and verses
+            start2 = tail_pos + seg_lead
+
             if m2.group("chap") and m2.group("vers"):
                 try:
                     chapter2 = int(m2.group("chap"))
                 except ValueError:
-                    chapter2 = None
+                    break
                 verses2 = m2.group("vers")
-                if chapter2 is None:
-                    break
                 last_chapter = chapter2
-                references.append(
-                    {
-                        "text": seg_lstripped,
-                        "book": last_book_display,
-                        "chapter": chapter2,
-                        "verse": re.sub(r"[\s)\];:.,]+$", "", verses2.strip()),
-                        "start": start2,
-                        "length": len(seg_lstripped),
-                    }
-                )
             else:
-                # verse-only continuation
+                # vers-only; reuse last_chapter
                 verses2 = m2.group("vers_only")
-                chap_for_vers_only: int | None = None
-                if last_chapter is not None:
-                    chap_for_vers_only = last_chapter
-                elif (sh.bibledict.get(normalized) or 0) and (book_id - 1) in sh.onechapterbooks:
-                    chap_for_vers_only = 1
-                if chap_for_vers_only is None:
-                    # cannot resolve chapter for this continuation; stop chaining
-                    break
-                references.append(
-                    {
-                        "text": seg_lstripped,
-                        "book": last_book_display,
-                        "chapter": chap_for_vers_only,
-                        "verse": re.sub(r"[\s)\];:.,]+$", "", verses2.strip()),
-                        "start": start2,
-                        "length": len(seg_lstripped),
-                    }
-                )
-            pos += len(seg_full)
+
+            verses2 = re.sub(rf"^{_WS}+", "", verses2)
+            verses2 = re.sub(rf"(?:{_WS}|[)\];:.,\"'“”‘’])+$", "", verses2)
+
+            references.append(
+                {
+                    "text": seg_lstripped,
+                    "book": book_raw,
+                    "chapter": last_chapter,
+                    "verse": verses2,
+                    "start": start2,
+                    "length": len(seg_lstripped),
+                }
+            )
+
+            tail_pos += len(seg_full)
+
+        # Continue the main scan after the end of this match and any continuations consumed
+        scan_pos = tail_pos
+
     return references
 
 

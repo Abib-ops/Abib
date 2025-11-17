@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-15/11/2025
+17/11/2025
 
 """
 
@@ -792,6 +792,13 @@ class MainWindow(QMainWindow):
         # Option A: Add a one-click button to jump to the last read item
         self.last_work_btn = QPushButton("Last")
         self.last_work_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        # Make the "Last" button roughly half its natural/suggested width
+        try:
+            suggested_w = self.last_work_btn.sizeHint().width()
+            self.last_work_btn.setFixedWidth(max(40, int(suggested_w * 0.5)))
+        except (RuntimeError, AttributeError, TypeError):
+            # If sizeHint isn't available for any reason, skip resizing gracefully
+            pass
         self.last_work_btn.setToolTip("Open the last read book (Ctrl+L)")
         self.last_work_btn.clicked.connect(self._select_last_other_work)
         other_works_layout.addWidget(self.last_work_btn)
