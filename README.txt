@@ -4,12 +4,15 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.16
+Abib v414.17
 ------------
 
 Changelog.
 -----------
-Abib v414.16
+Abib v414.17
+Did something can't remember what
+
+Abib v414.176
 README (on GitHub) has links for downloading the individual PDF files.
 
 Abib v414.15
