@@ -4,11 +4,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.23
+Abib v414.24
 ------------
 
 Changelog.
 -----------
+Abib v414.24
+Upgrade test.
+
 Abib v414.23
 Upgrade test.
 
