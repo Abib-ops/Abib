@@ -4,11 +4,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.21
+Abib v414.22
 ------------
 
 Changelog.
 -----------
+Abib v414.22
+Urgent bugfix of upgrade error.
+
 Abib v414.21
 Bug fix for text search.
 Bug fix for the uninstallation process.
