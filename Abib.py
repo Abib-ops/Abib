@@ -541,6 +541,8 @@ class MainWindow(QMainWindow):
         self.other_works_combo: QComboBox | None = None
         # Predeclare UI elements that are instantiated in initui to satisfy linters
         self.last_work_btn: QPushButton | None = None
+        # Search button for Other Works (instantiated in initui)
+        self.search_work_btn: QPushButton | None = None
         # Keyboard shortcut for reopening the last Other Work (predeclared for linters)
         self.shortcut_last_work: QShortcut | None = None
         self.other_works_map: Dict[str, str] = {}
@@ -784,7 +786,7 @@ class MainWindow(QMainWindow):
         self.other_works_combo = QComboBox()
         self.other_works_combo.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        # Create a small horizontal layout to hold the combo and the Last button
+        # Create a small horizontal layout to hold the combo and the Last/Search buttons
         other_works_layout = QHBoxLayout()
         other_works_layout.setContentsMargins(0, 0, 0, 0)
         other_works_layout.addWidget(self.other_works_combo)
@@ -802,6 +804,23 @@ class MainWindow(QMainWindow):
         self.last_work_btn.setToolTip("Open the last read book (Ctrl+L)")
         self.last_work_btn.clicked.connect(self._select_last_other_work)
         other_works_layout.addWidget(self.last_work_btn)
+
+        # Add a Search button for searching within the Other Works reader window
+        self.search_work_btn = QPushButton("Search")
+        self.search_work_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        try:
+            suggested_sw = self.search_work_btn.sizeHint().width()
+            self.search_work_btn.setFixedWidth(max(60, int(suggested_sw * 0.8)))
+        except (RuntimeError, AttributeError, TypeError):
+            pass
+        self.search_work_btn.setToolTip("Search in the opened Other Works text (Ctrl+F)")
+        self.search_work_btn.clicked.connect(self._open_reader_search)
+        # Disabled (greyed out) until a reader window is displayed
+        try:
+            self.search_work_btn.setEnabled(False)
+        except (RuntimeError, AttributeError, TypeError):
+            pass
+        other_works_layout.addWidget(self.search_work_btn)
 
         grid.addLayout(other_works_layout, 5, 2)
 
@@ -1056,6 +1075,14 @@ class MainWindow(QMainWindow):
         self.text_edit_window.show()
         self.text_edit_window.raise_()
         self.text_edit_window.activateWindow()
+        # Connect visibility signal to toggle the Search button state and enable now
+        try:
+            if not getattr(self.text_edit_window, "_display_signal_connected", False):
+                self.text_edit_window.displayedChanged.connect(self._on_reader_displayed_changed)
+                setattr(self.text_edit_window, "_display_signal_connected", True)
+        except (AttributeError, RuntimeError, TypeError):
+            pass
+        self._update_other_works_search_button(True)
 
     def _on_reader_reference_activated(self, ref: str) -> None:
         """Navigate the Bible main window to the clicked reference from the reader window."""
@@ -1071,6 +1098,38 @@ class MainWindow(QMainWindow):
                 pass
         except (ValueError, TypeError, KeyError, IndexError, RuntimeError):
             # Be resilient: if parsing fails, ignore silently
+            pass
+
+    def _on_reader_displayed_changed(self, visible: bool) -> None:
+        """Enable/disable the Search button based on reader visibility."""
+        self._update_other_works_search_button(bool(visible))
+
+    def _update_other_works_search_button(self, enabled: bool | None = None) -> None:
+        """Set the Search button enabled state. If enabled is None, inferred from reader visibility."""
+        btn = getattr(self, "search_work_btn", None)
+        if btn is None:
+            return
+        try:
+            if enabled is None:
+                reader = getattr(self, "text_edit_window", None)
+                state = bool(reader is not None and getattr(reader, "isVisible", None) and reader.isVisible())
+            else:
+                state = bool(enabled)
+            btn.setEnabled(state)
+        except (RuntimeError, AttributeError, TypeError):
+            pass
+
+    def _open_reader_search(self) -> None:
+        """Open or focus the Search dialog for the Other Works reader window."""
+        reader = getattr(self, "text_edit_window", None)
+        if not reader:
+            # No reader open; keep the button disabled just in case
+            self._update_other_works_search_button(False)
+            return
+        try:
+            reader.show_find_dialog()
+            self._update_other_works_search_button(True)
+        except (AttributeError, RuntimeError, TypeError):
             pass
 
     def _open_other_work(self, stem: str) -> None:

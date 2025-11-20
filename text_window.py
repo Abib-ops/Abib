@@ -3,21 +3,66 @@ from __future__ import annotations
 
 from pathlib import Path
 import re
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Set, Optional, cast
 
 from PySide6.QtCore import Qt, QEvent, QTimer, QPoint, Signal
-from PySide6.QtGui import QColor, QFont, QTextCursor, QTextCharFormat, QPalette
-from PySide6.QtWidgets import QDialog, QLabel, QVBoxLayout, QPlainTextEdit, QWidget, QTextEdit
+from PySide6.QtGui import (
+    QColor,
+    QFont,
+    QTextCursor,
+    QTextCharFormat,
+    QPalette,
+    QKeySequence,
+    QTextDocument,
+    QShortcut,
+)
+from PySide6.QtWidgets import (
+    QDialog,
+    QLabel,
+    QVBoxLayout,
+    QPlainTextEdit,
+    QWidget,
+    QTextEdit,
+    QLineEdit,
+    QPushButton,
+    QCheckBox,
+    QHBoxLayout,
+)
 
 import fcs
 import scripture
 import shared as sh
 
 
+# Helper: Safely resolve QTextDocument find flags in a way that keeps static analysers happy
+# Some PySide6 versions expose flags as QTextDocument.FindCaseSensitively while others
+# only expose them under QTextDocument.FindFlag.FindCaseSensitively.
+# This helper returns an int-compatible bit value or 0 if the flag cannot be resolved.
+def _qdoc_find_flag(name: str) -> int:
+    try:
+        val = getattr(QTextDocument, name, None)
+        if val is None:
+            findflag = getattr(QTextDocument, "FindFlag", None)
+            if findflag is not None:
+                val = getattr(findflag, name, None)
+        if val is None:
+            return 0
+        try:
+            return int(val)  # PySide enum/QFlags are int-convertible
+        except (ValueError, TypeError):
+            # Fallback: try a common attribute
+            v2 = getattr(val, "value", None)
+            return int(v2) if v2 is not None else 0
+    except (AttributeError, TypeError):
+        return 0
+
+
 class TextDocumentWindow(QDialog):
     # Emitted when the user clicks a highlighted scripture reference.
     # Payload is a canonical reference string like "John 3:16" or "Jude 5".
     referenceActivated = Signal(str)
+    # Emitted when this window becomes shown/hidden, so the main window can toggle buttons
+    displayedChanged = Signal(bool)
     def __init__(self, initial_file_path: str | None = None,
                  settings: Dict[str, Any] | None = None,
                  settings_path: str | None = None) -> None:
@@ -46,7 +91,6 @@ class TextDocumentWindow(QDialog):
 
         # One-click: Reset scroll for this text
         try:
-            from PySide6.QtWidgets import QPushButton
             self.reset_scroll_btn = QPushButton("Reset scroll for this text")
             self.reset_scroll_btn.setToolTip("Set the saved position for this text to the top (0) and scroll there")
             self.reset_scroll_btn.clicked.connect(self.reset_scroll_for_current_text)
@@ -129,6 +173,31 @@ class TextDocumentWindow(QDialog):
             self.load_text_file(initial_file_path)
 
         self.canonical_books = scripture.CANONICAL_BOOKS
+
+        # ---- Lightweight Find dialog state and shortcuts ----
+        # Use the concrete dialog type so static analysers know about `.edit`, `.build_flags`, etc.
+        self._find_dlg: Optional["TextDocumentWindow._ReaderFindDialog"] = None
+        try:
+            # Keyboard shortcuts within the reader window
+            sc_find = QShortcut(QKeySequence.StandardKey.Find, self)
+            sc_find.setContext(Qt.ShortcutContext.WindowShortcut)
+            sc_find.activated.connect(self.show_find_dialog)
+
+            sc_next = QShortcut(QKeySequence.StandardKey.FindNext, self)
+            sc_next.setContext(Qt.ShortcutContext.WindowShortcut)
+            sc_next.activated.connect(self.find_next)
+
+            sc_prev = QShortcut(QKeySequence.StandardKey.FindPrevious, self)
+            sc_prev.setContext(Qt.ShortcutContext.WindowShortcut)
+            sc_prev.activated.connect(self.find_prev)
+
+            # Use the proper PySide6 enum path to satisfy static analysers
+            sc_esc = QShortcut(QKeySequence(Qt.Key.Key_Escape), self)
+            sc_esc.setContext(Qt.ShortcutContext.WindowShortcut)
+            sc_esc.activated.connect(self._maybe_close_find_dialog)
+        except (RuntimeError, AttributeError, TypeError):
+            # Shortcuts are optional; ignore failures gracefully
+            pass
 
     # -------- Settings helpers for per-file scroll + geometry --------
     def _ensure_positions_dict(self) -> None:
@@ -474,7 +543,26 @@ class TextDocumentWindow(QDialog):
                 self._write_entry(stem, geometry=(int(g.x()), int(g.y()), int(g.width()), int(g.height())))
         except (ValueError, TypeError, AttributeError, RuntimeError, OSError):
             pass
+        # Notify listeners that this window is no longer displayed
+        try:
+            self.displayedChanged.emit(False)
+        except (RuntimeError, AttributeError, TypeError):
+            pass
         event.accept()
+
+    def showEvent(self, event):
+        try:
+            self.displayedChanged.emit(True)
+        except (RuntimeError, AttributeError, TypeError):
+            pass
+        super().showEvent(event)
+
+    def hideEvent(self, event):
+        try:
+            self.displayedChanged.emit(False)
+        except (RuntimeError, AttributeError, TypeError):
+            pass
+        super().hideEvent(event)
 
     def load_text_file(self, file_path1):
         try:
@@ -540,6 +628,146 @@ class TextDocumentWindow(QDialog):
     def highlight_references(self):
         text = self.text_edit.toPlainText()
         self._start_lazy_highlighting(text)
+
+    # ----------------------- Find dialog implementation -----------------------
+    class _ReaderFindDialog(QDialog):
+        def __init__(self, parent: "TextDocumentWindow") -> None:
+            super().__init__(parent)
+            self.setWindowTitle("Search")
+            self.setModal(False)
+            self._parent = parent
+            self._last_term: str = ""
+
+            lay = QHBoxLayout(self)
+            self.edit = QLineEdit(self)
+            self.edit.setPlaceholderText("Find in page…")
+            self.edit.returnPressed.connect(parent.find_next)
+
+            self.case_box = QCheckBox("Aa", self)
+            self.case_box.setToolTip("Case sensitive")
+
+            self.whole_box = QCheckBox("Whole", self)
+            self.whole_box.setToolTip("Whole word only")
+
+            self.prev_btn = QPushButton("Prev", self)
+            self.prev_btn.clicked.connect(parent.find_prev)
+            self.next_btn = QPushButton("Next", self)
+            self.next_btn.clicked.connect(parent.find_next)
+
+            lay.addWidget(self.edit)
+            lay.addWidget(self.case_box)
+            lay.addWidget(self.whole_box)
+            lay.addWidget(self.prev_btn)
+            lay.addWidget(self.next_btn)
+
+            # Inherit the palette so it matches the dark/light theme
+            try:
+                self.setPalette(parent.text_edit.palette())
+            except (AttributeError, RuntimeError, TypeError):
+                pass
+
+        # Note: PySide6 may not expose QTextDocument.FindFlags as a type alias in all versions,
+        # which can trigger static analysers to report it as unresolved.
+        # We return an int-compatible flags value here to satisfy linters while keeping runtime behaviour identical.
+        def build_flags(self) -> int:
+            flags: int = 0
+            try:
+                if self.case_box.isChecked():
+                    flags |= _qdoc_find_flag("FindCaseSensitively")
+                if self.whole_box.isChecked():
+                    flags |= _qdoc_find_flag("FindWholeWords")
+            except (RuntimeError, AttributeError, TypeError):
+                # Ignore UI lifecycle errors gracefully
+                pass
+            return flags
+
+    def _ensure_find_dialog(self) -> None:
+        if getattr(self, "_find_dlg", None) is None:
+            try:
+                self._find_dlg = TextDocumentWindow._ReaderFindDialog(self)
+            except (RuntimeError, TypeError):
+                self._find_dlg = None
+
+    def show_find_dialog(self) -> None:
+        self._ensure_find_dialog()
+        dlg = self._find_dlg
+        if not dlg:
+            return
+        try:
+            dlg.show()
+            dlg.raise_()
+            dlg.activateWindow()
+            dlg.edit.setFocus()
+            dlg.edit.selectAll()
+        except (RuntimeError, AttributeError):
+            pass
+
+    def _maybe_close_find_dialog(self) -> None:
+        dlg = getattr(self, "_find_dlg", None)
+        if dlg and dlg.isVisible():
+            try:
+                dlg.hide()
+                self.text_edit.setFocus()
+            except (RuntimeError, AttributeError):
+                pass
+
+    def _do_find(self, forward: bool = True) -> None:
+        dlg = self._find_dlg
+        if not dlg:
+            return
+        try:
+            term = dlg.edit.text()
+        except (RuntimeError, AttributeError):
+            term = ""
+        if not term:
+            return
+
+        flags = dlg.build_flags()
+        if not forward:
+            try:
+                flags |= _qdoc_find_flag("FindBackward")
+            except (RuntimeError, AttributeError, TypeError):
+                pass
+
+        # If term changed, restart from beginning/end
+        last_term = getattr(dlg, "_last_term", "")
+        if term != last_term:
+            try:
+                dlg._last_term = term
+                cursor = self.text_edit.textCursor()
+                if forward:
+                    cursor.setPosition(0)
+                else:
+                    doc = self.text_edit.document()
+                    cursor.setPosition(doc.characterCount() - 1)
+                self.text_edit.setTextCursor(cursor)
+            except (RuntimeError, AttributeError):
+                pass
+
+        # Try to find; if not found (or an error occurs), wrap once and try again
+        try:
+            if not self.text_edit.find(term, cast(Any, flags)):
+                cursor = self.text_edit.textCursor()
+                if forward:
+                    cursor.setPosition(0)
+                else:
+                    doc = self.text_edit.document()
+                    cursor.setPosition(doc.characterCount() - 1)
+                self.text_edit.setTextCursor(cursor)
+                self.text_edit.find(term, cast(Any, flags))
+        except (RuntimeError, AttributeError, TypeError):
+            # Silently ignore lifecycle/type errors from Qt objects
+            pass
+        try:
+            self.text_edit.ensureCursorVisible()
+        except (RuntimeError, AttributeError):
+            pass
+
+    def find_next(self) -> None:
+        self._do_find(True)
+
+    def find_prev(self) -> None:
+        self._do_find(False)
 
     def _start_lazy_highlighting(self, content: str) -> None:
         self._cancel_token += 1

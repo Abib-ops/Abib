@@ -112,16 +112,16 @@ class ThemeManager:
                     return False
                 try:
                     build = int(platform.version().split(".")[-1])
-                except Exception:
+                except (ValueError, AttributeError, IndexError, TypeError):
                     build = 0
                 if build and build < 22000:
                     return True
-            except Exception:
+            except (ValueError, AttributeError, TypeError):
                 pass
             try:
                 winver = sys.getwindowsversion()  # type: ignore[attr-defined]
                 return getattr(winver, "major", 0) == 10 and getattr(winver, "build", 0) < 22000
-            except Exception:
+            except (AttributeError, RuntimeError):
                 return False
 
         # On Windows 10 in dark mode, force Fusion style so button stylesheets take effect
@@ -130,13 +130,13 @@ class ThemeManager:
                 if not self._original_style_name:
                     try:
                         self._original_style_name = cast(Any, app).style().objectName()
-                    except Exception:
+                    except (AttributeError, RuntimeError, TypeError):
                         self._original_style_name = None
                 if not self._using_fusion:
                     try:
                         QApplication.setStyle("Fusion")
                         self._using_fusion = True
-                    except Exception:
+                    except (RuntimeError, ValueError, TypeError):
                         self._using_fusion = False
             else:
                 if self._using_fusion:
@@ -145,10 +145,10 @@ class ThemeManager:
                             QApplication.setStyle(self._original_style_name)
                         else:
                             QApplication.setStyle("WindowsVista")
-                    except Exception:
+                    except (RuntimeError, ValueError, TypeError, AttributeError):
                         pass
                     self._using_fusion = False
-        except Exception:
+        except (RuntimeError, AttributeError, TypeError, ValueError):
             # Never fail theming due to style switching errors
             self._using_fusion = False
 
