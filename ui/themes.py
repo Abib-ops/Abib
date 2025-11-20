@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Optional, Protocol, cast, Any, TYPE_CHECKING
+import sys
+import platform
 
 try:
     # Import only the minimal Qt classes we need to type the editor and widgets
@@ -45,6 +47,9 @@ class ThemeManager:
 
     def __init__(self, state: Optional[ThemeState] = None) -> None:
         self.state = state or ThemeState()
+        # Track style switching to Fusion on Windows 10 dark mode
+        self._original_style_name: Optional[str] = None
+        self._using_fusion: bool = False
 
     # ---- State ----
     def toggle(self) -> bool:
@@ -100,11 +105,59 @@ class ThemeManager:
             app = None
         if not app:
             return
+        # Detect Windows 10 (heuristic: build < 22000)
+        def _is_windows_10() -> bool:
+            try:
+                if sys.platform != "win32":
+                    return False
+                try:
+                    build = int(platform.version().split(".")[-1])
+                except Exception:
+                    build = 0
+                if build and build < 22000:
+                    return True
+            except Exception:
+                pass
+            try:
+                winver = sys.getwindowsversion()  # type: ignore[attr-defined]
+                return getattr(winver, "major", 0) == 10 and getattr(winver, "build", 0) < 22000
+            except Exception:
+                return False
+
+        # On Windows 10 in dark mode, force Fusion style so button stylesheets take effect
+        try:
+            if self.state.is_dark_mode and _is_windows_10():
+                if not self._original_style_name:
+                    try:
+                        self._original_style_name = cast(Any, app).style().objectName()
+                    except Exception:
+                        self._original_style_name = None
+                if not self._using_fusion:
+                    try:
+                        QApplication.setStyle("Fusion")
+                        self._using_fusion = True
+                    except Exception:
+                        self._using_fusion = False
+            else:
+                if self._using_fusion:
+                    try:
+                        if self._original_style_name:
+                            QApplication.setStyle(self._original_style_name)
+                        else:
+                            QApplication.setStyle("WindowsVista")
+                    except Exception:
+                        pass
+                    self._using_fusion = False
+        except Exception:
+            # Never fail theming due to style switching errors
+            self._using_fusion = False
+
         pal = self._build_dark_palette() if self.state.is_dark_mode else self._build_light_palette()
         QApplication.setPalette(cast(QPaletteT, pal))
         # ToolTip styling (Qt ignores palette for a tooltip background sometimes)
         if self.state.is_dark_mode:
-            cast(Any, app).setStyleSheet(
+            # Base dark stylesheet applied to all platforms
+            dark_base_styles = (
                 """
                 QToolTip { color: #f0f0f0; background-color: #282828; border: 1px solid #3a3a3a; }
                 QMenu { background-color: #222222; color: #f0f0f0; border: 1px solid #3a3a3a; }
@@ -115,6 +168,26 @@ class ThemeManager:
                 QLineEdit { background-color: #1e1e1e; color: #f0f0f0; border: 1px solid #3a3a3a; }
                 """
             )
+
+            # Extra button styles for Windows 10 only
+            button_styles = (
+                """
+                QPushButton, QDialogButtonBox QPushButton, QToolButton {
+                    background: #2a2a2a;
+                    background-color: #2a2a2a;
+                    color: #f0f0f0;
+                    border: 1px solid #3a3a3a;
+                    border-radius: 3px;
+                    padding: 4px 8px;
+                }
+                QPushButton:hover, QDialogButtonBox QPushButton:hover, QToolButton:hover { background-color: #333333; }
+                QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed { background-color: #1f1f1f; }
+                QPushButton:disabled, QDialogButtonBox QPushButton:disabled, QToolButton:disabled { background-color: #2a2a2a; color: #8a8a8a; border-color: #2f2f2f; }
+                """
+            )
+
+            styles = dark_base_styles + (button_styles if _is_windows_10() else "")
+            cast(Any, app).setStyleSheet(styles)
         else:
             cast(Any, app).setStyleSheet("")
 

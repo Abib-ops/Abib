@@ -4,15 +4,21 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.17
+Abib v414.19
 ------------
 
 Changelog.
 -----------
+Abib v414.19
+Another bugfix attempt for Windows 10 dark-mode push-buttons.
+
+Abib v414.18
+Attempted bugfix for Windows 10 dark-mode push-buttons.
+
 Abib v414.17
 Did something can't remember what
 
-Abib v414.176
+Abib v414.16
 README (on GitHub) has links for downloading the individual PDF files.
 
 Abib v414.15
