@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import re
-from typing import Any, Dict, List, Set, Optional, cast
+from typing import Any, Dict, List, Set, Optional
 
 from PySide6.QtCore import Qt, QEvent, QTimer, QPoint, Signal
 from PySide6.QtGui import (
@@ -666,20 +666,29 @@ class TextDocumentWindow(QDialog):
             except (AttributeError, RuntimeError, TypeError):
                 pass
 
-        # Note: PySide6 may not expose QTextDocument.FindFlags as a type alias in all versions,
-        # which can trigger static analysers to report it as unresolved.
-        # We return an int-compatible flags value here to satisfy linters while keeping runtime behaviour identical.
-        def build_flags(self) -> int:
-            flags: int = 0
+        # Build proper QTextDocument find flags for QPlainTextEdit.find
+        # Some PySide6 builds require QFlags<QTextDocument::FindFlag> rather than plain ints.
+        def build_flags(self):
             try:
+                # Start with a zero-value FindFlag if available; fall back to 0
+                base = getattr(QTextDocument, "FindFlag", None)
+                flags = base(0) if base is not None else 0
                 if self.case_box.isChecked():
-                    flags |= _qdoc_find_flag("FindCaseSensitively")
+                    flags |= getattr(QTextDocument.FindFlag, "FindCaseSensitively", 0)
                 if self.whole_box.isChecked():
-                    flags |= _qdoc_find_flag("FindWholeWords")
-            except (RuntimeError, AttributeError, TypeError):
-                # Ignore UI lifecycle errors gracefully
-                pass
-            return flags
+                    flags |= getattr(QTextDocument.FindFlag, "FindWholeWords", 0)
+                return flags
+            except (AttributeError, TypeError, RuntimeError, ValueError):
+                # Fallback to integer flags using helper if enums are unavailable
+                f = 0
+                try:
+                    if self.case_box.isChecked():
+                        f |= _qdoc_find_flag("FindCaseSensitively")
+                    if self.whole_box.isChecked():
+                        f |= _qdoc_find_flag("FindWholeWords")
+                except (AttributeError, TypeError, RuntimeError, ValueError):
+                    pass
+                return f
 
     def _ensure_find_dialog(self) -> None:
         if getattr(self, "_find_dlg", None) is None:
@@ -725,8 +734,9 @@ class TextDocumentWindow(QDialog):
         flags = dlg.build_flags()
         if not forward:
             try:
-                flags |= _qdoc_find_flag("FindBackward")
-            except (RuntimeError, AttributeError, TypeError):
+                flags |= getattr(QTextDocument.FindFlag, "FindBackward", _qdoc_find_flag("FindBackward"))
+            except (AttributeError, TypeError, RuntimeError, ValueError):
+                # Keep whatever we have
                 pass
 
         # If term changed, restart from beginning/end
@@ -746,7 +756,8 @@ class TextDocumentWindow(QDialog):
 
         # Try to find; if not found (or an error occurs), wrap once and try again
         try:
-            if not self.text_edit.find(term, cast(Any, flags)):
+            # Pass proper flags to find(); avoid casting to Any to keep types compatible
+            if not self.text_edit.find(term, flags):
                 cursor = self.text_edit.textCursor()
                 if forward:
                     cursor.setPosition(0)
@@ -754,7 +765,7 @@ class TextDocumentWindow(QDialog):
                     doc = self.text_edit.document()
                     cursor.setPosition(doc.characterCount() - 1)
                 self.text_edit.setTextCursor(cursor)
-                self.text_edit.find(term, cast(Any, flags))
+                self.text_edit.find(term, flags)
         except (RuntimeError, AttributeError, TypeError):
             # Silently ignore lifecycle/type errors from Qt objects
             pass

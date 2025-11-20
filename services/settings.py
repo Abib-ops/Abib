@@ -62,10 +62,11 @@ class SettingsService:
         show_map: Dict[str, Any] = dict(self._settings.get("show_work") or {})
         changed = False
 
-        # Add new entries defaulting to "false"
+        # Add new entries defaulting to "true" so all works are visible by default.
+        # Users can hide individual items later via the Settings submenu.
         for stem in stems_on_disk:
             if stem not in show_map:
-                show_map[stem] = "false"
+                show_map[stem] = "true"
                 changed = True
 
         # Remove entries no longer present on disk

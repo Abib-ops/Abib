@@ -4,13 +4,18 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.20
+Abib v414.21
 ------------
 
 Changelog.
 -----------
+Abib v414.21
+Bug fix for text search.
+Bug fix for the uninstallation process.
+
 Abib v414.20
 Search facility added for the "Other Works" text window.
+(But it did not work).
 
 Abib v414.19
 Another bugfix attempt for Windows 10 dark-mode push-buttons.
