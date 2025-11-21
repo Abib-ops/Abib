@@ -50,13 +50,13 @@ class SettingsService:
         path_str = str(self.paths.settings_file)
         self._settings = fcs.load_settings_from_file(path_str)
 
-        # Synchronize the "show_work" map with files present in "Other Works".
+        # Synchronise the "show_work" map with files present in "Other Works".
         try:
             other_works_dir: Path | str | PathLike[str] = Path(sh.str_cwd) / "Other Works"
             stems_on_disk = set(
                 p.stem for p in Path(other_works_dir).glob("*.txt") if p.is_file()
             )
-        except Exception:
+        except (OSError, TypeError, ValueError):
             stems_on_disk = set()
 
         show_map: Dict[str, Any] = dict(self._settings.get("show_work") or {})
@@ -76,7 +76,7 @@ class SettingsService:
 
         if changed:
             self._settings["show_work"] = show_map
-            # Persist the synchronized settings
+            # Persist the synchronised settings
             fcs.save_settings_to_file(self._settings, path_str)
         return self._settings
 

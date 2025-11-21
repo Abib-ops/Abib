@@ -4,11 +4,16 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.24
+Abib v414.25
 ------------
 
 Changelog.
 -----------
+Abib v414.25
+Progress bar for slowly loading texts.
+Introduce companion files to enable faster loading of texts.
+Messing about with problems with restoring the scrolled position all day.
+
 Abib v414.24
 Upgrade test.
 

@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 from typing import Any, Dict, List, Set, Optional
 
-from PySide6.QtCore import Qt, QEvent, QTimer, QPoint, Signal
+from PySide6.QtCore import Qt, QEvent, QTimer, QPoint, Signal, QCoreApplication
 from PySide6.QtGui import (
     QColor,
     QFont,
@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QCheckBox,
     QHBoxLayout,
+    QProgressBar,
 )
 
 import fcs
@@ -125,6 +126,75 @@ class TextDocumentWindow(QDialog):
         # Save scroll position per file
         self._is_loading: bool = False
         self.text_edit.verticalScrollBar().valueChanged.connect(self.save_scroll_position)
+        # Debounced saving to avoid rapid writes and possible external side effects.
+        try:
+            self._save_debounce: QTimer = QTimer(self)
+            self._save_debounce.setSingleShot(True)
+            self._save_debounce.setInterval(150)
+            self._pending_save_stem: Optional[str] = None
+            self._pending_save_value: Optional[int] = None
+            self._save_debounce.timeout.connect(self._flush_pending_save)
+        except (RuntimeError, AttributeError, TypeError):
+            self._save_debounce = None  # type: ignore
+            self._pending_save_stem = None  # type: ignore
+            self._pending_save_value = None  # type: ignore
+
+        # --- Progress bar footer (hidden by default) ---
+        try:
+            self._progress_container = QWidget(self)
+            ph = QHBoxLayout(self._progress_container)
+            ph.setContentsMargins(8, 4, 8, 6)
+            ph.setSpacing(8)
+            self._progress_label = QLabel("")
+            small_font = self._progress_label.font()
+            try:
+                small_font.setPointSize(8)
+            except (AttributeError, TypeError, RuntimeError):
+                pass
+            self._progress_label.setFont(small_font)
+            self._progress_bar = QProgressBar()
+            self._progress_bar.setMinimum(0)
+            self._progress_bar.setMaximum(100)
+            self._progress_bar.setValue(0)
+            self._progress_bar.setTextVisible(False)
+            ph.addWidget(self._progress_label)
+            ph.addWidget(self._progress_bar, 1)
+            self._progress_container.setVisible(False)
+            self.layout.addWidget(self._progress_container)
+            # Animated pulse for the message (cycles dots …)
+            # Optional because the fail-safe path below may set it to None
+            self._progress_pulse: Optional[QTimer] = QTimer(self)
+            try:
+                self._progress_pulse.setInterval(250)
+            except (AttributeError, TypeError, RuntimeError):
+                pass
+            # Guarded connect to satisfy static analysers that type QTimer.timeout (Signal)
+            # may not expose .connect in stubs, while at runtime it does.
+            try:
+                sig = getattr(self._progress_pulse, "timeout", None)
+                cn = getattr(sig, "connect", None)
+                if callable(cn):
+                    cn(self._tick_progress_pulse)
+            except (AttributeError, TypeError, RuntimeError):
+                pass
+            self._progress_indeterminate: bool = False
+            self._progress_msg_base: str = ""
+            self._progress_msg_static: str = ""
+            self._progress_dots: int = 0
+            # Cap the IO phase so the bar does not reach 100% until all heavy
+            # finalisation's (decode, layout, highlighting) have completed.
+            self._io_progress_cap: int = 95
+        except (RuntimeError, AttributeError, TypeError):
+            # Fail-safe: if any widget creation fails, keep attributes None
+            self._progress_container = None
+            self._progress_label = None
+            self._progress_bar = None
+            self._progress_pulse = None
+            self._progress_indeterminate = False
+            self._progress_msg_base = ""
+            self._progress_msg_static = ""
+            self._progress_dots = 0
+            self._io_progress_cap = 95
 
         # Hover tracking
         self.text_edit.viewport().setMouseTracking(True)
@@ -139,6 +209,9 @@ class TextDocumentWindow(QDialog):
         self._lines: List[str] = []
         self._line_offsets: List[int] = []
         self._next_line_index: int = 0
+        # Has the current document been scanned for references yet?
+        # Prevents repeated whole-document rescans when none are present.
+        self._refs_scanned: bool = False
         self._highlight_timer: QTimer = QTimer(self)
         self._highlight_timer.setInterval(25)
         self._highlight_timer.timeout.connect(self._process_highlight_batch)
@@ -147,16 +220,28 @@ class TextDocumentWindow(QDialog):
         self._whole_document_mode: bool = False
         # Cancellation token for async scroll restore to avoid stale apply when switching files
         self._restore_token: int = 0
+        # Pending restore guard: while a restore is in progress for a given stem
+        # and the desired value is not yet reachable, suppress saving partial
+        # scroll values to settings.json.
+        self._pending_restore_stem: Optional[str] = None
+        self._pending_restore_value: int = 0
         # Extra selections for QPlainTextEdit highlighting
         self._extra_selections: List[Any] = []
         # Track whether the reference list is sorted by abs_start
         self._refs_sorted: bool = True
         # Trigger quick visible-range highlight on scroll
-        self.text_edit.verticalScrollBar().valueChanged.connect(
-            lambda _v: (lambda t=self._cancel_token: QTimer.singleShot(
-                0, lambda: self._highlight_visible_now() if t == self._cancel_token else None
-            ))()
-        )
+        # Debounced highlight-on-scroll to avoid repaint storms; suppressed while loading/restoring
+        try:
+            self._highlight_debounce: QTimer = QTimer(self)
+            self._highlight_debounce.setSingleShot(True)
+            self._highlight_debounce.setInterval(75)
+            # Token-based guard to avoid cross-file stray triggers
+            self._highlight_debounce_token: int = 0
+            self._highlight_debounce.timeout.connect(self._fire_highlight_debounced)
+        except (RuntimeError, AttributeError, TypeError):
+            # Fallback timer placeholder
+            self._highlight_debounce = None  # type: ignore
+        self.text_edit.verticalScrollBar().valueChanged.connect(self._on_scrollbar_value_changed)
 
         # Debounced hover handling to avoid heavy work on every mouse move
         self._hover_timer: QTimer = QTimer(self)
@@ -168,6 +253,19 @@ class TextDocumentWindow(QDialog):
         # Store only a QPoint (copy) from the mouse event to avoid using a deleted QMouseEvent later
         self._pending_hover_pos: QPoint | None = None
         self._hover_timer.timeout.connect(self._do_hover)
+
+        # Async file loading state
+        self._load_timer: Optional[QTimer] = None
+        self._load_fp = None
+        self._load_total: int = 0
+        self._load_read: int = 0
+        self._load_chunks: list[bytes] = []
+        self._load_token: int = 0
+        # Track the currently connected timeout slot so we can disconnect safely
+        self._load_timeout_slot: Optional[object] = None
+        # Idempotency/reentrancy guards for loading
+        self._is_loading_file: bool = False
+        self._loaded_file_path: Optional[str] = None
 
         if initial_file_path:
             self.load_text_file(initial_file_path)
@@ -263,10 +361,13 @@ class TextDocumentWindow(QDialog):
             pass
         return 0, None
 
-    def _write_entry(self, stem: str, scroll: int | None = None, geometry: tuple[int, int, int, int] | None = None) -> None:
-        """Persist the per-file entry ensuring format [scroll, x, y, w, h].
-        Existing values are preserved if a component is not provided.
-        """
+    def _write_entry(
+        self,
+        stem: str,
+        scroll: int | None = None,
+        geometry: tuple[int, int, int, int] | None = None,
+    ) -> None:
+        """Persist the per-file entry using only legacy fields: [scroll, x, y, w, h]."""
         if not stem:
             return
         try:
@@ -280,7 +381,15 @@ class TextDocumentWindow(QDialog):
                 g = self.geometry()
                 new_geom = (int(g.x()), int(g.y()), int(g.width()), int(g.height()))
 
-            self.settings["last_read_positions"][stem] = [int(new_scroll), int(new_geom[0]), int(new_geom[1]), int(new_geom[2]), int(new_geom[3])]
+            payload = [
+                int(new_scroll),
+                int(new_geom[0]),
+                int(new_geom[1]),
+                int(new_geom[2]),
+                int(new_geom[3]),
+            ]
+
+            self.settings["last_read_positions"][stem] = payload
 
             # Persist
             if self.settings_path:
@@ -290,6 +399,7 @@ class TextDocumentWindow(QDialog):
         except (ValueError, TypeError, AttributeError, OSError):
             # Non-fatal
             pass
+
 
     def apply_theme(self, is_dark: bool) -> None:
         """Apply a light/dark theme explicitly to the plain-text editor.
@@ -382,16 +492,23 @@ class TextDocumentWindow(QDialog):
             self._is_loading = prev_loading
 
     def _save_scroll_for(self, stem: Any, value: Any) -> None:
-        """Persist the scroll position for a given file _stem, safely.
-        Creates the per-file map if needed and writes to settings.json.
+        """Persist the reading position for a given file stem.
+        Stores a single positive integer representing the current scrollbar value
+        (pixel scroll position).
+        Negative content-anchored encoding is no longer used for persistence;
+        it remains supported for reading/backward compatibility.
         """
         try:
             if not stem:
                 return
-            # Update only the scroll component; preserve geometry
-            self._write_entry(stem, scroll=int(value), geometry=None)
+            try:
+                sb = self.text_edit.verticalScrollBar()
+                cur_val = int(sb.value())
+            except (AttributeError, RuntimeError, TypeError, ValueError):
+                cur_val = int(value) if isinstance(value, int) else 0
+            self._write_entry(stem, scroll=int(cur_val), geometry=None)
         except (ValueError, TypeError, OSError):
-            # Be tolerant: failing to save the scroll should never crash the app
+            # Be tolerant: failing to save should never crash the app
             pass
 
     def _get_saved_position(self, stem: str) -> int:
@@ -422,74 +539,334 @@ class TextDocumentWindow(QDialog):
             x8, y8, width8, height8 = fcs.get_window_geometry("reader_window")
             self.setGeometry(x8, y8, width8, height8)
 
-    def _restore_scroll_position_async(self, _stem: str, desired: int, timeout_ms: int = 6000, interval_ms: int = 50) -> None:
-        """Restore the scroll position after the document is laid out.
-        Waits until the scrollbar exposes a non-zero range before applying the saved value.
-        Keeps _is_loading True until applied to suppress saves.
-        Uses a cancellation token so that stale timers from a previous file cannot override the
-        current document's scroll position.
-        """
-        try:
-            desired = int(desired) if desired is not None else 0
-        except (ValueError, TypeError):
-            desired = 0
+    def _restore_scroll_position_async(
+        self,
+        stem: str,
+        saved: int,
+        timeout_ms: int = 45000,
+        interval_ms: int = 50,
+        on_done: Any | None = None,
+    ) -> None:
+        """Content-anchored restore of the reading position.
+        If ``saved`` is negative, it encodes the absolute character offset of the
+        desired top-of-viewport block: ``target_char = -saved - 1`` (backward compatibility).
+        Positive values are treated as pixel scrollbar positions and approximated
+        as pixel scrollbar positions and restored using a stabilised scrollbar-maximum
+        strategy to avoid early-partial maxima causing incorrect placement.
+        After a successful restore, any legacy negative values are rewritten
+        to the current positive scrollbar value, so settings.json no longer contains
+        large negative numbers.
 
-        # New restore cycle: increment token and capture it locally
+        Keeps _is_loading True until finalising; uses a cancellation token.
+        Calls ``on_done()`` after successful or terminal finalising (once).
+        """
+        # New restore cycle
         self._restore_token += 1
         token = self._restore_token
 
-        # Use a countdown of attempts to avoid infinite retries
-        attempts = max(int(timeout_ms // max(1, interval_ms)), 1)
-        scrollbar = self.text_edit.verticalScrollBar()
+        # Determine target character offset
+        try:
+            saved_int = int(saved) if saved is not None else 0
+        except (ValueError, TypeError):
+            saved_int = 0
 
-        def try_apply():
-            nonlocal attempts
+        doc: QTextDocument = self.text_edit.document()
+        try:
+            total_chars = int(doc.characterCount())
+        except (AttributeError, RuntimeError, TypeError, ValueError):
+            total_chars = 0
+
+        # Approximate mapping for legacy positive pixel scroll values
+        def _legacy_to_char(px: int) -> int:
+            try:
+                sb = self.text_edit.verticalScrollBar()
+                maximum = int(sb.maximum()) if sb is not None else 0
+            except (AttributeError, RuntimeError, TypeError, ValueError):
+                maximum = 0
+            try:
+                # Use ratio of current known maximum; will be refined by geometry retries
+                ratio = 0.0 if maximum <= 0 else max(0.0, min(1.0, float(px) / float(maximum)))
+            except (ValueError, TypeError):
+                ratio = 0.0
+            # characterCount includes a terminating position; clamp to range
+            end_char = max(0, total_chars - 1)
+            return int(ratio * end_char)
+
+        is_legacy = saved_int >= 0
+        target_char = (-saved_int - 1) if saved_int < 0 else _legacy_to_char(saved_int)
+        # Clamp to available range
+        if total_chars <= 0:
+            target_char = 0
+        else:
+            if target_char < 0:
+                target_char = 0
+            elif target_char >= total_chars:
+                target_char = max(0, total_chars - 1)
+
+        attempts = max(int(timeout_ms // max(1, interval_ms)), 1)
+        done_emitted = False
+
+        # Note: Previously we disabled viewport updates during restore to reduce flicker,
+        # but this could leave the UI appearing blank on slower layouts until finalising.
+        # Keep updates enabled throughout restore so content is visible while we retry.
+        try:
+            _ = bool(self.text_edit.updatesEnabled())
+        except (AttributeError, RuntimeError, TypeError):
+            pass
+
+        def finalize_upgrade_and_done():
+            nonlocal done_emitted
+            if done_emitted:
+                return
+            done_emitted = True
+            # Clear guards
+            self._is_loading = False
+            self._pending_restore_stem = None
+            self._pending_restore_value = 0
+            # Rewrite any legacy negative saved positions to positive scrollbar values
+            try:
+                if not is_legacy:
+                    sb2 = self.text_edit.verticalScrollBar()
+                    new_val = int(sb2.value()) if sb2 is not None else 0
+                    self._write_entry(stem, scroll=new_val, geometry=None)
+            except (AttributeError, RuntimeError, TypeError, ValueError, OSError):
+                pass
+            # Ensure updates are enabled and repaint to show the final state
+            try:
+                self.text_edit.setUpdatesEnabled(True)
+                # If they were previously disabled, force a viewport refresh
+                self.text_edit.viewport().update()
+            except (AttributeError, RuntimeError, TypeError):
+                pass
+            # Callback
+            try:
+                if callable(on_done):
+                    on_done()
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                # Do not allow callback errors to propagate; handle common runtime/callback issues
+                pass
+
+        # If the saved value is a positive pixel scrollbar position, use a stabilised
+        # pixel-based restore to avoid flicker and wrong placement from early maxima.
+        if is_legacy:
+            sb_px = self.text_edit.verticalScrollBar()
+            # Guard: if no scrollbar, just finalise
+            if sb_px is None:
+                finalize_upgrade_and_done()
+                return
+
+            # Stabilisation state
+            last_max = -1
+            stable_ticks = 0
+
+            def try_place_px():
+                # Abort if a newer restore has started
+                if token != getattr(self, "_restore_token", token):
+                    return
+                nonlocal attempts, last_max, stable_ticks
+                attempts -= 1
+                # Validate scrollbar each tick
+                try:
+                    maximum = int(sb_px.maximum())
+                    cur_val = int(sb_px.value())
+                except (AttributeError, RuntimeError, TypeError, ValueError):
+                    finalize_upgrade_and_done()
+                    return
+
+                # If maximum is zero (The layout is not ready), keep waiting
+                if maximum <= 0:
+                    if attempts <= 0:
+                        finalize_upgrade_and_done()
+                        return
+                    QTimer.singleShot(interval_ms, try_place_px)
+                    return
+
+                # Track stabilisation of maximum
+                if maximum != last_max:
+                    last_max = maximum
+                    stable_ticks = 0
+                else:
+                    stable_ticks += 1
+
+                # Compute target for current knowledge and apply only if changed materially
+                target_px = max(0, min(saved_int, maximum))
+                if abs(cur_val - target_px) > 2:
+                    try:
+                        sb_px.setValue(target_px)
+                    except (AttributeError, RuntimeError, TypeError, ValueError):
+                        pass
+
+                # Finalise when the domain can accommodate the desired value, or when stabilised
+                # for several ticks, or when timeout expires
+                if maximum >= saved_int or stable_ticks >= 10 or attempts <= 0:
+                    finalize_upgrade_and_done()
+                    return
+
+                QTimer.singleShot(interval_ms, try_place_px)
+
+            QTimer.singleShot(interval_ms, try_place_px)
+            return
+
+        def try_place():
             # Abort if a newer restore has started
             if token != getattr(self, "_restore_token", token):
                 return
+            # If editor/doc are unavailable, bail out gracefully
             try:
-                # If the editor is gone, stop (and only clear the flag if still current)
-                if self.text_edit is None or scrollbar is None:
-                    if token == getattr(self, "_restore_token", token):
-                        self._is_loading = False
+                if self.text_edit is None or doc is None:
+                    finalize_upgrade_and_done()
                     return
             except (AttributeError, RuntimeError):
-                if token == getattr(self, "_restore_token", token):
-                    self._is_loading = False
+                finalize_upgrade_and_done()
                 return
 
+            nonlocal attempts
             attempts -= 1
+
+            # Locate the block containing the target character
             try:
-                maximum = int(scrollbar.maximum())
+                blk = doc.findBlock(int(target_char))
+            except (ValueError, TypeError):
+                blk = doc.firstBlock()
+            if not getattr(blk, 'isValid', lambda: True)():
+                # Give up if 'doc' has no valid blocks
+                if attempts <= 0:
+                    finalize_upgrade_and_done()
+                else:
+                    QTimer.singleShot(interval_ms, try_place)
+                return
+
+            # Compute the Y position of the block's top within the content
+            try:
+                geom = self.text_edit.blockBoundingGeometry(blk)
+                offset = self.text_edit.contentOffset()
+                rect = geom.translated(offset)
+                top_y = int(rect.top())
+                height = float(rect.height())
             except (AttributeError, RuntimeError, TypeError, ValueError):
-                maximum = 0
+                top_y = 0
+                height = 0.0
 
-            # Consider layout ready only when the scrollbar has a non-zero range
-            ready = (maximum > 0)
+            # If the block hasn't been laid out yet (height ~ 0 and target not the very first block), retry
+            try:
+                blk_pos = int(blk.position())
+            except (ValueError, TypeError):
+                blk_pos = 0
 
-            if ready:
+            if height <= 0.1 and blk_pos > 0 and attempts > 0:
+                QTimer.singleShot(interval_ms, try_place)
+                return
+
+            # Apply the placement using the computed content Y (only if it changed materially)
+            try:
+                sb = self.text_edit.verticalScrollBar()
+                if sb is not None:
+                    target_val = max(0, top_y)
+                    try:
+                        cur_val = int(sb.value())
+                    except (AttributeError, RuntimeError, TypeError, ValueError):
+                        cur_val = -1
+                    # Only set if the delta is meaningful to avoid repaint storms
+                    if abs(cur_val - target_val) > 2:
+                        sb.setValue(target_val)
+            except (AttributeError, RuntimeError, TypeError, ValueError):
+                pass
+
+            # Verify: if we are close enough (same block at top), finalise; otherwise
+            # retry a limited number of times to avoid long flicker on slow layouts.
+            # Maintain a small counter on the function object to limit post-checks.
+            try:
+                _ = try_place._post_checks  # type: ignore[attr-defined]
+            except AttributeError:
+                try_place._post_checks = 10  # type: ignore[attr-defined]
+
+            try:
+                fb = self.text_edit.firstVisibleBlock()
+                if fb.isValid() and int(fb.position()) <= blk_pos <= int(fb.position()) + 1:
+                    finalize_upgrade_and_done()
+                    return
+            except (AttributeError, RuntimeError, TypeError, ValueError):
+                # If verification fails, still try to finalise after timeout
+                pass
+
+            # If we exhausted attempts or our limited post-checks, finalise to prevent loops
+            try:
+                try_place._post_checks -= 1  # type: ignore[attr-defined]
+            except (AttributeError, TypeError):
+                # If the attribute doesn't exist or isn't numeric, ignore safely
+                pass
+
+            if attempts <= 0 or getattr(try_place, "_post_checks", 0) <= 0:  # type: ignore[attr-defined]
+                finalize_upgrade_and_done()
+            else:
+                QTimer.singleShot(interval_ms, try_place)
+
+        # Begin attempts shortly to allow initial layout
+        QTimer.singleShot(interval_ms, try_place)
+
+    def _on_scrollbar_value_changed(self, _value: Any) -> None:
+        """Handle user-driven scrollbar changes.
+        Suppress heavy work while loading/restoring; debounce highlight updates to reduce flicker.
+        """
+        # Never react during programmatic changes
+        if getattr(self, "_is_loading", False):
+            return
+        try:
+            if self._pending_restore_stem and self.current_file_stem == self._pending_restore_stem:
+                return
+        except (AttributeError, RuntimeError):
+            # If attributes are missing, proceed cautiously
+            pass
+
+        # Debounce highlight updates for the visible region
+        try:
+            if getattr(self, "_highlight_debounce", None) is not None:
+                # Bump a token so any stale timer run is ignored across file switches
                 try:
-                    target = 0 if maximum == 0 else max(0, min(desired, maximum))
-                    scrollbar.setValue(target)
-                except (AttributeError, RuntimeError, TypeError, ValueError):
+                    self._highlight_debounce_token += 1
+                    self._highlight_debounce_scheduled = self._highlight_debounce_token  # type: ignore
+                except (AttributeError, TypeError):
                     pass
-                finally:
-                    # Done with programmatic changes
-                    if token == getattr(self, "_restore_token", token):
-                        self._is_loading = False
+                try:
+                    # Restart debounce timer
+                    self._highlight_debounce.stop()
+                except (RuntimeError, AttributeError):
+                    pass
+                try:
+                    self._highlight_debounce.start()
+                except (RuntimeError, AttributeError):
+                    # If the timer fails, fall back to immediate update
+                    self._highlight_visible_now()
+            else:
+                # No debounce available; update immediately
+                self._highlight_visible_now()
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            # Be resilient and avoid throwing from UI callbacks
+            pass
+
+    def _fire_highlight_debounced(self) -> None:
+        """Timer slot to perform a coalesced visible-range highlight update."""
+        # If we are loading/restoring, skip to avoid repaint storms
+        if getattr(self, "_is_loading", False):
+            return
+        try:
+            if self._pending_restore_stem and self.current_file_stem == self._pending_restore_stem:
                 return
+        except (AttributeError, RuntimeError):
+            pass
 
-            if attempts <= 0:
-                # Give up gracefully; ensure the flag is cleared for the current token only
-                if token == getattr(self, "_restore_token", token):
-                    self._is_loading = False
+        # Ensure this fire corresponds to the latest scheduled token
+        try:
+            scheduled = getattr(self, "_highlight_debounce_scheduled", None)
+            if scheduled is not None and scheduled != getattr(self, "_highlight_debounce_token", 0):
                 return
+        except (AttributeError, RuntimeError):
+            pass
 
-            # Retry shortly
-            QTimer.singleShot(interval_ms, try_apply)
-
-        # Kick off the first attempt soon to allow initial layout
-        QTimer.singleShot(interval_ms, try_apply)
+        try:
+            self._highlight_visible_now()
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
 
     def save_scroll_position(self, value: Any) -> None:
         """Slot for scrollbar valueChanged: save only during user-driven scrolls.
@@ -498,7 +875,59 @@ class TextDocumentWindow(QDialog):
         if getattr(self, "_is_loading", False):
             return
         stem = self.current_file_stem
-        self._save_scroll_for(stem, value)
+        # If a restore is pending for this stem, suppress saves entirely until it finalises.
+        try:
+            if self._pending_restore_stem and stem == self._pending_restore_stem:
+                return
+        except (AttributeError, RuntimeError):
+            pass
+        # Debounce the save to avoid rapid disk writes and potential reload side effects.
+        try:
+            ivalue = int(value) if not isinstance(value, int) else value
+        except (ValueError, TypeError):
+            ivalue = 0
+        try:
+            self._pending_save_stem = stem
+            self._pending_save_value = ivalue
+            if getattr(self, "_save_debounce", None) is not None:
+                try:
+                    self._save_debounce.stop()
+                except (RuntimeError, AttributeError):
+                    pass
+                try:
+                    self._save_debounce.start()
+                except (RuntimeError, AttributeError):
+                    # Fallback: if the timer fails, write immediately
+                    self._save_scroll_for(stem, ivalue)
+            else:
+                self._save_scroll_for(stem, ivalue)
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            # As a last resort, try immediate save
+            self._save_scroll_for(stem, ivalue)
+
+    def _flush_pending_save(self) -> None:
+        """Write the pending debounced scroll save if any."""
+        try:
+            if getattr(self, "_is_loading", False):
+                return
+            if self._pending_restore_stem and self.current_file_stem == self._pending_restore_stem:
+                return
+        except (AttributeError, RuntimeError):
+            pass
+        try:
+            stem = getattr(self, "_pending_save_stem", None)
+            value = getattr(self, "_pending_save_value", None)
+            if stem is None or value is None:
+                return
+            self._save_scroll_for(stem, int(value))
+        except (ValueError, TypeError, AttributeError):
+            pass
+        finally:
+            try:
+                self._pending_save_stem = None
+                self._pending_save_value = None
+            except (AttributeError, TypeError):
+                pass
 
     def reset_scroll_for_current_text(self) -> None:
         """One-click action: reset the saved scroll for the current text to 0 and scroll to the top.
@@ -524,6 +953,13 @@ class TextDocumentWindow(QDialog):
             if max_now > 0:
                 try:
                     sb.setValue(0)
+                    # Also move the caret to the start
+                    try:
+                        c = self.text_edit.textCursor()
+                        c.setPosition(0)
+                        self.text_edit.setTextCursor(c)
+                    except (AttributeError, RuntimeError, TypeError):
+                        pass
                 except (AttributeError, RuntimeError, TypeError, ValueError):
                     pass
                 finally:
@@ -564,10 +1000,212 @@ class TextDocumentWindow(QDialog):
             pass
         super().hideEvent(event)
 
+    def _show_progress(self, message: str, total_bytes: int | None = None) -> None:
+        try:
+            if self._progress_container is None:
+                return
+            # Show determinate progress if the total size is known; otherwise fallback to indeterminate marquee
+            try:
+                known_total = (total_bytes is not None) and (int(total_bytes) > 0)
+            except (TypeError, ValueError):
+                known_total = False
+            if known_total:
+                self._progress_bar.setRange(0, 100)
+                self._progress_bar.setValue(0)
+                self._progress_indeterminate = False
+            else:
+                self._progress_bar.setRange(0, 0)
+                self._progress_indeterminate = True
+            self._progress_msg_base = message
+            self._progress_msg_static = message
+            self._progress_dots = 0
+            self._progress_label.setText(message)
+            self._progress_container.setVisible(True)
+            # Start a subtle pulse on the label to reinforce activity even on styles
+            # that don’t animate the marquee conspicuously
+            if self._progress_pulse is not None:
+                try:
+                    self._progress_pulse.start()
+                except (RuntimeError, AttributeError):
+                    pass
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
+
+    def _update_progress(self, read_bytes: int, total_bytes: int) -> None:
+        try:
+            if self._progress_bar is None:
+                return
+            # Keep the progress bar in indeterminate mode for visible animation
+            if getattr(self, "_progress_indeterminate", False):
+                return
+            pct = 0 if total_bytes <= 0 else int((read_bytes / total_bytes) * 100)
+            if pct < 0:
+                pct = 0
+            if pct > 100:
+                pct = 100
+            # During the IO phase, clamp to a cap so the bar doesn't hit 100% before
+            # decode/layout/highlighting complete.
+            try:
+                cap = int(getattr(self, "_io_progress_cap", 95))
+                if cap > 0:
+                    pct = min(pct, cap)
+            except (AttributeError, TypeError, ValueError):
+                pass
+            # Ensure determinate mode
+            self._progress_bar.setRange(0, 100)
+            self._progress_bar.setValue(pct)
+            # Update the message to include percentage while retaining pulsing dots
+            try:
+                base_static = getattr(self, "_progress_msg_static", "") or getattr(self, "_progress_msg_base", "")
+                self._progress_msg_base = f"{base_static} {pct}%"
+                if self._progress_label is not None:
+                    # Show immediate text; pulse timer will append dots on the next tick
+                    self._progress_label.setText(f"{self._progress_msg_base}{'.' * getattr(self, '_progress_dots', 0)}")
+            except (AttributeError, TypeError, ValueError):
+                pass
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
+
+    def _set_progress_percent(self, pct: int) -> None:
+        """Force-set the progress bar to a specific percentage (0-100) and
+        update the label accordingly, regardless of IO cap.
+        Used during the finalisation phase to reflect progress up to 100%.
+        """
+        try:
+            if self._progress_bar is None:
+                return
+            if pct < 0:
+                pct = 0
+            if pct > 100:
+                pct = 100
+            # Ensure determinate mode
+            self._progress_bar.setRange(0, 100)
+            self._progress_bar.setValue(int(pct))
+            # Update the message to include percentage while retaining pulsing dots
+            try:
+                base_static = getattr(self, "_progress_msg_static", "") or getattr(self, "_progress_msg_base", "")
+                self._progress_msg_base = f"{base_static} {int(pct)}%"
+                if self._progress_label is not None:
+                    self._progress_label.setText(f"{self._progress_msg_base}{'.' * getattr(self, '_progress_dots', 0)}")
+            except (AttributeError, TypeError, ValueError):
+                pass
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
+
+    def _hide_progress(self) -> None:
+        try:
+            if self._progress_container is not None:
+                self._progress_container.setVisible(False)
+            # Stop pulse and reset state
+            if self._progress_pulse is not None:
+                try:
+                    self._progress_pulse.stop()
+                except (RuntimeError, AttributeError):
+                    pass
+            self._progress_indeterminate = False
+            self._progress_msg_base = ""
+            self._progress_msg_static = ""
+            self._progress_dots = 0
+        except (RuntimeError, AttributeError, TypeError):
+            pass
+
+    def _tick_progress_pulse(self) -> None:
+        try:
+            if self._progress_label is None:
+                return
+            base = getattr(self, "_progress_msg_base", "")
+            self._progress_dots = (getattr(self, "_progress_dots", 0) + 1) % 4
+            dots = "." * self._progress_dots
+            self._progress_label.setText(f"{base}{dots}")
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
+
+    def _cancel_active_loader(self) -> None:
+        # Stop any ongoing timer and close the file handle
+        try:
+            self._load_token += 1
+            if self._load_timer is not None:
+                try:
+                    self._load_timer.stop()
+                except (RuntimeError, AttributeError):
+                    pass
+                # Safely disconnect the last connected slot, if any
+                try:
+                    if getattr(self, "_load_timeout_slot", None) is not None:
+                        self._load_timer.timeout.disconnect(self._load_timeout_slot)
+                except (RuntimeError, TypeError):
+                    pass
+                self._load_timeout_slot = None
+                self._load_timer = None
+            if self._load_fp is not None:
+                try:
+                    self._load_fp.close()
+                except (OSError, ValueError):
+                    pass
+                self._load_fp = None
+            self._load_total = 0
+            self._load_read = 0
+            self._load_chunks = []
+            self._hide_progress()
+            # Clear the loading state so a new load can begin cleanly
+            self._is_loading_file = False
+        except (RuntimeError, AttributeError, OSError, TypeError, ValueError):
+            pass
+
     def load_text_file(self, file_path1):
         try:
             if not file_path1:
                 return
+            # Normalise the incoming path to an absolute string for comparison (Windows-safe)
+            try:
+                abs_path = str(Path(file_path1).resolve())
+            except (OSError, RuntimeError, ValueError, TypeError):
+                # Fall back to raw string if resolve fails
+                abs_path = str(file_path1)
+
+            # Derive stem early for idempotency checks that don't require cancelling the current load
+            try:
+                early_stem = Path(abs_path).stem
+            except (OSError, RuntimeError, ValueError, TypeError):
+                early_stem = None
+
+            # If we are already loading this exact file, ignore duplicate requests
+            if getattr(self, "_is_loading_file", False) and self._loaded_file_path == abs_path:
+                return
+            # If we are already loading a file with the same stem, ignore (prevents reload loops)
+            try:
+                if getattr(self, "_is_loading_file", False) and early_stem and getattr(self, "current_file_stem", None) == early_stem:
+                    return
+            except (AttributeError, RuntimeError, TypeError, ValueError, OSError):
+                # If any attribute/path resolution issues occur, fall through to the normal load
+                pass
+            # If the same file is already loaded and no load in progress, no-op to avoid flicker
+            if (not getattr(self, "_is_loading_file", False)) and self._loaded_file_path == abs_path:
+                return
+            # If the same stem is already loaded (path string may differ), no-op
+            try:
+                if (
+                        not getattr(self, "_is_loading_file", False)
+                        and early_stem
+                        and getattr(self, "current_file_stem", None) == early_stem
+                ):
+                    return
+            except (AttributeError, RuntimeError, TypeError, ValueError, OSError):
+                # If state inspection fails, proceed with the load rather than crashing
+                pass
+            # Cancel any prior asynchronous load in progress
+            self._cancel_active_loader()
+            # NEW: Invalidate any pending scroll restore from a previous file
+            self._restore_token += 1
+            # Clear any pending restore guard from the previous file
+            self._pending_restore_stem = None
+            self._pending_restore_value = 0
+            # New file: reset reference-scan flag so we can scan or load companions once
+            self._refs_scanned = False
+            # Mark the loading state and remember the target path
+            self._is_loading_file = True
+            self._loaded_file_path = abs_path
+
             # Before switching to a new text, record the current text's scroll position
             try:
                 prev_stem = getattr(self, "current_file_stem", None)
@@ -593,7 +1231,7 @@ class TextDocumentWindow(QDialog):
                 # Non-fatal: failure to save the previous scroll should not block loading
                 pass
 
-            p = Path(file_path1)
+            p = Path(abs_path)
             stem = p.stem
 
             # Set the loading guard to suppress save events during programmatic changes
@@ -603,27 +1241,337 @@ class TextDocumentWindow(QDialog):
             # Determine the last position from the per-file map; default to 0 if missing
             last_position = self._get_saved_position(stem)
 
-            with open(file_path1, 'r', encoding='utf-8') as file1:
-                content = file1.read()
-                self.text_edit.setPlainText(content)
-                self.setWindowTitle(stem)
-                # Apply any saved per-file geometry for this stem
-                self._apply_saved_geometry(stem)
-                self._start_lazy_highlighting(content)
-                # Restore the saved scroll position once the document layout is ready.
-                # _restore_scroll_position_async will clear _is_loading when done.
-                self._restore_scroll_position_async(stem, last_position)
+            # OPTIONAL: for legacy positive saved values, reflect the target scroll while loading
+            try:
+                if isinstance(last_position, int) and last_position >= 0:
+                    sb_now = self.text_edit.verticalScrollBar()
+                    sb_now.setValue(int(last_position))
+            except (AttributeError, RuntimeError, TypeError, ValueError):
+                pass
 
-                if hasattr(self, 'file_selector'):
-                    idx = self.file_selector.findText(stem)
-                    if 0 <= idx != self.file_selector.currentIndex():
-                        self.file_selector.blockSignals(True)
-                        self.file_selector.setCurrentIndex(idx)
-                        self.file_selector.blockSignals(False)
+            # Prepare async an incremental file load to keep the UI responsive
+            from os import path as _ospath
+            try:
+                # Use the resolved absolute path for a reliable file size
+                total = int(_ospath.getsize(abs_path))
+            except (OSError, TypeError):
+                total = 0
+
+            # Show a progress footer with a neat message
+            msg = f"Loading {stem}"
+            self._show_progress(msg, total)
+
+            # Open the file in binary and iterate in chunks via QTimer
+            fp = open(abs_path, 'rb')
+            self._load_fp = fp
+            self._load_total = total
+            self._load_read = 0
+            self._load_chunks = []
+            self._load_token += 1
+            token = self._load_token
+
+            # Apply per-file geometry early so the window positions correctly while loading
+            self._apply_saved_geometry(stem)
+
+            if self._load_timer is None:
+                self._load_timer = QTimer(self)
+            # Read approx 512KB per tick to balance responsiveness and speed
+            chunk_size = 512 * 1024
+
+            def _step():
+                # If a new load started, abort this one
+                if token != self._load_token:
+                    try:
+                        self._load_timer.stop()
+                    except (RuntimeError, AttributeError):
+                        pass
+                    return
+                try:
+                    chunk = fp.read(chunk_size)
+                except (OSError, ValueError) as _e:
+                    # On read error, abort and show a message
+                    try:
+                        self._load_timer.stop()
+                    except (RuntimeError, AttributeError):
+                        pass
+                    # Invalidate this load to prevent further reads on a handle that
+                    # may already be closed and clear our reference.
+                    try:
+                        self._load_token += 1
+                    except (AttributeError, TypeError):
+                        pass
+                    try:
+                        fp.close()
+                    except (OSError, ValueError):
+                        pass
+                    self._load_fp = None
+                    self._hide_progress()
+                    self.text_edit.setPlainText(f"Error loading file: {_e}")
+                    # Clear loading state on error
+                    self._is_loading_file = False
+                    return
+
+                if not chunk:
+                    # Done. Assemble and display
+                    try:
+                        fp.close()
+                    except (OSError, ValueError):
+                        pass
+                    # Prevent any further timer ticks from attempting to read this
+                    # (now closed) file handle.
+                    # Invalidate this load cycle and stop the timer immediately to
+                    # avoid "read of closed file" errors.
+                    try:
+                        # Invalidate current token so any stray queued callbacks no-op
+                        self._load_token += 1
+                    except (AttributeError, TypeError):
+                        pass
+                    try:
+                        if self._load_timer is not None:
+                            self._load_timer.stop()
+                            # Safely disconnect the connected timeout slot, if any
+                            try:
+                                if getattr(self, "_load_timeout_slot", None) is not None:
+                                    self._load_timer.timeout.disconnect(self._load_timeout_slot)
+                            except (RuntimeError, TypeError):
+                                pass
+                            self._load_timeout_slot = None
+                    except (RuntimeError, AttributeError):
+                        pass
+                    # Null out the handle to signal EOF/closed state
+                    self._load_fp = None
+                    # Before heavy finalisation work begins (decode, setPlainText, highlighting),
+                    # show the IO cap percentage and flush events so the UI reflects that loading
+                    # is not yet complete.
+                    try:
+                        if getattr(self, "_load_total", 0) > 0:
+                            self._set_progress_percent(getattr(self, "_io_progress_cap", 95))
+                            try:
+                                QCoreApplication.processEvents()
+                            except (RuntimeError, AttributeError):
+                                pass
+                    except (RuntimeError, AttributeError, TypeError, ValueError):
+                        pass
+                    try:
+                        content = b''.join(self._load_chunks).decode('utf-8', errors='replace')
+                        # Normalise newlines so character offsets used for highlighting
+                        # match Qt's internal document representation.
+                        # Qt treats line breaks as a single character; binary decode preserves CRLF, so
+                        # convert CRLF/CR to LF to avoid shifted highlights.
+                        try:
+                            content = content.replace('\r\n', '\n').replace('\r', '\n')
+                        except (AttributeError, TypeError):
+                            pass
+                    except (ValueError, TypeError, AttributeError, MemoryError):
+                        content = ''
+                    self.text_edit.setPlainText(content)
+                    self.setWindowTitle(stem)
+                    # The content is now visible; complete and hide the progress UI immediately
+                    try:
+                        if getattr(self, "_load_total", 0) > 0:
+                            self._set_progress_percent(100)
+                    except (RuntimeError, AttributeError, TypeError, ValueError):
+                        pass
+                    self._hide_progress()
+
+                    # Mark that we are restoring and suppress saves until finalising
+                    self._pending_restore_stem = stem
+                    self._pending_restore_value = int(last_position)
+
+                    def _after_restore():
+                        # After the content-anchored restore finalises, begin highlighting
+                        try:
+                            if not self._try_load_precomputed_refs(p, content):
+                                # Use the editor's text to guarantee offsets exactly match Qt's document
+                                self._start_lazy_highlighting(self.text_edit.toPlainText())
+                        except (RuntimeError, AttributeError, TypeError, ValueError):
+                            pass
+                        # Progress was already hidden when content became visible; keep as a safeguard
+                        try:
+                            if getattr(self, "_load_total", 0) > 0:
+                                self._set_progress_percent(100)
+                                try:
+                                    QCoreApplication.processEvents()
+                                except (RuntimeError, AttributeError):
+                                    pass
+                        except (RuntimeError, AttributeError, TypeError, ValueError):
+                            pass
+                        self._hide_progress()
+                        try:
+                            self._load_timer.stop()
+                        except (RuntimeError, AttributeError):
+                            pass
+                        # Ensure the loading state is cleared after successful restore/finalise
+                        self._is_loading_file = False
+
+                    # Perform content-anchored restore first, then highlight via callback
+                    self._restore_scroll_position_async(stem, last_position, on_done=_after_restore)
+                    return
+
+                # Accumulate and update progress
+                self._load_chunks.append(chunk)
+                self._load_read += len(chunk)
+                if self._load_total > 0:
+                    self._update_progress(self._load_read, self._load_total)
+
+            # Disconnect any previously connected slot to avoid duplicates and warnings
+            try:
+                prev_slot = getattr(self, "_load_timeout_slot", None)
+                if prev_slot is not None:
+                    self._load_timer.timeout.disconnect(prev_slot)
+            except (RuntimeError, TypeError):
+                pass
+            self._load_timeout_slot = None
+            self._load_timer.setInterval(10)
+            self._load_timer.timeout.connect(_step)
+            # Remember the connected slot so we can disconnect it explicitly next time
+            self._load_timeout_slot = _step
+            self._load_timer.start()
+
+            if hasattr(self, 'file_selector'):
+                idx = self.file_selector.findText(stem)
+                if 0 <= idx != self.file_selector.currentIndex():
+                    self.file_selector.blockSignals(True)
+                    self.file_selector.setCurrentIndex(idx)
+                    self.file_selector.blockSignals(False)
         except FileNotFoundError:
             self.text_edit.setPlainText("Error: File not found.")
+            self._hide_progress()
+            self._is_loading_file = False
         except (OSError, UnicodeDecodeError, ValueError) as e1:
             self.text_edit.setPlainText(f"Error loading file: {e1}")
+            self._hide_progress()
+            self._is_loading_file = False
+
+    def _try_load_precomputed_refs(self, text_path: Path, content: str) -> bool:
+        """Attempt to load precomputed reference indices for the given text.
+        Returns True if successfully loaded and applied; otherwise False to fall back to live scan.
+        Validation ensures the companion matches the exact normalised content displayed.
+        """
+        # Compute hash of the exact normalised content (UTF-8 + LF) we just set
+        try:
+            import hashlib
+            content_hash = hashlib.sha256(content.encode("utf-8", errors="replace")).hexdigest()
+        except (ValueError, TypeError, AttributeError):
+            return False
+
+        # Candidate companion locations: alongside the text, then central folder
+        try:
+            base_name = text_path.name  # e.g. "Works of Jonathan Edwards Vol II.txt"
+            same_dir_gz = text_path.parent / f"{base_name}.refs.json.gz"
+            same_dir_json = text_path.parent / f"{base_name}.refs.json"
+            central_dir = Path(sh.str_cwd) / "Other Works companions"
+            central_gz = central_dir / f"{base_name}.refs.json.gz"
+            central_json = central_dir / f"{base_name}.refs.json"
+            candidates = [same_dir_gz, same_dir_json, central_gz, central_json]
+        except (AttributeError, TypeError):
+            return False
+
+        path = None
+        for c in candidates:
+            try:
+                if c.exists():
+                    path = c
+                    break
+            except (OSError, ValueError):
+                continue
+        if path is None:
+            return False
+
+        # Ensure gzip/json are available
+        try:
+            import gzip  # type: ignore
+            import json  # type: ignore
+        except (ImportError, ModuleNotFoundError):
+            return False
+
+        # Load JSON (gzipped or plain)
+        try:
+            if str(path).lower().endswith(".gz"):
+                with gzip.open(path, "rt", encoding="utf-8") as f:
+                    data = json.load(f)
+            else:
+                with open(path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+        except (OSError, ValueError, AttributeError, json.JSONDecodeError):
+            return False
+
+        # Basic schema validation
+        try:
+            fmt_ok = int(data.get("format", 0)) == 1
+        except (ValueError, TypeError, AttributeError):
+            fmt_ok = False
+        if not fmt_ok:
+            return False
+        try:
+            if data.get("content_sha256") != content_hash:
+                return False
+        except (AttributeError, TypeError):
+            return False
+
+        refs = data.get("refs")
+        if not isinstance(refs, list):
+            return False
+
+        # Cancel any currently scheduled highlighting work
+        try:
+            self._cancel_token += 1
+            self._highlight_timer.stop()
+        except (AttributeError, RuntimeError):
+            pass
+        self._whole_document_mode = False
+
+        # Seed references and auxiliary structures
+        self._all_references = []
+        self._ref_index = set()
+        self._extra_selections = []
+        try:
+            self.text_edit.setExtraSelections(self._extra_selections)
+        except (AttributeError, RuntimeError):
+            pass
+
+        for r in refs:
+            try:
+                s = int(r.get("abs_start", 0))
+                l = int(r.get("length", 0))
+            except (ValueError, TypeError, AttributeError):
+                continue
+            self._all_references.append(
+                {
+                    "abs_start": s,
+                    "length": l,
+                    "book": r.get("book"),
+                    "chapter": r.get("chapter"),
+                    "verse": r.get("verse"),
+                    "text": r.get("text", ""),
+                }
+            )
+            self._ref_index.add((s, l))
+
+        # Sort once for fast binary searches on hover/visible-range rebuild
+        try:
+            self._all_references.sort(key=lambda x: int(x.get("abs_start", 0)))
+            self._refs_sorted = True
+        except (ValueError, TypeError, AttributeError):
+            self._refs_sorted = False
+            self._ensure_refs_sorted()
+
+        # Prepare line metrics for viewport computations
+        self._lines = content.split("\n")
+        self._line_offsets = []
+        running = 0
+        for ln in self._lines:
+            self._line_offsets.append(running)
+            running += len(ln) + 1
+
+        # Build visible highlights immediately
+        try:
+            # Mark that references are available (even if none) so we don't rescan
+            self._refs_scanned = True
+            self._highlight_visible_now()
+        except (RuntimeError, AttributeError, TypeError):
+            return False
+        return True
 
     def highlight_references(self):
         text = self.text_edit.toPlainText()
@@ -790,6 +1738,9 @@ class TextDocumentWindow(QDialog):
         self._refs_sorted = True
         self._extra_selections = []
         self.text_edit.setExtraSelections(self._extra_selections)
+        # We're about to (re)scan the whole document: mark as scanned to avoid re-entry
+        # If no refs are found, we keep this True so we don't rescan endlessly.
+        self._refs_scanned = True
 
         # Clear any previously applied inline formatting (e.g. from older sessions)
         try:
@@ -836,6 +1787,8 @@ class TextDocumentWindow(QDialog):
             self._all_references.append(r_abs)
             self._refs_sorted = False
 
+        # Mark scanning complete, even if no references were found
+        self._refs_scanned = True
         # No per-line batch processing in whole-document mode
         self._highlight_timer.stop()
         QTimer.singleShot(0, lambda t=token: self._highlight_visible_now() if t == self._cancel_token else None)
@@ -995,9 +1948,11 @@ class TextDocumentWindow(QDialog):
 
         # If we have no precomputed references (e.g. very first call), trigger parsing
         if not self._all_references:
-            text = self.text_edit.toPlainText()
-            if text:
-                self._start_lazy_highlighting(text)
+            # Only kick off a whole-document scan once per document
+            if not getattr(self, "_refs_scanned", False):
+                text = self.text_edit.toPlainText()
+                if text:
+                    self._start_lazy_highlighting(text)
             return
 
         # Reset and rebuild only visible selections from precomputed absolute references

@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-20/11/2025
+21/11/2025
 
 """
 
@@ -939,12 +939,28 @@ class MainWindow(QMainWindow):
                     show_map_local = dict(self.settings.get("show_work") or {})
                     show_map_local[name] = "true" if _checked else "false"
                     self.settings["show_work"] = show_map_local
-                    self.settings_service.save(self.settings)
+                    # Save via settings service if available
+                    if getattr(self, "settings_service", None):
+                        self.settings_service.save(self.settings)
+                    # Refresh the combo to reflect the change
                     self._refresh_other_works_combo()
                 return _toggle
 
             act.toggled.connect(_make_toggler(stem))
             settings_menu.addAction(act)
+
+    # Public wrapper used by ui.actions to avoid accessing a protected member from outside
+    def build_show_works_menu(self, settings_menu) -> None:
+        """Public entry point to build the tickable Other Works list under Settings.
+
+        Delegates to the internal implementation. Exists to satisfy linters that
+        warn about external access to protected members (methods prefixed with underscore).
+        """
+        try:
+            self._build_show_works_menu(settings_menu)
+        except (AttributeError, RuntimeError, TypeError, ValueError):
+            # Fail safe: ignore errors so the rest of the menu remains functional
+            pass
 
     # noinspection PyUnresolvedReferences
     def eventFilter(self, source, event):
@@ -1039,9 +1055,16 @@ class MainWindow(QMainWindow):
     def _open_text_file_in_window(self, path: str) -> None:
         """Open the ExternalTextDocumentWindow with the given file path 
            or update existing, then focus it."""
-        if getattr(self, "text_edit_window", None) is None:
+        # Normalise the incoming path for consistent comparisons
+        try:
+            req_path = str(Path(path).resolve())
+        except (OSError, RuntimeError, ValueError, TypeError):
+            req_path = str(path)
+
+        reader = getattr(self, "text_edit_window", None)
+        if reader is None:
             self.text_edit_window = ExternalTextDocumentWindow(
-                initial_file_path=path,
+                initial_file_path=req_path,
                 settings=self.settings,
                 settings_path=getattr(self, "user_settings_path", None)
             )
@@ -1059,7 +1082,38 @@ class MainWindow(QMainWindow):
             # Apply palette to the window; ThemeManager handles internal safety
             self.theme.apply_widget(self.text_edit_window)
         else:
-            self.text_edit_window.load_text_file(path)
+            # If the reader is currently loading the same stem/path,
+            # then prevent it re-issuing the load.
+            try:
+                is_loading_file = bool(getattr(reader, "_is_loading_file", False))
+                current_stem = getattr(reader, "current_file_stem", None)
+                req_stem = Path(req_path).stem
+                if is_loading_file and current_stem and str(current_stem) == str(req_stem):
+                    # Already loading this work; just bring it to front and apply theme
+                    try:
+                        reader.apply_theme(self.theme.state.is_dark_mode)
+                    except (RuntimeError, AttributeError):
+                        pass
+                    self.theme.apply_widget(reader)
+                    reader.show(); reader.raise_(); reader.activateWindow()
+                    return
+            except (AttributeError, RuntimeError, TypeError, ValueError, OSError):
+                pass
+            # Guard: if the requested work is already loaded, avoid reloading
+            try:
+                current_stem = getattr(reader, "current_file_stem", None)
+            except (AttributeError, RuntimeError, TypeError):
+                current_stem = None
+            req_stem = Path(req_path).stem
+            if current_stem and str(current_stem) == str(req_stem):
+                # Already showing this work; just refresh the theme/palette and focus
+                try:
+                    self.text_edit_window.apply_theme(self.theme.state.is_dark_mode)
+                except (RuntimeError, AttributeError):
+                    pass
+                self.theme.apply_widget(self.text_edit_window)
+            else:
+                self.text_edit_window.load_text_file(req_path)
             # Ensure the signal is connected even if the window already existed
             try:
                 if not getattr(self.text_edit_window, "_connected_to_main", False):
@@ -1139,6 +1193,29 @@ class MainWindow(QMainWindow):
         path = self.other_works_map.get(stem)
         if not path:
             return
+        # If the reader already has this work loaded, avoid reloading to prevent loops
+        try:
+            reader = getattr(self, "text_edit_window", None)
+            if reader is not None and getattr(reader, "current_file_stem", None) == stem:
+                # Just bring the window to front and ensure theme is applied
+                try:
+                    reader.apply_theme(self.theme.state.is_dark_mode)
+                except (RuntimeError, AttributeError):
+                    pass
+                self.theme.apply_widget(reader)
+                reader.show(); reader.raise_(); reader.activateWindow()
+                # Persist last selected work as usual
+                try:
+                    if isinstance(self.settings, dict):
+                        self.settings["last_other_work"] = stem
+                        if getattr(self, "settings_service", None):
+                            self.settings_service.save(self.settings)
+                except (OSError, TypeError, ValueError, RuntimeError):
+                    pass
+                return
+        except (AttributeError, RuntimeError, TypeError, ValueError, OSError):
+            # If any attribute access fails, fall back to the normal open path
+            pass
         # Open/update the reader window
         self._open_text_file_in_window(path)
         # Persist last selected work in settings so the combo defaults next launch

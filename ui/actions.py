@@ -146,12 +146,16 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
     settings_action.setStatusTip("Open Settings dialog")
     settings_action.triggered.connect(window.open_settings_dialog)
     settings_menu.addAction(settings_action)
-    # Build tickable list of Other Works under the Settings submenu
-    # This will add a separator and one checkable QAction per work
+    # Build a tickable list of Other Works under the Settings submenu
+    # Prefer a public helper on the window; fall back to a private one if present
     try:
-        if hasattr(window, "_build_show_works_menu"):
-            window._build_show_works_menu(settings_menu)
-    except Exception:
+        builder = getattr(window, "build_show_works_menu", None)
+        if not callable(builder):
+            # Backward-compatible fallback: use a private method if available
+            builder = getattr(window, "_build_show_works_menu", None)
+        if callable(builder):
+            builder(settings_menu)
+    except (AttributeError, RuntimeError, TypeError, ValueError):
         # If dynamic building fails, ignore to keep the app functional
         pass
 
