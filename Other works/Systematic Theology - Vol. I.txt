@@ -4413,11 +4413,15 @@ CHAPTER IV.
    public, was Robert Barclay. Barclay was a member of a prominent
    Scottish family, and received the benefit of an extended and varied
    education. He was born in 1648, and died in 1690. His principal work,
-   "TheologiÝ¦ ChristianÝ¦ Apologia," is an exposition of fifteen theses
-   which he had previously written and printed under the title, "Theses
-   TheologicÝ¦ onnnibus Clericis et prÝ¦sertim universis Doctoribus,
-   Professoribus et Studiosis TheologiÝ¦ in Academiis EuropÝ¦ versantibus
-   sive Pontificis sive Protestantibus oblatÝ¦."
+   "Theologiae Vere Christianae Apologia," is an exposition of fifteen
+   theses which he had previously written and printed under the title,
+   “Theses Theologicae omnibus Clericis et praesertim universis Doctoribus,
+   Professoribus et Studiosis Theologiae in Academiis Europae versantibus,
+   sive Pontificiis sive Protestantibus, oblatae.”
+   Translation
+   “Theological Theses, offered to all Clerics, and especially to all
+   Doctors, Professors, and Students of Theology in the Academies of
+   Europe, whether Papist or Protestant.”
 
    B. Their Doctrines.
 
@@ -5175,21 +5179,30 @@ CHAPTER V.
    and that the people, being incompetent to understand them, are bound to
    believe whatever doctrines the Church, through its official organs,
    declares to be true and divine. On this subject the Council of Trent
-   (Sess. 4), says: "Ad coërcenda petulantia ingenia decernit (Synodus),
-   ut nemo, suÝ¦ prudentiÝ¦ innixus in rebus fidei et morum ad Ý¦dificationem
-   doctrinÝ¦ Christiana pertinentium, Sacram Scripturam ad suas sensus
-   contorquens contra eum sensum, quem tenuit et tenet sancta mater
-   Ecclesia, cujus est judicare de vero sensu et interpretatione
-   Scripturarum Sanctarum, aut etiam contra unanimem consensum patrum
-   ipsam scripturam sacram interpretari audeat, etiamsi hujus modi
-   interpretationes nullo unquam tempore in lucem edendÝ¦ forent. Qui
-   contravenerint, per ordinarios declarentur et poenis a jure statutis
-   puniantur." Bellarmin [62] says: "Non ignorabat Deus multas in Ecclesia
-   exorituras difficultates circa fidem, debuit igitur judicem aliquem
-   EcclesiÝ¦ providere. At iste judex non potest esse Scriptura, neque
-   Spiritus revelans privatus, neque princeps secularis, igitur princeps
-   ecclesiasticus vel solus vel certe cum consilio et consensu
-   coepiscoporum."
+   (Sess. 4), says: "Ad coërcenda ingenia petulantia decernit Synodus:
+   - Nemo, prudentiae suae innixus,
+     in rebus fidei et morum,
+     quae ad aedificationem doctrinae Christianae pertinent,
+     Sacram Scripturam ad suos sensus contorquere audeat
+     contra eum sensum:
+        • quem tenuit et tenet sancta mater Ecclesia,
+          cui soli est iudicare de vero sensu et interpretatione Scripturarum,
+        • aut contra unanimem consensum Patrum.
+   - Etiamsi huiusmodi interpretationes nullo tempore in lucem edendae forent.
+   - Qui contravenerint:
+        • per Ordinarios declarentur,
+        • poenis iure statutis puniantur."
+
+   Bellarmin [62] says: "Non ignorabat Deus multas difficultates in
+   Ecclesia circa fidem exoritura.
+   Debuit igitur iudicem aliquem providere.
+      - Iste iudex non potest esse Scriptura (ob disputationes de sensu).
+      - Neque Spiritus revelans privatus (ob incertitudinem).
+      - Neque princeps secularis (extra competentiam).
+   Conclusio:
+      - Iudex est princeps ecclesiasticus,
+        vel solus,
+        vel certe cum consilio et consensu coepiscoporum."
 
    From this view of the obscurity of Scripture it follows that the use of
    the sacred volume by the people, is discountenanced by the Church of
@@ -5208,13 +5221,20 @@ CHAPTER V.
 
    4. The fourth point of difference concerns the authority due to the
    Latin Vulgate. On this subject the Council of Trent (Sess. 4), says:
-   "Synodus considerans non parum utilitatis accedere posse EcclesiÝ¦ Dei,
-   si ex omnibus Latinis editionibus quÝ¦ circumferentur, sacrorum
-   librorum, quÝ¦nam pro authentica habenda sit, innotescat: statuit et
-   declarat, ut hÝ¦c ipsa vetus et vulgata editio, quÝ¦ longo tot seculorum
-   usu in ipsa Ecclesia probata est, in publicis lectionibus,
-   disputationibus, prÝ¦dicationibus et expositionibus pro authentica
-   habeatur et nemo illam rejicere quovis prÝ¦textu audeat vel prÝ¦sumat."
+   "Synodus considerans utilitatem Ecclesiae Dei:
+   - Ex omnibus Latinis editionibus sacrorum librorum circumferentibus,
+     oportet innotescere quae sit pro authentica habenda.
+Statuit et declarat:
+   - Haec ipsa vetus et vulgata editio,
+     quae longo tot seculorum usu in Ecclesia probata est,
+     habeatur pro authentica:
+        • in publicis lectionibus,
+        • in disputationibus,
+        • in praedicationibus,
+        • in expositionibus.
+Praeceptum:
+   - Nemo illam rejicere quovis praetextu audeat vel praesumat."
+
    The meaning of this decree is a matter of dispute among Romanists
    themselves. Some of the more modern and liberal of their theologians
    say that the Council simply intended to determine which among several
@@ -5295,37 +5315,79 @@ CHAPTER V.
    for all believers.
 
    These particulars are included in the following extracts from the acts
-   of the Council: "Synodus -- perspiciens hanc veritatem et disciplinam
-   contineri in libris scriptis et sine scripto traditionibus, quÝ¦ ex
-   ipsius Christi ore ab apostolis acceptÝ¦, aut ab ipsis apostolis,
-   Spiritu Sancto dictante, quasi per manus traditÝ¦, ad nos usque
-   pervenerunt; orthodoxorum patrum exempla secuta, omnes libros tam
-   Veteris quam Novi Testamenti, cum utriusque unus Deus sit auctor, nec
-   non traditiones ipsas, tum ad fidem tum ad mores pertinentes, tanquam
-   vel ore tenus a Christo, vel a Spiritu Sancto dictatas, et continua
-   successione in Ecclesia Catholica conservatas, pari pietatis affectu et
-   reverentia suscipit et veneratur." [63]
+   of the Council:
+   Synodus perspiciens:
+      - Veritas et disciplina continentur:
+           • in libris scriptis,
+           • in traditionibus sine scripto,
+             quae ex ore Christi ab Apostolis acceptae,
+             aut ab ipsis Apostolis, Spiritu Sancto dictante,
+             quasi per manus traditae,
+             ad nos usque pervenerunt.
+   Exempla orthodoxorum Patrum secuta:
+      - Suscipit et veneratur:
+           • omnes libros Veteris et Novi Testamenti,
+             cum unus Deus utriusque auctor sit,
+           • traditiones ipsas,
+             tum ad fidem tum ad mores pertinentes,
+             vel ore tenus a Christo,
+             vel a Spiritu Sancto dictatas,
+             et continua successione in Ecclesia Catholica conservatas.
+   Praeceptum:
+      - Pari pietatis affectu et reverentia
+        Scriptura et Traditiones recipiuntur. [63]
 
    Bellarmin [64] divides traditions into three classes: divine,
-   apostolical, and ecclesiastical. "DivinÝ¦ dicuntur quÝ¦ acceptÝ¦ sunt ab
-   ipso Christo apostolos docente, et nusquam in divinis literis in
-   veniuntur. . . . . ApostolicÝ¦ traditiones proprie dicuntur illÝ¦, quÝ¦ ab
-   apostolis institutÝ¦ sunt, non tamen sine assistentia Spiritus Sancti et
-   nihilominus non extant scriptÝ¦ in eorum epistolis. . . . .
-   EcclesiasticÝ¦ traditiones proprie dicuntur consuetudines quÝ¦dam antiquÝ¦
-   vel a prÝ¦latis vel a populis inchoatÝ¦, quÝ¦ paulatim tacito consensu
-   populorum vim legis obtinuerunt. Et quidem traditiones divinÝ¦ eandem
-   vim habent, quam divinae prÝ¦cepta sive divina doctrina scripta in
-   Evangeliis. Et similiter apostolicÝ¦ traditiones non scriptÝ¦ eandem vim
-   habent, quam apostolica, traditiones scriptÝ¦. . . . . EcclesiasticÝ¦
-   autem traditiones eandem vim habent, quam decreta et constitutiones
-   ecclesiasticÝ¦, scriptÝ¦."
+   apostolical, and ecclesiastical. 
+   Traditiones Divinae:
+      - Acceptae ab ipso Christo apostolos docente.
+      - Nusquam in divinis literis reperiuntur.
+      - Eandem vim habent quam divina praecepta
+        sive doctrina scripta in Evangeliis.
 
-   Petrus â  Soto, quoted by Chemnitz [65] says, "Infallibilis est regula
-   et catholica. Quacunque credit, tenet, et servat Romana Ecclesia, et in
-   Scripturis non habentur, illa ab apostolis esse tradita; item quarum
-   observationum initium, author et origo ignoretur, vel inveniri non
-   potest, illas extra omnem dubitationem ab apostolis tradita esse."
+   Traditiones Apostolicae:
+      - Institutæ ab Apostolis,
+        non sine assistentia Spiritus Sancti.
+      - Non extant scriptae in epistolis.
+      - Eandem vim habent quam apostolicae traditiones scriptæ.
+
+   Traditiones Ecclesiasticae:
+      - Consuetudines antiquae,
+        vel a praelatis vel a populis inchoatae.
+      - Paulatim tacito consensu populorum
+        vim legis obtinuerunt.
+      - Eandem vim habent quam decreta et constitutiones ecclesiasticae scriptæ.
+
+   Traditiones Divinae:
+      - Acceptae ab ipso Christo apostolos docente.
+      - Nusquam in divinis literis reperiuntur.
+      - Eandem vim habent quam divina praecepta
+        sive doctrina scripta in Evangeliis.
+
+   Traditiones Apostolicae:
+      - Institutæ ab Apostolis,
+        non sine assistentia Spiritus Sancti.
+      - Non extant scriptae in epistolis.
+      - Eandem vim habent quam apostolicae traditiones scriptæ.
+
+   Traditiones Ecclesiasticae:
+      - Consuetudines antiquae,
+        vel a praelatis vel a populis inchoatae.
+      - Paulatim tacito consensu populorum
+        vim legis obtinuerunt.
+      - Eandem vim habent quam decreta et constitutiones ecclesiasticae scriptæ.
+
+   Petrus â  Soto, quoted by Chemnitz [65] says, 
+   "Infallibilis est regula et catholica:
+      - Quaecunque credit, tenet, et servat Romana Ecclesia,
+        et in Scripturis non habentur,
+        illa ab Apostolis tradita esse censentur.
+
+      - Item observationes:
+           • quarum initium, auctor et origo ignoratur,
+           • vel inveniri non potest,
+        illae extra omnem dubitationem
+        ab Apostolis traditae esse iudicantur."
 
    From this it appears, 1. That these traditions are called unwritten
    because not contained in the Scriptures. They are, for the most part,

@@ -81,7 +81,7 @@ splash: Any | None = None
 
 from PySide6.QtWidgets import (QMainWindow, QWidget,
                                QPlainTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
-                               QPushButton, QHBoxLayout, QInputDialog,
+                               QPushButton, QHBoxLayout, QVBoxLayout, QInputDialog,
                                QStatusBar, QFileDialog, QSplashScreen)
 
 from PySide6.QtGui import (QMouseEvent, QKeyEvent, QSyntaxHighlighter, QColor, QFont,
@@ -545,6 +545,8 @@ class MainWindow(QMainWindow):
         self.search_work_btn: QPushButton | None = None
         # Keyboard shortcut for reopening the last Other Work (predeclared for linters)
         self.shortcut_last_work: QShortcut | None = None
+        # Placeholder for the 4th-column vertical button layout added in initui
+        self.side_buttons_col: QVBoxLayout | None = None
         self.other_works_map: Dict[str, str] = {}
         self.statusBar: None = None
         self.okButton: None = None
@@ -656,7 +658,9 @@ class MainWindow(QMainWindow):
         grid.setSpacing(2)
         self.setLayout(grid)
 
-        grid.addWidget(self.textEditor, 0, 0, 1, 3)
+        # Let the Bible text editor take up the extra space to the right by spanning all 4 columns on row 0.
+        # Note: Column 3 is still used on rows 1–4 for the right-hand buttons; spanning on row 0 does not affect them.
+        grid.addWidget(self.textEditor, 0, 0, 1, 4)
         self.textEditor.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         grid.addWidget(self.comboBox_1, 1, 0)
@@ -664,6 +668,10 @@ class MainWindow(QMainWindow):
         grid.addWidget(self.comboBox_2, 1, 1)
         self.comboBox_2.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         grid.addWidget(self.comboBox_3, 1, 2)
+        
+        # Column 3 (the 4th column) is intentionally left empty on row 0 and reserved for
+        # three buttons placed beside existing controls on rows 2–4.
+        # We no longer add a spanning layout here, so we can target specific row placements.
         self.comboBox_3.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         grid.addWidget(self.display_verse_input, 2, 0)
@@ -755,63 +763,66 @@ class MainWindow(QMainWindow):
         self.buttonf11.setToolTip("F11")
         self.buttonf11.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        # Create a horizontal layout for Fullscreen and Devotional buttons
-        full_buttons_layout = QHBoxLayout()
-
         self.buttonf9 = QPushButton("Fullscreen")
         self.buttonf9.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf9.clicked.connect(self.f9)
-        full_buttons_layout.addWidget(self.buttonf9)
         self.buttonf9.setToolTip("F9")
         self.buttonf9.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        # Place Fullscreen to the right of the combo boxes (row 1, col 3)
+        grid.addWidget(self.buttonf9, 1, 3)
 
         self.buttonf12 = QPushButton("Devotional")
         self.buttonf12.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf12.clicked.connect(self.f12)
-        full_buttons_layout.addWidget(self.buttonf12)
         self.buttonf12.setToolTip("F12")
         self.buttonf12.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        # Add the horizontal layout to the grid at row 5, column 0
-        grid.addLayout(full_buttons_layout, 5, 0)
+        # Place Devotional to the right of Light/Dark (row 2, col 3)
+        grid.addWidget(self.buttonf12, 2, 3)
 
         self.buttonf13 = QPushButton("Commentary")
         self.buttonf13.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf13.clicked.connect(commentary)
-        grid.addWidget(self.buttonf13, 5, 1)
+        # Place Commentary to the right of Forward (row 3, col 3)
+        grid.addWidget(self.buttonf13, 3, 3)
         self.buttonf13.setToolTip("Open Calvin’s Commentaries (Ctrl+Shift+C)")
         self.buttonf13.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        # Bottom-right: combo box of Other Works (with a quick "Last" button)
+        # Bottom row layout:
+        # - Place the Other Works combobox under column 0 only (narrowed again).
+        # - Place "Last" and "Search" buttons under the two Chapter buttons
+        #   so that they align beneath Chapter- (col 1) and Chapter+ (col 2).
+        # (Row indices are zero-based here; this is row 5 in our grid.)
         self.other_works_combo = QComboBox()
         self.other_works_combo.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        # Create a small horizontal layout to hold the combo and the Last/Search buttons
-        other_works_layout = QHBoxLayout()
-        other_works_layout.setContentsMargins(0, 0, 0, 0)
-        other_works_layout.addWidget(self.other_works_combo)
-
         # Option A: Add a one-click button to jump to the last read item
         self.last_work_btn = QPushButton("Last")
-        self.last_work_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        # Make the "Last" button roughly half its natural/suggested width
+        # Left-justify the button text as requested
         try:
-            suggested_w = self.last_work_btn.sizeHint().width()
-            self.last_work_btn.setFixedWidth(max(40, int(suggested_w * 0.5)))
-        except (RuntimeError, AttributeError, TypeError):
-            # If sizeHint isn't available for any reason, skip resizing gracefully
+            self.last_work_btn.setStyleSheet("QPushButton { text-align: left; }")
+        except (RuntimeError, AttributeError, TypeError, ValueError):
             pass
+        self.last_work_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.last_work_btn.setToolTip("Open the last read book (Ctrl+L)")
         self.last_work_btn.clicked.connect(self._select_last_other_work)
-        other_works_layout.addWidget(self.last_work_btn)
 
         # Add a Search button for searching within the Other Works reader window
         self.search_work_btn = QPushButton("Search")
+        # Left-justify the button text as requested
+        try:
+            self.search_work_btn.setStyleSheet("QPushButton { text-align: left; }")
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
         self.search_work_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         try:
-            suggested_sw = self.search_work_btn.sizeHint().width()
-            self.search_work_btn.setFixedWidth(max(60, int(suggested_sw * 0.8)))
-        except (RuntimeError, AttributeError, TypeError):
+            # Make "Last" match the width of "Chapter-" and "Search" match "Chapter+".
+            # This ties the bottom-row buttons to the corresponding chapter buttons' sizes.
+            ch_minus_w = int(self.buttonf10.sizeHint().width())
+            ch_plus_w = int(self.buttonf11.sizeHint().width())
+            self.last_work_btn.setFixedWidth(ch_minus_w)
+            self.search_work_btn.setFixedWidth(ch_plus_w)
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            # If size hints are unavailable, leave default sizing
             pass
         self.search_work_btn.setToolTip("Search in the opened Other Works text (Ctrl+F)")
         self.search_work_btn.clicked.connect(self._open_reader_search)
@@ -820,9 +831,11 @@ class MainWindow(QMainWindow):
             self.search_work_btn.setEnabled(False)
         except (RuntimeError, AttributeError, TypeError):
             pass
-        other_works_layout.addWidget(self.search_work_btn)
 
-        grid.addLayout(other_works_layout, 5, 2)
+        # Place the widgets on the grid as requested
+        grid.addWidget(self.other_works_combo, 5, 0, 1, 1)  # span column 0 only (narrowed further)
+        grid.addWidget(self.last_work_btn, 5, 1)            # under Chapter- (row 4, col 1)
+        grid.addWidget(self.search_work_btn, 5, 2)          # under Chapter+ (row 4, col 2)
 
         # Populate the combo with .txt files from 'Other Works'
         other_works_dir = Path(sh.str_cwd) / "Other Works"
@@ -959,7 +972,7 @@ class MainWindow(QMainWindow):
         try:
             self._build_show_works_menu(settings_menu)
         except (AttributeError, RuntimeError, TypeError, ValueError):
-            # Fail safe: ignore errors so the rest of the menu remains functional
+            # Fail-safe: ignore errors so the rest of the menu remains functional
             pass
 
     # noinspection PyUnresolvedReferences
