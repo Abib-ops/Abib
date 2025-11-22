@@ -109,7 +109,7 @@ CONTENTS OF THE FIRST VOLUME.
    71
    § 3. Mysticism during the Middle Ages 73
 
-   General Characteristics of that Period.--Different Classes of MediÝ¦val
+   General Characteristics of that Period.--Different Classes of Mediaeval
    Theologians.--Pantheistical Tendencies of Mysticism.--Evangelical
    Mystics
    79
@@ -301,7 +301,7 @@ CONTENTS OF THE FIRST VOLUME.
    Aristotle
    326
 
-   MediÝ¦val Pantheism
+   Mediaeval Pantheism
    328
 
    Neo-Platonists.--John Scotus Erigena.--Modern Pantheism
@@ -1453,7 +1453,7 @@ CHAPTER II.
    sense, is the same as our word religious; in a bad sense, it means
    scrupulous, superstitious. "Religentem esse oportet, religiosum nefas."
    [4] Augustin and Lactantius derive the word from religare, to bind
-   back. Augustin [5] says: "Ipse Deus enim fons nostrÝ¦ beatudinis, ipse
+   back. Augustin [5] says: "Ipse Deus enim fons nostrae beatudinis, ipse
    omnis appetitionis est finis. Hunc eligentes vel potius religentes
    amiseramus enim negligentes: hunc ergo religentes, unde et religio
    dicta perhibetur, ad eum dilectione tendimus ut perveniendo
@@ -1467,8 +1467,8 @@ CHAPTER II.
    expresses a state of mind. What that state characteristically is, is
    very variously stated. Most simply it is said to be the state of mind
    induced by faith in God, and a due sense of our relation to him. Or as
-   Wegscheider expresses it, "Ý†qualis et constans animi affectio, qua
-   homo, necessitudinem suam eandemque Ý¦ternam, quÝ¦ ei cum summo omnium
+   Wegscheider expresses it, "Æqualis et constans animi affectio, qua
+   homo, necessitudinem suam eandemque aeternam, quae ei cum summo omnium
    rerum auctore ac moderatore sanctissimo intercedit, intimo sensu
    complexus, cogitationes, voluntates et actiones suas ad eum referre
    studet." Or, as more concisely expressed by Bretschneider, "Faith in
@@ -2937,7 +2937,7 @@ CHAPTER III.
    § 6. Relation of Philosophy and Revelation.
 
    Cicero [13] defines philosophy as "Rerum divinarum et humanarum,
-   causarumque quibus hÝ¦ res continentur, scientia." Peemans [14] says,
+   causarumque quibus hae res continentur, scientia." Peemans [14] says,
    "Philosophia est scientia rerum per causas primas, recto rationis usu
    comparata." Or, as Ferrier [15] more concisely expresses it,
    "Philosophy is the attainment of truth by the way of reason." These and
@@ -3285,7 +3285,7 @@ CHAPTER IV.
    Rationalists are designedly so framed as to include what all
    evangelical Christians hold to be true concerning the illumination,
    teaching, and guidance of the Holy Spirit. Thus Wegscheider [18] says,
-   "Mysticismus est persuasio de singulari animÝ¦ facultate ad immediatum
+   "Mysticismus est persuasio de singulari animae facultate ad immediatum
    ipsoque sensu percipiendum cum numine aut naturis coelestibus
    commercium jam in hac vita perveniendi, quo mens immediate cognitione
    rerum divinarum ac beatitate perfruatur." And Bretschneider [19]
@@ -3564,13 +3564,13 @@ CHAPTER IV.
    passage from Tertullian [28] gives clearly the fundamental principle of
    the system, so far as this point is concerned: "Regula quidem fidei una
    omnino est, sola immobilis et irreformabilis. . . . . Hac lege fidei
-   manente, cetera jam disciplinÝ¦ et conversationis admittunt novitatem
+   manente, cetera jam disciplinae et conversationis admittunt novitatem
    correctionis; operante scilicet et proficiente usque in finem gratia
    Dei. . . . . Propterea Paracletum misit Dominus, ut, quoniam humana
    mediocritas omnia semel capere non poterat, paulatim dirigeretur et
    ordinaretur et ad perfectum perduceretur disciplina ab illo vicario
-   Domini Spiritu Sancto. QuÝ¦ est ergo Paracleti administratio nisi hÝ¦c,
-   quod disciplina dirigitur, quod ScripturÝ¦ revelantur, quod intellectus
+   Domini Spiritu Sancto. Quae est ergo Paracleti administratio nisi haec,
+   quod disciplina dirigitur, quod Scripturae revelantur, quod intellectus
    reformatur, quod ad meliora proficitur? . . . . Justitia primo fuit in
    rudimentis, natura Deum metuens; dehinc per legem et prophetas promovit
    in infantiam; dehinc per evangelium efferbuit in juventutem; nunc per
@@ -3666,7 +3666,7 @@ CHAPTER IV.
 
    The primary emanations from the ground of all being, which the heathen
    called gods (as they had gods many and lords many) the New Platonists,
-   spirits or intelligences; and the Gnostics, Ý¦ons; the pseudo-Dionysius
+   spirits or intelligences; and the Gnostics, aeons; the pseudo-Dionysius
    called angels. These he divided into three triads: (1.) thrones,
    cherubim, and seraphim; (2.) powers, lordships, authorities; (3.)
    angels, archangels, principalities. He classified the ordinances and
@@ -3758,12 +3758,12 @@ CHAPTER IV.
    received on authority as a matter of faith, was true as a matter of
    philosophy. It was held to be the duty of the theologian to exalt faith
    into knowledge. Or, as Anselm [31] expresses it: "rationabili
-   necessitate intelligere, esse oportere omnia illa, quÝ¦ nobis fides
-   catholica de Christo credere prÝ¦cipit." Richard â  St. Victore still
+   necessitate intelligere, esse oportere omnia illa, quae nobis fides
+   catholica de Christo credere praecipit." Richard â  St. Victore still
    more strongly asserts that we are bound, "quod tenemus ex fide, ratione
-   apprehendere et demonstrativÝ¦ certitudinis attestatione firmare."
+   apprehendere et demonstrativae certitudinis attestatione firmare."
 
-   The First Class of MediÝ¦val Theologians.
+   The First Class of Mediaeval Theologians.
 
    Of these theologians, however, there were three classes. First, those
    who avowedly exalted reason above authority, and refused to receive
@@ -3778,18 +3778,18 @@ CHAPTER IV.
    decided for the latter. Reason, with him, was paramount to authority,
    the latter having no force except when sustained by the former.
    "Auctoritas siquidem ex vera ratione processit, ratio vero nequaquam ex
-   auctoritate. Omnis autem auctoritas, quÝ¦ vera ratione non approbatur,
+   auctoritate. Omnis autem auctoritas, quae vera ratione non approbatur,
    infirma videtur esse. Vera autem ratio, quum virtutibus suis rata atque
    immutabilis munitur, nullius auctoritatis adstipulatione roborari
    indiget." [33] His philosophy as developed in his work, "De Divisione
-   NaturÝ¦," is purely pantheistic. There is with him but one being, and
+   Naturae," is purely pantheistic. There is with him but one being, and
    everything real is thought. His system, therefore, is nearly identical
    with the idealistic pantheism of Hegel; yet he had his trinitarianism,
    his soteriology, and his eschatology, as a theologian.
 
    The Second Class.
 
-   The second and more numerous class of the mediÝ¦val theologians took the
+   The second and more numerous class of the mediaeval theologians took the
    ground that faith in matters of religion precedes science; that truths
    are revealed to us supernaturally by the Spirit of God, which truths
    are to be received on the authority of the Scriptures and the testimony
@@ -3810,9 +3810,9 @@ CHAPTER IV.
    properly to apprehend them. Faith, therefore, as including spiritual
    discernment, must precede all true knowledge. "Qui secundum carnem
    vivit, carnalis sive animalis est, de quo dicitur: animalis homo non
-   percipit ea, quÝ¦ sunt Spiritus Dei. . . . . Qui non crediderit, non
+   percipit ea, quae sunt Spiritus Dei. . . . . Qui non crediderit, non
    intelliget, nam qui non crediderit, non experietur, et qui expertus non
-   fuerit, non intelliget." [34] "Neque enim quÝ¦ro intelligere, ut credam,
+   fuerit, non intelliget." [34] "Neque enim quaero intelligere, ut credam,
    sed credo, ut intelligam. Nam et hoc credo, quia, nisi credidero, non
    intelligam." [35] (2.) He held that rational proof was not needed as a
    help to faith. It was as absurd, he said, for us to presume to add
@@ -3829,7 +3829,7 @@ CHAPTER IV.
    doctrines of the Church, consciously or unconsciously, explained them
    away.
 
-   B. MediÝ¦val Mystics..
+   B. Mediaeval Mystics..
 
    Mystics were to be found in all these classes, and therefore they have
    been divided, as by Dr. Shedd, [37] into the heretical, the orthodox,
@@ -3862,7 +3862,7 @@ CHAPTER IV.
    essentially pantheistic. Those writings were translated by Scotus
    Erigena, himself the most pronounced pantheist of the Middle Ages.
    Through the joint influence of these two men, a strong tendency to
-   pantheism was developed to a greater or less degree among the mediÝ¦val
+   pantheism was developed to a greater or less degree among the mediaeval
    Mystics. Even the associations among the people, such as the Beghards
    and Lollards, although at first exemplary and useful, by adopting a
    system of mystic pantheism became entirely corrupt. [40] Believing
@@ -3971,7 +3971,7 @@ CHAPTER IV.
 
    [31] Cur Deus Homo, lib. i. cap. 25.
 
-   [32] De PrÝ¦dest. cap. i. 1, Migne, Patr. vol. cxxii. p. 358, a.
+   [32] De Praedest. cap. i. 1, Migne, Patr. vol. cxxii. p. 358, a.
 
    [33] De Div. Nat., i. 69 f., Migne, ut supra, p.513, b.
 
@@ -3979,7 +3979,7 @@ CHAPTER IV.
 
    [35] Proslogium, i.; Ibid. p. 30, B. a.
 
-   [36] EpistolÝ¦, lib. ii. epis. 41; Opera, Paris, 1721, p. 357, B, a.
+   [36] Epistolae, lib. ii. epis. 41; Opera, Paris, 1721, p. 357, B, a.
 
    [37] History of Christian Doctrine, vol. i. p. 79.
 
@@ -3996,7 +3996,7 @@ CHAPTER IV.
    [43] See Tholuck, Sufismus seu Theosophia Persarum Pantheistica. C.
    Schmidt, Essai sur les Mystiques du 14me Siècle. This writer is the
    author of most of the excellent articles in Herzog's Encyklopädie on
-   the MediÝ¦val Mystics. Ullmann's Reformers before the Reformation.
+   the Mediaeval Mystics. Ullmann's Reformers before the Reformation.
    Poiret, Bibliotheca Mysticorum. Vaughan's Hours with the Mystics.
    Helfferich's Christliche Mystik. Dorner, Geschichte der
    Protestantischen Theologie, 48-59.
@@ -4221,7 +4221,7 @@ CHAPTER IV.
    in a form free from grievous errors, but nevertheless it was a return
    to the religion of the heart, as opposed to the religion of forms. The
    Mystics of this period, although they constantly appealed to the
-   mediÝ¦val Mystics, even to the Areopagite, and although they often used
+   mediaeval Mystics, even to the Areopagite, and although they often used
    the same forms of expression, yet they adhered much more faithfully to
    Scriptural doctrines and to the faith of the Church. They did not fall
    into Pantheism, or believe in the absorption of the soul into the
@@ -5129,7 +5129,7 @@ CHAPTER V.
    which all Christians are bound to believe, are only imperfectly
    revealed in the Scriptures; that others are only obscurely intimated;
    and that others are not therein contained at all. The Preface to the
-   Romish Catechism (Quest. 12) says, "Omnis doctrinÝ¦ ratio, quÝ¦ fidelibus
+   Romish Catechism (Quest. 12) says, "Omnis doctrinae ratio, quae fidelibus
    tradenda sit, verbo Dei continetur, quod in scripturam traditionesque
    distributum est." Bellarmin [60] says expressly, "Nos asserimus, in
    Scripturis non contineri expressè totam doctrinam necessariam, sive de
@@ -5446,13 +5446,13 @@ Praeceptum:
    of all the revelations of God, written and unwritten; and secondly, by
    the constant presence and guidance of the Holy Spirit preserving it
    from all error in its instructions. On this point the "Roman
-   Catechism," [66] says: "Quemadmodum hÝ¦c una Ecclesia errare non potest
+   Catechism," [66] says: "Quemadmodum haec una Ecclesia errare non potest
    in fidei ac morum disciplina tradenda, cum a Spiritu Sancto gubernetur;
-   ita ceteras omnes, quÝ¦ sibi ecclesiÝ¦ nomen arrogant, ut quÝ¦ Diaboli
-   spiritu ducantur, in doctrinÝ¦ et morum perniciosissimis erroribus
+   ita ceteras omnes, quae sibi ecclesiae nomen arrogant, ut quae Diaboli
+   spiritu ducantur, in doctrinae et morum perniciosissimis erroribus
    versari necesse est." And Bellarmin, [67] "Nostra sententia est
    Ecclesiam absolute non posse errare nec in rebus absolute necessariis
-   nec in aliis, quÝ¦ credenda vel facienda nobis proponit, sive habeantur
+   nec in aliis, quae credenda vel facienda nobis proponit, sive habeantur
    expresse in Scripturis, sive non."
 
    3. The Church, according to these statements, is infallible only as to
@@ -5596,7 +5596,7 @@ Praeceptum:
    ever-living word in the hearts of believers." [69] It is, he says, what
    Eusebius means by by ekklesiastikon phronema; what Vincent of Lerins
    intends by the ecclesiastica intelligentia, and the Council of Trent by
-   the universus ecelesicÝ¦ sensus. "In the objective sense of the word,"
+   the universus ecelesicae sensus. "In the objective sense of the word,"
    Moehler says that "Tradition is the common faith of the Church as
    presented in external, historical witnesses through all centuries." "In
    this latter sense," he tells us, "tradition is commonly viewed when
@@ -5803,7 +5803,7 @@ Praeceptum:
    exaggeration of views and doctrines, belonging to a period of infancy.
    In the Middle Ages it had a higher form. At the Reformation it advanced
    to the entrance on another stage. The form assumed by Christianity
-   during the mediÝ¦val period, was for that period the true and proper,
+   during the mediaeval period, was for that period the true and proper,
    but not the permanent form. We have not reached that form as to
    doctrine yet. That will be reached in the Church of the future.
 
@@ -5826,7 +5826,7 @@ Praeceptum:
    Peter, into the supremacy of the Pope. The Old Testament contains the
    germ of all the doctrines unfolded in the New; and so the New Testament
    contains the germs of all the doctrines unfolded, under the guidance of
-   the Spirit, in the theology of the mediÝ¦val Church.
+   the Spirit, in the theology of the mediaeval Church.
 
    Although attempts have been made by some Romanists and Anglicans to
    resolve the doctrine of tradition into one or other of these theories
@@ -5838,7 +5838,7 @@ Praeceptum:
 
    The Real Question.
 
-   The real status quÝ¦stionis, on this subject, as between Romanists and
+   The real status quaestionis, on this subject, as between Romanists and
    Protestants, is not (1) Whether the Spirit of God leads true believers
    into the knowledge of the truth; nor (2) whether true Christians agree
    in all essential matters as to truth and duty; nor (3) whether any man
@@ -6025,7 +6025,7 @@ Praeceptum:
    remarked, in their constant appeal to the authority of the Church. What
    the Church says is a matter of faith, we, the traditionists affirm, are
    bound to believe, has always been a matter of faith. The passage from
-   "Petrus á Soto," quoted above, puts the case very concisely: "QuÝ¦cunque
+   "Petrus á Soto," quoted above, puts the case very concisely: "Quaecunque
    credit, tenet et servat Romana ecclesia, et in Scripturis non habentur
    illa ab Apostolis esse tradita." The argument amounts to this. The
    Church believes on the ground of common consent. The proof that a thing
@@ -6087,7 +6087,7 @@ Praeceptum:
    works were circulated; and that genuine works were recklessly
    interpolated. Some of the most important works of the Greek fathers are
    extant only in a Latin translation. This is the case with the greater
-   part of the works of IranÝ¦us, translated by Rufinus, whom Jerome
+   part of the works of Iranaeus, translated by Rufinus, whom Jerome
    charges with the most shameless adulteration.
 
    Another objection to the argument from consent is, that it is a
@@ -6507,21 +6507,21 @@ Praeceptum:
    unquestioned, that it is unnecessary to cite authorities on either
    side. It is enough, so far as the doctrine of Romanists is concerned,
    to quote the language of Bellarmin, [78] that the marks of the Church
-   are three: "Professio verÝ¦ fidei, sacramentorum communio, et subjectio
+   are three: "Professio verae fidei, sacramentorum communio, et subjectio
    ad legitimum pastorem, Romanum Pontificem. -- Atque hoc interest inter
-   sententiam nostram et alias omnes, quod omnes aliÝ¦ requirunt internas
+   sententiam nostram et alias omnes, quod omnes aliae requirunt internas
    virtutes ad constituendum aliquem in Ecclesia, et propterea Ecclesiam
    veram invisibilem faciunt; nos autem credimus in Ecclesia inveniri
-   omnes virtutes, -- tamen ut aliquis aliquo modo dici possit pars verÝ¦
-   EcclesiÝ¦, -- non putamus requiri ullam internam virtutem, sed tantum
-   externam professionem fidei, et sacramentorum communionem, quÝ¦ sensu
+   omnes virtutes, -- tamen ut aliquis aliquo modo dici possit pars verae
+   Ecclesiae, -- non putamus requiri ullam internam virtutem, sed tantum
+   externam professionem fidei, et sacramentorum communionem, quae sensu
    ipso percipitur. Ecclesia enim est coetus hominum ita visibilis et
-   palpabilis, ut est coetus Populi Romani, vel regnum GalliÝ¦ aut
+   palpabilis, ut est coetus Populi Romani, vel regnum Galliae aut
    respublica Venetorum." The Lutheran Symbols define the Church as,
    "Congregatio sanctorum." [79] "Congregatio sanctorum et vere
    credentium." [80] "Societas fidei et Spiritus Sancti in cordibus." [81]
    "Congregatio sanctorum, qui habent inter se societatem ejusdem
-   evangelii seu doctrinÝ¦, et ejusdem Spiritus Sancti, qui corda eorum
+   evangelii seu doctrinae, et ejusdem Spiritus Sancti, qui corda eorum
    renovat, sanctificat et gubernat;" and [82] "Populus spiritualis, non
    civilibus ritibus distinctus a gentibus, sed verus populus Dei renatus
    per Spiritum Sanctum." [83]
@@ -6536,16 +6536,16 @@ Praeceptum:
    "Affirmamus ex Dei verbo, Ecclesiam esse fidelium coetum, qui in verbo
    Dei sequendo et pura religione colenda consentiunt, in qua etiam
    quotidie proficiunt." [86] Confessio Belgica: "Credimus et confitemur
-   unicam Ecclesiam catholicam seu universalem, quÝ¦ est sancta congregatio
+   unicam Ecclesiam catholicam seu universalem, quae est sancta congregatio
    seu coetus omnium fidelium Christianorum, qui totam suam salutem ab uno
    Jesu Christo exspectant, abluti ipsius sanguine et per Spiritum ejus
-   sanctificati atque obsignati. HÝ¦c Ecclesia sancta nullo est aut certo
+   sanctificati atque obsignati. Haec Ecclesia sancta nullo est aut certo
    loco sita et circumscripta, aut ullis certis personis astricta aut
    alligata: sed per omnem orbem terrarum sparsa atque diffusa est." [87]
    The same doctrine is found in the answer to the fifty-fourth question
    in the Heidelberg Catechism. In the Geneva Catechism to the question,
    "Quid est Ecclesia?" the answer is, "Corpus ac societas fidelium, quos
-   Deus ad vitam Ý¦ternam prÝ¦destinavit." [88]
+   Deus ad vitam aeternam praedestinavit." [88]
 
    Winer in his "Comparative Darstellung," [89] thus briefly states the
    two theories concerning the Church. Romanists, he says, "define the
@@ -6628,7 +6628,7 @@ Praeceptum:
    pseudos pontificiorum in tota controversia est, ecclesiam metiri velle
    ex societatis civilis modulo, ut ejus essentia in externis tantum et in
    sensus incurrentibus consistat, et sola professio fidei sufficiat ad
-   membrum ecclesiÝ¦ constituendum, nec ipsa fides et pietas interna ad id
+   membrum ecclesiae constituendum, nec ipsa fides et pietas interna ad id
    necessario requirantur."
 
    D. The Doctrine of Infallibility founded on the False Assumption of the
@@ -6743,7 +6743,7 @@ Praeceptum:
    appointment, and no historical evidence of their continuance; on the
    contrary, they disappear entirely after the death of the original
    twelve. It might as well be asserted that the Pharaohs of Egypt, or the
-   twelve CÝ¦sars of Rome have been continued, as that the race of apostles
+   twelve Caesars of Rome have been continued, as that the race of apostles
    has been perpetuated.
 
    It is true that there are a few passages in which persons other than
@@ -6886,24 +6886,24 @@ Praeceptum:
    exceperis, . . . . omnes (pastores) tempori obsecuti sunt: hoc tantum
    inter eos discriminis fuit, quod alii citius, alii seriùs in eam
    fraudem inciderunt, atque, alii impietatis duces antistitesque se
-   prÝ¦buerunt." Jerome says: "Ingemuit totus orbis terrarum, et Arianum se
+   praebuerunt." Jerome says: "Ingemuit totus orbis terrarum, et Arianum se
    esse miratus est." [92] He also says: [93] "Ecclesia non parietibus
    consistit, sed in dogmatum veritate, Ecclesia ibi est ubi fides vera
    est. Ceterum ante annos quindecim aut viginti parietes omnes hic
-   ecclesiarum hÝ¦retici (Ariani) possidebant, Ecclesia autem vera illic
+   ecclesiarum haeretici (Ariani) possidebant, Ecclesia autem vera illic
    erat, ubi vera fides erat." It is here asserted that the whole world
    had become Arian; and that all the churches were in the possession of
    heretics. These statements must be taken with due allowance. They
    nevertheless prove that the great majority of the bishops had adopted
    the Arian, or semi-Arian Creed. To the same effect Athanasius says:
-   "QuÝ¦ nunc ecclesia libere Christum adorat? Si quidem ea, si pia est,
+   "Quae nunc ecclesia libere Christum adorat? Si quidem ea, si pia est,
    periculo subjacet? . . . . Nam si alicubi pii et Christi studiosi (sunt
-   autem ubique tales permulti) illi itidem, ut ProphetÝ¦ et magnus ille
-   Elias, absconduntur, . . . . et in speluncas et cavernas terrÝ¦ sese
+   autem ubique tales permulti) illi itidem, ut Prophetae et magnus ille
+   Elias, absconduntur, . . . . et in speluncas et cavernas terrae sese
    abstrudunt, aut in solitudine aberrantes commorantur." [94] Vincent of
    Lerins [95] says: "Arianorum venenum non jam portiunculam quamdam, sed
    pene orbem totum contaminaverat, adeo ut prope cunctis Latini sermonis
-   episcopis partim vi partim fraude deceptis caligo quÝ¦dam mentibus
+   episcopis partim vi partim fraude deceptis caligo quaedam mentibus
    effunderetur." To these ancient testimonies any number of authorities
    from modern theologians might be added. We give only the testimony of
    Dr. Jackson, one of the most distinguished theologians of the Church of
@@ -7196,19 +7196,19 @@ CHAPTER VI.
    In the Smalcald Articles, [99] the Lutheran Church says "Ex patrum --
    verbis et factis non sunt exstrueudi articuli fidei -- Regulam autem
    aliam habemus, ut videlicet verbum Dei condat articulos fidei et
-   prÝ¦terea nemo, ne angelus quidem." In the "Form of Concord," [100] it
+   praeterea nemo, ne angelus quidem." In the "Form of Concord," [100] it
    is said: "Credimus, confitemur et docemus, unicam regulam et normam
-   secundum quam omnia dogmata omnesque doctores Ý¦stimari et judicari
+   secundum quam omnia dogmata omnesque doctores aestimari et judicari
    oporteat, nullam omnino aliam esse, quam prophetica et apostolica
    scripta cum V. tum N. Testamenti."
 
    The symbols of the Reformed churches teach the same doctrine. Confessio
    Helvetica, II. [101] says: "In scriptura sancta habet unversalis
-   Christi Ecclesia plenissime exposita, quÝ¦cunque pertinent cum ad
+   Christi Ecclesia plenissime exposita, quaecunque pertinent cum ad
    salvificam fidem, tum ad vitam Deo placentem. [102] Non alium in causa
    fidei judicem, quam ipsum Deum per Scripturas sacras pronuntiantem,
    quid verum sit, quid falsum, quid sequendum sit quidne fugiendum.
-   Confessio Gallicana: [103] Quum hÝ¦c (SS.) sit omnis veritatis summa,
+   Confessio Gallicana: [103] Quum haec (SS.) sit omnis veritatis summa,
    complectens quidquid ad cultum Dei et salutem nostram requiritur, neque
    hominibus neque ipsis etiam angelis fas esse dicimus quicquam ei verbo
    adjicere vel detrahere vel quicquam prorsus in eo immutare." In the
@@ -7412,8 +7412,8 @@ CHAPTER VI.
    revelationem et inspirationem. Revelatio vi vocis est manifestatio
    rerum ignotarum et occultarum, et potest fieri multis et diversis
    modis. . . . . Inspiratio . . . . est interna conceptum suggestio, seu
-   infusio, sive res conceptÝ¦ jam ante scriptori fuerint cognitÝ¦, sive
-   occultÝ¦. Illa potuit tempore antecedere scriptionem, hÝ¦c cum scriptione
+   infusio, sive res conceptae jam ante scriptori fuerint cognitae, sive
+   occultae. Illa potuit tempore antecedere scriptionem, haec cum scriptione
    semper fuit conjuncta et in ipsam scriptionem influebat." Often,
    however, the distinction in question is overlooked. In popular
    language, inspiration is made to include both the supernatural
@@ -7422,9 +7422,9 @@ CHAPTER VI.
    their nature, and should therefore be distinguished. Confounding them
    has sometimes led to serious error. When no revelation was necessary,
    no inspiration is admitted. Thus Grotius says: "Vere dixi non omnes
-   libros qui sunt in HebrÝ¦o Canone dictatos a Spiritu Sancto. Scriptos
+   libros qui sunt in Hebraeo Canone dictatos a Spiritu Sancto. Scriptos
    esse cum pio animi motu, non nego; et hoc est quod judicavit Synagoga
-   Magna, cujus judicio in hac re stant HebrÝ¦i. Sed a Spiritu Sancto
+   Magna, cujus judicio in hac re stant Hebraei. Sed a Spiritu Sancto
    dictari historias nihil fuit opus: satis fuit scriptorem memoria valere
    circa res spectatas, aut diligentia in describendis veterum
    commentariis." [109] It is an illogical conclusion, however, to infer
@@ -9187,7 +9187,7 @@ CHAPTER I.
 
    [130] De Natura Deorum, i. 17.
 
-   [131] Testimonium AnimÝ¦.
+   [131] Testimonium Animae.
 
    [132] Institutio, 1. iii. 3.
      __________________________________________________________________
@@ -9437,9 +9437,9 @@ CHAPTER II.
    originated with us. As we are conversant only with the finite, it could
    not have originated from anything around us. It must, therefore, have
    come from God, whose existence is thus a necessary assumption. "Habemus
-   ideam Dei, hujusque ideÝ¦ realitas objectiva nec formaliter nec
-   eminenter in nobis continetur, nec in ullo alio prÝ¦terquam in ipso Deo
-   potest contineri; ergo hÝ¦c idea Dei, quÝ¦ in nobis est, requirit Deum
+   ideam Dei, hujusque ideae realitas objectiva nec formaliter nec
+   eminenter in nobis continetur, nec in ullo alio praeterquam in ipso Deo
+   potest contineri; ergo haec idea Dei, quae in nobis est, requirit Deum
    pro causa; Deusque proinde existit." [136] It is true we have many
    ideas or conceptions to which there is no answering existence. But in
    such cases the ideas are arbitrary, or voluntary creations of our own
@@ -10308,8 +10308,8 @@ CHAPTER II.
    proportioned to their magnitude. The light emanating from these great
    luminaries is of different colors, white, red, blue.
 
-   Then more distant in space float the unresolved nebulÝ¦. Whether these
-   nebulÝ¦ are vast continents of stars too distant to be distinguishable,
+   Then more distant in space float the unresolved nebulae. Whether these
+   nebulae are vast continents of stars too distant to be distinguishable,
    or cosmical matter in a formative state, is still an open question with
    astronomers. Two thousand have been counted in the northern hemisphere,
    and one thousand in the southern. They assume every variety of form;
@@ -10571,7 +10571,7 @@ CHAPTER II.
 
    2. A second objection of much the same kind is founded on the fact that
    we find members in organized bodies for which they have no use. For
-   example, men have mammÝ¦; the whale has teeth which are never developed
+   example, men have mammae; the whale has teeth which are never developed
    and which the animal does not need; animals have bones which they never
    use; birds and crocodiles have their skulls formed of separate bones as
    well as viviparous animals, although in their case there seems to be no
@@ -10598,7 +10598,7 @@ CHAPTER II.
    immediate wants of the individual organism. Things which are not needed
    for its necessities may answer a much higher end. In a great building
    use is not the only end contemplated; there are symmetry and unity,
-   Ý¦sthetic ends of as much value as mere comfort or convenience.
+   aesthetic ends of as much value as mere comfort or convenience.
    Scientific men have demonstrated that all animals are in their
    structure only modifications of four typical forms. These forms are
    preserved in all the genera and species included under these general
@@ -12852,7 +12852,7 @@ CHAPTER III.
    phenomena of life, are commonly attributed to some controlling agent
    residing in the organism -- to some independent presiding deity,
    holding it in absolute subjection." This presiding agent is called
-   "vital fluid," "materia vitÝ¦ diffusa," "vital force." "All these
+   "vital fluid," "materia vitae diffusa," "vital force." "All these
    names," he adds, "assume the existence of a material or immaterial
    something, more or less separable from the material body, and more or
    less identical with the mind or soul, which is the cause of the
@@ -12957,8 +12957,8 @@ CHAPTER III.
    the posterior ear to give a balance of air; that compensated the
    fenestra ovalis by a fenestra rotunda; that placed in the auricular
    sacs those otolithes, those express stones for hearing? Such machinery!
-   The chordÝ¦ tendineÝ¦ are, to the valves of the heart, exactly adjusted
-   check-strings; and the contractile columnÝ¦ carneÝ¦ are set in, under
+   The chordae tendineae are, to the valves of the heart, exactly adjusted
+   check-strings; and the contractile columnae carneae are set in, under
    contraction and expansion, to equalize their length to their
    office. . . . . Are we to conceive such machinery, such apparatus, such
    contrivances, merely molecular? Are molecules adequate to such things
@@ -13400,7 +13400,7 @@ CHAPTER III.
 
    [181] Edinburgh Review, Oct. 1806, p. 157.
 
-   [182] "Address before British Association," AthenÝ¦um, for August 29,
+   [182] "Address before British Association," Athenaeum, for August 29,
    1868. Quoted by Perowne's Hulsean Lectures, for 1868. Appendix. Note A.
 
    [183] Page 102.
@@ -13522,7 +13522,7 @@ CHAPTER III.
    in the first number of the Academy, p. 13.
 
    [229] See his Address as President of the British Association, reported
-   in the London AthenÝ¦um, September 17th, 1870. The little that is
+   in the London Athenaeum, September 17th, 1870. The little that is
    necessary to say on the subject of spontaneous generation in such a
    work as this, is reserved until the question concerning the origins of
    man comes up for consideration.
@@ -13552,7 +13552,7 @@ CHAPTER III.
    [239] See Professor Barker's Lecture, above referred to, for a summary
    of these arguments, page 24.
 
-   [240] AthenÝ¦um for August 29, 1868, quoted Hulsean Lectures for 1868;
+   [240] Athenaeum for August 29, 1868, quoted Hulsean Lectures for 1868;
    Appendix, Note A.
 
    [241] The Recent Progress of Science, with an Examination of the
@@ -13690,7 +13690,7 @@ CHAPTER III.
    in the Finite. The whole life, consciousness, intelligence, and
    knowledge, at any time, of the former, is the life, consciousness,
    intelligence, and knowledge of the latter, i.e., of the world. "Omnes
-   (mentes)," says Spinoza, "simul Dei Ý¦ternum et infinitum intellectum
+   (mentes)," says Spinoza, "simul Dei aeternum et infinitum intellectum
    constituunt." [259] "God alone is, and out of Him is nothing." [260]
    "Seine Existenz als Wesen ist unser Denken von ihm; aber seine reale
    Existenz ist die Natur, zu welcher das einzelne Denkende als moment
@@ -13754,7 +13754,7 @@ CHAPTER III.
    mentem humanam partem esse infiniti intellectus Dei: ac proinde cum
    dicimus, mentem humanam hoc vel illud percipere, nihil aliud dicimus,
    quam quod Deus, non quatenus infinitus est, sed quatenus per naturam
-   humanÝ¦ mentis explicatur, sive quatenus humanÝ¦ mentis essentiam
+   humanae mentis explicatur, sive quatenus humanae mentis essentiam
    constituit, hanc vel illam habeat ideam." "In mente nulla est absoluta
    sive libera voluntas. Mens certus et determinatus modus cogitandi est
    adeoque suarum actionum non potest esse causa libera." [266] "Eodem hoc
@@ -13840,7 +13840,7 @@ CHAPTER III.
    the more of good. And consequently the less of being, the less of good.
    All limitation, therefore, is evil; and evil is simply limitation of
    being. Spinoza [274] says, "Quo magis unusquisque -- suum esse
-   conservare conatur et potest, eo magis virtute prÝ¦ditus est; contra
+   conservare conatur et potest, eo magis virtute praeditus est; contra
    quatenus unusquisque -- suum esse conservare negligit, eatenus est
    impotens." In the demonstration of this proposition, he says, "Virtus
    est ipsa humana potentia," [275] making power and goodness identical.
@@ -14044,7 +14044,7 @@ CHAPTER III.
    authoritative, fill fourteen volumes folio. The Institutes of Menu, the
    Puranas, and the sacred poems, "Ramayana" and "Mahabhrata," are equally
    extensive. The former of these poems consists of a hundred thousand
-   verses, and the latter of four hundred thousand, while the Ý†neid has
+   verses, and the latter of four hundred thousand, while the Æneid has
    only twelve thousand, and the Iliad twenty-four thousand. Sir William
    Jones said that the student of the Hindu literature and religion, found
    himself in time presence of infinity.
@@ -14636,7 +14636,7 @@ CHAPTER III.
    Cousin, Plato not only gave ideas a real and proper existence, but, "en
    dernière analyse il les place dans la raison divine: c'est la qu' elles
    existent substantiellement." [304] Döllinger, in commenting on a
-   passage in the TimÝ¦us, in which "God is styled the Father, who has
+   passage in the Timaeus, in which "God is styled the Father, who has
    begotten the world like a son, as an image of the eternal gods, i.e.,
    ideas," says, "Had Plato ready intended here to explain the idea of
    procreation as a communication of essence, he would have been a pure
@@ -14771,7 +14771,7 @@ CHAPTER III.
    the latest and best of which is Döllinger's "The Gentile and the Jew in
    the Courts of the Temple of Christ," London, 1862.
 
-   D. MediÝ¦val Pantheism.
+   D. Mediaeval Pantheism.
 
    The Neo-Platonists.
 
@@ -14809,7 +14809,7 @@ CHAPTER III.
    patronage of Charles the Bald of France, and that he taught in Paris
    and perhaps in England.
 
-   His principal work is that "De Divisione NaturÝ¦." By nature he means
+   His principal work is that "De Divisione Naturae." By nature he means
    all being. The fourfold divisions which he makes of nature, are only so
    many manifestations or aspects under which the one Being is revealed or
    is to be contemplated. Those divisions are: (1.) That which creates and
@@ -14839,18 +14839,18 @@ CHAPTER III.
    His system is, therefore, a form of idealistic Pantheism. Ritter
    devotes the ninth book of his "Geschichte der Christlichen
    Philosophie," [317] to the exposition of the philosophy of Scotus. The
-   few following passages from the "De Divisione NaturÝ¦," are sufficient
+   few following passages from the "De Divisione Naturae," are sufficient
    to show the correctness of the above statement of his principles.
 
    "Intellectus enim omnium in Deo essentia omnium est. Siquidem id ipsum
-   est Deo cognoscere, priusquam fiunt, quÝ¦ facit, et facere, quÝ¦
+   est Deo cognoscere, priusquam fiunt, quae facit, et facere, quae
    cognoscit. Cognoscere ergo et facere Dei unum est." [318] "Maximus ait:
    Quodcunque intellectus comprehendere potuerit, id ipsum fit." [319]
-   "Intellectus enim rerum veraciter ipsÝ¦ res sunt, dicente Sancto
-   Dionysio, Cognitio eorum, quÝ¦ sunt, ea, quÝ¦ sunt, est.'" [320] "Homo
-   est notio quÝ¦dam intellectualis in mente divina Ý¦ternaliter facta.
+   "Intellectus enim rerum veraciter ipsae res sunt, dicente Sancto
+   Dionysio, Cognitio eorum, quae sunt, ea, quae sunt, est.'" [320] "Homo
+   est notio quaedam intellectualis in mente divina aeternaliter facta.
    Verissima et probatissima definitio hominis est ista: et non solum
-   hominis, verum etiam omnium quÝ¦ in divina sapientia facta sunt." [321]
+   hominis, verum etiam omnium quae in divina sapientia facta sunt." [321]
    Omnis visibilis et invisibilis creatura Theophania, i.e., divina
    apparitio potest appelari. [322] "Num negabis creatorem et creaturam
    unum esse?" [323] "Creation [with Erigena] is nothing else than the
@@ -15031,7 +15031,7 @@ CHAPTER III.
    God.
      __________________________________________________________________
 
-   [254] Institutiones TheologiÝ¦, fifth edit., Halle, 1826, p. 215.
+   [254] Institutiones Theologiae, fifth edit., Halle, 1826, p. 215.
 
    [255] Pyschology, by Henry, first edition, p. xviii.
 
@@ -15166,11 +15166,11 @@ CHAPTER III.
 
    [315] Geshichte der Christlichen Philosophie, vol. iii. p. 224.
 
-   [316] De PrÝ¦dest. cap. i. 1, Migne, Patr. vol. cxxii. p. 358, a
+   [316] De Praedest. cap. i. 1, Migne, Patr. vol. cxxii. p. 358, a
 
    [317] Vol. iii. pp. 206-296.
 
-   [318] De Divisione NaturÝ¦, II. 20; edit. Westphalia, 1838, p. 118.
+   [318] De Divisione Naturae, II. 20; edit. Westphalia, 1838, p. 118.
 
    [319] Ibid. I. 9, p. 9.
 
@@ -15217,8 +15217,8 @@ CHAPTER IV.
    nature of God can be as fully understood and determined as any other
    object of knowledge. The modern speculative school teaches the same
    doctrine. Among the propositions laid down by Spinoza, we find the
-   following: "Cognitio Ý¦ternÝ¦ et infinitÝ¦ essentiÝ¦ Dei, quam unaquÝ¦que
-   idea involvit, est adÝ¦quata et perfecta." [325] Hegel says, that God
+   following: "Cognitio aeternae et infinitae essentiae Dei, quam unaquaeque
+   idea involvit, est adaequata et perfecta." [325] Hegel says, that God
    is, only so far as He is known. The sin against the Holy Ghost,
    according to Hegel, is to deny that He can be known. [326] Cousin holds
    the same doctrine. "God in fact," he says, "exists to us only in so far
@@ -15315,12 +15315,12 @@ CHAPTER IV.
    comprehendere enim est cogitatione complecti; ad hoc autem, ut sciamus
    aliquid, sufficit, ut illud cogitatione attingamus."
 
-   Even Spinoza [331] says: "Ad quÝ¦stionem tuam, an de Deo tam claram,
+   Even Spinoza [331] says: "Ad quaestionem tuam, an de Deo tam claram,
    quam de triangulo habeam ideam, respondeo affirmando. Non dico, me Deum
-   omnino cognoscere; sed me quÝ¦dam ejus attributa, non autem omnia, neque
+   omnino cognoscere; sed me quaedam ejus attributa, non autem omnia, neque
    maximam intelligere partem, et certum est, plurimorum ignorantiam,
    quorundam eorum habere notitiam, non impedire. Quum Euclidis elementa
-   addiscerem, primo tres trianguli angulos duobus rectis Ý¦quari
+   addiscerem, primo tres trianguli angulos duobus rectis aequari
    intelligebam; hancque trianguli proprietatem clare percipiebam, licet
    multarum aliarum ignarus essem."
 
@@ -15624,7 +15624,7 @@ CHAPTER IV.
 
    [329] Prolegomena Logica, edit. Boston, 1860, p. 34.
 
-   [330] EpistolÝ¦, I., cx., edit. Amsterdam, 1682.
+   [330] Epistolae, I., cx., edit. Amsterdam, 1682.
 
    [331] Epistola, lx., vol. i. p. 659, edit. Jena, 1802.
 
@@ -16558,8 +16558,8 @@ CHAPTER V.
 
    THE question whether God can be defined, depends for its answer on what
    is meant by definition. Cicero [372] says, "Est definitio, earum rerum,
-   quÝ¦ sunt ejus rei propriÝ¦, quam definire volumus, brevis et
-   circumscripta quÝ¦dam explicatio." In this sense God cannot be defined.
+   quae sunt ejus rei propriae, quam definire volumus, brevis et
+   circumscripta quaedam explicatio." In this sense God cannot be defined.
    No creature, much less man, can know all that is proper to God; and,
    therefore, no creature can give an exhaustive statement of all that God
    is.
@@ -16635,7 +16635,7 @@ CHAPTER V.
    therefore, we say there is a God, we do not assert merely that there is
    in our minds the idea of an infinite Spirit; but that, entirely
    independent of our idea of Him, such a Being really exists. Augustine
-   [374] says, "Deus est quÝ¦dam substantia; nam quod nulla substantia est,
+   [374] says, "Deus est quaedam substantia; nam quod nulla substantia est,
    nihil omnino est. Substantia ergo aliquid esse est."
 
    If, therefore, a divine essence, infinite, eternal, and unchangeable,
@@ -16717,22 +16717,22 @@ CHAPTER V.
    essentially different as soul and body; while a difference ex ratione
    is merely a difference in us, i.e., in our conceptions, i.e., "quod
    distincte solum concipitur, cum in re ipsa distinctum non sit." Hence
-   the divine attributes are defined as "conceptus essentiÝ¦ divinÝ¦
-   inadequatÝ¦, ex parte rei ipsam essentiam involventes, eandemque
+   the divine attributes are defined as "conceptus essentiae divinae
+   inadequatae, ex parte rei ipsam essentiam involventes, eandemque
    intrinsice denominantes." Aquinas says, "Deus est unus re et plures
    ratione, quia intellectus noster ita multipliciter apprehendit Deum,
    sicuti res multipliciter ipsum representant." The language of the
    Lutheran theologian Quenstedt [375] exhibits the usual mode of
    representing this subject: "Si proprie et accurate loqui velimus, Deus
-   nullas habet proprietates, sed mera et simplicissima est essentia quÝ¦
+   nullas habet proprietates, sed mera et simplicissima est essentia quae
    nec realem differentiam nec ullam vel rerum vel modorum admittit
    compositionem. Quia vero simplicissimam Dei essentiam uno adequato
    conceptu adequate concipere non possumus, ideo inadequatis et
-   distinctis conceptibus, inadequate essentiam divinam reprÝ¦sentantibus,
-   eam apprehendimus, quos inadequatos conceptus, qui a parte rei essentiÝ¦
-   divinÝ¦ identificantur, et a nobis per modum affectionum apprehenduntur,
+   distinctis conceptibus, inadequate essentiam divinam repraesentantibus,
+   eam apprehendimus, quos inadequatos conceptus, qui a parte rei essentiae
+   divinae identificantur, et a nobis per modum affectionum apprehenduntur,
    attributa vocamus." And again, "Attributa divina a parte rei et in se
-   non multa sunt, sed ut ipsa essentia divina, ita et attributa, quÝ¦ cum
+   non multa sunt, sed ut ipsa essentia divina, ita et attributa, quae cum
    illa identificantur, simplicissima unitas sunt; multa vero dicuntur
    (1.) sunkatabatikos, ad nostrum concipiendi modum, . . . . (2.)
    energetikos, in ordine ad effecta." [376] The favorite illustration to
@@ -16796,7 +16796,7 @@ CHAPTER V.
    ancient and modern, were accustomed to say, that the divine attributes
    differ only in name, or in our conceptions, or in their effects, is to
    destroy all true knowledge of God. Thus even Augustine confounds
-   knowledge and power, when he says, [378] "Nos ista, quÝ¦ fecisti videmus
+   knowledge and power, when he says, [378] "Nos ista, quae fecisti videmus
    quia sunt: tu autem quia vides ea, sunt." So Scotus Erigena [379] says,
    "Non aliud est ei videre, aliud facere; sed visio illius voluntas ejus
    est, et voluntas operatio." Thomas Aquinas [380] says the same thing:
@@ -16858,18 +16858,18 @@ CHAPTER V.
    holiness. Against this application of the principle, Aquinas himself
    protested, declaring, "Cum igitur dicitur, Deus est bonus; non est
    sensus, Deus est causa bonitatis; vel Deus non est malus. Sed est
-   sensus: Id, quod bonitatem dicimus in creaturis, prÝ¦existit in Deo; et
+   sensus: Id, quod bonitatem dicimus in creaturis, praeexistit in Deo; et
    hoc quidem secundum modum altiorem. Unde ex hoc non sequitur, quod Deo
    competat esse bonum, in quantum causat bonitatem; sed potius e
    converso, quia est bonus, bonitatem rebus diffundit." [383] And the
    Lutheran theologian, Quenstedt, says, "Dicunt nonnulli, ideo Deum dici
    justum, sanctum, misericordem, veracem, etc., non quod revera sit
-   talis, sed quod duntaxat sanctitatis, justitiÝ¦, misericordiÝ¦,
+   talis, sed quod duntaxat sanctitatis, justitiae, misericordiae,
    veritatis, etc., causa sit et auctor in aliis. Sed si Deus non est vere
    misericors, neque vere perfectus, vere sanctus, etc., sed causa tantum
-   misericordiÝ¦ et sanctitatis in aliis, ita etiam et nos pariter
+   misericordiae et sanctitatis in aliis, ita etiam et nos pariter
    juberemur esse non vere misericordes, non vere perfecti, etc., sed
-   sanctitatis saltem et misericordiÝ¦ in aliis auctores." [384]
+   sanctitatis saltem et misericordiae in aliis auctores." [384]
 
    The Divine Attributes differ Virtualiter.
 
@@ -16877,7 +16877,7 @@ CHAPTER V.
    the extreme view of the simplicity of his essence, which requires us to
    assume that the divine attributes differ only in our conceptions, or as
    expressing the diverse effects of the activity of God, made a
-   distinction between the ratio rationantis and the ratio rationatÝ¦. That
+   distinction between the ratio rationantis and the ratio rationatae. That
    is, the reason as determining, and the reason as determined. The
    attributes, they say, differ not re, but ratione; not in our subjective
    reason only; but there is in God a reason why we think of Him as
@@ -16920,7 +16920,7 @@ CHAPTER V.
    [378] Confessiones, XIII. xxxviii. 53, edit. Benedictines, vol. i. p.
    410 b.
 
-   [379] De Divisione NaturÝ¦, iii. 29, edit. Westphalia, 1838, p. 264.
+   [379] De Divisione Naturae, iii. 29, edit. Westphalia, 1838, p. 264.
 
    [380] Summa, I. xiv. 8, edit. Cologne, 1640, p. 30.
 
@@ -16932,7 +16932,7 @@ CHAPTER V.
 
    [384] Theologia, I. viii. § ii. 2, p. 481.
 
-   [385] PÝ¦dagogus, III. i. edit. Cologne, 1688, p. 214 a.
+   [385] Paedagogus, III. i. edit. Cologne, 1688, p. 214 a.
 
    [386] "Théodicée" Preface, Works, p. 469, edit. Berlin, 1840.
      __________________________________________________________________
@@ -17075,7 +17075,7 @@ CHAPTER V.
    inferred from the consciousness of thought; but that the consciousness
    of thought involves the consciousness of existence. Des Cartes himself
    so understood the matter, for he says: "Cum advertimus nos esse res
-   cogitantes, prima quÝ¦dam notio est quÝ¦ ex nullo syllogismo concluditur;
+   cogitantes, prima quaedam notio est quae ex nullo syllogismo concluditur;
    neque etiam cum quis dicit Ego cogito, ergo sum, sive existo,'
    existentiam ex cogitatione per syllogismum deducit, sed tanquam rem per
    se notam simplici mentis intuitu agnoscit." [388] Mansel says:
@@ -17365,7 +17365,7 @@ CHAPTER V.
    coelo totus, et in sola terra totus, et in coelo et in terra totus, et
    nullo contentus loco, sed in seipso ubique totus." Thomas Aquinas says,
    [397] Deus "est in omnibus per potentiam, in quantum omnia ejus
-   potestati subduntur; est per prÝ¦sentiam in omnibus, in quantum omnia
+   potestati subduntur; est per praesentiam in omnibus, in quantum omnia
    nuda sunt et aperta oculis ejus. Est in omnibus per essentiam in
    quantum adest omnibus ut causa essendi sicut dictum est." Quenstedt
    says, [398] "Est Deus ubique illocaliter, impartibiliter, efficaciter;
@@ -17415,12 +17415,12 @@ CHAPTER V.
    [393] History of Modern Philosophy, translated by Wight. New York,
    1852, vol. i. p. 113.
 
-   [394] Institutiones TheologicÝ¦, IV. ii. 13, edit. Amsterdam, 1550, vol.
+   [394] Institutiones Theologicae, IV. ii. 13, edit. Amsterdam, 1550, vol.
    i. p. 294.
 
    [395] Dogmatik, vol. i. p. 556.
 
-   [396] De PrÝ¦sentia Dei seu Epistola CLXXXVII. iv. 14, edit.
+   [396] De Praesentia Dei seu Epistola CLXXXVII. iv. 14, edit.
    Benedictines, vol. ii. p. 1023, d.
 
    [397] Summa, I. viii. 3, edit. Cologne, 1640, p. 16.
@@ -17470,18 +17470,18 @@ CHAPTER V.
    God as self-existent, infinite, and immutable. With these
    representations the teaching of theologians for the most part agrees.
    Thus Augustine says: "Fuisse et futurum esse non est in ea [scil. vita
-   divina], sed esse solum, quoniam Ý¦terna est: nam fuisse et futurum esse
-   non est Ý¦ternum." [399] "Nec tu tempore tempora prÝ¦cedis, alioquin non
-   omnia tempora prÝ¦cederes sed prÝ¦cedis omnia prÝ¦terita celsitudine
-   semper prÝ¦sentis Ý¦ternitatis; et superas omnia futura, quia illa futura
-   sunt et cum venerint prÝ¦terita erunt; tu autem idem ipse es, et anni
-   tui non deficiunt." [400] Aquinas, to the same effect says, "Ý†ternitas
+   divina], sed esse solum, quoniam aeterna est: nam fuisse et futurum esse
+   non est aeternum." [399] "Nec tu tempore tempora praecedis, alioquin non
+   omnia tempora praecederes sed praecedis omnia praeterita celsitudine
+   semper praesentis aeternitatis; et superas omnia futura, quia illa futura
+   sunt et cum venerint praeterita erunt; tu autem idem ipse es, et anni
+   tui non deficiunt." [400] Aquinas, to the same effect says, "Æternitas
    est tota simul." [401] Or, as the schoolmen generally were accustomed
-   to say, "In Ý¦ternitate est unicum instans semper prÝ¦sens et
+   to say, "In aeternitate est unicum instans semper praesens et
    persistens;" or, as they otherwise expressed it, "Eternitas est
-   interminabilis vitÝ¦ simul et perfecta possessio." The same view of this
+   interminabilis vitae simul et perfecta possessio." The same view of this
    attribute is given by the later theologians. Thus Quenstedt says,
-   "Ý†ternitas Dei est duratio vel permanentia essentiÝ¦ divinÝ¦
+   "Æternitas Dei est duratio vel permanentia essentiae divinae
    interminabilis, sine principio et fine carens, et indivisibilis, omnem
    omnino successionem excludens." [402]
 
@@ -17688,9 +17688,9 @@ CHAPTER V.
    they seem to deny that He can act. Augustine says, on this subject:
    "Non invenies in Deo aliquid mutabilitatis; non aliquid, quod aliter
    nunc sit, aliter paulo ante fuerit. Nam ubi invenis aliter et aliter,
-   facta est ibi quÝ¦dam mors: mors enim est, non esse quod fuit." [411]
+   facta est ibi quaedam mors: mors enim est, non esse quod fuit." [411]
    Quenstedt uses language still more open to objection, when he says that
-   the immutability of God is "Perpetua essentiÝ¦ divinÝ¦ et omnium ejus
+   the immutability of God is "Perpetua essentiae divinae et omnium ejus
    perfectionum identitas, negans omnem omnino motum cum physicum, tum
    ethicum." [412] Turrettin is more cautious, and yet perhaps goes too
    far. He says: "Potestas variandi actus suos, non est principium
@@ -17778,7 +17778,7 @@ CHAPTER V.
    So far as we are concerned, knowledge is either intuitive or
    discursive. Our senses give us immediate knowledge of their appropriate
    objects; the understanding perceives intuitively primary truths; our
-   moral and Ý¦sthetic nature gives us the immediate cognition of things
+   moral and aesthetic nature gives us the immediate cognition of things
    right or wrong, and beautiful or deformed. Most of our knowledge,
    however, is derived ab extra, by instruction, observation, comparison,
    deduction, etc. In all cases there is the distinction between the mind
@@ -17812,7 +17812,7 @@ CHAPTER V.
    of all the possible forms or degrees of knowledge." And Spinoza says:
    [415] "Intellectus et voluntas, qui Dei essentiam constituerent, a
    nostro intellectu et voluntate toto coelo differe deberent, nec in ulla
-   re, prÝ¦terquam in nomine, convenire possent; non aliter scilicet, quam
+   re, praeterquam in nomine, convenire possent; non aliter scilicet, quam
    inter se conveniunt canis, signum coeleste, et canis, animal latrans."
    This subject was considered in the chapter on Pantheism.
 
@@ -17832,7 +17832,7 @@ CHAPTER V.
    the constitution of man as the image of God, and from the necessities
    of our moral and religious nature, they allowed themselves to be
    controlled by â  priori speculations as to the nature of the infinite
-   and absolute. Even Augustine, as before stated, says: "Nos ista, quÝ¦
+   and absolute. Even Augustine, as before stated, says: "Nos ista, quae
    fecisti videmus, quia sunt: tu autem quia vides ea, sunt." [416] And
    Scotus Erigena says, [417] "Voluntas illius et visio et essentia anum
    est." [418] . . . . "Visio Dei totius universitatis est conditio. Non
@@ -17845,7 +17845,7 @@ CHAPTER V.
    simplicitas, admitting of no distinction between faculty and act, or
    between one attribute and another. Thus Gerhard says: "Deus est ipsum
    esse subsistens, omnibus modis indeterminatum." [420] "Solus Deus summe
-   simplex est, ut nec actus et potentiÝ¦, nec esse et essentiÝ¦ compositio
+   simplex est, ut nec actus et potentiae, nec esse et essentiae compositio
    ipsi competat." [421] "Essentia, bonitas, potentia, sapientia,
    justitia, et reliqua attributa omnia sunt in Deo realiter unum." [422]
    He also says: "In Deo idem est esse et intelligere et velle." In like
@@ -18031,8 +18031,8 @@ CHAPTER V.
    The Origin of this Distinction.
 
    This distinction was introduced into theology by the Jesuit theologians
-   Fonseca and Molina; by the latter in his work "De Concordia ProvidentiÝ¦
-   et GratiÝ¦ DivinÝ¦ cum Libero Arbitrio Hominis." Their object was to
+   Fonseca and Molina; by the latter in his work "De Concordia Providentiae
+   et Gratiae Divinae cum Libero Arbitrio Hominis." Their object was to
    reconcile the foreordination of God with the freedom of man, and to
    explain the reason why some, and not others, were elected to eternal
    life. God foresaw who would repent and believe, if they received the
@@ -18109,10 +18109,10 @@ CHAPTER V.
    After Augustine, the common way of meeting the difficulty of
    reconciling foreknowledge with liberty, was to represent it as merely
    subjective. The distinction between knowledge and foreknowledge is only
-   in us. There is no such difference in God. "Quid est prÝ¦scientia," asks
+   in us. There is no such difference in God. "Quid est praescientia," asks
    Augustine, "nisi scientia futurorum? Quid autem futurum est Deo, qui
    omnia supergreditur tempora? Si enim scientia Dei res ipsas habet, non
-   sunt ei futurÝ¦, sed prÝ¦sentes, ac per hoc non jam prÝ¦scientia, sed
+   sunt ei futurae, sed praesentes, ac per hoc non jam praescientia, sed
    tantum scientia dicipotest." [426]
 
    E. The Wisdom of God.
@@ -18156,7 +18156,7 @@ CHAPTER V.
    [416] Confessiones, XIII. xxxviii. 53, edit. Benedictines, vol. i, p.
    410, b.
 
-   [417] De Divisione NaturÝ¦, III, 17, p. 235.
+   [417] De Divisione Naturae, III, 17, p. 235.
 
    [418] Ibid. 29, p. 264.
 
@@ -18168,14 +18168,14 @@ CHAPTER V.
 
    [422] Ibid. chap. vii. § 47, p. 108.
 
-   [423] Corpus TheologiÝ¦ Christiane Tiguri, 1732.
+   [423] Corpus Theologiae Christiane Tiguri, 1732.
 
    [424] Christliche Glabue, i. § 55. Werke, edit. Berlin, 1842, vol. iii.
    p. 295.
 
    [425] Bruch, Die Lehre von den göttlichen Eigenschaften, p. 162.
 
-   [426] De Diversis QuÝ¦stionibus ad Simplicianum, II. ii. 2, edit.
+   [426] De Diversis Quaestionibus ad Simplicianum, II. ii. 2, edit.
    Benedictines, vol. vi. p. 195, a. Compare also what he says on this
    subject, De Civitate Dei, XI. xxi.: Ibid. vol. vii. p. 461.
      __________________________________________________________________
@@ -18476,12 +18476,12 @@ CHAPTER V.
    morality. According to this doctrine, contradictions, absurdities, and
    immoralities, are all within the compass of the divine power. Nay, it
    is said that God can annihilate Himself. On this subject Des Cartes
-   says, Deus "non voluit tres angulos trianguli Ý¦quales esse duobus
+   says, Deus "non voluit tres angulos trianguli aequales esse duobus
    rectis, quia cognovit aliter fieri non posse. Sed contra . . . . quia
-   voluit tres angulos trianguli necessario Ý¦quales esse duobus rectis,
+   voluit tres angulos trianguli necessario aequales esse duobus rectis,
    idcirco jam hoc verum est, et fieri aliter non potest, atque ita de
    reliquis." [429] This "summa indifferentia," he says, "in Deo, summum
-   est ejus omnipotentiÝ¦ argumentam." [430]
+   est ejus omnipotentiae argumentam." [430]
 
    It is, however, involved in the very idea of power, that it has
    reference to the production of possible effects. It is no more a
@@ -18500,10 +18500,10 @@ CHAPTER V.
    says: "Summa potentia non est nisi omnia possit, quantum ad legitimum
    posse attinet: nam malum facere aut se ipsum deponere aut in se
    converti hostiliter aut sibi ipsi contrarium esse posse impotentia est,
-   non potentia." Musculus, [432] "Deus omnipotens, quia potest quÝ¦ vult,
-   quÝ¦que ejus veritati, justitiÝ¦ conveniunt." Keckermann, [433] "Absolute
-   possibilia sunt, quÝ¦ nec Dei naturÝ¦, nec aliarum rerum extra Deum
-   essentiÝ¦ contradicunt." This scholastic doctrine of absolute power
+   non potentia." Musculus, [432] "Deus omnipotens, quia potest quae vult,
+   quaeque ejus veritati, justitiae conveniunt." Keckermann, [433] "Absolute
+   possibilia sunt, quae nec Dei naturae, nec aliarum rerum extra Deum
+   essentiae contradicunt." This scholastic doctrine of absolute power
    Calvin [434] stigmatizes as profane, "quod . . . . merito detestabile
    nobis esse debet."
 
@@ -18558,7 +18558,7 @@ CHAPTER V.
    and application of the idea of God as creator of heaven and earth."
    Nitsch, however, does not understand the passage in the sense put upon
    it; for he adds, in his note commenting on the dictum of Abelard, "Deus
-   non potest facere aliquid prÝ¦ter ea quÝ¦ facit," that, if this means
+   non potest facere aliquid praeter ea quae facit," that, if this means
    that the actual exhausts the resources of God, it is to be rejected.
    The words of Abelard, nevertheless, correctly express the doctrine of
    the modern German school of theologians on this subject.
@@ -18607,9 +18607,9 @@ CHAPTER V.
    eines Wahlvermögens hinweg." [443] This, however, it is said, is not
    the doctrine of fate; for fate supposes an ab extra necessity to which
    God is subject. If it does not teach fate, it at least teaches
-   inexorable necessity. Spinoza says, "Ea res libera dicetur, quÝ¦ ex sola
-   suÝ¦ naturÝ¦ necessitate existit et a se sola ad agendum determinatur.
-   Necessaria autem, vel potius coacta quÝ¦ ab alio determinatur ad
+   inexorable necessity. Spinoza says, "Ea res libera dicetur, quae ex sola
+   suae naturae necessitate existit et a se sola ad agendum determinatur.
+   Necessaria autem, vel potius coacta quae ab alio determinatur ad
    existendum et operandum certa ac determinata ratione." [444] And again,
    [445] "Deum nullo modo fato subjicio, sed omnia inevitabili necessitate
    ex Dei natura sequi concipio." In this sense the sun is free in
@@ -18643,7 +18643,7 @@ CHAPTER V.
    makes the finite the measure of the infinite.
      __________________________________________________________________
 
-   [429] Meditationes. Responsiones SextÝ¦, vi. edit. Amsterdam, 1685, p.
+   [429] Meditationes. Responsiones Sextae, vi. edit. Amsterdam, 1685, p.
    160.
 
    [430] Ibid. p. 181.
@@ -18653,7 +18653,7 @@ CHAPTER V.
 
    [432] See Loci Communes Theologici, edit. Basle, 1573, pp. 402-408.
 
-   [433] Systema TheologiÝ¦, lib. I. cap. v. 4; edit. HanoviÝ¦, 1603, p.
+   [433] Systema Theologiae, lib. I. cap. v. 4; edit. Hanoviae, 1603, p.
    107.
 
    [434] Institutio, III. xxiii. 2, edit. Berlin, 1834, part ii. p. 148.
@@ -18747,7 +18747,7 @@ CHAPTER V.
    God's being holy, implies nothing more than that He is not in conflict
    with Himself. On this point even the rationalistic theologian
    Wegscheider says: "Minime Deus cogitandus est tanquam pendens ex lege
-   ethica vel eidem subjectus tanquam potestati cuidam alienÝ¦, sed Deus
+   ethica vel eidem subjectus tanquam potestati cuidam alienae, sed Deus
    sanctus ipsa ea lex est, natura quidam hypostatica indutus." [447]
 
    3. It is said that moral excellence must be free. A moral agent, to be
@@ -18943,7 +18943,7 @@ CHAPTER V.
    punished only out of benevolence. Thus Clemens Alexandrinus [451] says,
    "Men ask how God can be good and kind if He is angry and punishes? They
    should remember that punishment is for the good of the offender and for
-   the prevention of evil." And Tertullian [452] says: "Omne hoc justitiÝ¦
+   the prevention of evil." And Tertullian [452] says: "Omne hoc justitiae
    opus procuratio bonitatis est." Origen, [453] also to the same effect,
    says: "Ex quibus omnibus constat, unum eundemque esse justum et bonum
    legis et evangeliorum Deum, et benefacere cum justitia et cum bonitate
@@ -18953,10 +18953,10 @@ CHAPTER V.
    be benevolence guided by wisdom. Wolf, who modified the whole system of
    theology in accordance with the philosophy of Leibnitz, adopted the
    same view. So did Stapfer, [454] who says: "Quando Deus ejusmodi malum
-   triste ex peccato necessario se quens creaturÝ¦ accidere sinit, . . . .
+   triste ex peccato necessario se quens creaturae accidere sinit, . . . .
    dicitur peccatorem punire, et hoc sensu ipsi tribuitur justitia
    vindicativa. In justitia punitiva bonitas cum sapientia administratur.
-   [455] Notio justititÝ¦ resolvitur in notionem sapientiÝ¦ et bonitatis."
+   [455] Notio justititae resolvitur in notionem sapientiae et bonitatis."
    Grotius, the jurist, makes this idea of justice the fundamental
    principle of his great work, "De Satisfactione Christi."
 
@@ -19245,7 +19245,7 @@ CHAPTER V.
    his sin. Strauss is consistent enough to carry the principle out, and
    discard altogether the ideas of reward and punishment, as belonging to
    a low form of thought. He quotes and adopts the dictum of Spinoza:
-   "Beatitudo non est virtutis prÝ¦mium, sed ipsa virtus."
+   "Beatitudo non est virtutis praemium, sed ipsa virtus."
 
    4. Scarcely distinguished from the doctrine last mentioned, is that
    presented by Dr. John Young. [457] His doctrine is that there are
@@ -19274,11 +19274,11 @@ CHAPTER V.
 
    [448] De Finibus, v. 23, 65, edit. Leipzig, 1850, p. 1042.
 
-   [449] Partitiones OratoriÝ¦, 22, 78, edit. ut sup. p. 194.
+   [449] Partitiones Oratoriae, 22, 78, edit. ut sup. p. 194.
 
    [450] Christlichen Glaube, § 84, Works, Berlin, 1843, vol. iv. p. 465.
 
-   [451] PÝ¦dagogus, I. viii; edit. Cologne, 1688, p. 114, c. and p. 115.
+   [451] Paedagogus, I. viii; edit. Cologne, 1688, p. 114, c. and p. 115.
 
    [452] Adversus Marcionem, II. 10; edit. Basel, 1562, p. 179, seu II.
    13; edit. Leipzig, 1841, iii. p. 90. Bibliotheca, Gersdorf, vol. vi.
@@ -19747,7 +19747,7 @@ CHAPTER V.
    true.
 
    The theologians are accustomed to say: (1.) "Veritas Dei in essentia,
-   est convenientia omnium eorum, quÝ¦ ad naturam perfectissimi pertinent
+   est convenientia omnium eorum, quae ad naturam perfectissimi pertinent
    eamque totam constituunt; qua ratione Deus verus opponitur fictis et
    commentitiis." (Jer. x. 8, 10, 11; John v. 20, 21.) (2.) "Veritas Dei
    in intellectu, est convenientia cogitationum cum objecto." . . . . (Job
@@ -19755,17 +19755,17 @@ CHAPTER V.
    decreti ac propositi efficacis cujusque cum rationibus in intellectu
    probe cognitis et judicatis." (Rom. xi. 33.) (4.) "Veritas Dei in
    factis, est convenientia actionum cum proposito." (Ps. xxv. 10) (5.)
-   "Veritas Dei in dictis, quÝ¦ singulatim vocari solet veracitas, est
+   "Veritas Dei in dictis, quae singulatim vocari solet veracitas, est
    convenientia verborum omnium cum recta cogitatione animique sententia,
    et efficaci voluntatis proposito." (Num. xxiii. 19; 1 Sam. xv. 29; Tit.
-   i. 2; Heb. vi. 18.) "HÝ¦c cernitur (a). in doctrinis (Is. xvii. 17);
-   (b), in prÝ¦dictionibus, promissionibus, ut et comminationibus. (Num.
+   i. 2; Heb. vi. 18.) "Haec cernitur (a). in doctrinis (Is. xvii. 17);
+   (b), in praedictionibus, promissionibus, ut et comminationibus. (Num.
    xxiii. 19.)" [467]
 
    To the same effect the Reformed theologian Endemann, says, "Veracitas
    Deo duplici sensu recte adscribitur, (1.) Quatenus nunquam errat, quia
    est omniscius, nunquam errorem aliis significat, quia id repugnat
-   bonitati ejus. . . . . (2.) Quatenus Deus ea actu sentit, quÝ¦ verbis
+   bonitati ejus. . . . . (2.) Quatenus Deus ea actu sentit, quae verbis
    vel factis entibus intelligentibus significat. Deus actionibus et
    sermonibus suis eum intendit finem, ut sibi homines credant, confidant,
    etc., quem finem everteret si semel a veritate discederet. Scriptura
@@ -19841,7 +19841,7 @@ CHAPTER V.
 
    [467] Hollaz, Examen Theologicum, edit. Leipzig, 1763, pp. 243, 244.
 
-   [468] Compendium Theologicum, I. § 33; edit. HanoviÝ¦, 1777, pp. 97, 99.
+   [468] Compendium Theologicum, I. § 33; edit. Hanoviae, 1777, pp. 97, 99.
 
    [469] Eigenschaften, p. 250.
 
@@ -20523,8 +20523,8 @@ CHAPTER VI.
    was in reference to this form of opinion that Augustine afterwards
    said, [474] "Unde liquido apparet ipsum factum non esse per quem facta
    sunt omnia. Et si factus non est, creatura non est: si autem creatura
-   non est, ejusdem cum Patre substantiÝ¦ est. Omnis enim substantia quÝ¦
-   Deus non est, creatura est; et quÝ¦ creatura non est, Deus est."
+   non est, ejusdem cum Patre substantiae est. Omnis enim substantia quae
+   Deus non est, creatura est; et quae creatura non est, Deus est."
 
    (3) The Son was, therefore, subordinate to the Father, not merely in
    rank or mode of subsistence, but in nature. He belonged to a different
@@ -20851,7 +20851,7 @@ CHAPTER VI.
    [476] "Athanasius and Hilary understood the proposition, There is one
    God' of the Father. Basil the Great and the two Gregories understood by
    the word God a generic idea (Gattungsbegriff), belonging equally to the
-   Father and the Son. Basil in the Apologia ad CÝ¦sarienses,' says, hemeis
+   Father and the Son. Basil in the Apologia ad Caesarienses,' says, hemeis
    hena theon, cu to arithmo, alla te phusei homologoumen, and endeavours
    to show that there can be no question of number in reference to God, as
    numerical difference pertains only to material things. Augustine on the
@@ -20918,7 +20918,7 @@ CHAPTER VI.
    this point, when he says: "Et quis non Patrem potiorem confitebitur, ut
    ingenitum a genito, ut patrem a filio, ut eum qui miserit ab eo qui
    missus est, ut volentem ab ipso qui obediat? Et ipse nobis erit testis:
-   Pater major me est. HÝ¦c ita ut sunt, intelligenda sunt, sed cavendum
+   Pater major me est. Haec ita ut sunt, intelligenda sunt, sed cavendum
    est, ne apud imperitos gloriam Filii honor Patris infirmet." [483]
 
    Bishop Pearson [484] says the preëminence of the Father "undeniably
@@ -20968,10 +20968,10 @@ CHAPTER VI.
    distinguimus inter personas. Quia vero proprietates in personis ordinem
    secum ferunt, ut in Patre sit principium et origo: quoties mentio sit
    Patris et Filii simul, vel Spiritus, nomen Dei peculiariter Patri
-   tribuitur. Hoc modo retinetur unitas essentiÝ¦ et habetur ratio ordinis,
-   quÝ¦ tamen ex Filii et Spiritus deitate nihil minuit: et certe quum ante
+   tribuitur. Hoc modo retinetur unitas essentiae et habetur ratio ordinis,
+   quae tamen ex Filii et Spiritus deitate nihil minuit: et certe quum ante
    visum fuerit Apostolos asserere Filium Dei illum esse, quem Moses et
-   ProphetÝ¦ testati sunt esse Jehovam, semper ad unitatem essentiÝ¦, venire
+   Prophetae testati sunt esse Jehovam, semper ad unitatem essentiae, venire
    necesse est." We have here the three essential facts involved in the
    doctrine of the Trinity, namely, unity of essence, distinction of
    persons, and subordination without any attempt at explanation.
@@ -21035,7 +21035,7 @@ CHAPTER VI.
    to Him of the divine essence. This point continued to be insisted upon
    through the later periods of the Church. Thus Turrettin [490] says,
    "Licet Filius sit a Patre, non minus tamen autotheos dicitur, non
-   ratione PersonÝ¦, sed ratione EssentiÝ¦; non relate qua Filius, sic enim
+   ratione Personae, sed ratione Essentiae; non relate qua Filius, sic enim
    est a Patre, sed absolute qua Deus, quatenus habet Essentiam divinam a
    se existentem, et non divisam vel productam ab alia essentia, non vero
    qua habens essentiam illam a seipso. Sic Filius est Deus a seipso,
@@ -21535,31 +21535,31 @@ CHAPTER VI.
    two; the desired Thesis, Analysis, and Synthesis. In one form or
    another, this illustration has come down from the fathers, through the
    schoolmen and reformers, to theologians of our own day. Augustine [493]
-   says, "Est quÝ¦dam imago Trinitatis, ipsa mens, et notitia ejus, quod
-   est proles ejus ac de seipsa verbum ejus, et amor tertius, et hÝ¦c tria
-   unum atque una substantia." Again, [494] "HÝ¦c -- tria, memoria,
-   intelligentia, voluntas, quoniam non sunt tres vitÝ¦, sed una vita; nec
-   tres mentes, sed una mens: consequenter utique nec tres substantiÝ¦
+   says, "Est quaedam imago Trinitatis, ipsa mens, et notitia ejus, quod
+   est proles ejus ac de seipsa verbum ejus, et amor tertius, et haec tria
+   unum atque una substantia." Again, [494] "Haec -- tria, memoria,
+   intelligentia, voluntas, quoniam non sunt tres vitae, sed una vita; nec
+   tres mentes, sed una mens: consequenter utique nec tres substantiae
    sunt, sed una substantia." And, [495] "Mens igitur quando cogitatione
    se conspicit, intelligit se et recognoscit: gignit ergo hunc
-   intellectum et cognitionem suam. . . . . HÝ¦c autem duo, gignens et
-   genitum, dilectione tertia copulantur, quÝ¦ nihil est aliud quam
+   intellectum et cognitionem suam. . . . . Haec autem duo, gignens et
+   genitum, dilectione tertia copulantur, quae nihil est aliud quam
    voluntas fruendum aliquid appetens vel tenens." Anselm [496] has the
    same idea: "Habet mens rationalis, quum se cogitando intelligit, secum
    imaginem suam ex se natam, id est cogitationem sui ad suam
    similitudinem, quasi sua impressione formatam, quamvis ipsa se a sua
-   imagine, non nisi ratione sola, separare possit, quÝ¦ imago ejus verbum
+   imagine, non nisi ratione sola, separare possit, quae imago ejus verbum
    ejus est. Hoc itaque modo, quis neget, summam sapientem, quum se
    dicendo intelligit, gignere consubstantialem sibi similitudinem suam,
    id est Verbum suum." Melancthon [497] adopts and carries out the same
    idea: "Filius dicitur imago et logos: est igitur imago cogitatione
    Patris genita; quod ut aliquo modo considerari possit, a nostra mente
    exempla capiamus. Voluit enim Deus in homine conspici vestigia
-   sua. . . . . Mens humana cogitando mox pingit imaginem rei cogitatÝ¦,
+   sua. . . . . Mens humana cogitando mox pingit imaginem rei cogitatae,
    sed nos non transfundimus nostram essentiam in illas imagines, suntque
-   cogitationes illÝ¦ subitÝ¦ et evanescentes actiones. At Pater Ý¦ternus
-   sese intuens gignit cogitatonem sui, quÝ¦ est imago ipsius, non
-   evanescens, sed subsistens, communicata ipsi essentia. HÝ¦c igitur imago
+   cogitationes illae subitae et evanescentes actiones. At Pater aeternus
+   sese intuens gignit cogitatonem sui, quae est imago ipsius, non
+   evanescens, sed subsistens, communicata ipsi essentia. Haec igitur imago
    est secunda persona. . . . . Ut autem Filius nascitur cogitatione, ita
    Spiritus Sanctus procedit a voluntate Patris et Filii; voluntatis enim
    est agitare, diligere, sicut et cor humanam non imagines, sed spiritus
@@ -21662,7 +21662,7 @@ CHAPTER VI.
    [498] Remarque sur le Livre d'un Antitrinitaire Anglois, edit. Geneva,
    1768, vol. i. p. 27.
 
-   [499] Opera, edit. Cologne, 1614, vol. ii. Systema TheologiÝ¦ (tract at
+   [499] Opera, edit. Cologne, 1614, vol. ii. Systema Theologiae (tract at
    end of vol.), p. 72, the last of three pages marked 72.
 
    [500] Dogmatik, pp. 129, 130.
@@ -21887,7 +21887,7 @@ CHAPTER VII.
    marginal annotations to his edition of the Hebrew Bible, says in
    reference to this passage (Ex. xxiii. 20): "Bechaí ex Kabbala docet,
    hunc angelum non esse ex numero creatorum existentium extra Dei
-   essentiam, sed ex emanationibus, quÝ¦ intra Dei essentiam subsistunt,
+   essentiam, sed ex emanationibus, quae intra Dei essentiam subsistunt,
    sic in Tanchuma explicari, quod sit Metatron, Princeps faciei, John vi.
    46." That the angel of Jehovah is a divine person, is further manifest
    from the account given in Exodus xxxii. and xxxiii. of what God said to
@@ -23067,7 +23067,7 @@ CHAPTER VII.
    filled with "the fulness of the Godhead." This is very different from
    the pleroma mentioned in i. 19, where the Apostle is speaking of what
    Beza calls "cumulatissima omnium divinarum rerum copia, ex qua, tanquam
-   inexhausto fonte, omnes gratiÝ¦ in corpus pro cujusque membri modulo
+   inexhausto fonte, omnes gratiae in corpus pro cujusque membri modulo
    deriventur;" [504] but here the reference is to the divine being,
    nature, or essence itself, to pleroma tes theotetos. The word theotes
    is abstract of theos as theiotes is of theios; the former means
@@ -23592,12 +23592,12 @@ CHAPTER VIII.
    Sancto," included in his works) says, "Hic Spiritus Sanctus ab ipso
    mundi initio aquis legitur superfusus; non materialibus aquis quasi
    vehiculo egens, quas potius ipse ferebat et complectentibus firmamentum
-   dabat con gruum motum et limitem prÝ¦finitum. . . . [Hic est] spiritus
-   vitÝ¦ cujus vivificus calor animat omnia et fovet et provehit et
+   dabat con gruum motum et limitem praefinitum. . . . [Hic est] spiritus
+   vitae cujus vivificus calor animat omnia et fovet et provehit et
    foecundat. Hic Spiritus Sanctus omnium viventium anima, ita largitate
    sua se omnibus abundanter infundit, ut habeant omnia rationabilia et
    irrationabilia secundum genus suum ex eo quod sunt et quod in suo
-   ordine suÝ¦ naturÝ¦ competentia agunt. Non quod ipse sit substantialis
+   ordine suae naturae competentia agunt. Non quod ipse sit substantialis
    anima singulis, sed in se singulariter manens, de plenitudine sua
    distributor magnificus proprias efficientias singulis dividit et
    largitur; et quasi sol omnia calefaciens, subjecta omnia nutrit, et
@@ -23712,7 +23712,7 @@ CHAPTER VIII.
    God individually, and in the Church collectively.
      __________________________________________________________________
 
-   [506] Works, edit. BremÝ¦, 1690, on p. 61 of the second set in the
+   [506] Works, edit. Bremae, 1690, on p. 61 of the second set in the
    Opuscula.
      __________________________________________________________________
 
@@ -24574,8 +24574,8 @@ CHAPTER X.
    Otiosam enim et immobilem dicere naturam Dei, impium est simul et
    absurdum, vel putare, quod bonitas aliquando bene non fecerit, et
    omnipotentia aliquando non egerit potentatum. Hoc nobis objicere solent
-   dicentibus mundum hunc ex certo tempore coepisse, et secundum scripturÝ¦
-   fidem annos quoque Ý¦tatis ipsius numerantibus. . . . . Nos vero
+   dicentibus mundum hunc ex certo tempore coepisse, et secundum scripturae
+   fidem annos quoque aetatis ipsius numerantibus. . . . . Nos vero
    consequenter respondimus observantes regulam pietatis, quoniam non tunc
    primum cum visibilem istum mundum fecit Deus, coepit operari, sed sicut
    post corruptionem hujus erit alius mundus, ita et antequam hic esset,
@@ -24602,8 +24602,8 @@ CHAPTER X.
    however, namely, that God fashioned the world out of his own substance,
    has found advocates, more or less numerous, in every age of the Church.
    Augustine, referring to this opinion, says, "Fecisti coelum et terram;
-   non de te: nam esset Ý¦quale unigenito tuo, ac per hoc et tibi, . . . .
-   et aliud prÝ¦ter te non erat, unde faceres ea; . . . . et ideo de nihilo
+   non de te: nam esset aequale unigenito tuo, ac per hoc et tibi, . . . .
+   et aliud praeter te non erat, unde faceres ea; . . . . et ideo de nihilo
    fecisti coelum et terram." [511]
 
    Not only those of the schoolmen and of the modern theologians who are
@@ -24667,11 +24667,11 @@ CHAPTER X.
 
    The common faith of the Church on this subject is clearly and
    beautifully expressed by Melancthon: [518] "Quod autem res ex nihilo
-   conditÝ¦ sint, docet hÝ¦c sententia: ipse dixit et facta sunt; ipse
-   mandavit, et creata sunt, id est dicente seu jubente Deo, res exortÝ¦
-   sunt: non igitur ex materia priore exstructÝ¦ sunt, sed Deo dicente, cum
+   conditae sint, docet haec sententia: ipse dixit et facta sunt; ipse
+   mandavit, et creata sunt, id est dicente seu jubente Deo, res exortae
+   sunt: non igitur ex materia priore exstructae sunt, sed Deo dicente, cum
    res non essent, esse coeperunt; et cum Joannes in quit: Omnia per ipsum
-   facta esse, refutat Stoicam imaginationem, quÝ¦ fingit materiam non esse
+   facta esse, refutat Stoicam imaginationem, quae fingit materiam non esse
    factam."
      __________________________________________________________________
 
@@ -24744,15 +24744,15 @@ CHAPTER X.
    of God working in union with second causes.
 
    Augustine clearly recognizes this idea. "Sicut in ipso grano
-   invisibiliter erant omnia simul quÝ¦ per tempora in arborem surgerent;
+   invisibiliter erant omnia simul quae per tempora in arborem surgerent;
    ita ipse mundus cogitandus est, cum Deus simul omnia creavit, habuisse
-   simul omnia quÝ¦ in illo et cum illo facta sunt quando factus est dies:
+   simul omnia quae in illo et cum illo facta sunt quando factus est dies:
    non solum coelum cum sole et luna et sideribus, quorum species manet
-   motu rotabili, et terram et abyssos, quÝ¦ velut inconstantes motus
+   motu rotabili, et terram et abyssos, quae velut inconstantes motus
    patiuntur, atque inferius adjuncta partem alteram mundo conferunt; sed
-   etiam illa quÝ¦ aqua et terra produxit potentialiter atque causaliter,
+   etiam illa quae aqua et terra produxit potentialiter atque causaliter,
    priusquam per temporum moras ita exorirentur, quomodo nobis jam nota
-   sunt in eis operibus, quÝ¦ Deus usque nunc operatur." [519]
+   sunt in eis operibus, quae Deus usque nunc operatur." [519]
 
    Thus far there is little room for diversity of opinion. But when the
    question is asked, How long was the universe in passing from its
@@ -24873,7 +24873,7 @@ CHAPTER X.
    passage is the construction of the negative particle me. It may be
    connected with phainomenon. This passage is then parallel with 2 Macc.
    vii. 28, ex ouk onton epoiesen auta ho theos; in the Latin, "Peto,
-   nate, ut aspicias ad coelum, et terram, et ad omnia, quÝ¦ in eis sunt;
+   nate, ut aspicias ad coelum, et terram, et ad omnia, quae in eis sunt;
    et intelligas, quia ex nihilo fecit illa Deus, et hominum genus."
    Delitzsch, in his commentary on this Epistle, shows that neither the
    position of the negative before the preposition, nor the use of me,
@@ -24994,7 +24994,7 @@ CHAPTER X.
    it is said, that the doctrine of creation supposes a distinction
    between will and power, or efficiency and purpose in the divine mind.
    Scotus Erigena [523] says, "Non aliud est Deo esse et facere, sed ei
-   esse id ipsum est et facere. CoÝ¦ternum igitur est Deo suum facere et
+   esse id ipsum est et facere. Coaeternum igitur est Deo suum facere et
    coessentiale." This was the common doctrine of the scholastic theology
    which defined God to be actus purus, and denied any distinction in Him
    between essence and attributes, power and act. If this view of the
@@ -25068,10 +25068,10 @@ CHAPTER X.
    3. The scholastic theologians, who themselves were in the trammels of
    such philosophical speculations, were accustomed to answer these cavils
    by counter subtleties. Even Augustine says that God did not create the
-   world in time, because before creation time was not. "Si literÝ¦ sacrÝ¦
+   world in time, because before creation time was not. "Si literae sacrae
    maximeque veraces ita dicunt, in principio fecisse Deum coelum et
    terram, ut nihil antea fecisse intelligatur, quia hoc potius in
-   principio fecisse diceretur, si quid fecisset ante coetera cuncta quÝ¦
+   principio fecisse diceretur, si quid fecisset ante coetera cuncta quae
    fecit; procul dubio non est mundus factus in tempore, sed cum tempore."
    [525] This is true enough. If time be duration measured by motion or
    succession, it is plain that before succession there can be no time. It
@@ -25105,7 +25105,7 @@ CHAPTER X.
    Word, and in our own moral and religious nature.
      __________________________________________________________________
 
-   [523] De Divisione NaturÝ¦, i. 74.
+   [523] De Divisione Naturae, i. 74.
 
    [524] Schelling, by Strauss, Dogmatik, vol. i. p. 658.
 
@@ -25295,7 +25295,7 @@ CHAPTER X.
    the solid heavens? The word firmament applied to the visible heavens is
    as familiar to us as it was to them. Calvin well remarks, "Moses vulgi
    ruditati se accommodans, non alia Dei opera commemorat in historia
-   creationis, nisi quÝ¦ oculis nostris occurrunt." [527]
+   creationis, nisi quae oculis nostris occurrunt." [527]
 
    Geology and the Bible.
 
@@ -25611,13 +25611,13 @@ CHAPTER XI.
    which most of the Reformed theologians are to be understood when they
    speak of preservation as a continuous creation. Thus Heidegger [534]
    says, "Conservatio continuata creatio Dei activa est. Si enim creatio
-   et conservatio duÝ¦ actiones distinctÝ¦ forent, creatio primo cessaret,
+   et conservatio duae actiones distinctae forent, creatio primo cessaret,
    ac tum conservatio vel eodem, quo creatio cessavit, vel sequenti
    momento inciperet." This only means that the world owes its continued
    existence to the uninterrupted exercise of the divine power. He
    therefore elsewhere says, "Conservationi annihilatio opponitur.
    Cessante actione conservante res in nihilum collabitur." In like manner
-   Alsted [535] says, "Conservatio est quÝ¦dam continuatio. Quemadmodum
+   Alsted [535] says, "Conservatio est quaedam continuatio. Quemadmodum
    creatio est prima productio rei ex nihilo, ita est conservatio rei
    continuatio, ne in nihilum recidat. Deus mundum sustinet." Ryssenius
    (whose work is principally from Turrettin), [536] says "Providentia
@@ -25786,11 +25786,11 @@ CHAPTER XI.
 
    [533] Theologia Christiana, II. xxv. 7, edit. Amsterdam, 1700, p. 134.
 
-   [534] Heidegger, Corpus TheologiÝ¦, loc. vii. 22, Tiguri, 1732, p. 251.
+   [534] Heidegger, Corpus Theologiae, loc. vii. 22, Tiguri, 1732, p. 251.
 
-   [535] Alsted, Theol. Didaot. HanoviÝ¦, 1627, p. 283.
+   [535] Alsted, Theol. Didaot. Hanoviae, 1627, p. 283.
 
-   [536] Summa TheologiÝ¦, I. 209; Ibid.
+   [536] Summa Theologiae, I. 209; Ibid.
 
    [537] Dogmengeschichte, II. Zweite Hälfte, p. 288, edit. Leipzig, 1841.
 
@@ -25885,7 +25885,7 @@ CHAPTER XI.
    adaptation of means to an end; as well in the organization of the
    animalcule which it requires the microscope to reveal, as in the order
    of the heavenly bodies. This mind is not in matter. It is not a blind
-   vis naturÝ¦. It is, and must be the intelligence of an infinite,
+   vis naturae. It is, and must be the intelligence of an infinite,
    omnipresent Being. It is just as much beyond the power of a creature to
    form an insect, as it is to create the universe. And it is as
    unreasonable to assume that the organized forms of the vegetable and
@@ -26251,14 +26251,14 @@ CHAPTER XI.
    illo et per illud sit, imo illud ipsum sit -- creata inquam virtus
    dicitur, eo quod in novo subiecto et nova specie, universalis aut
    generalis ista virtus exhibetur. Deus est causa rerum universarum,
-   reliqua omnia non sunt vere causÝ¦. [544] Constat causas secundas non
+   reliqua omnia non sunt vere causae. [544] Constat causas secundas non
    rite causas vocari. . . . . Essentiam, virtutem, et operationem habent
    non suam sed numinis. Instrumenta igitur sunt. [545] Viciniora ista,
    quibus causarum nomen damus, non jure causas esse sed manus et organa,
-   quibus Ý¦terna mens operatur." [546] Calvin did not go so far, although
+   quibus aeterna mens operatur." [546] Calvin did not go so far, although
    he uses such language as the following, when speaking of inanimate
    things, "Sunt nihil aliud quam instrumuenta, quibus Deus assidue
-   instillat quantum vult efficaciÝ¦ et pro suo arbitrio ad hanc vel illam
+   instillat quantum vult efficaciae et pro suo arbitrio ad hanc vel illam
    actionem flectit et convertit." [547] He admits, however, that matter
    has its own properties, and second causes a real efficiency. The whole
    tendency of the Cartesian philosophy, which came into vogue in the
@@ -26286,8 +26286,8 @@ CHAPTER XI.
    andere Ursächlichkeiten als nur die göttliche, so dass Zwischenursachen
    nur seine Instrumente und Organe sind, er die durch ihre Gesammtheit
    wie durch alle einzelnen Zwischenursachen allein hindurchwirkende
-   Causalität. Dieses ist er vermöge der prÝ¦sentia essentialis numinis
-   oder doch divinÝ¦ virtutis, welche das Sein alles Seins, die Bewegung
+   Causalität. Dieses ist er vermöge der praesentia essentialis numinis
+   oder doch divinae virtutis, welche das Sein alles Seins, die Bewegung
    aller Bewegungen ist." This is Schweizer's own doctrine, as it is that
    of the whole school of Schleiermacher, to which he belongs; but that it
    is not the doctrine of the Reformed theologians is plain from their all
@@ -26305,7 +26305,7 @@ CHAPTER XI.
    manifold and everywhere present efficiency of God is manifested.
    "Consideremus," says Leibnitz, "eorum sententiam, qui rebus creatis
    veram, et propriam actionem adimunt, . . . . qui putant non res agere,
-   sed Deum ad rerum prÝ¦sentiam, et secundum rerum aptitudem; adeoque res
+   sed Deum ad rerum praesentiam, et secundum rerum aptitudem; adeoque res
    occasiones esse, non causas, et recipere, non efficere aut elicere."
    [549] The same views of the dependence of creatures on God lies at the
    foundation of the whole system of Dr. Emmons. He held that if any
@@ -26480,8 +26480,8 @@ CHAPTER XI.
    or Remonstrants. It was assumed as a philosophical axiom, to which all
    theological doctrines should be conformed. "Ad gubernationem concursus
    pertinet, quo Deus non solum dat vim agendi causis secundis et eam
-   conservat, sed et easdem movet et applicat ad agendum. PrÝ¦cursus etiam
-   dicitur, nam causÝ¦ secundm non movent nisi motÝ¦." [557] "Prima causa,"
+   conservat, sed et easdem movet et applicat ad agendum. Praecursus etiam
+   dicitur, nam causae secundm non movent nisi motae." [557] "Prima causa,"
    says Turrettin, "est primum movens in omni actione, ideo causa secunda
    non potest movere, nisi moveatur, nec agere, nisi acta a prima; alioqui
    erit principium sui motus, et sic non amplius esset causa secunda, sed
@@ -26491,11 +26491,11 @@ CHAPTER XI.
    attached to the same vehicle, which is drawn partly by the one and
    partly by the other. The efficiency of the first cause is in the
    second, and not merely with it. Deus "immediate influit in actionem et
-   effectum creaturÝ¦, ita ut idem effectus non a solo Deo, nec a sola
+   effectum creaturae, ita ut idem effectus non a solo Deo, nec a sola
    creatura, nec partim a Deo, partim a creatura, sed una eademque
    efficientia totali simul a Deo et creatura producatur, a Deo videlicet
    ut causa universali et prima, a creatura ut particulari et secunda."
-   [559] "Non est re ipsa alia actio influxus Dei, alia operatio creaturÝ¦,
+   [559] "Non est re ipsa alia actio influxus Dei, alia operatio creaturae,
    sed una et indivsibilis actio, utrumque respiciens et ab utroque
    pendens, a Deo ut causa universali, a creatura ut particulari." [560]
 
@@ -26518,24 +26518,24 @@ CHAPTER XI.
    its being as it is, and not otherwise, is to be referred to the first,
    and not to the second cause in every case. On this point, however, the
    Reformed theologians are not agreed, as Turrettin admits. "Ex nostris,"
-   he says, "quidam concursum tantum prÝ¦vium volunt quoad bona opera
-   gratiÝ¦, sed in aliis omnibus simultaneum sufficere existimant." [561]
+   he says, "quidam concursum tantum praevium volunt quoad bona opera
+   gratiae, sed in aliis omnibus simultaneum sufficere existimant." [561]
    By previous concursus is meant, he says, "Actio Dei, qua in causas
-   earumque principia influendo, creaturas excitat, et agendum prÝ¦movet,
+   earumque principia influendo, creaturas excitat, et agendum praemovet,
    et ad hoc potius quam ad illud agendum applicat. Simultaneus vero est
-   per quam Deus actionem creaturÝ¦, quoad suam entitatem, vel substantiam
+   per quam Deus actionem creaturae, quoad suam entitatem, vel substantiam
    producit; quo una cum creaturis in earum actiones et effectus influere
    ponitur, non vero in creaturas ipsas." [562] It is admitted that these
    do not differ really, "quia concursus simultaneus, nihil aliud est,
-   quam concursus prÝ¦vius continuatus." This previous concursus is also
-   called predetermining. "Id ipsum etiam nomine PrÝ¦determinationis, seu
-   PrÝ¦motionis solet designari, qua Deus ciet et applicat causam secundam
-   ad agendum, adeoque antecedenter ad omnem operationem creaturÝ¦, seu
+   quam concursus praevius continuatus." This previous concursus is also
+   called predetermining. "Id ipsum etiam nomine Praedeterminationis, seu
+   Praemotionis solet designari, qua Deus ciet et applicat causam secundam
+   ad agendum, adeoque antecedenter ad omnem operationem creaturae, seu
    prius natura et ratione quam creatura operetur, eam realiter et
    efficaciter movet ad agendum in singulis actionibus, adeo ut sine hac
-   prÝ¦motione causa secunda operari non possit, ea vero posita impossibile
+   praemotione causa secunda operari non possit, ea vero posita impossibile
    sit in sensu composito causam secundam non illud idem agere ad quod a
-   prima causa prÝ¦movetur." [563]
+   prima causa praemovetur." [563]
 
    Concursus, therefore, assumes, (1.) That God gives to second causes the
    power of acting. (2.) That He preserves them in being and vigour. (3.)
@@ -26565,14 +26565,14 @@ CHAPTER XI.
    principium non determinatum ad unum, sed indifferenter se habens ad
    multa, sic Deus ipsam movet, quod non ex necessitate ad unum
    determinat, sed remanet motus ejus contingens et non necessarius, nisi
-   in his ad quÝ¦ naturaliter movetur." [564] "Concurrit Deus cum
-   naturalibus ad modum causÝ¦ naturalis, cum causis liberis per modum
-   causÝ¦ liberÝ¦." [565] "Duo sunt causarum genera, aliÝ¦ definitÝ¦ et
-   generales, quÝ¦ eodem modo semper agunt, ut ignis qui urit, sol qui
-   lucet; aliÝ¦ indefinitÝ¦ et liberÝ¦, quÝ¦ possunt agere vel non agere, hoc
+   in his ad quae naturaliter movetur." [564] "Concurrit Deus cum
+   naturalibus ad modum causae naturalis, cum causis liberis per modum
+   causae liberae." [565] "Duo sunt causarum genera, aliae definitae et
+   generales, quae eodem modo semper agunt, ut ignis qui urit, sol qui
+   lucet; aliae indefinitae et liberae, quae possunt agere vel non agere, hoc
    vel illo modo agere: ita Deus naturam earum conservat, et cum illis
    juxta eam in agendo concurrit; cum definitis, ut ipse eas determinet
-   sine determinatione propria; cum indefinitis vero et liberis, ut ipsÝ¦
+   sine determinatione propria; cum indefinitis vero et liberis, ut ipsae
    quoque se determinent proprio rationis judicio, et libera voluntatis
    dispositione, quam Deus non aufert homini, quia sic opus suum
    destrueret, sed relinquit et confirmat." [566] To the same effect the
@@ -26602,10 +26602,10 @@ CHAPTER XI.
    not inconsistent with moveri ex se. On this point Turrettin [569] says:
    "Cum providentia non concurrat cum voluntate humana, vel per
    coactionem, cogendo voluntatem invitam, vel determinando physice, ut
-   rem brutan et cÝ¦cam absque ullo judicio, sed rationaliter, flectendo
+   rem brutan et caecam absque ullo judicio, sed rationaliter, flectendo
    voluntatem modo ipsi convenienti, ut seipsam determinet, ut causa
    proxima actionum suarum proprio rationis judicio, et spontanea
-   voluntatis electione; eam libertati nostrÝ¦ nullam vim inferre, sed
+   voluntatis electione; eam libertati nostrae nullam vim inferre, sed
    illam potius amice fovere."
 
    6. All the advocates of the doctrine of concursus admit that the great
@@ -26691,10 +26691,10 @@ CHAPTER XI.
    all that they themselves teach in reference to the agency of God in the
    wicked acts of men. Thus Bellarmin, who freely brings this objection
    against the Protestants, himself says, [574] "Deus non solum permittit
-   impios agere multa mala, nec solum deserit pios ut cogantur pati quÝ¦ ab
-   impiis inferuntur; sed etiam prÝ¦sidet ipsis voluntatibus malis, easque
+   impios agere multa mala, nec solum deserit pios ut cogantur pati quae ab
+   impiis inferuntur; sed etiam praesidet ipsis voluntatibus malis, easque
    regit et gubernat, torquet ac flectit in eis invisibiliter operando, ut
-   licet vitio proprio malÝ¦ sint, tamen a divina providentia ad unum
+   licet vitio proprio malae sint, tamen a divina providentia ad unum
    potius malum, quam ad aliud, non positive sed permissive ordinentur."
    As to this passage, Turrettin says, "Quibus verbis nihil durius apud
    nostros occurrit." Bellarmin also quotes [575] and adopts the language
@@ -26760,12 +26760,12 @@ CHAPTER XI.
    relation to the world of mind, or to his rational creatures.
      __________________________________________________________________
 
-   [540] De Divisione NaturÝ¦, lib. iii. 19, edit. Monast. Guestphal. 1838,
+   [540] De Divisione Naturae, lib. iii. 19, edit. Monast. Guestphal. 1838,
    p. 240.
 
    [541] See Rixner's Geschichte der Philosophie, vol. ii. § 40, p. 72.
 
-   [542] Summa TheologiÝ¦, part I., quest. cv., art. 5, edit. Cologne,
+   [542] Summa Theologiae, part I., quest. cv., art. 5, edit. Cologne,
    1640, pp. 192, 193.
 
    [543] De Providentia Dei; Works, edit. Turici, 1832, vol. iv. p. 85.
@@ -26804,33 +26804,33 @@ CHAPTER XI.
    [557] Mares, Collegium Theologicum, loc. iv. 29; Gröningen, 1659, p.
    42, b.
 
-   [558] Locus VI. quÝ¦stio, v. 7, edit. Edinburgh, 1847, vol. i. p. 455.
+   [558] Locus VI. quaestio, v. 7, edit. Edinburgh, 1847, vol. i. p. 455.
 
    [559] Quenstedt, Theologia, cap. XIII. i. 15, edit. Leipzig, 1715, vol.
    i. p. 760.
 
    [560] Ibid. cap. XIII. ii. 3, vol. i. p. 782.
 
-   [561] Locus VI. quÝ¦st. v. 6.
+   [561] Locus VI. quaest. v. 6.
 
-   [562] Locus VI. quÝ¦st. v. 5.
+   [562] Locus VI. quaest. v. 5.
 
-   [563] Turrettin, locus VI. quÝ¦st. v. 6.
+   [563] Turrettin, locus VI. quaest. v. 6.
 
-   [564] Aquinas, Summa, part II. i. quÝ¦st. x. art. 4, edit. Cologne,
+   [564] Aquinas, Summa, part II. i. quaest. x. art. 4, edit. Cologne,
    1640, p. 22 of second set.
 
    [565] Quenstedt, cap. XIII. i. 15, vol. i. p. 761.
 
-   [566] Turrettin, locus VI. quÝ¦st. vi. 6, edit. Edinburgh, 1847, vol. i.
+   [566] Turrettin, locus VI. quaest. vi. 6, edit. Edinburgh, 1847, vol. i.
    p. 460.
 
    [567] Chap. v. sect. 2.
 
-   [568] Aquinas, Summa, part I. quÝ¦st. cv. art. 4. edit. Cologne, 1640,
+   [568] Aquinas, Summa, part I. quaest. cv. art. 4. edit. Cologne, 1640,
    p. 193.
 
-   [569] Locus VI. quÝ¦stio v. 7.
+   [569] Locus VI. quaestio v. 7.
 
    [570] Summa, part I. quest. xlix. art. 2, edit. Cologne, 1640, p. 95.
 
@@ -26838,10 +26838,10 @@ CHAPTER XI.
 
    [572] Bucan, Institutiones Theologici, edit. Geneva, 1625, p. 142.
 
-   [573] Locus VI. quÝ¦stio vii. 3, 4, edit. Edinburgh, 1847, vol. i. p.
+   [573] Locus VI. quaestio vii. 3, 4, edit. Edinburgh, 1847, vol. i. p.
    462.
 
-   [574] De Amissione GratiÝ¦ et Statu Peccati, II. xiii. edit. Paris,
+   [574] De Amissione Gratiae et Statu Peccati, II. xiii. edit. Paris,
    1608, p. 132.
 
    [575] Ibid.
@@ -27382,7 +27382,7 @@ CHAPTER XII.
    law of nature be the will of God, that of course cannot be set aside,
    much less directly violated. This is Augustine's objection, who asks,
    "Quomodo est contra naturam, quod Dei fit voluntate cum voluntas tanti
-   utique conditoris conditÝ¦ rei cujusque natura sit? Portentum ergo fit,
+   utique conditoris conditae rei cujusque natura sit? Portentum ergo fit,
    non contra naturam, sed contra quam est nota natura." [579] Baden
    Powell, in behalf of men of science, protests against being called upon
    to believe in anything "at variance with nature and law." "The enlarged
@@ -27462,8 +27462,8 @@ CHAPTER XII.
    consideration, depends for its validity on the assumption, that God is
    subject to nature that He cannot control its laws. J. Müller well says,
    "Etiamsi nullus alius miraculorum esset usus, nisi ut absolutam illam
-   divinÝ¦ voluntatis libertatem demonstrent, humanamque arrogantiam,
-   immodicÝ¦ legis naturalis admirationi junctam, compescant, miracula haud
+   divinae voluntatis libertatem demonstrent, humanamque arrogantiam,
+   immodicae legis naturalis admirationi junctam, compescant, miracula haud
    temere essent edita." [584]
 
    (3.) The authority of Scripture is for Christians decisive on this
@@ -27502,9 +27502,9 @@ CHAPTER XII.
    semper necessario existens, summe intelligens omnia, libere volens
    bona, voluntate efficiens possibilia, effectibus nobilioribus
    similitudinem propriam quantum fieri potest, communicans, omnia in se
-   continens, tanquam eorum principium et locus, omnia per prÝ¦sentiam
+   continens, tanquam eorum principium et locus, omnia per praesentiam
    substantialem cernens et regens, et cum rebus omnibus, secundum leges
-   accuratas ut naturÝ¦ totius fundamentum et causa constanter coöperans,
+   accuratas ut naturae totius fundamentum et causa constanter coöperans,
    nisi ubi aliter agere bonum est." [585] God is the author of nature: He
    has ordained its laws: He is everywhere present in his works: He
    governs all things by coöperating and using the laws which He has
@@ -27732,26 +27732,26 @@ CHAPTER XII.
    This is of course denied by all those who do not make any distinction
    between God and nature. This is done by Spinoza and all his modern
    disciples. "Existimant," says Spinoza, "Deum tamdiu nihil agere,
-   quamdiu natura solito ordine agit; et contra, potentiam naturÝ¦ et
+   quamdiu natura solito ordine agit; et contra, potentiam naturae et
    causas naturales tamdiu esse oticsas, quam diu Deus agit; duas itaque
    potentias numero ab invicem distinctas imaginantur, scilicet, potentiam
    Dei et potentiam rerum naturalium, a Deo tamen certo modo
    determinatam." [592] As he denies that there is any distinction between
    the power of God and the power of nature, he of course denies that
    there is any ground for the distinction between natural and
-   supernatural events. "Leges naturÝ¦ universales," he says, "mera esse
-   decreta Dei, quÝ¦ ex necessitate et perfectione naturÝ¦ divinÝ¦ sequuntur.
+   supernatural events. "Leges naturae universales," he says, "mera esse
+   decreta Dei, quae ex necessitate et perfectione naturae divinae sequuntur.
    Si quid igitur in natura contingeret, quod ejus universalibus legibus
-   repugnaret, id decreto et intellectui et naturÝ¦ divinÝ¦ necessario etiam
-   repugnaret; aut si quis statueret, Deum aliquid contra leges naturÝ¦
+   repugnaret, id decreto et intellectui et naturae divinae necessario etiam
+   repugnaret; aut si quis statueret, Deum aliquid contra leges naturae
    agere, is simul etiam cogeretur statuere, Deum contra suam naturam
    agere, quo nihil absurdius. [593] . . . . Ex his -- sequitur, nomen
    miraculi non nisi respective ad hominum opiniones posse intelligi, et
    nihil aliud significare quam opus, cujus causam naturalem exemplo
-   alterius rei solitÝ¦ explicare non possumus. [594] . . . . Per Dei
-   directionem intelligo fixum illum et immutabilem naturÝ¦ ordinem, sive
+   alterius rei solitae explicare non possumus. [594] . . . . Per Dei
+   directionem intelligo fixum illum et immutabilem naturae ordinem, sive
    rerum naturalium concatenationem. -- Sive igitur dicamus, omnia
-   secundum leges naturÝ¦ fieri, sive ex Dei decreto et directione
+   secundum leges naturae fieri, sive ex Dei decreto et directione
    ordinari, idem dicimus." [595] The Pantheistic theory, therefore, which
    teaches "that the government of the world is not the determination of
    events by an extramundane intelligence, but by reason as immanent in
@@ -27922,7 +27922,7 @@ CHAPTER XII.
    miracles. They are "lying wonders," not only because intended to
    sustain the kingdom of lies, but because they falsely profess to be
    what they are not. Thus Thomas Aquinas says: [600] Demones possunt
-   facere miracula: quÝ¦ scilicet homines mirantur, in quantum eorum
+   facere miracula: quae scilicet homines mirantur, in quantum eorum
    facultatem et cognitionem excedunt." They are only wonders in the sight
    of men.
 
@@ -27960,9 +27960,9 @@ CHAPTER XII.
    doctrines, no signs or wonders, however great or numerous, are to be
    admitted; for we have the command of God, who said from heaven, Hear
    him,' to listen only unto Christ." Chemnitz [601] says, "Miracula non
-   debent prÝ¦ferri doctrinÝ¦. . . . neque enim contra doctrinam a Deo
+   debent praeferri doctrinae. . . . neque enim contra doctrinam a Deo
    revelatam ulla miracula valere debent." Gerhard [602] says, "Miracula,
-   si non habeant doctrinÝ¦ veritatem conjunctam nihil probant." Brochmann
+   si non habeant doctrinae veritatem conjunctam nihil probant." Brochmann
    also says, [603] "Ut opus aliquod sit verum miraculum duo requiruntur.
    Unum, est veritas rei; alterum, veritas finis."
 
@@ -28025,7 +28025,7 @@ CHAPTER XII.
    concur in testifying to the same falsehood. The argument may be valid
    in the view of mathematicians; but to ordinary men it seems to be a
    wrong application of the principles of that venerable science. As we
-   cannot determine by the law of probabilities a question in Ý¦sthetics or
+   cannot determine by the law of probabilities a question in aesthetics or
    morals, neither can God's relation to the world, and the use of his
    power, as involved in the doctrine of miracles, be thus determined. It
    does depend on the validity of human testimony. However uncertain or
@@ -28209,7 +28209,7 @@ CHAPTER XIII.
    the glory attending ther presence are spoken of. The Council of
    Lateran, A.D. 1215, decided that they were incorporeal, and this has
    been the common opinion in the Church. They are declared to be
-   "substantiÝ¦ spirituales, omnis corporeÝ¦ molis expertes." As such,
+   "substantiae spirituales, omnis corporeae molis expertes." As such,
    therefore, they are invisible, incorruptible, and immortal. Their
    relation to space is described as an illocalitas; not ubiquity or
    omnipresence, as they are always somewhere and not everywhere at any
@@ -28246,7 +28246,7 @@ CHAPTER XIII.
    This Scriptural doctrine, universally received in the Church, stands
    opposed, (1.) To the theory that they were transient emanations from
    the Deity. (2.) To the Gnostic view that they were permanent emanations
-   or Ý¦ons: and (3.) To the rationalistic view, which denies them any real
+   or aeons: and (3.) To the rationalistic view, which denies them any real
    existence, and refers the Scriptural statements either to popular
    superstitions adopted by the sacred writers in accommodation to the
    opinions of the age, or to poetical personifications of the powers of
@@ -28643,9 +28643,9 @@ CHAPTER XIII.
    he sits among devils: that the devil is nearer to him than his coat or
    his shirt, or even his skin; that he is all about us, and that we must
    always grapple with and fight him." Calvin's view of tbe subject is,
-   [609] "QuÝ¦ de diabolis Scriptura tradit, eo fere tendunt omnia, ut
-   solliciti simus ad prÝ¦cavendas corum insidias et molitiones: tum iis
-   armis nos instruamus, quÝ¦ ad propulsandos potentissimos hostes satis
+   [609] "Quae de diabolis Scriptura tradit, eo fere tendunt omnia, ut
+   solliciti simus ad praecavendas corum insidias et molitiones: tum iis
+   armis nos instruamus, quae ad propulsandos potentissimos hostes satis
    firma sint ac valida." And he asks, [610] "Quid nostra refert vel
    plura, vel in alium finem de diabolis scire?"
      __________________________________________________________________
@@ -29239,29 +29239,29 @@ Index of Hebrew Words and Phrases
 Index of Latin Words and Phrases
 
      * philosophia prima: [994]1
-     * Ý†qualis et constans animi affectio, qua homo, necessitudinem suam
-       eandemque Ý¦ternam, quÝ¦ ei cum summo omnium rerum auctore ac
-       moderatore sanctissimo intercedit, intimo sensu complexus,
-       cogitationes, voluntates et actiones suas ad eum referre studet.:
+     *  Æqualis et constans animi affectio, qua homo, necessitudinem suam
+	    andemque æternam, quæ ei cum summo omnium rerum auctore ac
+		moderatore sanctissimo intercedit, intimo sensu complexus,
+		cogitationes, voluntates et actiones suas ad eum referre studet.:
        [995]1
-     * Ý†ternitas Dei est duratio vel permanentia essentiÝ¦ divinÝ¦
-       interminabilis, sine principio et fine carens, et indivisibilis,
-       omnem omnino successionem excludens.: [996]1
-     * Ý†ternitas est tota simul.: [997]1
-     * "Consideremus," says Leibnitz, "eorum sententiam, qui rebus creatis
-       veram, et propriam actionem adimunt, . . . . qui putant non res
-       agere, sed Deum ad rerum prÝ¦sentiam, et secundum rerum aptitudem;
-       adeoque res occasiones esse, non causas, et recipere, non efficere
-       aut elicere.": [998]1
-     * "Ex nostris," he says, "quidam concursum tantum prÝ¦vium volunt
-       quoad bona opera gratiÝ¦, sed in aliis omnibus simultaneum sufficere
-       existimant.": [999]1
-     * "Existimant," says Spinoza, "Deum tamdiu nihil agere, quamdiu
-       natura solito ordine agit; et contra, potentiam naturÝ¦ et causas
-       naturales tamdiu esse oticsas, quam diu Deus agit; duas itaque
-       potentias numero ab invicem distinctas imaginantur, scilicet,
-       potentiam Dei et potentiam rerum naturalium, a Deo tamen certo modo
-       determinatam.": [1000]1
+     * Æternitas Dei est duratio vel permanentia essentiæ divinæ
+	   interminabilis, sine principio et fine carens, et indivisibilis,
+	   omnem omnino successionem excludens.:  [996]1
+     * Æternitas est tota simul.: [997]1
+     * “Consideremus,” says Leibnitz, “eorum sententiam, qui rebus creatis
+	   veram, et propriam actionem adimunt, . . . . qui putant non res
+	   agere, sed Deum ad rerum præsentiam, et secundum rerum aptitudem;
+	   adeoque res occasiones esse, non causas, et recipere, non efficere
+       aut elicere.”:  [998]1
+     * “Ex nostris,” he says, “quidam concursum tantum prævium volunt
+	   quoad bona opera gratiæ, sed in aliis omnibus simultaneum sufficere
+	   existimant.”:  [999]1
+     * “Existimant,” says Spinoza, “Deum tamdiu nihil agere, quamdiu
+	   natura solito ordine agit; et contra, potentiam naturæ et causas
+	   naturales tamdiu esse oticsas, quam diu Deus agit; duas itaque
+	   potentias numero ab invicem distinctas imaginantur, scilicet,
+	   potentiam Dei et potentiam rerum naturalium, a Deo tamen certo
+	   modo determinatam.”: [1000]1
      * "Nam quid est aliud tota creatura," Luther asks, "quam verbum Dei a
        Deo prolatum, seu productum foras? . . . . Mundum et omnia creavit
        facillimo opere, dicendo scilicet, ut non plus negotii Deo sit in
@@ -29270,65 +29270,64 @@ Index of Latin Words and Phrases
        ideo causa secunda non potest movere, nisi moveatur, nec agere,
        nisi acta a prima; alioqui erit principium sui motus, et sic non
        amplius esset causa secunda, sed prima.": [1002]1
-     * "Quid est prÝ¦scientia," asks Augustine, "nisi scientia futurorum?
-       Quid autem futurum est Deo, qui omnia supergreditur tempora? Si
-       enim scientia Dei res ipsas habet, non sunt ei futurÝ¦, sed
-       prÝ¦sentes, ac per hoc non jam prÝ¦scientia, sed tantum scientia
-       dicipotest.": [1003]1
-     * "summa indifferentia," he says, "in Deo, summum est ejus
-       omnipotentiÝ¦ argumentam.": [1004]1
-     * Absolute possibilia sunt, quÝ¦ nec Dei naturÝ¦, nec aliarum rerum
-       extra Deum essentiÝ¦ contradicunt.: [1005]1
+     * “Quid est præscientia,” asks Augustine, “nisi scientia futurorum?
+	   Quid autem futurum est Deo, qui omnia supergreditur tempora? Si enim
+	   scientia Dei res ipsas habet, non sunt ei futuræ, sed præsentes, ac
+	   per hoc non jam præscientia, sed tantum scientia dicipotest.”: [1003]1
+     * “summa indifferentia,” he says, “in Deo, summum est ejus
+	   omnipotentiæ argumentam.”: [1004]1
+     * Absolute possibilia sunt, quæ nec Dei naturæ, nec aliarum rerum
+	   extra Deum essentiæ contradicunt.:  [1005]1
      * Actio Dei, qua in causas earumque principia influendo, creaturas
-       excitat, et agendum prÝ¦movet, et ad hoc potius quam ad illud
-       agendum applicat. Simultaneus : [1006]1
+	   excitat, et agendum præmovet, et ad hoc potius quam ad illud
+	   agendum applicat. Simultaneus :  [1006]1
      * Actus positivus et directus, quo Deus in genere in causas
        efficientes rerum conservandas influxu vero et reali influit, ut in
        natura, proprietatibus et viribus suis persistant ac permaneant.:
        [1007]1
-     * Ad coërcenda petulantia ingenia decernit (Synodus), ut nemo, suÝ¦
-       prudentiÝ¦ innixus in rebus fidei et morum ad Ý¦dificationem doctrinÝ¦
-       Christiana pertinentium, Sacram Scripturam ad suas sensus
-       contorquens contra eum sensum, quem tenuit et tenet sancta mater
-       Ecclesia, cujus est judicare de vero sensu et interpretatione
-       Scripturarum Sanctarum, aut etiam contra unanimem consensum patrum
-       ipsam scripturam sacram interpretari audeat, etiamsi hujus modi
-       interpretationes nullo unquam tempore in lucem edendÝ¦ forent. Qui
-       contravenerint, per ordinarios declarentur et poenis a jure
-       statutis puniantur.: [1008]1
+     * Ad coërcenda petulantia ingenia decernit (Synodus), ut nemo, suæ
+	   prudentiæ innixus in rebus fidei et morum ad ædificationem doctrinæ
+	   Christiana pertinentium, Sacram Scripturam ad suas sensus
+	   contorquens contra eum sensum, quem tenuit et tenet sancta mater
+	   Ecclesia, cujus est judicare de vero sensu et interpretatione
+	   Scripturarum Sanctarum, aut etiam contra unanimem consensum patrum
+	   ipsam scripturam sacram interpretari audeat, etiamsi hujus modi
+	   interpretationes nullo unquam tempore in lucem edendæ forent. Qui
+	   contravenerint, per ordinarios declarentur et pœnis a jure
+	   statutis puniantur.: [1008]1
      * Ad gubernationem concursus pertinet, quo Deus non solum dat vim
-       agendi causis secundis et eam conservat, sed et easdem movet et
-       applicat ad agendum. PrÝ¦cursus etiam dicitur, nam causÝ¦ secundm non
-       movent nisi motÝ¦.: [1009]1
-     * Ad providentiam divinam non pertinet, naturam rerum corrumpere, sed
-       servare: unde omnia movet secundum eorum conditionem: ita quod ex
-       causis necessariis per motionem divinam consequuntur effectus ex
-       necessitate; ex causis autem contingentibus sequuntur effectus
-       contingentes. Quia igitur voluntas est activum principium non
-       determinatum ad unum, sed indifferenter se habens ad multa, sic
-       Deus ipsam movet, quod non ex necessitate ad unum determinat, sed
-       remanet motus ejus contingens et non necessarius, nisi in his ad
-       quÝ¦ naturaliter movetur.: [1010]1
-     * Ad quÝ¦stionem tuam, an de Deo tam claram, quam de triangulo habeam
-       ideam, respondeo affirmando. Non dico, me Deum omnino cognoscere;
-       sed me quÝ¦dam ejus attributa, non autem omnia, neque maximam
-       intelligere partem, et certum est, plurimorum ignorantiam,
-       quorundam eorum habere notitiam, non impedire. Quum Euclidis
-       elementa addiscerem, primo tres trianguli angulos duobus rectis
-       Ý¦quari intelligebam; hancque trianguli proprietatem clare
-       percipiebam, licet multarum aliarum ignarus essem.: [1011]1
+	   agendi causis secundis et eam conservat, sed et easdem movet et
+	   applicat ad agendum. Præcursus etiam dicitur, nam causæ secundm non
+	   movent nisi motæ.:  [1009]1
+     * Ad providentiam divinam non pertinet, naturam rerum corrumpere,
+	   sed servare: unde omnia movet secundum eorum conditionem: ita quod
+	   ex causis necessariis per motionem divinam consequuntur effectus ex
+	   necessitate; ex causis autem contingentibus sequuntur effectus
+	   contingentes. Quia igitur voluntas est activum principium non
+	   determinatum ad unum, sed indifferenter se habens ad multa, sic
+	   Deus ipsam movet, quod non ex necessitate ad unum determinat, sed
+	   remanet motus ejus contingens et non necessarius, nisi in his ad
+       quæ naturaliter movetur.: [1010]1
+     * Ad quæstionem tuam, an de Deo tam claram, quam de triangulo habeam
+	   ideam, respondeo affirmando. Non dico, me Deum omnino cognoscere;
+	   sed me quædam ejus attributa, non autem omnia, neque maximam
+	   intelligere partem, et certum est, plurimorum ignorantiam, quorundam
+	   eorum habere notitiam, non impedire. Quum Euclidis elementa
+	   addiscerem, primo tres trianguli angulos duobus rectis æquari
+	   intelligebam; hancque trianguli propriet atem clare percipiebam,
+	   licet multarum aliarum ignarus essem.:  [1011]1
      * Affectus in Deo denotat effectum.: [1012]1
      * Affirmamus ex Dei verbo, Ecclesiam esse fidelium coetum, qui in
        verbo Dei sequendo et pura religione colenda consentiunt, in qua
        etiam quotidie proficiunt.: [1013]1
-     * Arianorum venenum non jam portiunculam quamdam, sed pene orbem
-       totum contaminaverat, adeo ut prope cunctis Latini sermonis
-       episcopis partim vi partim fraude deceptis caligo quÝ¦dam mentibus
-       effunderetur.: [1014]1
+     * Arianorum venenum non jam portiunculam quamdam, sed pene orbem totum
+	   contaminaverat, adeo ut prope cunctis Latini sermonis episcopis
+	   partim vi partim fraude deceptis caligo quædam mentibus
+	   effunderetur.: [1014]1
      * Attributa divina a parte rei et in se non multa sunt, sed ut ipsa
-       essentia divina, ita et attributa, quÝ¦ cum illa identificantur,
-       simplicissima unitas sunt; multa vero dicuntur (1.) sunkatabatikos:
-       [1015]1
+	   essentia divina, ita et attributa, quæ cum illa identificantur,
+	   simplicissima unitas sunt; multa vero dicuntur (1.) sunkatabatikos
+	   (συγκαταβατικῶς): [1015]1
      * Attributa divina ab essentia divina et a se invicem, distinguuntur
        non nominaliter neque realiter sed formaliter, secundum nostrum
        concipiendi modum, non sine certo distinctionis fundamento.:
@@ -29337,18 +29336,18 @@ Index of Latin Words and Phrases
        ab essentia divina distingui; sed omnem distinctionem esse solum in
        nominibus.: [1017]1
      * Auctoritas siquidem ex vera ratione processit, ratio vero nequaquam
-       ex auctoritate. Omnis autem auctoritas, quÝ¦ vera ratione non
-       approbatur, infirma videtur esse. Vera autem ratio, quum virtutibus
-       suis rata atque immutabilis munitur, nullius auctoritatis
-       adstipulatione roborari indiget.: [1018]1
-     * Beatitudo non est virtutis prÝ¦mium, sed ipsa virtus.: [1019]1
+	   ex auctoritate. Omnis autem auctoritas, quæ vera ratione non
+	   approbatur, infirma videtur esse. Vera autem ratio, quum virtutibus
+	   suis rata atque immutabilis munitur, nullius auctoritatis
+	   adstipulatione roborari indiget.:  [1018]1
+     * Beatitudo non est virtutis præmium, sed ipsa virtus.: [1019]1
      * Bechaí : [1020]1
      * Cogita frequens illud yhy: [1021]1
      * Cogito ergo sum: [1022]1 [1023]2
-     * Cognitio Ý¦ternÝ¦ et infinitÝ¦ essentiÝ¦ Dei, quam unaquÝ¦que idea
-       involvit, est adÝ¦quata et perfecta.: [1024]1
-     * Concurrit Deus cum naturalibus ad modum causÝ¦ naturalis, cum causis
-       liberis per modum causÝ¦ liberÝ¦.: [1025]1
+     * Cognitio æternæ et infinitæ essentiæ Dei, quam unaquæque idea
+	   involvit, est adæquata et perfecta.: [1024]1
+     * Concurrit Deus cum naturalibus ad modum causæ naturalis, cum causis
+	   liberis per modum causæ liberæ.: [1025]1
      * Concursus: [1026]1 [1027]2 [1028]3
      * Conficitur," he says, "inde veram philosophiam esse veram
        religionem conversimque veram religionem esse veram philosophiam.:
@@ -29357,81 +29356,80 @@ Index of Latin Words and Phrases
        conversimque veram religionem esse veram philosophiam.: [1030]1
      * Congregatio sanctorum et vere credentium.: [1031]1
      * Congregatio sanctorum, qui habent inter se societatem ejusdem
-       evangelii seu doctrinÝ¦, et ejusdem Spiritus Sancti, qui corda eorum
-       renovat, sanctificat et gubernat: [1032]1
+	   evangelii seu doctrinæ, et ejusdem Spiritus Sancti, qui corda eorum
+	   renovat, sanctificat et gubernat: [1032]1
      * Congregatio sanctorum.: [1033]1
      * Consentientes tenet, non invitos cogit.: [1034]1
      * Conservatio continuata creatio Dei activa est. Si enim creatio et
-       conservatio duÝ¦ actiones distinctÝ¦ forent, creatio primo cessaret,
-       ac tum conservatio vel eodem, quo creatio cessavit, vel sequenti
-       momento inciperet.: [1035]1
-     * Conservatio est quÝ¦dam continuatio. Quemadmodum creatio est prima
-       productio rei ex nihilo, ita est conservatio rei continuatio, ne in
-       nihilum recidat. Deus mundum sustinet.: [1036]1
+	   conservatio duæ actiones distinctæ forent, creatio primo cessaret,
+	   ac tum conservatio vel eodem, quo creatio cessavit, vel sequenti
+	   momento inciperet.:  [1035]1
+     * Conservatio est quædam continuatio. Quemadmodum creatio est prima
+	   productio rei ex nihilo, ita est conservatio rei continuatio, ne in
+	   nihilum recidat. Deus mundum sustinet.: [1036]1
      * Conservationi annihilatio opponitur. Cessante actione conservante
        res in nihilum collabitur.: [1037]1
      * Constat causas secundas non rite causas vocari. . . . . Essentiam,
        virtutem, et operationem habent non suam sed numinis. Instrumenta
        igitur sunt.: [1038]1
-     * Corpus ac societas fidelium, quos Deus ad vitam Ý¦ternam
-       prÝ¦destinavit.: [1039]1
+     * Corpus ac societas fidelium, quos Deus ad vitam æternam
+	   prædestinavit.: [1039]1
      * Credimus et confitemur unicam Ecclesiam catholicam seu universalem,
-       quÝ¦ est sancta congregatio seu coetus omnium fidelium
-       Christianorum, qui totam suam salutem ab uno Jesu Christo
-       exspectant, abluti ipsius sanguine et per Spiritum ejus
-       sanctificati atque obsignati. HÝ¦c Ecclesia sancta nullo est aut
-       certo loco sita et circumscripta, aut ullis certis personis
-       astricta aut alligata: sed per omnem orbem terrarum sparsa atque
-       diffusa est.: [1040]1
+	   quæ est sancta congregatio seu cœtus omnium fidelium Christianorum,
+	   qui totam suam salutem ab uno Jesu Christo exspectant, abluti ipsius
+	   sanguine et per Spiritum ejus sanctificati atque obsignati. Hæc
+	   Ecclesia sancta nullo est aut certo loco sita et circumscripta, aut
+	   ullis certis personis astricta aut alligata: sed per omnem orbem
+	   terrarum sparsa atque diffusa est.:  [1040]1
      * Credimus, confitemur et docemus, unicam regulam et normam secundum
-       quam omnia dogmata omnesque doctores Ý¦stimari et judicari oporteat,
-       nullam omnino aliam esse, quam prophetica et apostolica scripta cum
-       V. tum N. Testamenti.: [1041]1
+	   quam omnia dogmata omnesque doctores æstimari et judicari oporteat,
+	   nullam omnino aliam esse, quam prophetica et apostolica scripta cum
+	   V. tum N. Testamenti.: [1041]1
      * Cum actus qua talis semper bonus sit quoad entitatem suam, Deus ad
        illum concurrit effective, et physice. . . . . (quoad malitiam)
        Deus nec causa physica potest ejus dici, quia nec illam inspirat
        aut infundit, nec facit; nec ethica, qui nec imperat, aut approbat
        et suadet, sed severissime prohibet et punit.: [1042]1
      * Cum igitur dicitur, Deus est bonus; non est sensus, Deus est causa
-       bonitatis; vel Deus non est malus. Sed est sensus: Id, quod
-       bonitatem dicimus in creaturis, prÝ¦existit in Deo; et hoc quidem
-       secundum modum altiorem. Unde ex hoc non sequitur, quod Deo
-       competat esse bonum, in quantum causat bonitatem; sed potius e
-       converso, quia est bonus, bonitatem rebus diffundit.: [1043]1
+	   bonitatis; vel Deus non est malus. Sed est sensus: Id, quod
+	   bonitatem dicimus in creaturis, præexistit in Deo; et hoc quidem
+	   secundum modum altiorem. Unde ex hoc non sequitur, quod Deo competat
+	   esse bonum, in quantum causat bonitatem; sed potius e converso, quia
+	   est bonus, bonitatem rebus diffundit.: [1043]1
      * Cum providentia non concurrat cum voluntate humana, vel per :
        [1044]1
-     * Demones possunt facere miracula: quÝ¦ scilicet homines mirantur, in
-       quantum eorum facultatem et cognitionem excedunt.: [1045]1
+     * Demones possunt facere miracula: quæ scilicet homines mirantur, in
+	   quantum eorum facultatem et cognitionem excedunt.: [1045]1
      * Deum esse ens summe perfectum concedunt omnes. Entis autem summe
-       perfecti Idea est ut sit substantia una, simplex, indivisibilis,
-       viva et vivifica, ubique semper necessario existens, summe
-       intelligens omnia, libere volens bona, voluntate efficiens
-       possibilia, effectibus nobilioribus similitudinem propriam quantum
-       fieri potest, communicans, omnia in se continens, tanquam eorum
-       principium et locus, omnia per prÝ¦sentiam substantialem cernens et
-       regens, et cum rebus omnibus, secundum leges accuratas ut naturÝ¦
-       totius fundamentum et causa constanter coöperans, nisi ubi aliter
-       agere bonum est.: [1046]1
+	   perfecti Idea est ut sit substantia una, simplex, indivisibilis,
+	   viva et vivifica, ubique semper necessario existens, summe
+	   intelligens omnia, libere volens bona, voluntate efficiens
+	   possibilia, effectibus nobili oribus similitudinem propriam
+	   quantum fieri potest, communicans, omnia in se continens, tanquam
+	   eorum principium et locus, omnia per præsentiam substantialem
+	   cernens et regens, et cum rebus omnibus, secundum leges accuratas ut
+	   naturæ totius fundamentum et causa constanter coöperans, nisi ubi
+	   aliter agere bonum est.: [1046]1
      * Deum non solum inclinare voluntates malas ad unum potius, quam ad
        aliud permittendo, ut ferantur in unum, et non permittendo, ut
        ferantur in aliud, ut Hugo recte docuit, sed etiam positive
        inclinando in unum et avertendo ab alio.: [1047]1
      * Deum nullo modo fato subjicio, sed omnia inevitabili necessitate ex
        Dei natura sequi concipio.: [1048]1
-     * Deus "est in omnibus per potentiam, in quantum omnia ejus potestati
-       subduntur; est per prÝ¦sentiam in omnibus, in quantum omnia nuda
-       sunt et aperta oculis ejus. Est in omnibus per essentiam in quantum
-       adest omnibus ut causa essendi sicut dictum est.": [1049]1
-     * Deus "immediate influit in actionem et effectum creaturÝ¦, ita ut
-       idem effectus non a solo Deo, nec a sola creatura, nec partim a
-       Deo, partim a creatura, sed una eademque efficientia totali simul a
-       Deo et creatura producatur, a Deo videlicet ut causa universali et
-       prima, a creatura ut particulari et secunda.": [1050]1
-     * Deus "non voluit tres angulos trianguli Ý¦quales esse duobus rectis,
-       quia cognovit aliter fieri non posse. Sed contra . . . . quia
-       voluit tres angulos trianguli necessario Ý¦quales esse duobus
-       rectis, idcirco jam hoc verum est, et fieri aliter non potest,
-       atque ita de reliquis.": [1051]1
+     * Deus “est in omnibus per potentiam, in quantum omnia ejus potestati
+	   subduntur; est per præsentiam in omnibus, in quantum omnia nuda sunt
+	   et aperta oculis ejus. Est in omnibus per essentiam in quantum adest
+	   omnibus ut causa essendi sicut dictum est.”: [1049]1
+     * Deus “immediate influit in actionem et effectum creaturæ, ita ut
+	   idem effectus non a solo Deo, nec a sola creatura, nec partim a Deo,
+	   partim a creatura, sed una eademque efficientia totali simul a Deo
+	   et creatura producatur, a Deo videlicet ut causa universali et
+	   prima, a creatura ut particulari et secunda.”:: [1050]1
+     * Deus “non voluit tres angulos trianguli æquales esse duobus rectis,
+	   quia cognovit aliter fieri non posse. Sed contra . . . . quia voluit
+	   tres angulos trianguli necessario æquales esse duobus rectis,
+	   idcirco jam hoc verum est, et fieri aliter non potest, atque ita de
+	   reliquis.”: [1051]1
      * Deus est essentia omnium creaturarum et esse omnium: [1052]1
      * Deus est essentia spiritualis infinita: [1053]1
      * Deus est ipsum esse subsistens, omnibus modis indeterminatum.:
@@ -29442,15 +29440,15 @@ Index of Latin Words and Phrases
      * Deus est, Natura necessaria, a mundo diversa, summas complexa
        perfectiones et ipsius mundi causa: [1056]1
      * Deus ex machina.: [1057]1
-     * Deus non potest facere aliquid prÝ¦ter ea quÝ¦ facit: [1058]1
+     * Deus non potest facere aliquid præter ea quæ facit:  [1058]1
      * Deus non solum permittit impios agere multa mala, nec solum deserit
-       pios ut cogantur pati quÝ¦ ab impiis inferuntur; sed etiam prÝ¦sidet
-       ipsis voluntatibus malis, easque regit et gubernat, torquet ac
-       flectit in eis invisibiliter operando, ut licet vitio proprio malÝ¦
-       sint, tamen a divina providentia ad unum potius malum, quam ad
-       aliud, non positive sed permissive ordinentur.: [1059]1
-     * Deus omnipotens, quia potest quÝ¦ vult, quÝ¦que ejus veritati,
-       justitiÝ¦ conveniunt.: [1060]1
+	   pios ut cogantur pati quæ ab impiis inferuntur; sed etiam præsidet
+	   ipsis voluntatibus malis, easque regit et gubernat, torquet ac
+	   flectit in eis invisibiliter operando, ut licet vitio proprio malæ
+	   sint, tamen a divina providentia ad unum potius malum, quam ad
+	   aliud, non positive sed per missive ordinentur.:  [1059]1
+     * Deus omnipotens, quia potest quæ vult, quæque ejus veritati,
+	   justitiæ conveniunt.: [1060]1
      * Deus per intellectum suum causat res, cum suum esse sit suum
        intelligere.: [1061]1
      * Deus per intellectum suum causat res, cum suum esse sit suum
@@ -29458,54 +29456,54 @@ Index of Latin Words and Phrases
        [1062]1
      * Dicente seu jubente Deo: [1063]1
      * Dicunt nonnulli, ideo Deum dici justum, sanctum, misericordem,
-       veracem, etc., non quod revera sit talis, sed quod duntaxat
-       sanctitatis, justitiÝ¦, misericordiÝ¦, veritatis, etc., causa sit et
-       auctor in aliis. Sed si Deus non est vere misericors, neque vere
-       perfectus, vere sanctus, etc., sed causa tantum misericordiÝ¦ et
-       sanctitatis in aliis, ita etiam et nos pariter juberemur esse non
-       vere misericordes, non vere perfecti, etc., sed sanctitatis saltem
-       et misericordiÝ¦ in aliis auctores.: [1064]1
+	   veracem, etc., non quod revera sit talis, sed quod duntaxat
+	   sanctitatis, justitiæ, misericordiæ, veritatis, etc., causa sit
+	   et auctor in aliis. Sed si Deus non est vere misericors, neque
+	   vere perfectus, vere sanctus, etc., sed causa tantum misericordiæ
+	   et sanctitatis in aliis, ita etiam et nos pariter juberemur esse non
+	   vere misericordes, non vere perfecti, etc., sed sanctitatis saltem
+	   et misericordiæ in aliis auctores.: [1064]1
      * Distingue inter revelationem et inspirationem. Revelatio vi vocis
-       est manifestatio rerum ignotarum et occultarum, et potest fieri
-       multis et diversis modis. . . . . Inspiratio . . . . est interna
-       conceptum suggestio, seu infusio, sive res conceptÝ¦ jam ante
-       scriptori fuerint cognitÝ¦, sive occultÝ¦. Illa potuit tempore
-       antecedere scriptionem, hÝ¦c cum scriptione semper fuit conjuncta et
-       in ipsam scriptionem influebat.: [1065]1
+	   est manifestatio rerum ig notarum et occultarum, et potest fieri
+	   multis et diversis modis. . . . . Inspiratio . . . . est interna
+       conceptum suggestio, seu infusio, sive res conceptæ jam ante
+	   scriptori fuerint cognitæ, sive occultæ. Illa potuit tempore
+	   antecedere scriptionem, hæc cum scriptione semper fuit conjuncta
+	   et in ipsam scriptionem influebat.: [1065]1
      * Distinguendum inter effectum et defectum, inter actionem et
-       actionis ataxian: [1066]1
-     * DivinÝ¦ dicuntur quÝ¦ acceptÝ¦ sunt ab ipso Christo apostolos docente,
-       et nusquam in divinis literis in veniuntur. . . . . ApostolicÝ¦
-       traditiones proprie dicuntur illÝ¦, quÝ¦ ab apostolis institutÝ¦ sunt,
-       non tamen sine assistentia Spiritus Sancti et nihilominus non
-       extant scriptÝ¦ in eorum epistolis. . . . . EcclesiasticÝ¦
-       traditiones proprie dicuntur consuetudines quÝ¦dam antiquÝ¦ vel a
-       prÝ¦latis vel a populis inchoatÝ¦, quÝ¦ paulatim tacito consensu
-       populorum vim legis obtinuerunt. Et quidem traditiones divinÝ¦
-       eandem vim habent, quam divinae prÝ¦cepta sive divina doctrina
-       scripta in Evangeliis. Et similiter apostolicÝ¦ traditiones non
-       scriptÝ¦ eandem vim habent, quam apostolica, traditiones scriptÝ¦. .
-       . . . EcclesiasticÝ¦ autem traditiones eandem vim habent, quam
-       decreta et constitutiones ecclesiasticÝ¦, scriptÝ¦.: [1067]1
+       actionis ataxian (ἀταξίαν): [1066]1
+     * Divinæ dicuntur quæ acceptæ sunt ab ipso Christo apostolos docente,
+	   et nusquam in divinis literis in veniuntur. . . . . Apostolicæ
+	   traditiones proprie dicuntur illæ, quæ ab apostolis in stitutæ sunt,
+	   non tamen sine assistentia Spiritus Sancti et nihilominus non extant
+	   scriptæ in eorum epistolis. . . . . Ecclesiasticæ traditiones
+	   proprie dicuntur consuetudines quædam antiquæ vel a prælatis vel a
+	   populis inchoatæ, quæ paulatim tacito consensu populorum vim legis
+	   obtinuerunt. Et quidem traditiones divinæ eandem vim habent, quam
+	   divinae præcepta sive divina doctrina scripta in Evangeliis. Et
+	   similiter apostolicæ traditiones non scriptæ eandem vim habent,
+	   quam apostolica, traditiones scriptæ. . . . . Ecclesiasticæ
+	   autem traditiones eandem vim habent, quam decreta et
+	   constitutiones ecclesiasticæ, scriptæ.:[1067]1
      * Dominus: [1068]1 [1069]2
      * Dominus possidet me: [1070]1
-     * Duo sunt causarum genera, aliÝ¦ definitÝ¦ et generales, quÝ¦ eodem
-       modo semper agunt, ut ignis qui urit, sol qui lucet; aliÝ¦
-       indefinitÝ¦ et liberÝ¦, quÝ¦ possunt agere vel non agere, hoc vel illo
-       modo agere: ita Deus naturam earum conservat, et cum illis juxta
-       eam in agendo concurrit; cum definitis, ut ipse eas determinet sine
-       determinatione propria; cum indefinitis vero et liberis, ut ipsÝ¦
-       quoque se determinent proprio rationis judicio, et libera
-       voluntatis dispositione, quam Deus non aufert homini, quia sic opus
-       suum destrueret, sed relinquit et confirmat.: [1071]1
-     * Ea res libera dicetur, quÝ¦ ex sola suÝ¦ naturÝ¦ necessitate existit
+     * Duo sunt causarum genera, aliæ definitæ et generales, quæ eodem
+	   modo semper agunt, ut ignis qui urit, sol qui lucet; aliæ
+	   indefinitæ et liberæ, quæ possunt agere vel non agere, hoc vel illo
+	   modo agere: ita Deus naturam earum conservat, et cum illis juxta
+	   eam in agendo concurrit; cum definitis, ut ipse eas determinet sine
+	   determinatione propria; cum indefinitis vero et liberis, ut ipsæ
+	   quoque se determinent proprio rationis judicio, et libera voluntatis
+       dispositione, quam Deus non aufert homini, quia sic opus suum
+	   destrueret, sed relinquit et confirmat.:  [1071]1
+     * Ea res libera dicetur, quae ex sola suae naturae necessitate existit
        et a se sola ad agendum determinatur. Necessaria autem, vel potius
-       coacta quÝ¦ ab alio determinatur ad existendum et operandum certa ac
+       coacta quae ab alio determinatur ad existendum et operandum certa ac
        determinata ratione.: [1072]1
      * Ecclesia manet et manebit.: [1073]1
      * Ecclesia non parietibus consistit, sed in dogmatum veritate,
        Ecclesia ibi est ubi fides vera est. Ceterum ante annos quindecim
-       aut viginti parietes omnes hic ecclesiarum hÝ¦retici (Ariani)
+       aut viginti parietes omnes hic ecclesiarum haeretici (Ariani)
        possidebant, Ecclesia autem vera illic erat, ubi vera fides erat.:
        [1074]1
      * Ego cogito, ergo sum, sive existo,' existentiam ex cogitatione per
@@ -29523,11 +29521,11 @@ Index of Latin Words and Phrases
        repletive citra sui multiplicationem, extensionem, divisionem,
        inclusionem, aut commixtionem more modoque divino
        incomprehensibili.: [1081]1
-     * Est definitio, earum rerum, quÝ¦ sunt ejus rei propriÝ¦, quam
-       definire volumus, brevis et circumscripta quÝ¦dam explicatio.:
+     * Est definitio, earum rerum, quae sunt ejus rei propriae, quam
+       definire volumus, brevis et circumscripta quaedam explicatio.:
        [1082]1
-     * Est quÝ¦dam imago Trinitatis, ipsa mens, et notitia ejus, quod est
-       proles ejus ac de seipsa verbum ejus, et amor tertius, et hÝ¦c tria
+     * Est quaedam imago Trinitatis, ipsa mens, et notitia ejus, quod est
+       proles ejus ac de seipsa verbum ejus, et amor tertius, et haec tria
        unum atque una substantia.: [1083]1
      * Et certe id, quo majus cogitari nequit, non potest esse in
        intellectu solo. Si enim vel in solo intellectu est, potest
@@ -29538,25 +29536,25 @@ Index of Latin Words and Phrases
        patrem a filio, ut eum qui miserit ab eo qui missus est, ut
        volentem ab ipso qui obediat? Et ipse nobis erit testis: Pater
        major me est. : [1085]1
-     * Eternitas est interminabilis vitÝ¦ simul et perfecta possessio.:
+     * Eternitas est interminabilis vitae simul et perfecta possessio.:
        [1086]1
      * Etiamsi nullus alius miraculorum esset usus, nisi ut absolutam
-       illam divinÝ¦ voluntatis libertatem demonstrent, humanamque
-       arrogantiam, immodicÝ¦ legis naturalis admirationi junctam,
+       illam divinae voluntatis libertatem demonstrent, humanamque
+       arrogantiam, immodicae legis naturalis admirationi junctam,
        compescant, miracula haud temere essent edita.: [1087]1
      * Ex his -- sequitur, nomen miraculi non nisi respective ad hominum
        opiniones posse intelligi, et nihil aliud significare quam opus,
-       cujus causam naturalem exemplo alterius rei solitÝ¦ explicare non
+       cujus causam naturalem exemplo alterius rei solitae explicare non
        possumus.: [1088]1
      * Ex nihilo nihil, in nihilum nil posse reverti: [1089]1
      * Ex patrum -- verbis et factis non sunt exstrueudi articuli fidei --
        Regulam autem aliam habemus, ut videlicet verbum Dei condat
-       articulos fidei et prÝ¦terea nemo, ne angelus quidem.: [1090]1
+       articulos fidei et praeterea nemo, ne angelus quidem.: [1090]1
      * Ex quibus omnibus constat, unum eundemque esse justum et bonum
        legis et evangeliorum Deum, et benefacere cum justitia et cum
        bonitate punire.: [1091]1
-     * Fecisti coelum et terram; non de te: nam esset Ý¦quale unigenito
-       tuo, ac per hoc et tibi, . . . . et aliud prÝ¦ter te non erat, unde
+     * Fecisti coelum et terram; non de te: nam esset aequale unigenito
+       tuo, ac per hoc et tibi, . . . . et aliud praeter te non erat, unde
        faceres ea; . . . . et ideo de nihilo fecisti coelum et terram.:
        [1092]1
      * Filius dicitur imago et logos: [1093]1
@@ -29565,31 +29563,31 @@ Index of Latin Words and Phrases
        dicitur, sed omnino ut sit, ipsam substantiam nascendo habet.:
        [1094]1
      * Fuisse et futurum esse non est in ea [scil. vita divina: [1095]1
-     * HÝ¦c -- tria, memoria, intelligentia, voluntas, quoniam non sunt
-       tres vitÝ¦, sed una vita; nec tres mentes, sed una mens:
-       consequenter utique nec tres substantiÝ¦ sunt, sed una substantia.:
+     * Haec -- tria, memoria, intelligentia, voluntas, quoniam non sunt
+       tres vitae, sed una vita; nec tres mentes, sed una mens:
+       consequenter utique nec tres substantiae sunt, sed una substantia.:
        [1096]1
-     * HÝ¦c cernitur (a: [1097]1
-     * Habemus ideam Dei, hujusque ideÝ¦ realitas objectiva nec formaliter
-       nec eminenter in nobis continetur, nec in ullo alio prÝ¦terquam in
-       ipso Deo potest contineri; ergo hÝ¦c idea Dei, quÝ¦ in nobis est,
+     * Haec cernitur (a: [1097]1
+     * Habemus ideam Dei, hujusque ideae realitas objectiva nec formaliter
+       nec eminenter in nobis continetur, nec in ullo alio praeterquam in
+       ipso Deo potest contineri; ergo haec idea Dei, quae in nobis est,
        requirit Deum pro causa; Deusque proinde existit.: [1098]1
      * Habet mens rationalis, quum se cogitando intelligit, secum imaginem
        suam ex se natam, id est cogitationem sui ad suam similitudinem,
        quasi sua impressione formatam, quamvis ipsa se a sua imagine, non
-       nisi ratione sola, separare possit, quÝ¦ imago ejus verbum ejus est.
+       nisi ratione sola, separare possit, quae imago ejus verbum ejus est.
        Hoc itaque modo, quis neget, summam sapientem, quum se dicendo
        intelligit, gignere consubstantialem sibi similitudinem suam, id
        est Verbum suum.: [1099]1
      * Hic Spiritus Sanctus ab ipso mundi initio aquis legitur superfusus;
        non materialibus aquis quasi vehiculo egens, quas potius ipse
        ferebat et complectentibus firmamentum dabat con gruum motum et
-       limitem prÝ¦finitum. . . . [Hic est] spiritus vitÝ¦ cujus vivificus
+       limitem praefinitum. . . . [Hic est] spiritus vitae cujus vivificus
        calor animat omnia et fovet et provehit et foecundat. Hic Spiritus
        Sanctus omnium viventium anima, ita largitate sua se omnibus
        abundanter infundit, ut habeant omnia rationabilia et
        irrationabilia secundum genus suum ex eo quod sunt et quod in suo
-       ordine suÝ¦ naturÝ¦ competentia agunt. Non quod ipse sit
+       ordine suae naturae competentia agunt. Non quod ipse sit
        substantialis anima singulis, sed in se singulariter manens, de
        plenitudine sua distributor magnificus proprias efficientias
        singulis dividit et largitur; et quasi sol omnia calefaciens,
@@ -29601,26 +29599,26 @@ Index of Latin Words and Phrases
      * Hoc quidem recte judicantibus semper constabit, insculptum mentibus
        humanis esse divinitatis sensum, qui deleri nunquam potest.:
        [1102]1
-     * Homo est notio quÝ¦dam intellectualis in mente divina Ý¦ternaliter
+     * Homo est notio quaedam intellectualis in mente divina aeternaliter
        facta. Verissima et probatissima definitio hominis est ista: et non
-       solum hominis, verum etiam omnium quÝ¦ in divina sapientia facta
+       solum hominis, verum etiam omnium quae in divina sapientia facta
        sunt.: [1103]1
-     * Id ipsum etiam nomine PrÝ¦determinationis, seu PrÝ¦motionis solet
+     * Id ipsum etiam nomine Praedeterminationis, seu Praemotionis solet
        designari, qua Deus ciet et applicat causam secundam ad agendum,
-       adeoque antecedenter ad omnem operationem creaturÝ¦, seu prius
+       adeoque antecedenter ad omnem operationem creaturae, seu prius
        natura et ratione quam creatura operetur, eam realiter et
        efficaciter movet ad agendum in singulis actionibus, adeo ut sine
-       hac prÝ¦motione causa secunda operari non possit, ea vero posita
+       hac praemotione causa secunda operari non possit, ea vero posita
        impossibile sit in sensu composito causam secundam non illud idem
-       agere ad quod a prima causa prÝ¦movetur.: [1104]1
-     * In Ý¦ternitate est unicum instans semper prÝ¦sens et persistens:
+       agere ad quod a prima causa praemovetur.: [1104]1
+     * In aeternitate est unicum instans semper praesens et persistens:
        [1105]1
      * In Deo idem est esse et intelligere et velle.: [1106]1
      * In mente nulla est absoluta sive libera voluntas. Mens certus et
        determinatus modus cogitandi est adeoque suarum actionum non potest
        esse causa libera.: [1107]1
      * In scriptura sancta habet unversalis Christi Ecclesia plenissime
-       exposita, quÝ¦cunque pertinent cum ad salvificam fidem, tum ad vitam
+       exposita, quaecunque pertinent cum ad salvificam fidem, tum ad vitam
        Deo placentem.C. ii. p. 479, ibid: [1108]1
      * Infallibilis est regula et catholica. Quacunque credit, tenet, et
        servat Romana Ecclesia, et in Scripturis non habentur, illa ab
@@ -29630,16 +29628,16 @@ Index of Latin Words and Phrases
      * Ingemuit totus orbis terrarum, et Arianum se esse miratus est.:
        [1110]1
      * Intellectus enim omnium in Deo essentia omnium est. Siquidem id
-       ipsum est Deo cognoscere, priusquam fiunt, quÝ¦ facit, et facere,
-       quÝ¦ cognoscit. Cognoscere ergo et facere Dei unum est.: [1111]1
-     * Intellectus enim rerum veraciter ipsÝ¦ res sunt, dicente Sancto
-       Dionysio, Cognitio eorum, quÝ¦ sunt, ea, quÝ¦ sunt, est.': [1112]1
+       ipsum est Deo cognoscere, priusquam fiunt, quae facit, et facere,
+       quae cognoscit. Cognoscere ergo et facere Dei unum est.: [1111]1
+     * Intellectus enim rerum veraciter ipsae res sunt, dicente Sancto
+       Dionysio, Cognitio eorum, quae sunt, ea, quae sunt, est.': [1112]1
      * Intellectus et voluntas, qui Dei essentiam constituerent, a nostro
        intellectu et voluntate toto coelo differe deberent, nec in ulla
-       re, prÝ¦terquam in nomine, convenire possent; non aliter scilicet,
+       re, praeterquam in nomine, convenire possent; non aliter scilicet,
        quam inter se conveniunt canis, signum coeleste, et canis, animal
        latrans.: [1113]1
-     * Ipse Deus enim fons nostrÝ¦ beatudinis, ipse omnis appetitionis est
+     * Ipse Deus enim fons nostrae beatudinis, ipse omnis appetitionis est
        finis. Hunc eligentes vel potius religentes amiseramus enim
        negligentes: hunc ergo religentes, unde et religio dicta
        perhibetur, ad eum dilectione tendimus ut perveniendo quiescamus.:
@@ -29647,11 +29645,11 @@ Index of Latin Words and Phrases
      * Justitia erga Deos religio, erga parentas pietas, creditis in rebus
        fides, in moderatione animadvertendi lenitas, amicitia in
        benevolentia nominatur.: [1115]1
-     * Leges naturÝ¦ universales," he says, "mera esse decreta Dei, quÝ¦ ex
-       necessitate et perfectione naturÝ¦ divinÝ¦ sequuntur. Si quid igitur
+     * Leges naturae universales," he says, "mera esse decreta Dei, quae ex
+       necessitate et perfectione naturae divinae sequuntur. Si quid igitur
        in natura contingeret, quod ejus universalibus legibus repugnaret,
-       id decreto et intellectui et naturÝ¦ divinÝ¦ necessario etiam
-       repugnaret; aut si quis statueret, Deum aliquid contra leges naturÝ¦
+       id decreto et intellectui et naturae divinae necessario etiam
+       repugnaret; aut si quis statueret, Deum aliquid contra leges naturae
        agere, is simul etiam cogeretur statuere, Deum contra suam naturam
        agere, quo nihil absurdius.: [1116]1
      * Licet Filius sit a Patre, non minus tamen autotheos: [1117]1
@@ -29668,10 +29666,10 @@ Index of Latin Words and Phrases
        proprietates in personis ordinem secum ferunt, ut in Patre sit
        principium et origo: quoties mentio sit Patris et Filii simul, vel
        Spiritus, nomen Dei peculiariter Patri tribuitur. Hoc modo
-       retinetur unitas essentiÝ¦ et habetur ratio ordinis, quÝ¦ tamen ex
+       retinetur unitas essentiae et habetur ratio ordinis, quae tamen ex
        Filii et Spiritus deitate nihil minuit: et certe quum ante visum
        fuerit Apostolos asserere Filium Dei illum esse, quem Moses et
-       ProphetÝ¦ testati sunt esse Jehovam, semper ad unitatem essentiÝ¦,
+       Prophetae testati sunt esse Jehovam, semper ad unitatem essentiae,
        venire necesse est.: [1118]1
      * Malorum opera quoque decernit et regit. Tamen non est autor mali,
        quia mali sic aguntur a Deo, ut sponte, libere et sine coactione et
@@ -29681,15 +29679,15 @@ Index of Latin Words and Phrases
        ipsum fit.: [1120]1
      * Mens igitur quando cogitatione se conspicit, intelligit se et
        recognoscit: gignit ergo hunc intellectum et cognitionem
-       suam. . . . . HÝ¦c autem duo, gignens et genitum, dilectione tertia
-       copulantur, quÝ¦ nihil est aliud quam voluntas fruendum aliquid
+       suam. . . . . Haec autem duo, gignens et genitum, dilectione tertia
+       copulantur, quae nihil est aliud quam voluntas fruendum aliquid
        appetens vel tenens.: [1121]1
      * Minime Deus cogitandus est tanquam pendens ex lege ethica vel eidem
-       subjectus tanquam potestati cuidam alienÝ¦, sed Deus sanctus ipsa ea
+       subjectus tanquam potestati cuidam alienae, sed Deus sanctus ipsa ea
        lex est, natura quidam hypostatica indutus.: [1122]1
-     * Miracula non debent prÝ¦ferri doctrinÝ¦. . . . neque enim contra
+     * Miracula non debent praeferri doctrinae. . . . neque enim contra
        doctrinam a Deo revelatam ulla miracula valere debent.: [1123]1
-     * Miracula, si non habeant doctrinÝ¦ veritatem conjunctam nihil
+     * Miracula, si non habeant doctrinae veritatem conjunctam nihil
        probant.: [1124]1
      * Modus Deum colendi: [1125]1
      * Moveri voluntarie est moveri ex se, id est, a principio intrinseco.
@@ -29700,7 +29698,7 @@ Index of Latin Words and Phrases
        dat propriam inclinationem, non dicitur cogi. Sic igitur Deus
        movendo voluntatem, non cogit ipsam: quia dat ei ejus propriam
        inclinationem.: [1126]1
-     * Mysticismus est persuasio de singulari animÝ¦ facultate ad
+     * Mysticismus est persuasio de singulari animae facultate ad
        immediatum ipsoque sensu percipiendum cum numine aut naturis
        coelestibus commercium jam in hac vita perveniendi, quo mens
        immediate cognitione rerum divinarum ac beatitate perfruatur.:
@@ -29712,63 +29710,63 @@ Index of Latin Words and Phrases
      * Nam si perpaucos exceperis, . . . . omnes (pastores) tempori
        obsecuti sunt: hoc tantum inter eos discriminis fuit, quod alii
        citius, alii seriùs in eam fraudem inciderunt, atque, alii
-       impietatis duces antistitesque se prÝ¦buerunt.: [1129]1
+       impietatis duces antistitesque se praebuerunt.: [1129]1
      * Natura, non artificiosa solum, sed plane artifex ab eodem Zenone
        dicitur; consultrix, et provida utilitatum opportunitatumque
        omnium. Censet [Zeno] enim artis maxime proprium est creare et
        gignere, quodque in operibus nostrarum artium manus officiet id
        multo artificiosius naturam officere.: [1130]1
-     * Nec tu tempore tempora prÝ¦cedis, alioquin non omnia tempora
-       prÝ¦cederes sed prÝ¦cedis omnia prÝ¦terita celsitudine semper
-       prÝ¦sentis Ý¦ternitatis; et superas omnia futura, quia illa futura
-       sunt et cum venerint prÝ¦terita erunt; tu autem idem ipse es, et
+     * Nec tu tempore tempora praecedis, alioquin non omnia tempora
+       praecederes sed praecedis omnia praeterita celsitudine semper
+       praesentis aeternitatis; et superas omnia futura, quia illa futura
+       sunt et cum venerint praeterita erunt; tu autem idem ipse es, et
        anni tui non deficiunt.: [1131]1
-     * Neque enim quÝ¦ro intelligere, ut credam, sed credo, ut intelligam.
+     * Neque enim quaero intelligere, ut credam, sed credo, ut intelligam.
        Nam et hoc credo, quia, nisi credidero, non intelligam.: [1132]1
      * Nil credi posse, quod a ratione capi et intelligi nequeat.: [1133]1
      * Non adorabis ea neque coles.: [1134]1
      * Non aliud Deo esse et velle et facere: [1135]1
      * Non aliud est Deo esse et facere, sed ei esse id ipsum est et
-       facere. CoÝ¦ternum igitur est Deo suum facere et coessentiale.:
+       facere. Coaeternum igitur est Deo suum facere et coessentiale.:
        [1136]1
      * Non aliud est ei videre, aliud facere; sed visio illius voluntas
        ejus est, et voluntas operatio.: [1137]1
-     * Non est re ipsa alia actio influxus Dei, alia operatio creaturÝ¦,
+     * Non est re ipsa alia actio influxus Dei, alia operatio creaturae,
        sed una et indivsibilis actio, utrumque respiciens et ab utroque
        pendens, a Deo ut causa universali, a creatura ut particulari.:
        [1138]1
      * Non ignorabat Deus multas in Ecclesia exorituras difficultates
-       circa fidem, debuit igitur judicem aliquem EcclesiÝ¦ providere. At
+       circa fidem, debuit igitur judicem aliquem Ecclesiae providere. At
        iste judex non potest esse Scriptura, neque Spiritus revelans
        privatus, neque princeps secularis, igitur princeps ecclesiasticus
        vel solus vel certe cum consilio et consensu coepiscoporum.:
        [1139]1
      * Non invenies in Deo aliquid mutabilitatis; non aliquid, quod aliter
        nunc sit, aliter paulo ante fuerit. Nam ubi invenis aliter et
-       aliter, facta est ibi quÝ¦dam mors: mors enim est, non esse quod
+       aliter, facta est ibi quaedam mors: mors enim est, non esse quod
        fuit.: [1140]1
      * Nos asserimus, in Scripturis non contineri expressè totam doctrinam
        necessariam, sive de fide sive de moribus; et proinde praeter
        verbum Dei scriptum requiri etiam verbum Dei non-scriptum, i.e., :
        [1141]1
-     * Nos ista, quÝ¦ fecisti videmus quia sunt: tu autem quia vides ea,
+     * Nos ista, quae fecisti videmus quia sunt: tu autem quia vides ea,
        sunt.: [1142]1
-     * Nos ista, quÝ¦ fecisti videmus, quia sunt: tu autem quia vides ea,
+     * Nos ista, quae fecisti videmus, quia sunt: tu autem quia vides ea,
        sunt.: [1143]1
      * Nostra sententia est Ecclesiam absolute non posse errare nec in
-       rebus absolute necessariis nec in aliis, quÝ¦ credenda vel facienda
+       rebus absolute necessariis nec in aliis, quae credenda vel facienda
        nobis proponit, sive habeantur expresse in Scripturis, sive non.:
        [1144]1
-     * Notio justititÝ¦ resolvitur in notionem sapientiÝ¦ et bonitatis.:
+     * Notio justititae resolvitur in notionem sapientiae et bonitatis.:
        [1145]1
      * Nulla insufficientia est Deo attribuenda. Si igitur Deus operatur
        in omni operante, sufficienter in quolibet operatur. Superfluum
        igitur esset quod agens creatum, aliquid operaretur.: [1146]1
      * Num negabis creatorem et creaturam unum esse?: [1147]1
-     * Omne hoc justitiÝ¦ opus procuratio bonitatis est.: [1148]1
-     * Omnes (mentes)," says Spinoza, "simul Dei Ý¦ternum et infinitum
+     * Omne hoc justitiae opus procuratio bonitatis est.: [1148]1
+     * Omnes (mentes)," says Spinoza, "simul Dei aeternum et infinitum
        intellectum constituunt.: [1149]1
-     * Omnis doctrinÝ¦ ratio, quÝ¦ fidelibus tradenda sit, verbo Dei
+     * Omnis doctrinae ratio, quae fidelibus tradenda sit, verbo Dei
        continetur, quod in scripturam traditionesque distributum est.:
        [1150]1
      * Omnis virtus: [1151]1
@@ -29780,18 +29778,18 @@ Index of Latin Words and Phrases
      * Pater de nullo patre, Filius de Deo Patre. Pater quod est, a nullo
        est: quod autem Pater est, propter Filium est. Filius vero et quod
        Filius est, propter Patrem est, et quod est, a Patre est.: [1155]1
-     * Per Dei directionem intelligo fixum illum et immutabilem naturÝ¦
+     * Per Dei directionem intelligo fixum illum et immutabilem naturae
        ordinem, sive rerum naturalium concatenationem. -- Sive igitur
-       dicamus, omnia secundum leges naturÝ¦ fieri, sive ex Dei decreto et
+       dicamus, omnia secundum leges naturae fieri, sive ex Dei decreto et
        directione ordinari, idem dicimus.: [1156]1
-     * Perpetua essentiÝ¦ divinÝ¦ et omnium ejus perfectionum identitas,
+     * Perpetua essentiae divinae et omnium ejus perfectionum identitas,
        negans omnem omnino motum cum physicum, tum ethicum.: [1157]1
      * Persona bene dicitur generare Personam, quia actiones sunt
        suppositorum; sed non Essentia Essentiam, quia quod gignit et
        gignitur necessario multiplicatur, et sic via sterneretur ad
        Tritheismum. Essentia quidem generando communicatur; sed generatio,
        ut a Persona fit originaliter, ita ad Personam terminatur.: [1158]1
-     * Peto, nate, ut aspicias ad coelum, et terram, et ad omnia, quÝ¦ in
+     * Peto, nate, ut aspicias ad coelum, et terram, et ad omnia, quae in
        eis sunt; et intelligas, quia ex nihilo fecit illa Deus, et hominum
        genus.: [1159]1
      * Philosophia est scientia rerum per causas primas, recto rationis
@@ -29804,46 +29802,46 @@ Index of Latin Words and Phrases
      * Potestas variandi actus suos, non est principium mutabilitatis in
        se, sed tantum in objectis suis; nisi intelligatur de variatione
        internorum suorum actuum, : [1167]1
-     * Professio verÝ¦ fidei, sacramentorum communio, et subjectio ad
+     * Professio verae fidei, sacramentorum communio, et subjectio ad
        legitimum pastorem, Romanum Pontificem. -- Atque hoc interest inter
-       sententiam nostram et alias omnes, quod omnes aliÝ¦ requirunt
+       sententiam nostram et alias omnes, quod omnes aliae requirunt
        internas virtutes ad constituendum aliquem in Ecclesia, et
        propterea Ecclesiam veram invisibilem faciunt; nos autem credimus
        in Ecclesia inveniri omnes virtutes, -- tamen ut aliquis aliquo
-       modo dici possit pars verÝ¦ EcclesiÝ¦, -- non putamus requiri ullam
+       modo dici possit pars verae Ecclesiae, -- non putamus requiri ullam
        internam virtutem, sed tantum externam professionem fidei, et
-       sacramentorum communionem, quÝ¦ sensu ipso percipitur. Ecclesia enim
+       sacramentorum communionem, quae sensu ipso percipitur. Ecclesia enim
        est coetus hominum ita visibilis et palpabilis, ut est coetus
-       Populi Romani, vel regnum GalliÝ¦ aut respublica Venetorum.: [1168]1
+       Populi Romani, vel regnum Galliae aut respublica Venetorum.: [1168]1
      * Providentia bene altera creatio, dicitur. Nam eadem voluntate, qua
        Deus omnia creavit, omnia conservat, et creatio a conservatione in
        eo tantum differt, quod quando voluntatem Dei sequitur rerum
        existentia, dicitur creatio; quando res eadem per eandem voluntatem
        durat, dicitur conservatio.: [1169]1
-     * QuÝ¦ de diabolis Scriptura tradit, eo fere tendunt omnia, ut
-       solliciti simus ad prÝ¦cavendas corum insidias et molitiones: tum
-       iis armis nos instruamus, quÝ¦ ad propulsandos potentissimos hostes
+     * Quae de diabolis Scriptura tradit, eo fere tendunt omnia, ut
+       solliciti simus ad praecavendas corum insidias et molitiones: tum
+       iis armis nos instruamus, quae ad propulsandos potentissimos hostes
        satis firma sint ac valida.: [1170]1
-     * QuÝ¦ nunc ecclesia libere Christum adorat? Si quidem ea, si pia est,
+     * Quae nunc ecclesia libere Christum adorat? Si quidem ea, si pia est,
        periculo subjacet? . . . . Nam si alicubi pii et Christi studiosi
-       (sunt autem ubique tales permulti) illi itidem, ut ProphetÝ¦ et
+       (sunt autem ubique tales permulti) illi itidem, ut Prophetae et
        magnus ille Elias, absconduntur, . . . . et in speluncas et
-       cavernas terrÝ¦ sese abstrudunt, aut in solitudine aberrantes
+       cavernas terrae sese abstrudunt, aut in solitudine aberrantes
        commorantur.: [1171]1
-     * QuÝ¦cunque credit, tenet et servat Romana ecclesia, et in Scripturis
+     * Quaecunque credit, tenet et servat Romana ecclesia, et in Scripturis
        non habentur illa ab Apostolis esse tradita.: [1172]1
      * Qualis homo, talis Deus.: [1173]1
      * Quando Deus ejusmodi malum triste ex peccato necessario se quens
-       creaturÝ¦ accidere sinit, . . . . dicitur peccatorem punire, et hoc
+       creaturae accidere sinit, . . . . dicitur peccatorem punire, et hoc
        sensu ipsi tribuitur justitia vindicativa. In justitia punitiva
        bonitas cum sapientia administratur.: [1174]1
-     * Quemadmodum hÝ¦c una Ecclesia errare non potest in fidei ac morum
+     * Quemadmodum haec una Ecclesia errare non potest in fidei ac morum
        disciplina tradenda, cum a Spiritu Sancto gubernetur; ita ceteras
-       omnes, quÝ¦ sibi ecclesiÝ¦ nomen arrogant, ut quÝ¦ Diaboli spiritu
-       ducantur, in doctrinÝ¦ et morum perniciosissimis erroribus versari
+       omnes, quae sibi ecclesiae nomen arrogant, ut quae Diaboli spiritu
+       ducantur, in doctrinae et morum perniciosissimis erroribus versari
        necesse est.: [1175]1
      * Qui secundum carnem vivit, carnalis sive animalis est, de quo
-       dicitur: animalis homo non percipit ea, quÝ¦ sunt Spiritus Dei. . .
+       dicitur: animalis homo non percipit ea, quae sunt Spiritus Dei. . .
        . . Qui non crediderit, non intelliget, nam qui non crediderit, non
        experietur, et qui expertus non fuerit, non intelliget.: [1176]1
      * Quibus verbis nihil durius apud nostros occurrit.: [1177]1
@@ -29855,7 +29853,7 @@ Index of Latin Words and Phrases
        vel putare, quod bonitas aliquando bene non fecerit, et
        omnipotentia aliquando non egerit potentatum. Hoc nobis objicere
        solent dicentibus mundum hunc ex certo tempore coepisse, et
-       secundum scripturÝ¦ fidem annos quoque Ý¦tatis ipsius
+       secundum scripturae fidem annos quoque aetatis ipsius
        numerantibus. . . . . Nos vero consequenter respondimus observantes
        regulam pietatis, quoniam non tunc primum cum visibilem istum
        mundum fecit Deus, coepit operari, sed sicut post corruptionem
@@ -29865,38 +29863,38 @@ Index of Latin Words and Phrases
      * Quid nostra refert vel plura, vel in alium finem de diabolis
        scire?: [1181]1
      * Quo magis unusquisque -- suum esse conservare conatur et potest, eo
-       magis virtute prÝ¦ditus est; contra quatenus unusquisque -- suum
+       magis virtute praeditus est; contra quatenus unusquisque -- suum
        esse conservare negligit, eatenus est impotens.: [1182]1
      * Quod Deum operari in quolibet operante, aliqui sic intellexerunt,
        quod nulla virtus creata aliquid operaretur in rebus, sed solus
        Deus immediate omnia operaretur: puta quod ignis non calefaceret,
        sed Deus in igne. Et similiter de omnibus aliis.: [1183]1
-     * Quod autem res ex nihilo conditÝ¦ sint, docet hÝ¦c sententia: ipse
+     * Quod autem res ex nihilo conditae sint, docet haec sententia: ipse
        dixit et facta sunt; ipse mandavit, et creata sunt, id est dicente
-       seu jubente Deo, res exortÝ¦ sunt: non igitur ex materia priore
-       exstructÝ¦ sunt, sed Deo dicente, cum res non essent, esse
+       seu jubente Deo, res exortae sunt: non igitur ex materia priore
+       exstructae sunt, sed Deo dicente, cum res non essent, esse
        coeperunt; et cum Joannes in quit: Omnia per ipsum facta esse,
-       refutat Stoicam imaginationem, quÝ¦ fingit materiam non esse
+       refutat Stoicam imaginationem, quae fingit materiam non esse
        factam.: [1184]1
      * Quod semper, quod ubique, quod ab omnibus: [1185]1
      * Quod semper, quod ubique, quod ab omnibus.: [1186]1
      * Quomodo est contra naturam, quod Dei fit voluntate cum voluntas
-       tanti utique conditoris conditÝ¦ rei cujusque natura sit? Portentum
+       tanti utique conditoris conditae rei cujusque natura sit? Portentum
        ergo fit, non contra naturam, sed contra quam est nota natura.:
        [1187]1
-     * Quum hÝ¦c (SS.) sit omnis veritatis summa, complectens quidquid ad
+     * Quum haec (SS.) sit omnis veritatis summa, complectens quidquid ad
        cultum Dei et salutem nostram requiritur, neque hominibus neque
        ipsis etiam angelis fas esse dicimus quicquam ei verbo adjicere vel
        detrahere vel quicquam prorsus in eo immutare.: [1188]1
      * Regula quidem fidei una omnino est, sola immobilis et
        irreformabilis. . . . . Hac lege fidei manente, cetera jam
-       disciplinÝ¦ et conversationis admittunt novitatem correctionis;
+       disciplinae et conversationis admittunt novitatem correctionis;
        operante scilicet et proficiente usque in finem gratia Dei. . . . .
        Propterea Paracletum misit Dominus, ut, quoniam humana mediocritas
        omnia semel capere non poterat, paulatim dirigeretur et ordinaretur
        et ad perfectum perduceretur disciplina ab illo vicario Domini
-       Spiritu Sancto. QuÝ¦ est ergo Paracleti administratio nisi hÝ¦c, quod
-       disciplina dirigitur, quod ScripturÝ¦ revelantur, quod intellectus
+       Spiritu Sancto. Quae est ergo Paracleti administratio nisi haec, quod
+       disciplina dirigitur, quod Scripturae revelantur, quod intellectus
        reformatur, quod ad meliora proficitur? . . . . Justitia primo fuit
        in rudimentis, natura Deum metuens; dehinc per legem et prophetas
        promovit in infantiam; dehinc per evangelium efferbuit in
@@ -29905,7 +29903,7 @@ Index of Latin Words and Phrases
      * Religentem esse oportet, religiosum nefas.: [1191]1
      * Religio: [1192]1
      * Religiosus: [1193]1
-     * Rerum divinarum et humanarum, causarumque quibus hÝ¦ res
+     * Rerum divinarum et humanarum, causarumque quibus hae res
        continentur, scientia.: [1194]1
      * Scientia (Dei) causat res; nostra vero causatur rebus et dependat
        ab eis.: [1195]1
@@ -29925,33 +29923,33 @@ Index of Latin Words and Phrases
        est essentia divina; ergo aut est extra essentiam divinam, aut, si
        non est extra eam, est ipsa essentia illa, et sic omnia sunt Deus
        et divina essentia.: [1200]1
-     * Si literÝ¦ sacrÝ¦ maximeque veraces ita dicunt, in principio fecisse
+     * Si literae sacrae maximeque veraces ita dicunt, in principio fecisse
        Deum coelum et terram, ut nihil antea fecisse intelligatur, quia
        hoc potius in principio fecisse diceretur, si quid fecisset ante
-       coetera cuncta quÝ¦ fecit; procul dubio non est mundus factus in
+       coetera cuncta quae fecit; procul dubio non est mundus factus in
        tempore, sed cum tempore.: [1201]1
      * Si proprie et accurate loqui velimus, Deus nullas habet
-       proprietates, sed mera et simplicissima est essentia quÝ¦ nec realem
+       proprietates, sed mera et simplicissima est essentia quae nec realem
        differentiam nec ullam vel rerum vel modorum admittit
        compositionem. Quia vero simplicissimam Dei essentiam uno adequato
        conceptu adequate concipere non possumus, ideo inadequatis et
        distinctis conceptibus, inadequate essentiam divinam
-       reprÝ¦sentantibus, eam apprehendimus, quos inadequatos conceptus,
-       qui a parte rei essentiÝ¦ divinÝ¦ identificantur, et a nobis per
+       repraesentantibus, eam apprehendimus, quos inadequatos conceptus,
+       qui a parte rei essentiae divinae identificantur, et a nobis per
        modum affectionum apprehenduntur, attributa vocamus.: [1202]1
-     * Sicut in ipso grano invisibiliter erant omnia simul quÝ¦ per tempora
+     * Sicut in ipso grano invisibiliter erant omnia simul quae per tempora
        in arborem surgerent; ita ipse mundus cogitandus est, cum Deus
-       simul omnia creavit, habuisse simul omnia quÝ¦ in illo et cum illo
+       simul omnia creavit, habuisse simul omnia quae in illo et cum illo
        facta sunt quando factus est dies: non solum coelum cum sole et
        luna et sideribus, quorum species manet motu rotabili, et terram et
-       abyssos, quÝ¦ velut inconstantes motus patiuntur, atque inferius
-       adjuncta partem alteram mundo conferunt; sed etiam illa quÝ¦ aqua et
+       abyssos, quae velut inconstantes motus patiuntur, atque inferius
+       adjuncta partem alteram mundo conferunt; sed etiam illa quae aqua et
        terra produxit potentialiter atque causaliter, priusquam per
        temporum moras ita exorirentur, quomodo nobis jam nota sunt in eis
-       operibus, quÝ¦ Deus usque nunc operatur.: [1203]1
+       operibus, quae Deus usque nunc operatur.: [1203]1
      * Societas fidei et Spiritus Sancti in cordibus.: [1204]1
-     * Solus Deus summe simplex est, ut nec actus et potentiÝ¦, nec esse et
-       essentiÝ¦ compositio ipsi competat.: [1205]1
+     * Solus Deus summe simplex est, ut nec actus et potentiae, nec esse et
+       essentiae compositio ipsi competat.: [1205]1
      * Spiritu sancto dictante.: [1206]1
      * Spiritus perfectissimus, conditor, conservator, et gubernator
        mundi.: [1207]1
@@ -29963,54 +29961,54 @@ Index of Latin Words and Phrases
        converti hostiliter aut sibi ipsi contrarium esse posse impotentia
        est, non potentia.: [1210]1
      * Sunt nihil aliud quam instrumuenta, quibus Deus assidue instillat
-       quantum vult efficaciÝ¦ et pro suo arbitrio ad hanc vel illam
+       quantum vult efficaciae et pro suo arbitrio ad hanc vel illam
        actionem flectit et convertit.: [1211]1
      * Synodus -- perspiciens hanc veritatem et disciplinam contineri in
-       libris scriptis et sine scripto traditionibus, quÝ¦ ex ipsius
-       Christi ore ab apostolis acceptÝ¦, aut ab ipsis apostolis, Spiritu
-       Sancto dictante, quasi per manus traditÝ¦, ad nos usque pervenerunt;
+       libris scriptis et sine scripto traditionibus, quae ex ipsius
+       Christi ore ab apostolis acceptae, aut ab ipsis apostolis, Spiritu
+       Sancto dictante, quasi per manus traditae, ad nos usque pervenerunt;
        orthodoxorum patrum exempla secuta, omnes libros tam Veteris quam
        Novi Testamenti, cum utriusque unus Deus sit auctor, nec non
        traditiones ipsas, tum ad fidem tum ad mores pertinentes, tanquam
        vel ore tenus a Christo, vel a Spiritu Sancto dictatas, et continua
        successione in Ecclesia Catholica conservatas, pari pietatis
        affectu et reverentia suscipit et veneratur.: [1212]1
-     * Synodus considerans non parum utilitatis accedere posse EcclesiÝ¦
-       Dei, si ex omnibus Latinis editionibus quÝ¦ circumferentur, sacrorum
-       librorum, quÝ¦nam pro authentica habenda sit, innotescat: statuit et
-       declarat, ut hÝ¦c ipsa vetus et vulgata editio, quÝ¦ longo tot
+     * Synodus considerans non parum utilitatis accedere posse Ecclesiae
+       Dei, si ex omnibus Latinis editionibus quae circumferentur, sacrorum
+       librorum, quaenam pro authentica habenda sit, innotescat: statuit et
+       declarat, ut haec ipsa vetus et vulgata editio, quae longo tot
        seculorum usu in ipsa Ecclesia probata est, in publicis
-       lectionibus, disputationibus, prÝ¦dicationibus et expositionibus pro
-       authentica habeatur et nemo illam rejicere quovis prÝ¦textu audeat
-       vel prÝ¦sumat.: [1213]1
+       lectionibus, disputationibus, praedicationibus et expositionibus pro
+       authentica habeatur et nemo illam rejicere quovis praetextu audeat
+       vel praesumat.: [1213]1
      * Ubi fides vera est, ibi Ecclesia est.: [1214]1
      * Una eademque sempiterna et immutabili voluntate res quas condidit
        et ut prius non essent egit, quamdiu non fuerunt, et ut posterius
        essent, quando esse coeperunt.: [1215]1
      * Unde liquido apparet ipsum factum non esse per quem facta sunt
        omnia. Et si factus non est, creatura non est: si autem creatura
-       non est, ejusdem cum Patre substantiÝ¦ est. Omnis enim substantia
-       quÝ¦ Deus non est, creatura est; et quÝ¦ creatura non est, Deus est.:
+       non est, ejusdem cum Patre substantiae est. Omnis enim substantia
+       quae Deus non est, creatura est; et quae creatura non est, Deus est.:
        [1216]1
      * Ut opus aliquod sit verum miraculum duo requiruntur. Unum, est
        veritas rei; alterum, veritas finis.: [1217]1
      * Veracitas Deo duplici sensu recte adscribitur, (1.) Quatenus
        nunquam errat, quia est omniscius, nunquam errorem aliis
        significat, quia id repugnat bonitati ejus. . . . . (2.) Quatenus
-       Deus ea actu sentit, quÝ¦ verbis vel factis entibus intelligentibus
+       Deus ea actu sentit, quae verbis vel factis entibus intelligentibus
        significat. Deus actionibus et sermonibus suis eum intendit finem,
        ut sibi homines credant, confidant, etc., quem finem everteret si
        semel a veritate discederet. Scriptura docet idem scil. : [1218]1
-     * Vere dixi non omnes libros qui sunt in HebrÝ¦o Canone dictatos a
+     * Vere dixi non omnes libros qui sunt in Hebraeo Canone dictatos a
        Spiritu Sancto. Scriptos esse cum pio animi motu, non nego; et hoc
        est quod judicavit Synagoga Magna, cujus judicio in hac re stant
-       HebrÝ¦i. Sed a Spiritu Sancto dictari historias nihil fuit opus:
+       Hebraei. Sed a Spiritu Sancto dictari historias nihil fuit opus:
        satis fuit scriptorem memoria valere circa res spectatas, aut
        diligentia in describendis veterum commentariis.: [1219]1
-     * Veritas Dei in dictis, quÝ¦ singulatim vocari solet veracitas, est
+     * Veritas Dei in dictis, quae singulatim vocari solet veracitas, est
        convenientia verborum omnium cum recta cogitatione animique
        sententia, et efficaci voluntatis proposito.: [1220]1
-     * Veritas Dei in essentia, est convenientia omnium eorum, quÝ¦ ad
+     * Veritas Dei in essentia, est convenientia omnium eorum, quae ad
        naturam perfectissimi pertinent eamque totam constituunt; qua
        ratione Deus verus opponitur fictis et commentitiis.: [1221]1
      * Veritas Dei in intellectu, est convenientia cogitationum cum
@@ -30019,7 +30017,7 @@ Index of Latin Words and Phrases
        efficacis cujusque cum rationibus in intellectu probe cognitis et
        judicatis.: [1223]1
      * Viciniora ista, quibus causarum nomen damus, non jure causas esse
-       sed manus et organa, quibus Ý¦terna mens operatur.: [1224]1
+       sed manus et organa, quibus aeterna mens operatur.: [1224]1
      * Vinculo pietatis obstricti, Deo religati sumus, unde ipsa religio
        nomen accepit, non, ut Cicero interpretatus est, a religendo.:
        [1225]1
@@ -30053,23 +30051,23 @@ Index of Latin Words and Phrases
      * bonitas: [1255]1
      * causa: [1256]1
      * causatum: [1257]1
-     * chordÝ¦ tendineÝ¦: [1258]1
-     * columnÝ¦: [1259]1
-     * conceptus essentiÝ¦ divinÝ¦ inadequatÝ¦, ex parte rei ipsam essentiam
+     * chordae tendineae: [1258]1
+     * columnae: [1259]1
+     * conceptus essentiae divinae inadequatae, ex parte rei ipsam essentiam
        involventes, eandemque intrinsice denominantes: [1260]1
      * concursus: [1261]1 [1262]2 [1263]3 [1264]4 [1265]5 [1266]6 [1267]7
        [1268]8 [1269]9 [1270]10 [1271]11 [1272]12 [1273]13 [1274]14
        [1275]15 [1276]16
      * credo quod non video.: [1277]1
      * cumulatissima omnium divinarum rerum copia, ex qua, tanquam
-       inexhausto fonte, omnes gratiÝ¦ in corpus pro cujusque membri modulo
+       inexhausto fonte, omnes gratiae in corpus pro cujusque membri modulo
        deriventur: [1278]1
      * dabat eloqui: [1279]1
      * de novo: [1280]1
      * deifica: [1281]1
      * dicta: [1282]1
      * dictum: [1283]1
-     * divinÝ¦ virtutis: [1284]1
+     * divinae virtutis: [1284]1
      * ecclesiastica intelligentia: [1285]1
      * ens: [1286]1 [1287]2 [1288]3
      * ens perfectissimum: [1289]1
@@ -30107,7 +30105,7 @@ Index of Latin Words and Phrases
      * justitia interna: [1336]1
      * justus: [1337]1
      * libentia rationalis: [1338]1
-     * materia vitÝ¦ diffusa: [1339]1
+     * materia vitae diffusa: [1339]1
      * mente conceptus: [1340]1
      * meritum condigni: [1341]1
      * miror: [1342]1
@@ -30129,7 +30127,7 @@ Index of Latin Words and Phrases
        et per illud sit, imo illud ipsum sit -- creata inquam virtus
        dicitur, eo quod in novo subiecto et nova specie, universalis aut
        generalis ista virtus exhibetur. Deus est causa rerum universarum,
-       reliqua omnia non sunt vere causÝ¦.: [1366]1
+       reliqua omnia non sunt vere causae.: [1366]1
      * omnis determinatio est negatio: [1367]1
      * omnis visibilis et invisibilis creatura theophania, i.e., : [1368]1
      * pari pietatis affectu et reverentia.: [1369]1
@@ -30140,16 +30138,16 @@ Index of Latin Words and Phrases
      * pontificiorum in tota controversia est, ecclesiam metiri velle ex
        societatis civilis modulo, ut ejus essentia in externis tantum et
        in sensus incurrentibus consistat, et sola professio fidei
-       sufficiat ad membrum ecclesiÝ¦ constituendum, nec ipsa fides et
+       sufficiat ad membrum ecclesiae constituendum, nec ipsa fides et
        pietas interna ad id necessario requirantur.: [1375]1
      * potentia: [1376]1
      * potentia absoluta: [1377]1 [1378]2 [1379]3
      * potentia ordinata: [1380]1 [1381]2 [1382]3 [1383]4
-     * prÝ¦sentia essentialis numinis: [1384]1
+     * praesentia essentialis numinis: [1384]1
      * primum movens: [1385]1
      * principium agendi: [1386]1
      * purus putus homo: [1387]1
-     * quia concursus simultaneus, nihil aliud est, quam concursus prÝ¦vius
+     * quia concursus simultaneus, nihil aliud est, quam concursus praevius
        continuatus.: [1388]1
      * quod . . . . merito detestabile nobis esse debet.: [1389]1
      * quod distincte solum concipitur, cum in re ipsa distinctum non
@@ -30157,11 +30155,11 @@ Index of Latin Words and Phrases
      * quod semper, quod ab omnibus: [1391]1
      * quod semper, quod ubique, quod ab omnibus.: [1392]1
      * ratio rationantis: [1393]1
-     * ratio rationatÝ¦: [1394]1
-     * rationabili necessitate intelligere, esse oportere omnia illa, quÝ¦
-       nobis fides catholica de Christo credere prÝ¦cipit." Richard â  St.
+     * ratio rationatus: [1394]1
+     * rationabili necessitate intelligere, esse oportere omnia illa, quae
+       nobis fides catholica de Christo credere  praecipit." Richard â  St.
        Victore still more strongly asserts that we are bound, "quod
-       tenemus ex fide, ratione apprehendere et demonstrativÝ¦ certitudinis
+       tenemus ex fide, ratione apprehendere et demonstrativum certitudinis
        attestatione firmare.: [1395]1
      * ratione: [1396]1
      * ratione tantum: [1397]1
@@ -30181,9 +30179,9 @@ Index of Latin Words and Phrases
      * simplicissima simplicitas: [1417]1
      * solvo: [1418]1
      * sono: [1419]1
-     * status quÝ¦stionis: [1420]1
+     * status quaestionis: [1420]1
      * subsistentia: [1421]1
-     * substantiÝ¦ spirituales, omnis corporeÝ¦ molis expertes.: [1422]1
+     * substantiae spirituales, omnis corporeae molis expertes.: [1422]1
      * substantia: [1423]1 [1424]2
      * sui generis: [1425]1
      * suppositum: [1426]1
@@ -30192,7 +30190,7 @@ Index of Latin Words and Phrases
      * tabula rasa: [1429]1
      * totum omnium: [1430]1
      * ubi: [1431]1
-     * universus ecelesicÝ¦ sensus: [1432]1
+     * universus ecelesicae sensus: [1432]1
      * unum in numero: [1433]1
      * usus loquendi: [1434]1 [1435]2 [1436]3 [1437]4
      * usus organicus, seu, instrumentalis, rationis: [1438]1
@@ -30202,7 +30200,7 @@ Index of Latin Words and Phrases
      * vis formativa: [1443]1 [1444]2
      * vis in rebus insita: [1445]1 [1446]2
      * vis insita: [1447]1
-     * vis naturÝ¦: [1448]1
+     * vis naturae: [1448]1
      * voluntas beneplaciti et signi: [1449]1
      __________________________________________________________________
 
@@ -30275,7 +30273,7 @@ Index of German Words and Phrases
        göttliche, so dass Zwischenursachen nur seine Instrumente und
        Organe sind, er die durch ihre Gesammtheit wie durch alle einzelnen
        Zwischenursachen allein hindurchwirkende Causalität. Dieses ist er
-       vermöge der prÝ¦sentia essentialis numinis: [1467]1
+       vermöge der praesentia essentialis numinis: [1467]1
      * Ding an sich: [1468]1
      * Eringeborne: [1469]1
      * Gattungsbegriff: [1470]1

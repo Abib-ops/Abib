@@ -4,11 +4,16 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.26
+Abib v414.27
 ------------
 
 Changelog.
 -----------
+Abib v414.27
+Added new books to the reader window and to the PDF Resources.
+Torrey's New Topical Textbook
+Easton's Bible Dictionary
+
 Abib v414.26
 Reorganisation of push buttons.
 

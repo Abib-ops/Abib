@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-21/11/2025
+22/11/2025
 
 """
 
