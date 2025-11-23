@@ -4,11 +4,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.27
+Abib v414.28
 ------------
 
 Changelog.
 -----------
+Abib v414.28
+Added Bíbélì Mímọ́.pdf to the PDF Resources.
+
 Abib v414.27
 Added new books to the reader window and to the PDF Resources.
 Torrey's New Topical Textbook

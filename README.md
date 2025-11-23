@@ -1,6 +1,6 @@
 # Abib Bible Reader
 
-A little, fast Bible reader for your desktop or laptop
+A little, fast Bible reader for your desktop or laptop.
 Abib helps you follow Scripture while listening to a sermon, a livestream, or during personal study.
 It stays out of the way and makes it easy to jump anywhere in the Bible.
 
@@ -52,6 +52,7 @@ These Public Domain PDFs are distributed separately as release assets:
 - [Augustine and his confessions - B. B. Warfield](https://github.com/Abib-ops/Abib/releases/download/414.15/Augustine.and.his.confessions.-.B.B.Warfield.pdf)
 - [Augustine and the Pelagian - B. B. Warfield](https://github.com/Abib-ops/Abib/releases/download/414.15/Augustine.and.the.Pelagian.-.B.B.Warfield.pdf)
 - [BB Warfield Evolution and Early Fundamentalism - David Livingstone](https://github.com/Abib-ops/Abib/releases/download/414.15/BB.Warfield.Evolution.and.Early.Fundamentalism.-.David.Livingstone.pdf)
+- [Bíbélì Mímọ́ Yorùbá Òde Òn](https://github.com/Abib-ops/Abib/releases/download/414.15/Bibeli.Mimo.pdf)
 - [Bible Dictionary - W. Smith](https://github.com/Abib-ops/Abib/releases/download/414.15/Bible.Dictionary.-.W.Smith.pdf)
 - [Bible Names Dictionary - R. D. Hitchcock](https://github.com/Abib-ops/Abib/releases/download/414.15/Bible.Names.Dictionary.-.R.D.Hitchcock.pdf)
 - [Biblical Doctrines - B. B. Warfield](https://github.com/Abib-ops/Abib/releases/download/414.15/Biblical.Doctrines.-.B.B.Warfield.pdf)
@@ -86,7 +87,7 @@ These Public Domain PDFs are distributed separately as release assets:
 - [Systematic Theology Vol III - Charles Hodge](https://github.com/Abib-ops/Abib/releases/download/414.15/Systematic.Theology.Vol.III.-.Charles.Hodge.pdf)
 - [The Bible Doctrine of Election - C. D. Cole](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Bible.Doctrine.of.Election.-.C.D.Cole.pdf)
 - [The Five Points](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Five.Points.pdf)
-- [The Inspiration and Authority o - B. B. Warfield](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Inspiration.and.Authority.o.-.B.B.Warfield.pdf)
+- [The Inspiration and Authority of the Bible - B. B. Warfield](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Inspiration.and.Authority.-.B.B.Warfield.pdf)
 - [The Moravian Church - J. E. Hutton](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Moravian.Church.-.J.E.Hutton.pdf)
 - [The Person and Work of the Holy - B. B. Warfield](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Person.and.Work.of.the.Holy.-.B.B.Warfield.pdf)
 - [The Person Of Christ - B. B. Warfield](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Person.Of.Christ.-.B.B.Warfield.pdf)
