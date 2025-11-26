@@ -8,7 +8,7 @@ so it can be maintained and tested in one place.
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 from roman import fromRoman, InvalidRomanNumeralError
 import shared as sh
 
@@ -149,6 +149,8 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
         m = _PATTERN_RE.search(text, scan_pos)
         if not m:
             break
+        # Narrow type for static analysis tools
+        m = cast(re.Match[str], m)
 
         full = m.group(0)
         # Strip leading whitespace using the broadened whitespace class
@@ -218,6 +220,7 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
             m2 = _CONTINUATION_RE.match(tail)
             if not m2:
                 break
+            m2 = cast(re.Match[str], m2)
             # Guard: if vers-only continuation (e.g. "; 1") is immediately followed by a plausible
             # new book token (digit or capitalised word),
             # stop continuation so the next main scan can pick it up.

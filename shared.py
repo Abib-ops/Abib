@@ -11,7 +11,7 @@ from os import getenv
 from json import loads
 from platform import system
 
-CURRENT_VERSION = "414.28"
+CURRENT_VERSION = "414.29"
 current_directory: Path = Path.cwd()
 str_cwd: str = str(current_directory)
 # settings_file: Path = current_directory / 'settings.json'
@@ -111,9 +111,9 @@ bibledict: dict[str, int] = {
         '1thessalonian': 52, '1t': 52, '1thes': 52,
         'ithessalonians': 52, 'ith': 52, 'ithe': 52, 'ithess': 52,
         'ithessalonian': 52, 'it': 52, 'ithes': 52,
-        '2thessalonians': 53, '2th': 53, '2the': 52, '2thess': 53,
+        '2thessalonians': 53, '2th': 53, '2the': 53, '2thess': 53,
         '2thessalonian': 53, '2t': 53, '2thes': 53,
-        'iithessalonians': 53, 'iith': 53, 'iithe': 52, 'iithess': 53,
+        'iithessalonians': 53, 'iith': 53, 'iithe': 53, 'iithess': 53,
         'iithessalonian': 53, 'iit': 53, 'iithes': 53,
         '1timothy': 54, '1ti': 54, '1tim': 54,
         'itimothy': 54, 'iti': 54, 'itim': 54,

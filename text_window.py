@@ -272,6 +272,11 @@ class TextDocumentWindow(QDialog):
 
         self.canonical_books = scripture.CANONICAL_BOOKS
 
+        # Pending jump-to-anchor patterns to be applied after a file finishes loading
+        self._pending_jump_patterns: Optional[list[str]] = None
+        # Pending jump-to-character offset to be applied after a file finishes loading
+        self._pending_jump_char: Optional[int] = None
+
         # ---- Lightweight Find dialog state and shortcuts ----
         # Use the concrete dialog type so static analysers know about `.edit`, `.build_flags`, etc.
         self._find_dlg: Optional["TextDocumentWindow._ReaderFindDialog"] = None
@@ -1381,11 +1386,28 @@ class TextDocumentWindow(QDialog):
                     def _after_restore():
                         # After the content-anchored restore finalises, begin highlighting
                         try:
+                            # If a precise char jump was requested during load, apply it first
+                            try:
+                                pending_char = getattr(self, "_pending_jump_char", None)
+                            except AttributeError:
+                                pending_char = None
+                            if isinstance(pending_char, int) and pending_char >= 0:
+                                self._jump_to_char_now(int(pending_char))
+                                self._pending_jump_char = None
+                        
+                            # Then attempt to load precomputed refs or fall back to live scan
                             if not self._try_load_precomputed_refs(p, content):
                                 # Use the editor's text to guarantee offsets exactly match Qt's document
                                 self._start_lazy_highlighting(self.text_edit.toPlainText())
                         except (RuntimeError, AttributeError, TypeError, ValueError):
                             pass
+                        # If a jump to anchors was requested during load, apply it now
+                        try:
+                            if isinstance(self._pending_jump_patterns, list) and self._pending_jump_patterns:
+                                self._jump_to_anchors_now(self._pending_jump_patterns)
+                                self._pending_jump_patterns = None
+                        except (RuntimeError, AttributeError, TypeError, ValueError):
+                            self._pending_jump_patterns = None
                         # Progress was already hidden when content became visible; keep as a safeguard
                         try:
                             if getattr(self, "_load_total", 0) > 0:
@@ -1442,6 +1464,125 @@ class TextDocumentWindow(QDialog):
             self.text_edit.setPlainText(f"Error loading file: {e1}")
             self._hide_progress()
             self._is_loading_file = False
+
+    # ---- Jump to text anchors (used by Commentary button) ----
+    def goto_text_anchors(self, anchors: list[str]) -> None:
+        """Jump to the first occurrence of the given anchor strings.
+        If a file is currently loading, queue the request and apply it after load completes.
+        Anchors are matched case-insensitively against the loaded text.
+        """
+        try:
+            # If a load is in progress, queue the anchors to apply after restore/highlighting
+            if getattr(self, "_is_loading_file", False):
+                # Store a shallow copy to avoid external mutation
+                try:
+                    self._pending_jump_patterns = list(anchors) if isinstance(anchors, list) else []
+                except (RuntimeError, AttributeError, TypeError, ValueError):
+                    self._pending_jump_patterns = []
+                return
+            # Otherwise, apply immediately
+            self._jump_to_anchors_now(anchors)
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
+
+    def _jump_to_anchors_now(self, anchors: list[str]) -> bool:
+        """Internal helper to perform the jump immediately.
+        Returns True if an anchor was found.
+        Priority respects the order of anchors provided: the first anchor that matches anywhere
+        in the document is used.
+        This avoids accidentally jumping to an earlier generic heading
+        (e.g., the first "Chapter 1" of a different book) when a more specific anchor appears later.
+        """
+        try:
+            if not isinstance(anchors, list) or not anchors:
+                return False
+            text = self.text_edit.toPlainText()
+            if not text:
+                return False
+            # Case-insensitive search; precompute a lowered copy
+            low_text = text.lower()
+            best_idx = -1
+            for a in anchors:
+                try:
+                    if not a:
+                        continue
+                    idx = low_text.find(str(a).lower())
+                    if idx != -1:
+                        best_idx = idx
+                        break
+                except (RuntimeError, AttributeError, TypeError, ValueError):
+                    continue
+            if best_idx == -1:
+                return False
+            # Move the cursor to the found index and make it visible
+            try:
+                cursor = self.text_edit.textCursor()
+                cursor.setPosition(int(best_idx))
+                self.text_edit.setTextCursor(cursor)
+                self.text_edit.ensureCursorVisible()
+                # Nudge the view a little up so the anchor is not the last line
+                # by moving the cursor to start of the block
+                try:
+                    block = self.text_edit.document().findBlock(int(best_idx))
+                    if block and block.isValid():
+                        c2 = self.text_edit.textCursor()
+                        c2.setPosition(block.position())
+                        self.text_edit.setTextCursor(c2)
+                        self.text_edit.ensureCursorVisible()
+                except (RuntimeError, AttributeError, TypeError, ValueError):
+                    pass
+                return True
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                return False
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            return False
+
+    # ---- Jump to a specific character offset (used by precise commentary index) ----
+    def goto_char_offset(self, char_index: int) -> None:
+        """Jump to a specific character index in the loaded document.
+        If a file is loading, queue the request and apply it after load completes.
+        """
+        try:
+            if not isinstance(char_index, int) or char_index < 0:
+                return
+            if getattr(self, "_is_loading_file", False):
+                self._pending_jump_char = int(char_index)
+                return
+            self._jump_to_char_now(int(char_index))
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
+
+    def _jump_to_char_now(self, char_index: int) -> bool:
+        try:
+            doc = self.text_edit.document()
+            if doc is None:
+                return False
+            # Clamp to valid range
+            try:
+                total_chars = int(doc.characterCount())
+            except (AttributeError, TypeError, ValueError):
+                total_chars = 0
+            if total_chars <= 0:
+                return False
+            pos = max(0, min(int(char_index), max(0, total_chars - 1)))
+            c = self.text_edit.textCursor()
+            c.setPosition(pos)
+            self.text_edit.setTextCursor(c)
+            # Scroll to make it visible
+            self.text_edit.ensureCursorVisible()
+            # Optional: align to the start of the block so the heading is visible
+            try:
+                blk = doc.findBlock(pos)
+                if blk and blk.isValid():
+                    c2 = self.text_edit.textCursor()
+                    c2.setPosition(blk.position())
+                    self.text_edit.setTextCursor(c2)
+                    self.text_edit.ensureCursorVisible()
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                pass
+            return True
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            return False
 
     def _try_load_precomputed_refs(self, text_path: Path, content: str) -> bool:
         """Attempt to load precomputed reference indices for the given text.

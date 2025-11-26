@@ -4,11 +4,18 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.28
+Abib v414.29
 ------------
 
 Changelog.
 -----------
+Abib v414.29
+Bugfix for "2the" giving 1 Thessalonians in error.
+The Commentary button now goes near to the relevant place in the 45 books,
+not perfect but better than before.
+Jamieson, Fausset, Brown Commentary added.
+The Doctrine of the Saints' Perseverance Explained - John Owen PDF added.
+
 Abib v414.28
 Added Bíbélì Mímọ́.pdf to the PDF Resources.
 

@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-23/11/2025
+26/11/2025
 
 """
 
@@ -464,34 +464,371 @@ def sizer(window_height: int, window_width: int) -> tuple[int, int]:
 
 
 def commentary() -> None:
-    """Open a Calvin commentary file by letting the user choose from the Calvin folder."""
-    try:
-        calvin_dir = Path(sh.str_cwd) / "Calvin"
-        files = sorted([p for p in calvin_dir.glob("*.txt") if p.is_file()])
-        if not files:
-            QMessageBox.information(
-                None,
+    """Open a Calvin commentary file.
+
+    Enhanced behavior:
+    - If a current Bible book is selected, try to open the mapped Calvin volume automatically.
+    - If Calvin does not have a commentary for that book in this set, show a soft message,
+      then fall back to the chooser.
+    - If context is unavailable, fall back to the chooser.
+    """
+    # Static mapping from Bible book name (as displayed in self.nwin) to a Calvin file.
+    # This uses the first volume where a work spans multiple files.
+    CALVIN_BOOK_TO_FILE: dict[str, str] = {
+        # Pentateuch
+        "Genesis": "calcom01.txt",
+        "Exodus": "calcom03.txt",          # Harmony of the Law, vol. 1
+        "Leviticus": "calcom03.txt",       # Harmony of the Law, vol. 1
+        "Numbers": "calcom03.txt",         # Harmony of the Law, vol. 1
+        "Deuteronomy": "calcom03.txt",     # Harmony of the Law, vol. 1
+
+        # Historical books (where extant)
+        "Joshua": "calcom07.txt",
+        # Calvin did not leave full commentaries on Judges, Ruth, Samuel, Kings, Chronicles, Ezra, Nehemiah, Esther
+
+        # Wisdom/Poetry
+        "Job": "calcom11.txt",             # Job vol. 1 (set contains multiple vols)
+        "Psalms": "calcom08.txt",          # Psalms vol. 1
+        "Proverbs": "calcom10.txt",        # Proverbs (Lectures) vol. 1
+        "Ecclesiastes": "calcom09.txt",    # Ecclesiastes
+        "Song of Solomon": "calcom12.txt",  # Song of Solomon
+
+        # Major prophets
+        "Isaiah": "calcom13.txt",          # Isaiah vol. 1
+        "Jeremiah": "calcom17.txt",        # Jeremiah & Lamentations vol. 1
+        "Lamentations": "calcom17.txt",    # in the Jeremiah set
+        "Ezekiel": "calcom22.txt",         # Ezekiel vol. 1
+        "Daniel": "calcom24.txt",          # Daniel
+
+        # Minor prophets (Twelve)
+        "Hosea": "calcom26.txt",
+        "Joel": "calcom26.txt",
+        "Amos": "calcom26.txt",
+        "Obadiah": "calcom26.txt",
+        "Jonah": "calcom26.txt",
+        "Micah": "calcom28.txt",           # Later volumes continue the series
+        "Nahum": "calcom28.txt",
+        "Habakkuk": "calcom28.txt",
+        "Zephaniah": "calcom29.txt",
+        "Haggai": "calcom29.txt",
+        "Zechariah": "calcom30.txt",
+        "Malachi": "calcom30.txt",
+
+        # Gospels and Acts
+        "Matthew": "calcom32.txt",         # Matthew
+        "Mark": "calcom33.txt",            # Mark
+        "Luke": "calcom37.txt",            # Luke
+        "John": "calcom34.txt",            # John vol. 1
+        "Acts": "calcom36.txt",            # Acts vol. 1
+
+        # Pauline epistles
+        "Romans": "calcom38.txt",
+        "I Corinthians": "calcom39.txt",
+        "II Corinthians": "calcom40.txt",
+        "Galatians": "calcom42.txt",
+        "Ephesians": "calcom42.txt",
+        "Philippians": "calcom42.txt",
+        "Colossians": "calcom42.txt",
+        "I Thessalonians": "calcom42.txt",
+        "II Thessalonians": "calcom42.txt",
+        "I Timothy": "calcom43.txt",
+        "II Timothy": "calcom43.txt",
+        "Titus": "calcom43.txt",
+        "Philemon": "calcom43.txt",
+        "Hebrews": "calcom44.txt",
+
+        # General epistles and Revelation
+        "James": "calcom45.txt",
+        "I Peter": "calcom45.txt",
+        "II Peter": "calcom45.txt",
+        "I John": "calcom45.txt",
+        "II John": "calcom45.txt",
+        "III John": "calcom45.txt",
+        "Jude": "calcom45.txt",
+        "Revelation": "calcom25.txt",
+    }
+
+    # ---- Precise index support (optional but preferred) ----
+    from json import load as _json_load
+    _CALVIN_INDEX_PATH = Path(sh.str_cwd) / "Calvin" / "calvin_index.json"
+    _calvin_index_cache: dict | None = getattr(commentary, "_calvin_index_cache", None)
+
+    def _load_index() -> dict:
+        nonlocal _calvin_index_cache
+        if isinstance(_calvin_index_cache, dict) and _calvin_index_cache.get("version") == 1:
+            return _calvin_index_cache
+        try:
+            if _CALVIN_INDEX_PATH.is_file():
+                with _CALVIN_INDEX_PATH.open("r", encoding="utf-8") as f:
+                    data = _json_load(f)
+                if isinstance(data, dict) and data.get("version") == 1 and isinstance(data.get("entries"), dict):
+                    _calvin_index_cache = data
+                    setattr(commentary, "_calvin_index_cache", data)
+                    return data
+        except (OSError, ValueError, TypeError) as _e:
+            print("Could not load Calvin index:", _e)
+        _calvin_index_cache = {}
+        setattr(commentary, "_calvin_index_cache", _calvin_index_cache)
+        return _calvin_index_cache
+
+    def _lookup_precise(lookup_book_name: str, chapter: int | None, verse: int | None):
+        """Return tuple (file_path_str, char_offset) or (None, None) if not found.
+        Falls back to chapter level if the verse is not indexed.
+        """
+        try:
+            index_data = _load_index()
+            entries = index_data.get("entries") if isinstance(index_data, dict) else None
+            if not isinstance(entries, dict):
+                return None, None
+            b = entries.get(str(lookup_book_name)) or entries.get(lookup_book_name)
+            if not isinstance(b, dict):
+                return None, None
+            chs = b.get("chapters")
+            if not isinstance(chs, dict) or chapter is None:
+                return None, None
+            ch = chs.get(str(int(chapter)))
+            if not isinstance(ch, dict):
+                return None, None
+            f = ch.get("file")
+            if not isinstance(f, str):
+                return None, None
+            # Prefer verse-level offset if available
+            if isinstance(verse, int):
+                vs = ch.get("verses")
+                if isinstance(vs, dict):
+                    vo = vs.get(str(verse))
+                    if isinstance(vo, int) and vo >= 0:
+                        return str(Path(sh.str_cwd) / "Calvin" / f), int(vo)
+            # Else fallback to the chapter offset
+            off = ch.get("offset")
+            if isinstance(off, int) and off >= 0:
+                return str(Path(sh.str_cwd) / "Calvin" / f), int(off)
+            return None, None
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            return None, None
+
+    def _open_chooser() -> None:
+        """Existing chooser fallback."""
+        try:
+            calvin_dir = Path(sh.str_cwd) / "Calvin"
+            files = sorted([p for p in calvin_dir.glob("*.txt") if p.is_file()])
+            if not files:
+                QMessageBox.information(
+                    None,
+                    "Calvin Commentaries",
+                    "No commentary files found in the Calvin folder."
+                )
+                return
+            labels = sorted(p.name for p in files)
+            choice, ok = QInputDialog.getItem(
+                w,  # parent to keep it on top of the main window
                 "Calvin Commentaries",
-                "No commentary files found in the Calvin folder."
+                "Open:",
+                labels,
+                0,
+                False,
             )
-            return
-        labels = sorted(p.name for p in files)
-        choice, ok = QInputDialog.getItem(
-            w,  # parent to keep it on top of the main window
-            "Calvin Commentaries",
-            "Open:",
-            labels,
-            0,
-            False,
-        )
-        if ok and choice:
-            path = str(calvin_dir / choice)
+            if ok and choice:
+                path = str(calvin_dir / choice)
+                try:
+                    w.open_text_file_in_window(path)
+                except (RuntimeError, FileNotFoundError, OSError, ValueError, AttributeError) as e4:
+                    print("Could not open commentary window:", e4)
+        except (OSError, RuntimeError, ValueError) as e5:
+            QMessageBox.warning(None, "Calvin Commentaries", f"An error occurred: {e5}")
+
+    # Try context-aware open first
+    try:
+        book_name: str | None = None
+        # Determine the most accurate current verse position:
+        # 1) Fresh top-of-screen verse via get_line_number() (reflects current view)
+        # 2) Last explicitly clicked verse (_last_clicked_position)
+        # 3) Current caret line
+        # 4) Last context position (if any)
+        # 5) Finally, fall back to the combobox selection.
+        current_position: int | None = None
+        # 1) Fresh top-of-screen context (independent of caret)
+        if current_position is None:
             try:
-                w.open_text_file_in_window(path)
-            except (RuntimeError, FileNotFoundError, OSError, ValueError, AttributeError) as e4:
-                print("Could not open commentary window:", e4)
-    except (OSError, RuntimeError, ValueError) as e5:
-        QMessageBox.warning(None, "Calvin Commentaries", f"An error occurred: {e5}")
+                if w and hasattr(w, "get_line_number"):
+                    current_position = int(w.get_line_number())
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                current_position = None
+        # 2) Last explicitly clicked verse
+        if current_position is None:
+            try:
+                pos = getattr(w, "_last_clicked_position", None)
+                if isinstance(pos, int) and 0 <= pos <= sh.LAST_VERSE_IN_BIBLE:
+                    current_position = pos
+            except (AttributeError, TypeError, ValueError):
+                current_position = None
+        # 3) Fallback to the caret line if available
+        if current_position is None:
+            try:
+                cursor = w.textEditor.textCursor()
+                line_no = int(cursor.blockNumber())
+                if line_no in Amap:
+                    current_position = Amap.index(line_no)
+                else:
+                    found = False
+                    for delta in range(1, 13):
+                        ln_back = line_no - delta
+                        if ln_back in Amap:
+                            current_position = Amap.index(ln_back)
+                            found = True
+                            break
+                        ln_fwd = line_no + delta
+                        if ln_fwd in Amap:
+                            current_position = Amap.index(ln_fwd)
+                            found = True
+                            break
+                    if not found:
+                        current_position = None
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                current_position = None
+        # 4) Last general context position (from previous navigations)
+        if current_position is None:
+            try:
+                pos = getattr(w, "_last_context_position", None)
+                if isinstance(pos, int) and 0 <= pos <= sh.LAST_VERSE_IN_BIBLE:
+                    current_position = pos
+            except (AttributeError, TypeError, ValueError):
+                current_position = None
+
+        if current_position is not None and w and hasattr(w, "nwin"):
+            try:
+                book_idx_0_based = int(sh.Info[current_position][0])
+                if 0 <= book_idx_0_based < len(w.nwin):
+                    book_name = w.nwin[book_idx_0_based]
+            except (IndexError, KeyError, TypeError, ValueError):
+                book_name = None
+        # Secondary fallback: read from the book combobox if present
+        if not book_name and w and hasattr(w, "comboBox_1") and hasattr(w, "nwin") and isinstance(w.nwin, list):
+            try:
+                idx = w.comboBox_1.currentIndex()
+                if 0 <= idx < len(w.nwin):
+                    book_name = w.nwin[idx]
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                book_name = None
+
+        if book_name:
+            # Attempt precise index lookup first (guarded)
+            chap_num: int | None = None
+            verse_num: int | None = None
+            try:
+                if current_position is not None:
+                    chap_num = int(sh.Info[current_position][1]) + 1
+                    verse_num = int(sh.Info[current_position][2]) + 1
+            except (IndexError, TypeError, ValueError):
+                chap_num = chap_num or None
+                verse_num = verse_num or None
+
+            precise_path, precise_offset = _lookup_precise(book_name, chap_num, verse_num)
+            if precise_path and isinstance(precise_offset, int):
+                # Strictly validate the index file against our static mapping to avoid bad jumps.
+                expected_file = CALVIN_BOOK_TO_FILE.get(book_name)
+                try:
+                    idx_name = Path(str(precise_path)).name if precise_path else ""
+                except (OSError, TypeError, ValueError):
+                    idx_name = ""
+                if isinstance(expected_file, str) and idx_name.lower() == expected_file.lower():
+                    try:
+                        w.open_text_file_in_window(str(precise_path))
+                        reader = getattr(w, "text_edit_window", None)
+                        if reader and hasattr(reader, "goto_char_offset"):
+                            reader.goto_char_offset(int(precise_offset))
+                        return
+                    except (RuntimeError, FileNotFoundError, OSError, ValueError, AttributeError) as e_prec:
+                        print("Could not open precise commentary location:", e_prec)
+                else:
+                    # Ignore mismatched indices entirely; rely on robust static mapping below.
+                    if not getattr(commentary, "_warned_bad_index", False):
+                        print("Warning: Ignoring Calvin index due to mismatch for", book_name)
+                        setattr(commentary, "_warned_bad_index", True)
+
+            target = CALVIN_BOOK_TO_FILE.get(book_name)
+            # Minimal multi-volume routing where we know the split, to improve chapter landing
+            try:
+                if book_name == "Genesis" and isinstance(chap_num, int):
+                    # Volume 2 begins at Genesis 24
+                    if chap_num >= 24:
+                        target = "calcom02.txt"
+            except (TypeError, ValueError):
+                pass
+            if target:
+                calvin_path = Path(sh.str_cwd) / "Calvin" / target
+                if calvin_path.is_file():
+                    try:
+                        # Open the file in the reader window
+                        w.open_text_file_in_window(str(calvin_path))
+
+                        # After opening, try to jump near the relevant chapter anchor
+                        try:
+                            reader = getattr(w, "text_edit_window", None)
+                            if chap_num and reader and hasattr(reader, "goto_text_anchors"):
+                                # Build a small set of likely anchors in various styles
+                                bn = str(book_name)
+                                c = int(chap_num)
+                                anchors: list[str] = []
+
+                                def add(*vals: str):
+                                    for v in vals:
+                                        if v:
+                                            anchors.append(v)
+
+                                # Common chapter headings
+                                add(f"Chapter {c}", f"CHAPTER {c}", f"Chap. {c}", f"CHAP. {c}")
+                                # Psalms often use PSALM N
+                                if bn == "Psalms":
+                                    add(f"Psalm {c}", f"PSALM {c}")
+                                # Proverbs lectures
+                                if bn == "Proverbs":
+                                    add(f"Lecture {c}", f"LECTURE {c}")
+                                # John/Acts sometimes have numerals as headings too; fall back to book and number
+                                add(f"{bn} {c}")
+                                # Some sets embed Roman numerals; try a simple roman form as well
+                                try:
+                                    from roman import toRoman  # type: ignore
+                                    r = toRoman(c)
+                                    add(f"Chapter {r}", f"CHAPTER {r}", f"{bn} {r}")
+                                except (ImportError, ValueError, TypeError):
+                                    pass
+
+                                # Deduplicate while preserving order
+                                seen = set()
+                                anchors = [a for a in anchors if not (a in seen or seen.add(a))]
+                                reader.goto_text_anchors(anchors)
+                        except (RuntimeError, AttributeError, TypeError, ValueError):
+                            pass
+
+                        return
+                    except (RuntimeError, FileNotFoundError, OSError, ValueError, AttributeError) as e6:
+                        print("Could not open mapped commentary window:", e6)
+                # Mapped but file missing — fall through to chooser with notice
+                QMessageBox.information(
+                    w,
+                    "Calvin Commentaries",
+                    f"Could not locate the mapped commentary file for {book_name}: {target}.\n"
+                    f"Please choose a file manually."
+                )
+                _open_chooser()
+                return
+            else:
+                # No mapping for this book — gentle notice then chooser
+                QMessageBox.information(
+                    w,
+                    "Calvin Commentaries",
+                    f"Calvin does not have a commentary for {book_name} in this set, or it is not mapped.\n"
+                    f"Please choose from the available Calvin volumes."
+                )
+                _open_chooser()
+                return
+        # If no context, open chooser
+        _open_chooser()
+    except (RuntimeError, AttributeError, TypeError, ValueError) as exc:
+        # As a final safety net, show chooser
+        print("Commentary handler error:", exc)
+        _open_chooser()
 
 
 class MainWindow(QMainWindow):
@@ -556,11 +893,20 @@ class MainWindow(QMainWindow):
         self.textEditor = NoZoomPlainTextEdit()
         # Predeclare actions bundle to satisfy linters (assigned in initui)
         self.actions_bundle = None
-
+        
         # Theme manager (extract dark mode logic)
         # Initialise 'ThemeManager' based on persisted settings
         is_dark = self.settings.get("theme", "Light") == "Dark"
         self.theme = ThemeManager(ThemeState(is_dark_mode=is_dark))
+
+        # Initialise the last known Bible position to satisfy linters and ensure availability
+        # throughout the object's lifecycle.
+        # This is updated at various navigation points.
+        self._last_bible_position: int = 0
+        # Track the last explicitly clicked position in the Bible view (used for context actions)
+        self._last_clicked_position: int = 0
+        # Track the last general context position used by features like Commentary
+        self._last_context_position: int = 0
 
         # Services
         self.audio = AudioService()
@@ -626,6 +972,12 @@ class MainWindow(QMainWindow):
         fixedfont: QFont = QFont("Cascadia Mono", self.fontsize, QFont.Weight.Medium)
         self.textEditor.setFont(fixedfont)
         self.textEditor.setReadOnly(True)
+        # Capture mouse clicks inside the Bible text area so we can
+        # position the clicked verse at the bottom of the screen
+        try:
+            self.textEditor.viewport().installEventFilter(self)
+        except (RuntimeError, AttributeError):
+            pass
 
         self.display_verse_input: QLineEdit = QLineEdit()
         self.display_verse_input.setToolTip("F2, Enter or OK to search for a verse.")
@@ -1008,6 +1360,87 @@ class MainWindow(QMainWindow):
                     self.goto_line()  # Trigger goto_line manually
                     self.display_verse_input.clear()  # Clear the input field after submission
                 return True
+
+        # Handle clicks inside the Bible text editor: when the user clicks
+        # on any line, update the status bar to reflect the clicked verse.
+        # Do not force any special scrolling; keep behaviour simple.
+        # Use the module-level QMouseEvent imported at the top of this file.
+
+        if source == getattr(self, 'textEditor', None) and source is not None:
+            # If the source is the editor itself (rare), prefer viewport below
+            pass
+        elif source == getattr(self, 'textEditor', None) and hasattr(source, 'viewport'):
+            # Defensive placeholder; real handling is for viewport object
+            pass
+        elif source == getattr(self.textEditor, 'viewport', lambda: None)():
+            # Only process mouse button presses
+            if event.type() == QEvent.MouseButtonPress:
+                try:
+                    if isinstance(event, QMouseEvent):
+                        if event.button() == Qt.MouseButton.LeftButton:
+                            # Map click position to document block/line
+                            try:
+                                pos = event.position() if hasattr(event, 'position') else event.pos()
+                            except (RuntimeError, AttributeError):
+                                pos = None
+                            if pos is None:
+                                return super().eventFilter(source, event)
+                            try:
+                                cursor = self.textEditor.cursorForPosition(pos.toPoint() if hasattr(pos, 'toPoint') else pos)
+                                block = cursor.block()
+                                line_no = int(block.blockNumber())
+                            except (RuntimeError, AttributeError, TypeError, ValueError):
+                                return super().eventFilter(source, event)
+
+                            # Resolve the clicked line to the verse index (current_position)
+                            # Prefer the nearest verse start at or before the clicked line.
+                            current_position = None
+                            try:
+                                if line_no in Amap:
+                                    current_position = Amap.index(line_no)
+                                else:
+                                    # Search backward first for up to 12 lines, then forward
+                                    found = False
+                                    for delta in range(1, 13):
+                                        ln_back = line_no - delta
+                                        if ln_back in Amap:
+                                            current_position = Amap.index(ln_back)
+                                            found = True
+                                            break
+                                        ln_fwd = line_no + delta
+                                        if ln_fwd in Amap:
+                                            current_position = Amap.index(ln_fwd)
+                                            found = True
+                                            break
+                                    if not found:
+                                        # Fallback: use existing top-of-screen detection
+                                        current_position = self.get_line_number()
+                            except (RuntimeError, AttributeError, TypeError, ValueError):
+                                current_position = self.get_line_number()
+
+                            # Do not force-scroll the view; keep the current scroll position.
+
+                            # Update the status bar to reflect the clicked verse
+                            try:
+                                if isinstance(current_position, int):
+                                    self.ref_to_statusbar(current_position)
+                                    # Persist the last Bible position so any reload restores here
+                                    try:
+                                        self._last_bible_position = int(current_position)
+                                        # Remember the last explicitly clicked position for context-sensitive actions
+                                        self._last_clicked_position = int(current_position)
+                                        # Also update the general last-context position used by Commentary
+                                        self._last_context_position = int(current_position)
+                                    except (TypeError, ValueError):
+                                        pass
+                            except (RuntimeError, AttributeError, TypeError, ValueError):
+                                pass
+
+                            # Consume the event to prevent default cursor side effects
+                            return True
+                except (RuntimeError, AttributeError, TypeError, ValueError):
+                    # Fall through to default processing on any unexpected error
+                    pass
 
         # Pass the event to the parent class
         return super().eventFilter(source, event)
@@ -1907,6 +2340,12 @@ class MainWindow(QMainWindow):
         self.display_verse_input.clear()
         if w.message == '':
             self.ref_to_statusbar(current_position)
+        # Persist last known Bible position so reload() can restore accurately
+        try:
+            self._last_bible_position = int(current_position)
+            self._last_context_position = int(current_position)
+        except (TypeError, ValueError):
+            pass
 
     def move_to_line(self, ln: int) -> None:
         """Display engine."""
@@ -1977,6 +2416,12 @@ class MainWindow(QMainWindow):
         self.textEditor.setTextCursor(linecursor)
         self.textEditor.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)
         self.ref_to_statusbar(current_position)
+        # Persist last known Bible position so reload() can restore accurately
+        try:
+            self._last_bible_position = int(current_position)
+            self._last_context_position = int(current_position)
+        except (TypeError, ValueError):
+            pass
 
     def ref_to_statusbar(self, current_position: int) -> None:
         """Display messages in the status bar."""
@@ -2575,6 +3020,18 @@ class MainWindow(QMainWindow):
             except (FileNotFoundError, PermissionError, OSError, UnicodeDecodeError) as e3:
                 self.dialog_critical(str(e3))
             else:
+                # If we are switching away from the Bible to another file, remember the last Bible position
+                try:
+                    prev_is_bible = isinstance(getattr(self, "path1", None), str) and str(Path(self.path1).name) == "KJB_PCE.txt"
+                except (OSError, TypeError, ValueError):
+                    prev_is_bible = False
+                if prev_is_bible and not str(Path(path1).name) == "KJB_PCE.txt":
+                    try:
+                        self._last_bible_position = int(self.get_line_number())
+                    except (RuntimeError, TypeError, ValueError):
+                        # Default to Genesis 1:1 if we cannot determine it
+                        self._last_bible_position = 0
+
                 self.path1 = path1
                 if path1[-11:] == r'KJB_PCE.txt':
                     # _ = '****END OF THE NOTICE OF COPYRIGHT****'
@@ -2589,8 +3046,20 @@ class MainWindow(QMainWindow):
                 self.update_title()
 
                 if path1[-11:] == r'KJB_PCE.txt':
+                    # We are (re)loading the Bible text in the main window.
+                    # Do NOT force a jump to Genesis 1:1.
+                    # Restore the last known Bible position if available.
                     w.otherFileFlag = False
-                    self.display_verse(0)
+                    try:
+                        last_pos = int(getattr(self, "_last_bible_position", 0))
+                    except (TypeError, ValueError):
+                        last_pos = 0
+                    # Clamp to valid range
+                    if last_pos < 0:
+                        last_pos = 0
+                    if last_pos > sh.LAST_VERSE_IN_BIBLE:
+                        last_pos = sh.LAST_VERSE_IN_BIBLE
+                    self.display_verse(last_pos)
                 else:
                     w.otherFileFlag = True
 

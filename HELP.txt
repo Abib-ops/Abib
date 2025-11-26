@@ -2,7 +2,7 @@
 ABIB HELP:
 **********
 
-Abib Bible Reader v414.28
+Abib Bible Reader v414.29
 
 Follow Scripture on your PC while listening to a sermon or message.
 
@@ -16,14 +16,14 @@ Installing Abib on Windows.
 
 First, uninstall any previous version of this program.
 
-Get the "Abib_setup_414.28_win.exe" file from 'Abib-ops' on GitHub,
+Get the "Abib_setup_414.29_win.exe" file from 'Abib-ops' on GitHub,
 find it in the 'Abib' repository.
 
 **************************************************
 * See: https://github.com/Abib-ops/Abib/releases *
 **************************************************
 
-Next, double-click the "Abib_setup_414.28_win.exe" installer and follow
+Next, double-click the "Abib_setup_414.29_win.exe" installer and follow
 the instructions, mostly click Next a few times, agree to the
 licence, and Abib will install. Please ignore any negative windows that
 claim that Abib is from an unknown author.
@@ -421,6 +421,30 @@ Q        Quit
 Mouse wheel click is the same as F4
 
 
+Calvin Commentary precise index (optional)
+-----------------------------------------
+
+Abib can open Calvin’s commentaries at the exact verse (when available) using
+an optional index file.
+
+How to build the index once:
+- Open a terminal in the Abib project folder.
+- Run: python tools\build_calvin_index.py
+- This creates Calvin\calvin_index.json.
+
+What it does:
+- When you press Commentary, Abib first looks up the current book/chapter/verse
+  in this index and jumps directly to that spot in the relevant Calvin volume.
+- If that verse is not indexed, it falls back to the chapter start.
+- If the index is not present, Abib still opens the best Calvin volume and will
+  try to jump to a chapter heading as before.
+
+Notes:
+- The indexer uses simple, resilient patterns. Some passages may only have
+  chapter-level anchors if the text lacks explicit verse markers.
+- You can rebuild the index anytime after adding or replacing Calvin files.
+
+
 The 'æ' & 'Æ' characters appear in the Bible text in a few names,
 listed below:
 
@@ -490,7 +514,7 @@ text in the "Find ?:" box.
 Installing Abib on Linux.
 -------------------------
 
-Get the "Abib_linux_414.28.tar.bz2" file from the author.
+Get the "Abib_linux_414.29.tar.bz2" file from the author.
 
     If you can get it, then it may be an earlier version because of
     recent changes that work on Windows only, and the direction of
@@ -498,7 +522,7 @@ Get the "Abib_linux_414.28.tar.bz2" file from the author.
     But with some modifications, it could be made to work on Linux.
 
 Move it to your home folder or desired location and navigate there.
-Expand the compressed archive with: tar -jxvf Abib_linux_414.28.tar.bz2
+Expand the compressed archive with: tar -jxvf Abib_linux_414.29.tar.bz2
 
 $ chmod +x Abib will make sure that the executable flag is set.
 

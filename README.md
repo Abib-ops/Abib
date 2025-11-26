@@ -58,6 +58,7 @@ These Public Domain PDFs are distributed separately as release assets:
 - [Biblical Doctrines - B. B. Warfield](https://github.com/Abib-ops/Abib/releases/download/414.15/Biblical.Doctrines.-.B.B.Warfield.pdf)
 - [Christian Martyrdom](https://github.com/Abib-ops/Abib/releases/download/414.15/Christian.Martyrdom.pdf)
 - [Commentary on the Whole Bible - Matthew Henry](https://github.com/Abib-ops/Abib/releases/download/414.15/Commentary.on.the.Whole.Bible.-.Matthew.Henry.pdf)
+- [Commentary Critical and Explanatory on the Whole Bible - Jamieson, Fausset, Brown](https://github.com/Abib-ops/Abib/releases/download/414.15/Commentary.Critical.and.Explanatory.on.the.Whole.-.Jamieson.Fausset.Brown.pdf)
 - [Commenting and Commentaries - C. H. Spurgeon](https://github.com/Abib-ops/Abib/releases/download/414.15/Commenting.and.Commentaries.-.C.H.Spurgeon.pdf)
 - [Concise Study of The Case Against Darwin](https://github.com/Abib-ops/Abib/releases/download/414.15/darwin.pdf)
 - [Defending the Reformed Faith](https://github.com/Abib-ops/Abib/releases/download/414.15/defend.pdf)
@@ -86,6 +87,7 @@ These Public Domain PDFs are distributed separately as release assets:
 - [Systematic Theology Vol II - Charles Hodge](https://github.com/Abib-ops/Abib/releases/download/414.15/Systematic.Theology.Vol.II.-.Charles.Hodge.pdf)
 - [Systematic Theology Vol III - Charles Hodge](https://github.com/Abib-ops/Abib/releases/download/414.15/Systematic.Theology.Vol.III.-.Charles.Hodge.pdf)
 - [The Bible Doctrine of Election - C. D. Cole](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Bible.Doctrine.of.Election.-.C.D.Cole.pdf)
+- [The Doctrine of the Saints' Perseverance Explained - John Owen](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Doctrine.of.the.Saints.Perseverance.Explained.-.John.Owen.pdf)
 - [The Five Points](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Five.Points.pdf)
 - [The Inspiration and Authority of the Bible - B. B. Warfield](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Inspiration.and.Authority.-.B.B.Warfield.pdf)
 - [The Moravian Church - J. E. Hutton](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Moravian.Church.-.J.E.Hutton.pdf)
@@ -96,6 +98,7 @@ These Public Domain PDFs are distributed separately as release assets:
 - [The Plan of Salvation - Hodge](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Plan.of.Salvation.-.Hodge.pdf)
 - [The Trinity - John Owen](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Trinity.-.John.Owen.pdf)
 - [The Works of Thomas Brooks - Thomas Brooks](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Works.of.Thomas.Brooks.-.Thomas.Brooks.pdf)
+- [Torey's New Topical Textbook - R.A.Torrey](https://github.com/Abib-ops/Abib/releases/download/414.15/Torey.s.New.Topical.Textbook.pdf)
 - [Worship - John Owen](https://github.com/Abib-ops/Abib/releases/download/414.15/Worship.-.John.Owen.pdf)
 
 ## Credits
