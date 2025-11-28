@@ -4,11 +4,35 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.29
+Abib v414.30
 ------------
 
 Changelog.
 -----------
+Abib v414.30
+What’s new in this update
+•
+Smarter reference recognition: You can now type book names with ordinals
+in more natural ways, and Abib will still find them.
+◦
+Arabic ordinals with suffixes: 1st John 3:16, 2nd Timothy 1:7, 3rd Jn 1:4
+◦
+Written-out ordinals: First Peter 2:9, Second Corinthians 5:17, Third John 1:2
+◦
+Hyphenated forms: 1-John 4:8, 2-Kings 2:11, 3-Jn 1:4
+•
+More abbreviations recognised: Common shortcuts (e.g., gn, lv, nm, dt, 1kgs, 2kgs, pss, prv,
+qoh, dn, jl, hk, rm, gl, cl, 1tm, 2tm, 1pt, 2pt, pm, rv) now work across the app.
+•
+Fewer ambiguous shortcuts: jud now points to Jude (as many users expect),
+while Judges remains available as jdg/judg.
+•
+Extremely short or confusing tokens that could cause wrong matches were reduced.
+•
+NT-era aliases for OT books were implemented
+
+Bugfix for "Find" book limits not working as they should.
+
 Abib v414.29
 Bugfix for "2the" giving 1 Thessalonians in error.
 The Commentary button now goes near to the relevant place in the 45 books,

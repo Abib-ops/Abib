@@ -3339,12 +3339,3 @@ Index of Scripture References
             This document is from the Christian Classics Ethereal
                Library at Calvin College, http://www.ccel.org,
                    generated on demand from ThML source.
-
-References
-
-   1. file:///ccel/b/bounds/necessity/cache/necessity.html3?scrBook=Deut&scrCh=5&scrV=29#x-p2.1
-   2. file:///ccel/b/bounds/necessity/cache/necessity.html3?scrBook=Ps&scrCh=19&scrV=0#xiv-p9.1
-   3. file:///ccel/b/bounds/necessity/cache/necessity.html3?scrBook=Ps&scrCh=119&scrV=0#xiv-p20.1
-   4. file:///ccel/b/bounds/necessity/cache/necessity.html3?scrBook=Mark&scrCh=11&scrV=23#iii-p5.1
-   5. file:///ccel/b/bounds/necessity/cache/necessity.html3?scrBook=Rom&scrCh=15&scrV=30#vi-p28.1
-   6. file:///ccel/b/bounds/necessity/cache/necessity.html3?scrBook=Col&scrCh=4&scrV=12#vi-p29.1

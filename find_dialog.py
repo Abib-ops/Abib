@@ -63,6 +63,13 @@ class FindDialog(QDialog):
             if self.ui.comboBox_2.count() > 0:
                 self.ui.comboBox_2.setCurrentIndex(self.ui.comboBox_2.count() - 1)
 
+        # Enforce range rules dynamically: start (comboBox_1) must be <= end (comboBox_2)
+        # and the end dropdown must reflect this by disabling invalid items.
+        # Connect handlers and initialise once.
+        cast(Any, self.ui.comboBox_1.currentIndexChanged).connect(self._on_start_changed)
+        cast(Any, self.ui.comboBox_2.currentIndexChanged).connect(self._on_end_changed)
+        self._apply_end_constraints()
+
         QOk = QDialogButtonBox.StandardButton.Ok
         self.ui.buttonBox.button(QOk).setEnabled(True)
         self.ui.buttonBox.button(QOk).setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -121,6 +128,60 @@ class FindDialog(QDialog):
             self.ui.comboBox_1.setCurrentIndex(i)
             self.ui.comboBox_2.setCurrentIndex(j)
         return i, j
+
+    # ---- Range constraints helpers ----
+    def _apply_end_constraints(self) -> None:
+        """Disable items in the end combo that are before the current start index.
+
+        This makes the rule (start <= end) visible in the dropdown list.
+        """
+        start_idx = max(0, self.ui.comboBox_1.currentIndex())
+        count = self.ui.comboBox_2.count()
+        model = self.ui.comboBox_2.model()
+        for k in range(count):
+            enabled = k >= start_idx
+            # Prefer QStandardItemModel-style enable/disable if available
+            try:
+                item = getattr(model, "item")(k)
+            except Exception:
+                item = None
+            if item is not None:
+                try:
+                    item.setEnabled(bool(enabled))
+                    # Also affect selection to reflect disabled state in popup
+                    item.setSelectable(bool(enabled))
+                except Exception:
+                    # If anything goes wrong, silently ignore; snapping logic below enforces validity
+                    pass
+            else:
+                # Fallback: if the underlying model does not expose items (custom model),
+                # skip visual disabling and rely on snapping logic to enforce correctness.
+                # (Generic QAbstractItemModel does not provide a way to change flags directly.)
+                pass
+        # If the current end is now invalid, snap it to start
+        end_idx = self.ui.comboBox_2.currentIndex()
+        if 0 <= end_idx < start_idx:
+            # Prevent signal loops while adjusting
+            bs = self.ui.comboBox_2.blockSignals(True)
+            try:
+                self.ui.comboBox_2.setCurrentIndex(start_idx)
+            finally:
+                self.ui.comboBox_2.blockSignals(bs)
+
+    def _on_start_changed(self, index: int) -> None:
+        """When the start changes, update the end combo list and selection."""
+        # Ensure end >= start
+        self._apply_end_constraints()
+
+    def _on_end_changed(self, index: int) -> None:
+        """When the end changes, ensure it is not less than start."""
+        start_idx = self.ui.comboBox_1.currentIndex()
+        if index < start_idx:
+            bs = self.ui.comboBox_2.blockSignals(True)
+            try:
+                self.ui.comboBox_2.setCurrentIndex(start_idx)
+            finally:
+                self.ui.comboBox_2.blockSignals(bs)
 
     def check_changed(self) -> None:
         """Ensure that the checkBox is correct."""

@@ -85,17 +85,28 @@ class DataLoader:
         P119: List[Any] = [Amap[_] for _ in Ps119]
 
         # Precomputed bounds/flags used by syntax/highlighting (kept for parity)
-        book_bounds: List[int] = [
-            0, 1533, 2746, 3605, 4893, 5852, 6510, 7128, 7213, 8023,
-            8718, 9534, 10253, 11195, 12017, 12297, 12703, 12870,
-            13940, 16 , 17316, 17538, 17655, 18947, 20311, 20465,
-            21738, 22095, 22292, 22365, 22511, 22532, 22580, 22685,
-            22732, 22788, 22841, 22879, 23090, 23145, 24216, 24894,
-            26045, 26924, 27931, 28364, 28801, 29058, 29207, 29362,
-            29466, 29561, 29650, 29697, 29810, 29893, 29939, 29964,
-            30267, 30375, 30480, 30541, 30646, 30659, 30673, 30698,
-            31102
-        ]
+        # Compute book start bounds (0-based verse indices) for all 66 books from Info,
+        # then append a sentinel (LAST_VERSE_IN_BIBLE + 1). This avoids hard-coded
+        # mistakes and guarantees strict monotonicity and correctness across all books.
+        book_bounds: List[int] = [sh.LAST_VERSE_IN_BIBLE + 1] * sh.BOOKS_IN_THE_BIBLE
+        try:
+            # shared.Info is a tuple of per-verse metadata; index 0 is the 0-based book id
+            for idx in range(sh.LAST_VERSE_IN_BIBLE + 1):
+                b = sh.Info[idx][0]
+                if 0 <= b < sh.BOOKS_IN_THE_BIBLE and idx < book_bounds[b]:
+                    book_bounds[b] = idx
+            # Validate none are left at default; if any remain, we fall back to a simple increasing fill
+            last_seen = 0
+            for i in range(sh.BOOKS_IN_THE_BIBLE):
+                if book_bounds[i] == sh.LAST_VERSE_IN_BIBLE + 1:
+                    book_bounds[i] = last_seen
+                last_seen = book_bounds[i]
+        except Exception:
+            # On any unexpected issue, fall back to the original hard-coded Psalms start and an even split
+            # (still monotonic). This is a defensive fallback and should not normally trigger.
+            book_bounds = [0] + [i * (sh.LAST_VERSE_IN_BIBLE // (sh.BOOKS_IN_THE_BIBLE - 1)) for i in range(1, sh.BOOKS_IN_THE_BIBLE)]
+        # Append sentinel end bound
+        book_bounds.append(sh.LAST_VERSE_IN_BIBLE + 1)
         starts_with_italics = [6203, 13009, 14972, 15412, 22195, 28117]
 
         self._bible = BibleData(

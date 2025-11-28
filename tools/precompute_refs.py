@@ -27,7 +27,7 @@ Usage examples:
   python tools/precompute_refs.py --force
 
 Notes:
-- Normalization matches the app: CRLF/CR are converted to LF before scanning and hashing.
+- Normalisation matches the app: CRLF/CR are converted to LF before scanning and hashing.
 - Output files are named "<source>.refs.json.gz" placed in the output directory.
 - Existing companions are reused if content_sha256 and parser_version already match; use --force to rebuild.
 """
@@ -51,7 +51,7 @@ if str(PROJECT_ROOT) not in sys.path:
 import scripture  # type: ignore
 
 
-PARSER_VERSION = "2025-11-21a"
+PARSER_VERSION = "2025-11-28b"
 FORMAT_VERSION = 1
 
 
@@ -144,12 +144,73 @@ def process_one(txt_path: Path, output_dir: Path, force: bool = False) -> tuple[
 
     # Find references using the shared parser
     refs = scripture.find_scripture_references(content)  # type: ignore
+
+    # Validate refs and collect problems for reporting
+    problems: List[Dict[str, Any]] = []
+    for r in refs:
+        try:
+            book = r.get("book")
+            chapter = r.get("chapter")
+            verses = r.get("verse")
+            # Normalisation/lookup check
+            from scripture import normalize_book_input  # local import for clarity
+            import shared as sh  # type: ignore
+
+            key = normalize_book_input(str(book)) if isinstance(book, str) else None
+            book_id = sh.bibledict.get(key) if key else None
+            if not book_id:
+                problems.append({
+                    "type": "unknown_book",
+                    "book": book,
+                    "chapter": chapter,
+                    "verse": verses,
+                    "pos": r.get("start"),
+                })
+                continue
+
+            # Basic chapter validation
+            if not isinstance(chapter, int) or chapter <= 0:
+                problems.append({
+                    "type": "invalid_chapter",
+                    "book_id": book_id,
+                    "book": book,
+                    "chapter": chapter,
+                    "verse": verses,
+                    "pos": r.get("start"),
+                })
+                continue
+
+            # Extract the first verse number if present
+            import re as _re
+            first_match = _re.search(r"\d+", str(verses) if verses is not None else "")
+            if not first_match:
+                problems.append({
+                    "type": "invalid_verse",
+                    "book_id": book_id,
+                    "book": book,
+                    "chapter": chapter,
+                    "verse": verses,
+                    "pos": r.get("start"),
+                })
+        except Exception as e:  # extremely defensive to avoid aborting the run
+            problems.append({
+                "type": "exception",
+                "error": str(e),
+                "ref": {k: r.get(k) for k in ("book", "chapter", "verse", "start", "length", "text")},
+            })
+
     payload = build_companion_payload(txt_path, content, refs)
+    if problems:
+        payload["problems"] = problems
     try:
         write_companion(output_dir, base_name, payload)
     except Exception as e:
         return False, f"ERROR writing companion for {base_name}: {e}"
-    return True, f"Wrote: {out_path.name} (refs: {len(payload.get('refs', []))})"
+    summary = f"Wrote: {out_path.name} (refs: {len(payload.get('refs', []))}"
+    if problems:
+        summary += f", problems: {len(problems)}"
+    summary += ")"
+    return True, summary
 
 
 def main(argv: List[str] | None = None) -> int:

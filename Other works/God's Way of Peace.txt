@@ -3017,31 +3017,3 @@ Index of Scripture References
             This document is from the Christian Classics Ethereal
                Library at Calvin College, http://www.ccel.org,
                    generated on demand from ThML source.
-
-References
-
-   1. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Job&scrCh=22&scrV=21#v-p4.1
-   2. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Job&scrCh=33&scrV=23#v-p15.1
-   3. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Ps&scrCh=32&scrV=2#iv-p20.1
-   4. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Isa&scrCh=14&scrV=21#v-p24.1
-   5. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Isa&scrCh=14&scrV=21#vi-p12.1
-   6. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Isa&scrCh=53&scrV=0#x-p9.1
-   7. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Jer&scrCh=2&scrV=37#iv-p17.1
-   8. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Jer&scrCh=6&scrV=14#vi-p10.1
-   9. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Ezek&scrCh=18&scrV=4#vi-p16.1
-  10. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Luke&scrCh=18&scrV=11#iv-p16.1
-  11. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=John&scrCh=14&scrV=8#v-p13.1
-  12. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Rom&scrCh=4&scrV=2#i-p0.5
-  13. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Rom&scrCh=4&scrV=4#iv-p11.1
-  14. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Gal&scrCh=2&scrV=16#iv-p12.1
-  15. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=1Tim&scrCh=2&scrV=0#x-p9.2
-  16. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Titus&scrCh=3&scrV=5#iv-p10.1
-  17. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Heb&scrCh=9&scrV=7#vii-p4.1
-  18. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Heb&scrCh=9&scrV=9#vi-p8.1
-  19. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Jas&scrCh=2&scrV=19#v-p6.1
-  20. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=1Pet&scrCh=2&scrV=3#vi-p3.1
-  21. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=1Pet&scrCh=5&scrV=10#vi-p2.1
-  22. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=2Pet&scrCh=2&scrV=0#x-p9.3
-  23. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=1John&scrCh=3&scrV=16#v-p26.1
-  24. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=1John&scrCh=4&scrV=10#v-p27.1
-  25. file:///ccel/b/bonar/peace/cache/peace.html3?scrBook=Rev&scrCh=1&scrV=5#vii-p10.1

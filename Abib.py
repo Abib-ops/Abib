@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-26/11/2025
+28/11/2025
 
 """
 
@@ -1436,8 +1436,10 @@ class MainWindow(QMainWindow):
                             except (RuntimeError, AttributeError, TypeError, ValueError):
                                 pass
 
-                            # Consume the event to prevent default cursor side effects
-                            return True
+                            # Do not consume the event so that default text selection
+                            # behaviour (click, drag to select, double-click to select word)
+                            # continues to work in the Bible view.
+                            return False
                 except (RuntimeError, AttributeError, TypeError, ValueError):
                     # Fall through to default processing on any unexpected error
                     pass
@@ -1975,7 +1977,8 @@ class MainWindow(QMainWindow):
         else:
             assert self.dlg.checks[1] == 0      # Ignore the case
             pattern = rf"(?i){w.key}"
-        for _ in range(x1, x2):
+        # Iterate inclusively within the provided limits [x1, x2]
+        for _ in range(x1, x2 + 1):
             coordinate = []
             try:
                 for m in re.finditer(pattern, r[_]):
@@ -1993,10 +1996,11 @@ class MainWindow(QMainWindow):
     def findf3_raw(self, current_position: int, x1: int, x2: int, keylow: str) -> int:
         """Find Raw."""
 
+        # Count occurrences inclusively within the provided limits [x1, x2]
         if self.dlg.checks[1] == 1:  # Match case
-            w.occurring += sum(Rnew[_].count(w.key) for _ in range(x1, x2))
+            w.occurring += sum(Rnew[_].count(w.key) for _ in range(x1, x2 + 1))
         elif self.dlg.checks[1] == 0:  # Lower case
-            w.occurring += sum(Rlow[_].count(keylow) for _ in range(x1, x2))
+            w.occurring += sum(Rlow[_].count(keylow) for _ in range(x1, x2 + 1))
 
         if w.occurring != 0:
             w.occurrence = 0
@@ -2448,6 +2452,7 @@ class MainWindow(QMainWindow):
         if ref in ('q', 'Q'):
             self.display_verse_input.clear()
             exit()
+
         # print(f"ref in goto_line: {ref}")
         current_position = self.reference_to_line_number(ref)
         if current_position == -1:

@@ -87,11 +87,24 @@ def normalize_book_input(book_input: str) -> str:
     """Normalise a user/book token to a bibledict key.
 
     - Lowercase and strip
+    - Convert leading ordinals: 1st/2nd/3rd and First/Second/Third to 1/2/3
     - Convert leading Roman I/II/III to 1/2/3
     - Remove non-word characters
     - Map legacy tokens (e.g. Cant. -> canticles)
     """
     s = book_input.strip().lower()
+    # Normalise Arabic ordinals with suffixes at the very start (allow optional space and optional trailing dot)
+    # Examples handled: 1st John, 1 st. John, 1stJohn, 2nd-Thess, 3rdJn
+    s = re.sub(r"^1\s*st\.?", "1", s)
+    s = re.sub(r"^2\s*nd\.?", "2", s)
+    s = re.sub(r"^3\s*rd\.?", "3", s)
+
+    # Normalise written-out ordinals at the very start
+    # Examples: First John, Second Corinthians, Third John
+    s = re.sub(r"^first\b", "1", s)
+    s = re.sub(r"^second\b", "2", s)
+    s = re.sub(r"^third\b", "3", s)
+
     s = re.sub(r"^(iii)(?=\b|\s|\.)", "3", s)
     s = re.sub(r"^(ii)(?=\b|\s|\.)", "2", s)
     s = re.sub(r"^(i)(?=\b|\s|\.)", "1", s)
@@ -106,11 +119,82 @@ def normalize_book_input(book_input: str) -> str:
     return s
 
 
+def classify_book_input(user_input: str) -> Dict[str, Any]:
+    """Classify a free-form input for quick-jump intent.
+
+    Returns a dict with keys:
+      - status: one of {"none", "exact", "short_with_sep", "ambiguous_prefix"}
+      - key: normalized dict key (when applicable)
+      - book_id: int id (1-66) when applicable
+      - matched_abbr: the short abbreviation that matched (for UI messaging), optional
+
+    Rules implemented (from product suggestions):
+      1) Exact match only: if the fully normalised string is a known key -> "exact".
+      2) Short abbreviation acceptance requires a clear separator afterwards when more follows
+         (e.g. "am 1:1", "am.1:1", "am:1" or just "am").
+         If satisfied -> "short_with_sep".
+      3) If the input begins with a valid abbreviation but lacks a clear separator (e.g. "amaziah"),
+         mark as "ambiguous_prefix" and provide the most plausible book (typically by the longest
+         matching abbreviation key).
+    """
+    raw = (user_input or "").strip()
+    if not raw:
+        return {"status": "none"}
+
+    # Exact normalisation first
+    normalized_full = normalize_book_input(raw)
+    book_id = sh.bibledict.get(normalized_full)
+    if book_id:
+        return {"status": "exact", "key": normalized_full, "book_id": book_id}
+
+    # Work with the raw lowercase text to reason about separators
+    s = raw.lower()
+    # Acceptable separator characters between a short abbr and the chapter/verse
+    sep_chars = set(" .:-\t/\u00A0")
+
+    # Build a list of candidate abbreviation keys (pure alpha, up to 3 chars)
+    short_alpha_keys = [k for k in sh.bibledict.keys() if k.isalpha() and len(k) <= 3]
+    # Track the longest matching abbreviation to bias toward more specific keys
+    best_match: str | None = None
+    for k in short_alpha_keys:
+        if s.startswith(k):
+            if best_match is None or len(k) > len(best_match):
+                best_match = k
+
+    if best_match:
+        bid = sh.bibledict.get(best_match)
+        # Determine if we have a clear separator or the abbr is the whole input
+        if len(s) == len(best_match):
+            return {"status": "short_with_sep", "key": best_match, "book_id": bid, "matched_abbr": best_match}
+        next_char = s[len(best_match)]
+        if next_char in sep_chars:
+            return {"status": "short_with_sep", "key": best_match, "book_id": bid, "matched_abbr": best_match}
+        # Otherwise it's an ambiguous start (e.g. amaziah). Suggest the matched book but do not auto-jump.
+        return {"status": "ambiguous_prefix", "key": best_match, "book_id": bid, "matched_abbr": best_match}
+
+    # Also detect startswith any longer known key (e.g. "jonas" starts with "jonas" exact, already handled;
+    # here we care about misleading beginnings that match full long keys like "amos" -> would have matched above).
+    # If starts with any known key but with letters glued without a separator (rare), treat as ambiguous too.
+    for k in sh.bibledict.keys():
+        if s.startswith(k):
+            bid2 = sh.bibledict[k]
+            if len(s) == len(k) or s[len(k)] in sep_chars:
+                # Would have been exact earlier; treat as none here
+                break
+            return {"status": "ambiguous_prefix", "key": k, "book_id": bid2, "matched_abbr": k}
+
+    return {"status": "none"}
+
+
 # Precompile the reference pattern used by both UI and scanner
 # Define a broader whitespace class that includes common Unicode spaces seen in ebooks/PDFs.
 _WS = r"[\s\u00A0\u202F\u2007\u2009\u200A\u2000-\u2006]"
 
-_ord_re = rf"(?:(?:[1-3]|i{{1,3}})\.?{_WS}*)?"  # 1/2/3 or i/ii/iii with optional dot
+_ORD_SUFFIX = r"(?:st|nd|rd)?"  # for Arabic 1st/2nd/3rd
+_ORD_WORDS = r"(?:first|second|third)"  # written-out ordinals
+_SEP = rf"(?:{_WS}*[-.]?{_WS}*)"  # allow optional spaces with optional hyphen or dot between ordinal and book
+_ord_re = rf"(?:(?:[1-3]{_ORD_SUFFIX}|i{{1,3}}|{_ORD_WORDS}){_SEP})?"  # 1/2/3(+suffix)
+# or i/ii/iii or words with optional sep
 _book_re = r"[A-Za-z]+"  # validated later
 # Allow colon or dot between Arabic chapter and verse, e.g. 22:17 or 22.17
 _arabic_re = rf"(?P<chap_a>\d{{1,3}}){_WS}*[:.]{_WS}*(?P<vers_a>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*)"
@@ -129,9 +213,19 @@ _PATTERN = rf"""
 # Compile once for performance; allows scanning whole documents efficiently
 _PATTERN_RE = re.compile(_PATTERN, re.IGNORECASE | re.VERBOSE)
 
-# Precompile continuation pattern at module scope (used for semicolon-separated segments)
+# Precompile continuation pattern at module scope.
+# Enhancements:
+# - Allow both comma and semicolon separators for continuations that start a new chapter
+#   (either Arabic or Roman numerals), e.g. ", 4:5" or ", lxvii. 1".
+# - Keep verse-only continuations (e.g. "; 5-7") restricted to semicolon to avoid
+#   ambiguity with comma-separated verse lists inside a single reference (e.g. "John 3:16, 18").
 _CONTINUATION_RE = re.compile(
-    rf"^{_WS}*;{_WS}*(?:(?P<chap>\d{{1,3}}){_WS}*[:.]{_WS}*(?P<vers>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*)|(?P<vers_only>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*))",
+    rf"^{_WS}*(?P<sep>[,;]){_WS}*"
+    rf"(?:"
+    rf"(?P<chap_a>\d{{1,3}}){_WS}*[:.]{_WS}*(?P<vers_a>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*)"
+    rf"|(?P<chap_r>[ivxlcdm]+){_WS}*[:.]?{_WS}*(?P<vers_r>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*)"
+    rf"|(?P<vers_only>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*)"
+    rf")",
     re.IGNORECASE,
 )
 
@@ -210,9 +304,16 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
             }
         )
 
-        # Handle semicolon-separated continuations inheriting book and possibly chapter,
-        # e.g. "John 3:16; 4:5, 12-15" or one-chapter books like "Jude 5; 7-9".
-        # We scan forward from the end of this match for additional segments starting with ';'.
+        # Handle continuations inheriting the same book and possibly chapter.
+        # Supports:
+        # - Semicolon or comma followed by a new chapter (Arabic or Roman), e.g.,
+        #   "Ps.
+        #   xxxi. 16, lxvii. 1, cxix. 135" or "John 3:16; 4:5".
+        # - Semicolon and verse-only for one-chapter continuation within the same book, e.g.
+        #   "Jude 5; 7-9".
+        #   Verse-only via comma is deliberately not supported to avoid
+        #   colliding with comma-separated verse lists inside a single reference.
+        # We scan forward from the end of this match for additional segments.
         tail_pos = m.end()
         last_chapter = chapter
         while tail_pos < n:
@@ -221,10 +322,14 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
             if not m2:
                 break
             m2 = cast(re.Match[str], m2)
+            sep = m2.group("sep") or ""
             # Guard: if vers-only continuation (e.g. "; 1") is immediately followed by a plausible
             # new book token (digit or capitalised word),
             # stop continuation so the next main scan can pick it up.
             if m2.group("vers_only"):
+                # Only accept verse-only when the separator was a semicolon.
+                if sep != ";":
+                    break
                 after = tail[len(m2.group(0)) :]
                 after = re.sub(rf"^{_WS}+", "", after)
                 if after and (after[0].isdigit() or after[0].isupper()):
@@ -235,16 +340,25 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
             seg_lead = len(seg_full) - len(seg_lstripped)
             start2 = tail_pos + seg_lead
 
-            if m2.group("chap") and m2.group("vers"):
+            if m2.group("chap_a") and m2.group("vers_a"):
                 try:
-                    chapter2 = int(m2.group("chap"))
+                    chapter2 = int(m2.group("chap_a"))
                 except ValueError:
                     break
-                verses2 = m2.group("vers")
+                verses2 = m2.group("vers_a")
                 last_chapter = chapter2
-            else:
-                # vers-only; reuse last_chapter
+            elif m2.group("chap_r") and m2.group("vers_r"):
+                try:
+                    chapter2 = fromRoman(m2.group("chap_r").upper())
+                except (InvalidRomanNumeralError, ValueError):
+                    break
+                verses2 = m2.group("vers_r")
+                last_chapter = chapter2
+            elif m2.group("vers_only"):
+                # vers-only; reuse last_chapter (already ensured sep was ';')
                 verses2 = m2.group("vers_only")
+            else:
+                break
 
             verses2 = re.sub(rf"^{_WS}+", "", verses2)
             verses2 = re.sub(rf"(?:{_WS}|[)\];:.,\"'“”‘’])+$", "", verses2)

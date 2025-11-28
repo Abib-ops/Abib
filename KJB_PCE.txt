@@ -220,14 +220,14 @@ WITH ABBREVIATIONS.
 𝑇𝒽𝑒 𝐵𝑜𝑜𝑘𝑠 𝑜𝑓 𝑡𝒽𝑒 𝑂𝑙𝑑 𝑇𝑒𝑠𝑡𝑎𝑚𝑒𝑛𝑡.
  
                   Abbr.
-GENESIS           g
-Exodus            e
-Leviticus         l
-Numbers           n
-Deuteronomy       d
-Joshua            j
-Judges            ju
-Ruth              r
+GENESIS           ge, gn
+Exodus            ex
+Leviticus         le, lv
+Numbers           nu, nm
+Deuteronomy       de, dt
+Joshua            jos, josh
+Judges            jg, jdg
+Ruth              ru
 1 Samuel          1s
 2 Samuel          2s
 1 Kings           1k
@@ -238,26 +238,26 @@ Ezra              ez
 Nehemiah          ne
 Esther            es
 Job               jb
-Psalms            p
+Psalms            ps
 Proverbs          pr
 Ecclesiastes      ec
-Song of Solomon   s
-Isaiah            i
+Song of Solomon   so
+Isaiah            is
 Jeremiah          je
 Lamentations      la
 Ezekiel           eze
 Daniel            da
-Hosea             h
+Hosea             ho
 Joel              joe
-Amos              a
-Obadiah           o
+Amos              am
+Obadiah           ob
 Jonah             jon
-Micah             m
+Micah             mi
 Nahum             na
-Habakkuk          hab
-Zephaniah         z
+Habakkuk          ha
+Zephaniah         ze, zp
 Haggai            hag
-Zechariah         zec
+Zechariah         zc, zec
 Malachi           ma
  
 𝑇𝒽𝑒 𝐵𝑜𝑜𝑘𝑠 𝑜𝑓 𝑡𝒽𝑒 𝑁𝑒𝑤 𝑇𝑒𝑠𝑡𝑎𝑚𝑒𝑛𝑡.
@@ -266,21 +266,21 @@ Malachi           ma
 MATTHEW           mt
 Mark              mk
 Luke              lu
-John              joh
+John              joh, jn, jh
 The Acts          ac
-Romans            ro
+Romans            ro, rm
 1 Corinthians     1co
 2 Corinthians     2co
-Galatians         ga
+Galatians         ga, gl
 Ephesians         ep
-Philippians       php
-Colossians        co
+Philippians       php, ph
+Colossians        co, cl
 1 Thessalonians   1th
 2 Thessalonians   2th
 1 Timothy         1ti
 2 Timothy         2ti
-Titus             t
-Philemon          phm
+Titus             ti
+Philemon          phm, pm
 Hebrews           he
 James             ja
 1 Peter           1p
@@ -289,7 +289,7 @@ James             ja
 2 John            2j
 3 John            3j
 Jude              jd
-Revelation        re
+Revelation        re, ap
  
  
  

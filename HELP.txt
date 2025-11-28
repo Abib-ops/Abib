@@ -2,7 +2,7 @@
 ABIB HELP:
 **********
 
-Abib Bible Reader v414.29
+Abib Bible Reader v414.30
 
 Follow Scripture on your PC while listening to a sermon or message.
 
@@ -16,14 +16,14 @@ Installing Abib on Windows.
 
 First, uninstall any previous version of this program.
 
-Get the "Abib_setup_414.29_win.exe" file from 'Abib-ops' on GitHub,
+Get the "Abib_setup_414.30_win.exe" file from 'Abib-ops' on GitHub,
 find it in the 'Abib' repository.
 
 **************************************************
 * See: https://github.com/Abib-ops/Abib/releases *
 **************************************************
 
-Next, double-click the "Abib_setup_414.29_win.exe" installer and follow
+Next, double-click the "Abib_setup_414.30_win.exe" installer and follow
 the instructions, mostly click Next a few times, agree to the
 licence, and Abib will install. Please ignore any negative windows that
 claim that Abib is from an unknown author.
@@ -135,17 +135,17 @@ WITH THE NUMBER OF THEIR CHAPTERS.
 
                   Abbr.   Chaps.    Alt.
 
-GENESIS           g       50        ge
-Exodus            e       40        ex
-Leviticus         l       27        le
-Numbers           n       36        nu
-Deuteronomy       d       34        de
-Joshua            j       24        jos
-Judges            ju      21        jud
-Ruth              r       4         ru
+GENESIS           ge      50        gn
+Exodus            ex      40        exo
+Leviticus         le      27        lv
+Numbers           nu      36        nm
+Deuteronomy       de      34        dt
+Joshua            jos     24        josh    josue
+Judges            jg      21        jdg
+Ruth              ru      4         rut
 1 Samuel          1s      31        Isam    isam
 2 Samuel          2s      24        IIs     iis
-1 Kings           1k      22        Ik      ik
+1 Kings           1k      22        Ik      kgs
 2 Kings           2k      25        IIk     iik
 1 Chronicles      1ch     29        Ic      ic
 2 Chronicles      2ch     36        IIc     iic
@@ -153,26 +153,26 @@ Ezra              ez      10        ezr
 Nehemiah          ne      13        neh
 Esther            es      10        est
 Job               jb      42        job
-Psalms            ps      150       p
+Psalms            ps      150       psa
 Proverbs          pr      31        pro
 Ecclesiastes      ec      12        ecc
-Song of Solomon   s       8         sos     ca
-Isaiah            i       66        is
+Song of Solomon   so      8         sos     ca
+Isaiah            is      66        isa
 Jeremiah          je      52        jer
 Lamentations      la      5         lam
 Ezekiel           eze     48        ezk     ezek
-Daniel            da      12        dan
-Hosea             h       14        hos
-Joel              joe     3         jol     joel
-Amos              a       9         am      amo
-Obadiah           o       1         ob
-Jonah             jon     4         jona
-Micah             m       7         mi
+Daniel            da      12        dan     dn
+Hosea             ho      14        hos
+Joel              jl      3         jol     joe
+Amos              am      9         am      amo
+Obadiah           ob      1         oba
+Jonah             jon     4         jonas
+Micah             mi      7         mic
 Nahum             na      3         nah
 Habakkuk          ha      3         hb      hab
-Zephaniah         z       3         zep
+Zephaniah         ze      3         zp      zep
 Haggai            hag     2         hg
-Zechariah         zec     14        zc
+Zechariah         zec     14        zc      zacharias
 Malachi           ma      4         mal
 
 ——————————————————————————————
@@ -183,30 +183,32 @@ Malachi           ma      4         mal
 MATTHEW           mt      28        mat
 Mark              mk      16        mr
 Luke              lu      24        lk
-John              jo      21        joh     jn
+John              jn      21        joh     jn      jh
 The Acts          ac      28        act
-Romans            ro      16        rom
+Romans            ro      16        rom     rm
 1 Corinthians     1co     16        Ico     ico     1cor
 2 Corinthians     2co     13        IIco    iicor
-Galatians         ga      6         gal
+Galatians         ga      6         gal     gl
 Ephesians         ep      6         eph
-Philippians       php     4         ph
+Philippians       php     4         ph      phil
 Colossians        co      4         col
 1 Thessalonians   1th     5         It      it
 2 Thessalonians   2th     3         IIt     iit
 1 Timothy         1ti     6         Iti     iti     itim
 2 Timothy         2ti     4         IIti    iiti
-Titus             t       3         ti
-Philemon          phm     1         phi     phl
+Titus             ti      3         tit
+Philemon          phm     1         pm      phl
 Hebrews           he      13        heb
-James             ja      5         jam
+James             ja      5         jam     jas
 1 Peter           1p      5         Ip      ip
 2 Peter           2p      3         IIp     iip
 1 John            1j      5         Ij      ij
 2 John            2j      1         IIj     iij
 3 John            3j      1         IIIj    iiij
-Jude              jd      1         jude
-Revelation        re      22        rev
+Jude              jd      1         jud     jde
+Revelation        re      22        rv      rev     ap
+
+Many other abbreviations will work, but these are the most common.
 
 
 Moving backwards and forwards in the Bible.
@@ -514,7 +516,7 @@ text in the "Find ?:" box.
 Installing Abib on Linux.
 -------------------------
 
-Get the "Abib_linux_414.29.tar.bz2" file from the author.
+Get the "Abib_linux_414.30.tar.bz2" file from the author.
 
     If you can get it, then it may be an earlier version because of
     recent changes that work on Windows only, and the direction of
@@ -522,7 +524,7 @@ Get the "Abib_linux_414.29.tar.bz2" file from the author.
     But with some modifications, it could be made to work on Linux.
 
 Move it to your home folder or desired location and navigate there.
-Expand the compressed archive with: tar -jxvf Abib_linux_414.29.tar.bz2
+Expand the compressed archive with: tar -jxvf Abib_linux_414.30.tar.bz2
 
 $ chmod +x Abib will make sure that the executable flag is set.
 

@@ -1386,7 +1386,7 @@ class TextDocumentWindow(QDialog):
                     def _after_restore():
                         # After the content-anchored restore finalises, begin highlighting
                         try:
-                            # If a precise char jump was requested during load, apply it first
+                            # If a precise char jump was requested during a load, apply it first
                             try:
                                 pending_char = getattr(self, "_pending_jump_char", None)
                             except AttributeError:
@@ -1401,7 +1401,7 @@ class TextDocumentWindow(QDialog):
                                 self._start_lazy_highlighting(self.text_edit.toPlainText())
                         except (RuntimeError, AttributeError, TypeError, ValueError):
                             pass
-                        # If a jump to anchors was requested during load, apply it now
+                        # If a jump to anchors was requested during a load, apply it now
                         try:
                             if isinstance(self._pending_jump_patterns, list) and self._pending_jump_patterns:
                                 self._jump_to_anchors_now(self._pending_jump_patterns)
@@ -1465,10 +1465,10 @@ class TextDocumentWindow(QDialog):
             self._hide_progress()
             self._is_loading_file = False
 
-    # ---- Jump to text anchors (used by Commentary button) ----
+    # ---- Jump to text anchors (used by the Commentary button) ----
     def goto_text_anchors(self, anchors: list[str]) -> None:
         """Jump to the first occurrence of the given anchor strings.
-        If a file is currently loading, queue the request and apply it after load completes.
+        If a file is currently loading, queue the request and apply it after a load completes.
         Anchors are matched case-insensitively against the loaded text.
         """
         try:
@@ -1491,7 +1491,7 @@ class TextDocumentWindow(QDialog):
         Priority respects the order of anchors provided: the first anchor that matches anywhere
         in the document is used.
         This avoids accidentally jumping to an earlier generic heading
-        (e.g., the first "Chapter 1" of a different book) when a more specific anchor appears later.
+        (e.g. the first "Chapter 1" of a different book) when a more specific anchor appears later.
         """
         try:
             if not isinstance(anchors, list) or not anchors:
@@ -1521,7 +1521,7 @@ class TextDocumentWindow(QDialog):
                 self.text_edit.setTextCursor(cursor)
                 self.text_edit.ensureCursorVisible()
                 # Nudge the view a little up so the anchor is not the last line
-                # by moving the cursor to start of the block
+                # by moving the cursor to the start of the block
                 try:
                     block = self.text_edit.document().findBlock(int(best_idx))
                     if block and block.isValid():
@@ -1540,7 +1540,7 @@ class TextDocumentWindow(QDialog):
     # ---- Jump to a specific character offset (used by precise commentary index) ----
     def goto_char_offset(self, char_index: int) -> None:
         """Jump to a specific character index in the loaded document.
-        If a file is loading, queue the request and apply it after load completes.
+        If a file is loading, queue the request and apply it after a load completes.
         """
         try:
             if not isinstance(char_index, int) or char_index < 0:
