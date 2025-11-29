@@ -54,7 +54,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.0 and python3.13.9 (64-bit).
 
-28/11/2025
+29/11/2025
 
 """
 
@@ -1436,8 +1436,8 @@ class MainWindow(QMainWindow):
                             except (RuntimeError, AttributeError, TypeError, ValueError):
                                 pass
 
-                            # Do not consume the event so that default text selection
-                            # behaviour (click, drag to select, double-click to select word)
+                            # Do not consume the event so that the default text selection behaviour
+                            # (click, drag to select, double-click to select a word)
                             # continues to work in the Bible view.
                             return False
                 except (RuntimeError, AttributeError, TypeError, ValueError):

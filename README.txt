@@ -4,11 +4,18 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.30
+Abib v414.31
 ------------
 
 Changelog.
 -----------
+Abib v414.31
+Added a tool called find-unknown_bible_abbrevs.py to the Abib distribution.
+The tool was used to find old styles of references in our "Other Works" texts.
+These were then included in the bibledict dictionary.
+The result should be a much cleaner set of references and fewer unidentified abbreviations
+in the "Other Works" texts.
+
 Abib v414.30
 What’s new in this update
 •
@@ -561,6 +568,8 @@ linux username.
 Now you can run it by navigating to that folder and doing:
 
 $ python Abib.py
+
+You will need to change a few things to make it work on linux.
 
 God Bless you.
 

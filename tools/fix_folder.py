@@ -1,3 +1,6 @@
+"""
+This is to correct encoding errors in the downloaded UTF-8 Unicode files.
+"""
 
 import os
 import sys
