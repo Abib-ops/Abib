@@ -41,6 +41,7 @@ import json
 import sys
 from pathlib import Path
 from typing import Any, Dict, List
+import csv
 
 # Ensure we can import local project modules when run from anywhere
 THIS_FILE = Path(__file__).resolve()
@@ -51,7 +52,7 @@ if str(PROJECT_ROOT) not in sys.path:
 import scripture  # type: ignore
 
 
-PARSER_VERSION = "2025-11-28b"
+PARSER_VERSION = "2025-12-09-line-csv"
 FORMAT_VERSION = 1
 
 
@@ -122,7 +123,45 @@ def write_companion(output_dir: Path, base_name: str, payload: Dict[str, Any]) -
     return out_path
 
 
-def process_one(txt_path: Path, output_dir: Path, force: bool = False) -> tuple[bool, str]:
+def _build_bible_data() -> Dict[str, Any]:
+    """Build bible_data structure expected by scripture.lookup_scripture.
+
+    Shape: { CanonicalBookName: { chapter_str: { verse_str: text }}}
+    """
+    # Lazy imports to avoid hard dependency when the module is imported elsewhere
+    from services.data_loader import DataLoader  # type: ignore
+    import shared as sh  # type: ignore
+    import scripture as _scripture  # type: ignore
+
+    loader = DataLoader(PROJECT_ROOT)
+    bible = loader.load_bible()
+    KJV = bible.KJV
+    can = _scripture.CANONICAL_BOOKS
+
+    bible_data: Dict[str, Dict[str, Dict[str, str]] ] = {}
+    # sh.Info aligns 1:1 with KJV after copyright trimming in DataLoader
+    for idx, triple in enumerate(sh.Info):
+        try:
+            book_id, chap_idx, verse_idx = int(triple[0]), int(triple[1]), int(triple[2])
+        except (ValueError, TypeError, IndexError):
+            continue
+        book_name = can.get(book_id + 1)
+        if not book_name:
+            continue
+        chap = str(chap_idx + 1)
+        verse = str(verse_idx + 1)
+        verse_text = KJV[idx] if 0 <= idx < len(KJV) else ""
+        bible_data.setdefault(book_name, {}).setdefault(chap, {})[verse] = verse_text
+    return bible_data
+
+
+def process_one(
+    txt_path: Path,
+    output_dir: Path,
+    force: bool = False,
+    bible_data: Dict[str, Any] | None = None,
+    csv_rows: List[Dict[str, Any]] | None = None,
+) -> tuple[bool, str]:
     """Process a single .txt file. Returns (changed, message)."""
     try:
         raw = txt_path.read_text(encoding="utf-8", errors="replace")
@@ -130,6 +169,18 @@ def process_one(txt_path: Path, output_dir: Path, force: bool = False) -> tuple[
         return False, f"ERROR reading {txt_path.name}: {e}"
 
     content = normalize_text(raw)
+    # Helper to compute 1-based line number from absolute character offset in normalised content
+    def _line_from_offset(offset: Any) -> int:
+        try:
+            pos = int(offset)
+        except (TypeError, ValueError):
+            return 0
+        if pos <= 0:
+            return 1 if content else 0
+        if pos > len(content):
+            pos = len(content)
+        # Count newlines up to the offset; lines are 1-based
+        return content.count("\n", 0, pos) + 1
     base_name = txt_path.name  # keep extension in base for clarity in the output name
     out_path = output_dir / f"{base_name}.refs.json.gz"
 
@@ -159,45 +210,151 @@ def process_one(txt_path: Path, output_dir: Path, force: bool = False) -> tuple[
             key = normalize_book_input(str(book)) if isinstance(book, str) else None
             book_id = sh.bibledict.get(key) if key else None
             if not book_id:
-                problems.append({
+                prob = {
                     "type": "unknown_book",
                     "book": book,
                     "chapter": chapter,
                     "verse": verses,
                     "pos": r.get("start"),
-                })
+                    "text": r.get("text", ""),
+                }
+                problems.append(prob)
+                if csv_rows is not None:
+                    csv_rows.append({
+                        "file": txt_path.name,
+                        "type": prob["type"],
+                        "book": str(book),
+                        "chapter": str(chapter),
+                        "verse": str(verses),
+                        "line": str(_line_from_offset(r.get("start"))),
+                        "message": "Book not recognised",
+                        "text": r.get("text", ""),
+                    })
                 continue
 
             # Basic chapter validation
             if not isinstance(chapter, int) or chapter <= 0:
-                problems.append({
+                prob = {
                     "type": "invalid_chapter",
                     "book_id": book_id,
                     "book": book,
                     "chapter": chapter,
                     "verse": verses,
                     "pos": r.get("start"),
-                })
+                    "text": r.get("text", ""),
+                }
+                problems.append(prob)
+                if csv_rows is not None:
+                    csv_rows.append({
+                        "file": txt_path.name,
+                        "type": prob["type"],
+                        "book": str(book),
+                        "chapter": str(chapter),
+                        "verse": str(verses),
+                        "line": str(_line_from_offset(r.get("start"))),
+                        "message": "Invalid or missing chapter",
+                        "text": r.get("text", ""),
+                    })
                 continue
 
             # Extract the first verse number if present
             import re as _re
             first_match = _re.search(r"\d+", str(verses) if verses is not None else "")
             if not first_match:
-                problems.append({
+                prob = {
                     "type": "invalid_verse",
                     "book_id": book_id,
                     "book": book,
                     "chapter": chapter,
                     "verse": verses,
                     "pos": r.get("start"),
-                })
+                    "text": r.get("text", ""),
+                }
+                problems.append(prob)
+                if csv_rows is not None:
+                    csv_rows.append({
+                        "file": txt_path.name,
+                        "type": prob["type"],
+                        "book": str(book),
+                        "chapter": str(chapter),
+                        "verse": str(verses),
+                        "line": str(_line_from_offset(r.get("start"))),
+                        "message": "Invalid or missing verse",
+                        "text": r.get("text", ""),
+                    })
+                continue
+
+            # Lookup using bible_data if provided
+            if bible_data is not None:
+                from scripture import lookup_scripture  # type: ignore
+                out = lookup_scripture(bible_data, str(book), int(chapter), str(verses))
+                out_str = (out or "").strip()
+                if out_str == "Scripture not found.":
+                    prob = {
+                        "type": "scripture_not_found",
+                        "book_id": book_id,
+                        "book": book,
+                        "chapter": chapter,
+                        "verse": verses,
+                        "pos": r.get("start"),
+                        "text": r.get("text", ""),
+                    }
+                    problems.append(prob)
+                    if csv_rows is not None:
+                        csv_rows.append({
+                            "file": txt_path.name,
+                            "type": prob["type"],
+                            "book": str(book),
+                            "chapter": str(chapter),
+                            "verse": str(verses),
+                            "line": str(_line_from_offset(r.get("start"))),
+                            "message": out_str,
+                            "text": r.get("text", ""),
+                        })
+                else:
+                    # Check for partial failures like "Verse N not found". lines
+                    missing_lines = [ln for ln in out_str.splitlines() if ln.strip().startswith("Verse ") and ln.strip().endswith("not found.")]
+                    if missing_lines:
+                        prob = {
+                            "type": "verse_missing",
+                            "book_id": book_id,
+                            "book": book,
+                            "chapter": chapter,
+                            "verse": verses,
+                            "pos": r.get("start"),
+                            "text": r.get("text", ""),
+                            "details": missing_lines,
+                        }
+                        problems.append(prob)
+                        if csv_rows is not None:
+                            csv_rows.append({
+                                "file": txt_path.name,
+                                "type": prob["type"],
+                                "book": str(book),
+                                "chapter": str(chapter),
+                                "verse": str(verses),
+                                "line": str(_line_from_offset(r.get("start"))),
+                                "message": "; ".join(missing_lines),
+                                "text": r.get("text", ""),
+                            })
         except Exception as e:  # extremely defensive to avoid aborting the run
-            problems.append({
+            prob = {
                 "type": "exception",
                 "error": str(e),
                 "ref": {k: r.get(k) for k in ("book", "chapter", "verse", "start", "length", "text")},
-            })
+            }
+            problems.append(prob)
+            if csv_rows is not None:
+                csv_rows.append({
+                    "file": txt_path.name,
+                    "type": prob.get("type", "exception"),
+                    "book": str(r.get("book")),
+                    "chapter": str(r.get("chapter")),
+                    "verse": str(r.get("verse")),
+                    "line": str(_line_from_offset(r.get("start"))),
+                    "message": str(e),
+                    "text": r.get("text", ""),
+                })
 
     payload = build_companion_payload(txt_path, content, refs)
     if problems:
@@ -235,6 +392,12 @@ def main(argv: List[str] | None = None) -> int:
         action="store_true",
         help="Rebuild companions even if an up-to-date file exists",
     )
+    parser.add_argument(
+        "--csv",
+        type=str,
+        default=None,
+        help="Optional path for CSV report of reference problems (defaults to '<output>/scripture_problems.csv')",
+    )
     args = parser.parse_args(argv)
 
     in_dir = Path(args.input).resolve()
@@ -254,12 +417,46 @@ def main(argv: List[str] | None = None) -> int:
     print(f"Output: {out_dir}")
     print(f"Parser: {PARSER_VERSION}\n")
 
+    # Build bible_data once for all lookups
+    bible_data = _build_bible_data()
+
+    # Prepare CSV rows collection
+    csv_rows: List[Dict[str, Any]] = []
+
     changed = 0
     for p in txt_files:
-        did_change, msg = process_one(p, out_dir, force=args.force)
+        did_change, msg = process_one(p, out_dir, force=args.force, bible_data=bible_data, csv_rows=csv_rows)
         print(msg)
         if did_change:
             changed += 1
+
+    # Write CSV if there are any rows
+    if csv_rows:
+        csv_path = Path(args.csv) if args.csv else (out_dir / "scripture_problems.csv")
+        try:
+            csv_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(csv_path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(
+                    f,
+                    fieldnames=[
+                        "file",
+                        "type",
+                        "book",
+                        "chapter",
+                        "verse",
+                        "line",
+                        "message",
+                        "text",
+                    ],
+                )
+                writer.writeheader()
+                for row in csv_rows:
+                    writer.writerow(row)
+            print(f"\nProblem report written: {csv_path}")
+        except Exception as e:
+            print(f"\nERROR writing CSV report: {e}")
+    else:
+        print("\nNo reference problems detected.")
 
     print(f"\nDone. Processed {len(txt_files)} file(s), updated {changed}.")
     return 0

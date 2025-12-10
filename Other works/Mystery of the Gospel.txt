@@ -5931,7 +5931,7 @@ Chapter II.
    tibi. Nihil ab illo vacat: opus suum ipse implet." -- Senec, de Benef.
    lib. iv. cap. viii.
 
-   [162] "Jovis omnia plena." -- Virg. Ecl. iii. 60.
+   [162] "Jovis omnia plena." -- Virgil’s Eclogue III, line 60.
 
    [163] Lucan, lib. iii.
 
@@ -17087,28 +17087,28 @@ Chapter XIV.
    can by no means have a divine nature, when he who is God by nature hath
    all things of himself. [357]
 
-   Of these texts the consideration will soon be despatched. 1. John xiv.
-   15, Christ saith, "All things that the Father hath are mine: therefore
-   said I, that he shall take of mine, and shall show it unto you." Now,
-   if all things that the Father hath are his, then the divine nature is
-   his, for the Father hath a divine nature. But they say this "all
-   things" is to be expounded according to the subject-matter treated of;
-   that is, only what the Holy Ghost was to reveal to the apostles. Let,
-   then, the expression be expounded according to the subject-matter.
-   Christ renders a reason why he said that the Spirit should take of his:
-   even because what he had of the Father he had also of him, all that the
-   Father hath being his. Now, it was the knowledge of all truth, and all
-   things to come, and all things concerning the kingdom of Christ, that
-   he was thus to show to the apostles. But look, whence the Holy Ghost
-   hath his knowledge, thence he hath his essence; for those things do not
-   really differ in a divine nature. The Spirit, then, having his
-   knowledge of the Son, hath also his essence of the Son, as he hath of
-   the Father. And by this it is most evidently confirmed, that among the
-   "all things" that the Father hath, which the Son hath, his divine
-   nature is also, or else that could be no reason why he should say that
-   the Spirit should take of his, and show to them.
+   Of these texts the consideration will soon be despatched. 
+   1.) John xiv. 15, Christ saith, "All things that the Father hath are
+   mine: therefore said I, that he shall take of mine, and shall show it
+   unto you." Now, if all things that the Father hath are his, then the
+   divine nature is his, for the Father hath a divine nature. But they say
+   this "all things" is to be expounded according to the subject-matter
+   treated of; that is, only what the Holy Ghost was to reveal to the
+   apostles. Let, then, the expression be expounded according to the
+   subject-matter. Christ renders a reason why he said that the Spirit
+   should take of his: even because what he had of the Father he had also
+   of him, all that the Father hath being his. Now, it was the knowledge
+   of all truth, and all things to come, and all things concerning the
+   kingdom of Christ, that he was thus to show to the apostles. But look,
+   whence the Holy Ghost hath his knowledge, thence he hath his essence;
+   for those things do not really differ in a divine nature. The Spirit,
+   then, having his knowledge of the Son, hath also his essence of the Son,
+   as he hath of the Father. And by this it is most evidently confirmed,
+   that among the "all things" that the Father hath, which the Son hath,
+   his divine nature is also, or else that could be no reason why he should
+   say that the Spirit should take of his, and show to them.
 
-   2. John xvii. 10, a reason is rendered why those who are Christ's are
+   2.) John xvii. 10, a reason is rendered why those who are Christ's are
    also God's, and to be in his care; that is, because all his things (ta
    ema panta) were the Father's, and all the Father's his. It is not,
    then, spoken of the disciples; but is a reason given why the disciples
@@ -17116,7 +17116,7 @@ Chapter XIV.
    between Father and Son, whence all the Son's things are the Father's,
    and all the Father's are the Son's.
 
-   3. Christ's having all things not from himself, but by gift from the
+   3.) Christ's having all things not from himself, but by gift from the
    Father, may be understood two ways. Either it refers to the nature of
    Christ as he is God, or to the person of Christ as he is the Son of
    God. In the first sense it is false; for the nature of Christ being one

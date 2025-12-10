@@ -4,17 +4,69 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v414.31
+Abib v415.01
 ------------
 
 Changelog.
 -----------
+Abib v415.01
+Updated to the following versions of the required packages:
+because of a Dependabot alert from GitHub: for urllib3 version 2.5.0.
+
+Package                   Version
+------------------------- ---------
+Python                    3.13.11
+altgraph                  0.17.5
+certifi                   2025.11.12
+charset-normalizer        3.4.4
+colorama                  0.4.6
+comtypes                  1.4.13
+idna                      3.11
+iniconfig                 2.3.0
+packaging                 25.0
+pefile                    2024.8.26
+pip                       25.3
+pipdeptree                2.30.0
+pluggy                    1.6.0
+Pygments                  2.19.2
+pyinstaller               6.17.0
+pyinstaller-hooks-contrib 2025.10
+pypiwin32                 223
+PySide6                   6.10.1
+PySide6_Addons            6.10.1
+PySide6_Essentials        6.10.1
+pytest                    9.0.1
+pyttsx3                   2.99
+pywin32                   311
+pywin32-ctypes            0.2.3
+requests                  2.32.5
+roman                     5.2
+setuptools                80.9.0
+shiboken6                 6.10.1
+urllib3                   2.6.0
+wheel                     0.45.1
+
+Some changes to the requirements.txt file were made to accommodate the new
+versions of the packages.
+Changes to the stylesheet to improve the appearance of pushbuttons, comboboxes,
+and textboxes.
+
+Extensive editing of the "Other Works texts was carried out to remove
+"Verse not found" errors. Sorry, but no Errata sheet was made.
+
 Abib v414.31
-Added a tool called find-unknown_bible_abbrevs.py to the Abib distribution.
-The tool was used to find old styles of references in our "Other Works" texts.
-These were then included in the bibledict dictionary.
-The result should be a much cleaner set of references and fewer unidentified abbreviations
-in the "Other Works" texts.
+•
+New tool: tools\find_unknown_bible_abbrevs.py added to the distribution to
+scan texts for legacy or uncommon Bible reference styles.
+•
+Reference clean-up: Ran the tool across the “Other Works” corpus to surface
+outdated/variant abbreviations and reference patterns.
+•
+Dictionary updates: Mapped the discovered forms into the bibledict
+dictionary to standardise recognition.
+•
+Results: Noticeably cleaner references in “Other Works” and far fewer
+unidentified/ambiguous abbreviations during lookup and parsing.
 
 Abib v414.30
 What’s new in this update
@@ -28,8 +80,9 @@ Written-out ordinals: First Peter 2:9, Second Corinthians 5:17, Third John 1:2
 ◦
 Hyphenated forms: 1-John 4:8, 2-Kings 2:11, 3-Jn 1:4
 •
-More abbreviations recognised: Common shortcuts (e.g., gn, lv, nm, dt, 1kgs, 2kgs, pss, prv,
-qoh, dn, jl, hk, rm, gl, cl, 1tm, 2tm, 1pt, 2pt, pm, rv) now work across the app.
+More abbreviations recognised: Common shortcuts (e.g., gn, lv, nm, dt, 1kgs,
+2kgs, pss, prv, qoh, dn, jl, hk, rm, gl, cl, 1tm, 2tm, 1pt, 2pt, pm, rv)
+now work across the app.
 •
 Fewer ambiguous shortcuts: jud now points to Jude (as many users expect),
 while Judges remains available as jdg/judg.
@@ -110,7 +163,8 @@ Added The Works of Thomas Brook to the "pdf" folder.
 Abib v414.13
 Improved the detection of references that span two lines.
 Completed work on Institutes - John Calvin. Also, Arminianism.
-Added a new button to the reader window combobox 'Last' to return to the last viewed file.
+Added a new button to the reader window combobox 'Last' to return to the last
+viewed file.
 
 
 Abib v414.12

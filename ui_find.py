@@ -174,13 +174,13 @@ class Ui_Dialog(object):
         self.pushButton_1.setText(QCoreApplication.translate("dialog", u"X", None))
         self.label_2.setText(QCoreApplication.translate("dialog", u"Search Limits", None))
         self.radiobutton_1.setText(QCoreApplication.translate(
-            "dialog", u"Raw Search                      (Literal search - part words - anything)", None))
+            "dialog", u"Raw Search               (Literal search)        ", None))
         self.radiobutton_2.setText(QCoreApplication.translate(
-            "dialog", u"Match whole words          (Single word or phrase)", None))
+            "dialog", u"Whole words        (Single word or phrase) ", None))
         self.radiobutton_3.setText(QCoreApplication.translate(
-            "dialog", u"All the words                    (Somewhere in the verse)", None))
+            "dialog", u"All the words            (Somewhere in the verse)", None))
         self.radiobutton_4.setText(QCoreApplication.translate(
-            "dialog", u"Any of the words             (With results sorted)", None))
+            "dialog", u"Any of the words         (With results sorted)   ", None))
         self.buttonBox.setProperty(".standardButtons", "")
     # retranslateUi
 

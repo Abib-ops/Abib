@@ -1,41 +1,13 @@
 #!/usr/bin/env python
 """
-Copyright 2025 Andrew Kingston.
+Abib — Copyright © 2004–2025 The Abib Contributors
+Licensed under the GNU General Public License v3.0 or later (GPL-3.0-or-later).
+See LICENSE for the full text.
+SPDX-License-Identifier: GPL-3.0-or-later
 
-This file is part of Abib Bible Reader.
-
-Abib is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public Licence as published by
-the Free Software Foundation, either version 3 of the Licence or
-any later version.
-
-Abib is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public Licence for more details.
-
-You should have received a copy of the GNU General Public Licence
-along with Abib.  If not, see <https://www.gnu.org/licenses/>.
-
-For linux use:
-Make sure python is up to date in your distro (But < 3.14)
-Copy the Abib folder from the installation media or download to the home folder
-Navigate to the folder where you have put Abib
-do
-$ chmod +x myscript.py
-$ python3 myscript.py or ./myscript.py
-do
-pip install wheel
-then
-Depending on the error you may get for a missing dependency
-do
-pip install pyside6
-
-Photo Credit: Abibofgod.com for the splash screen.
-
-Spurgeon's Morning and Evening Readings Obtained from www.spurgeon.org.
-Reformatted by Eternal Life Ministries.
-Additional Bible-based resources are available at www.spurgeongems.org.
+Third-party materials and attributions:
+- Pure Cambridge Edition of the KJV — see source and terms at bibleprotector.com
+- Spurgeon resources — see spurgeon.org and Eternal Life Ministries for terms
 
                       .
                .               .
@@ -52,10 +24,53 @@ Additional Bible-based resources are available at www.spurgeongems.org.
 
 Abib Bible Reader אביב
 
-Using PySide6-6.10.0 and python3.13.9 (64-bit).
+Using PySide6-6.10.1 and python3.13.11 (64-bit).
 
-29/11/2025
+09/12/2025
 
+python -m pip install --upgrade pip wheel
+python -m pip install -r requirements.txt
+----------------------------------------------------------------------------------------------------------------
+Linux users — a sincere apology and quick guidance
+We’re sorry: Abib is currently Windows‑centric, and our small team hasn’t kept multi‑platform support up to date.
+We appreciate your patience, and we welcome improvements from Linux contributors.
+
+Quick start on Linux (unofficial)
+•
+Ensure Python is recent (recommended: 3.10–3.13, not 3.14+).
+•
+Copy the Abib folder to your home directory.
+•
+In a terminal, from that folder:
+
+# (optional but recommended)
+python3 -m venv .venv && source .venv/bin/activate
+python3 -m pip install --upgrade pip wheel
+python3 -m pip install pyside6
+
+# make the main script executable if needed
+chmod +x Abib.py
+
+# run it
+python3 Abib.py
+# or, if it has a shebang
+./Abib.py
+
+If Qt errors occur, install system Qt/XCB deps (e.g. libxcb, xcb-util, xcb-util-keysyms,
+Wayland/X11 plugins) via your distro’s package manager.
+
+Tips for porting (small but high‑impact)
+•
+Replace Windows paths (backslashes, drive letters) with pathlib.Path throughout;
+avoid hard‑coded C:\… and use relative paths.
+•
+Gate platform code with sys.platform.startswith('win') and provide Linux alternatives.
+•
+Use forward‑slash paths or Path methods when building file locations.
+•
+Avoid shell‑only Windows commands; prefer Python equivalents (file I/O, env vars).
+•
+Test with QT_QPA_PLATFORM=xcb (X11) or ensure Wayland plugins are present.
 """
 
 import re
@@ -81,8 +96,8 @@ splash: Any | None = None
 
 from PySide6.QtWidgets import (QMainWindow, QWidget,
                                QPlainTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
-                               QPushButton, QHBoxLayout, QVBoxLayout, QInputDialog,
-                               QStatusBar, QFileDialog, QSplashScreen)
+                               QPushButton, QVBoxLayout, QInputDialog,
+                               QStatusBar, QFileDialog, QSplashScreen, QSizePolicy)
 
 from PySide6.QtGui import (QMouseEvent, QKeyEvent, QSyntaxHighlighter, QColor, QFont,
                            QTextCursor, QTextCharFormat, QPixmap, QKeySequence, QShortcut)
@@ -186,7 +201,7 @@ def iterate_list(keywords: list[str], r_list: list) -> None:
 
 
 def findf3_ww_ac(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list: list) -> None:
-    """Match whole words (phrase)."""
+    """Whole words (phrase)."""
 
     liszt = w.key.split(' ')
     s = _set[liszt[0]] & _set[liszt[1]]
@@ -907,6 +922,19 @@ class MainWindow(QMainWindow):
         self._last_clicked_position: int = 0
         # Track the last general context position used by features like Commentary
         self._last_context_position: int = 0
+        # Track whether we've already captured the origin geometry before switching to
+        # auxiliary files (HELP/README/LICENSE).
+        # Initialise here to satisfy linters and avoid defining the instance attribute outside __init__.
+        self._aux_origin_saved: bool = False
+        # Store the main window geometry before switching to auxiliary files so it can
+        # be restored when returning to the Bible view.
+        # Initialise to None to avoid defining this attribute outside __init__.
+        self._saved_geometry_before_aux: QRect | None = None
+        # Flag used to inform Back-handler logic that we've just returned from
+        # an auxiliary file (README/HELP/LICENSE) to the Bible view; the very
+        # next Back press should be ignored to preserve the restored position.
+        # Initialise here to avoid defining the attribute outside __init__.
+        self._just_restored_from_aux: bool = False
 
         # Services
         self.audio = AudioService()
@@ -1010,108 +1038,125 @@ class MainWindow(QMainWindow):
         grid.setSpacing(2)
         self.setLayout(grid)
 
-        # Let the Bible text editor take up the extra space to the right by spanning all 4 columns on row 0.
-        # Note: Column 3 is still used on rows 1–4 for the right-hand buttons; spanning on row 0 does not affect them.
-        grid.addWidget(self.textEditor, 0, 0, 1, 4)
+        # Configure a 5-column grid where each column has equal stretch so they
+        # share available width uniformly as the window resizes.
+        for _col in range(5):
+            try:
+                grid.setColumnStretch(_col, 1)
+            except (RuntimeError, AttributeError, TypeError):
+                pass
+
+        # Let the Bible text editor take up the extra space to the right by spanning all 5 columns on row 0.
+        # Note: Columns 0–4 are used on later rows for controls; spanning on row 0 does not affect them.
+        grid.addWidget(self.textEditor, 0, 0, 1, 5)
         self.textEditor.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
-        grid.addWidget(self.comboBox_1, 1, 0)
+        # Make Book combo double width (two columns)
+        grid.addWidget(self.comboBox_1, 1, 0, 1, 2)
         self.comboBox_1.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        grid.addWidget(self.comboBox_2, 1, 1)
+        # Make Chapter combo a single width (same as a pushbutton)
+        grid.addWidget(self.comboBox_2, 1, 2)
         self.comboBox_2.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        grid.addWidget(self.comboBox_3, 1, 2)
+        # Verse combo stays single-width on the top control row (moved left to column 3)
+        grid.addWidget(self.comboBox_3, 1, 3)
         
-        # Column 3 (the 4th column) is intentionally left empty on row 0 and reserved for
-        # three buttons placed beside existing controls on rows 2–4.
-        # We no longer add a spanning layout here, so we can target specific row placements.
+        # Columns 0–4 are used for controls on rows 1–5.
+        # Some columns on certain rows may be intentionally left empty,
+        # but all five columns have equal stretch so they remain equal
+        # in width and expand uniformly with the window.
         self.comboBox_3.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        grid.addWidget(self.display_verse_input, 2, 0)
+        # F2 text entry should be double the width of pushbuttons
+        grid.addWidget(self.display_verse_input, 2, 0, 1, 2)
         self.display_verse_input.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         self.okButton = QPushButton("OK")
         self.okButton.setStyleSheet("QPushButton { text-align: left; }")
         self.okButton.setGeometry(QRect(200, 200, 75, 30))  # Position the "OK" button
 
-        grid.addWidget(self.okButton, 2, 1)
+        # OK button follows the F2 entry
+        grid.addWidget(self.okButton, 2, 2)
         self.okButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.okButton.setToolTip("Enter")
         self.display_verse_input.returnPressed.connect(self.goto_line)
         self.okButton.clicked.connect(self.goto_line)
 
+        # Ensure comboboxes visually match button height
+        try:
+            self._normalize_control_heights()
+        except (RuntimeError, AttributeError, TypeError):
+            pass
+
         # Theme toggle button (Light/Dark), replacing the old Quit button
         self.buttonTheme = QPushButton("Light/Dark")
         self.buttonTheme.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonTheme.clicked.connect(self.toggle_dark_mode)
-        grid.addWidget(self.buttonTheme, 2, 2)
+        # Theme toggle shifted right to account for widened F2 and OK
+        grid.addWidget(self.buttonTheme, 2, 3)
         self.buttonTheme.setToolTip("Toggle Light/Dark theme")
         self.buttonTheme.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        # Create a horizontal layout for Find and Find Next buttons
-        find_buttons_layout = QHBoxLayout()
 
         self.buttonf3 = QPushButton("Find", self)
         self.buttonf3.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf3.clicked.connect(self.f3)
         self.buttonf3.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.buttonf3.setToolTip("F3")
-        find_buttons_layout.addWidget(self.buttonf3)
+        # Place Find at row 3, column 0
+        grid.addWidget(self.buttonf3, 3, 0)
 
         self.buttonf4 = QPushButton("Find Next")
         self.buttonf4.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf4.clicked.connect(self.f4)
         self.buttonf4.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.buttonf4.setToolTip("F4")
-        find_buttons_layout.addWidget(self.buttonf4)
-
-        # Add the horizontal layout to the grid at row 3, column 0
-        grid.addLayout(find_buttons_layout, 3, 0)
+        # Place Find Next at row 3, column 1
+        grid.addWidget(self.buttonf4, 3, 1)
 
         self.buttonf5 = QPushButton("Back")
         self.buttonf5.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf5.clicked.connect(self.f5)
-        grid.addWidget(self.buttonf5, 3, 1)
+        # Place Back at row 3, column 2
+        grid.addWidget(self.buttonf5, 3, 2)
         self.buttonf5.setToolTip("F5")
         self.buttonf5.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.buttonf6 = QPushButton("Forward")
         self.buttonf6.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf6.clicked.connect(self.f6)
-        grid.addWidget(self.buttonf6, 3, 2)
+        # Place Forward at row 3, column 3
+        grid.addWidget(self.buttonf6, 3, 3)
         self.buttonf6.setToolTip("F6")
         self.buttonf6.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        # Create a horizontal layout for Book- and Book+ buttons
-        book_buttons_layout = QHBoxLayout()
 
         self.buttonf7 = QPushButton("Book-")
         self.buttonf7.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf7.clicked.connect(self.earlier_book)
         self.buttonf7.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.buttonf7.setToolTip("F7")
-        book_buttons_layout.addWidget(self.buttonf7)
+        # Place the 'Book-' pushbutton at row 4, column 0
+        grid.addWidget(self.buttonf7, 4, 0)
 
         self.buttonf8 = QPushButton("Book+")
         self.buttonf8.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf8.clicked.connect(self.later_book)
         self.buttonf8.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.buttonf8.setToolTip("F8")
-        book_buttons_layout.addWidget(self.buttonf8)
-
-        # Add the horizontal layout to the grid at row 4, column 0
-        grid.addLayout(book_buttons_layout, 4, 0)
+        # Place the Book+ pushbutton at row 4, column 1
+        grid.addWidget(self.buttonf8, 4, 1)
 
         self.buttonf10 = QPushButton("Chapter-")
         self.buttonf10.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf10.clicked.connect(self.earlier_chapter)
-        grid.addWidget(self.buttonf10, 4, 1)
+        # Place the 'Chapter-' pushbutton at row 4, column 2
+        grid.addWidget(self.buttonf10, 4, 2)
         self.buttonf10.setToolTip("F10")
         self.buttonf10.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.buttonf11 = QPushButton("Chapter+")
         self.buttonf11.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf11.clicked.connect(self.later_chapter)
-        grid.addWidget(self.buttonf11, 4, 2)
+        # Place the Chapter+ pushbutton at row 4, column 3
+        grid.addWidget(self.buttonf11, 4, 3)
         self.buttonf11.setToolTip("F11")
         self.buttonf11.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
@@ -1120,32 +1165,36 @@ class MainWindow(QMainWindow):
         self.buttonf9.clicked.connect(self.f9)
         self.buttonf9.setToolTip("F9")
         self.buttonf9.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        # Place Fullscreen to the right of the combo boxes (row 1, col 3)
-        grid.addWidget(self.buttonf9, 1, 3)
+        # Move the Fullscreen pushbutton to the top control row, rightmost column (col 4)
+        grid.addWidget(self.buttonf9, 1, 4)
 
         self.buttonf12 = QPushButton("Devotional")
         self.buttonf12.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf12.clicked.connect(self.f12)
         self.buttonf12.setToolTip("F12")
         self.buttonf12.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        # Place Devotional to the right of Light/Dark (row 2, col 3)
-        grid.addWidget(self.buttonf12, 2, 3)
+        # Place the Devotional pushbutton to the right of Light/Dark (row 2, col 4)
+        grid.addWidget(self.buttonf12, 2, 4)
 
         self.buttonf13 = QPushButton("Commentary")
         self.buttonf13.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf13.clicked.connect(commentary)
-        # Place Commentary to the right of Forward (row 3, col 3)
-        grid.addWidget(self.buttonf13, 3, 3)
+        # Place the Commentary pushbutton to the right of Forward (row 3, col 4)
+        grid.addWidget(self.buttonf13, 3, 4)
         self.buttonf13.setToolTip("Open Calvin’s Commentaries (Ctrl+Shift+C)")
         self.buttonf13.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         # Bottom row layout:
-        # - Place the Other Works combobox under column 0 only (narrowed again).
-        # - Place "Last" and "Search" buttons under the two Chapter buttons
-        #   so that they align beneath Chapter- (col 1) and Chapter+ (col 2).
+        # - Place the Other Works combobox with double width (cols 0–1), matching the Book combobox size.
+        # - Place the "Last" and "Search" pushbuttons as single-column buttons to the right (cols 2 and 3).
         # (Row indices are zero-based here; this is row 5 in our grid.)
         self.other_works_combo = QComboBox()
         self.other_works_combo.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        # Re-apply control height so the new combobox matches button height as well
+        try:
+            self._normalize_control_heights()
+        except (RuntimeError, AttributeError, TypeError):
+            pass
 
         # Option A: Add a one-click button to jump to the last read item
         self.last_work_btn = QPushButton("Last")
@@ -1166,16 +1215,7 @@ class MainWindow(QMainWindow):
         except (RuntimeError, AttributeError, TypeError, ValueError):
             pass
         self.search_work_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        try:
-            # Make "Last" match the width of "Chapter-" and "Search" match "Chapter+".
-            # This ties the bottom-row buttons to the corresponding chapter buttons' sizes.
-            ch_minus_w = int(self.buttonf10.sizeHint().width())
-            ch_plus_w = int(self.buttonf11.sizeHint().width())
-            self.last_work_btn.setFixedWidth(ch_minus_w)
-            self.search_work_btn.setFixedWidth(ch_plus_w)
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            # If size hints are unavailable, leave default sizing
-            pass
+        # Allow these buttons to expand with their grid columns; avoid fixed widths.
         self.search_work_btn.setToolTip("Search in the opened Other Works text (Ctrl+F)")
         self.search_work_btn.clicked.connect(self._open_reader_search)
         # Disabled (greyed out) until a reader window is displayed
@@ -1185,9 +1225,27 @@ class MainWindow(QMainWindow):
             pass
 
         # Place the widgets on the grid as requested
-        grid.addWidget(self.other_works_combo, 5, 0, 1, 1)  # span column 0 only (narrowed further)
-        grid.addWidget(self.last_work_btn, 5, 1)            # under Chapter- (row 4, col 1)
-        grid.addWidget(self.search_work_btn, 5, 2)          # under Chapter+ (row 4, col 2)
+        grid.addWidget(self.other_works_combo, 5, 0, 1, 2)  # span columns 0–1 (double width like Book)
+        grid.addWidget(self.last_work_btn, 5, 2)            # single-column button
+        grid.addWidget(self.search_work_btn, 5, 3)          # single-column button
+
+        # Ensure all column widgets expand horizontally to use their equal column widths
+        try:
+            expanding_fixed = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            for name in (
+                'comboBox_1','comboBox_2','comboBox_3','display_verse_input','okButton','buttonTheme',
+                'buttonf3','buttonf4','buttonf5','buttonf6','buttonf7','buttonf8','buttonf9',
+                'buttonf10','buttonf11','buttonf12','buttonf13','other_works_combo','last_work_btn','search_work_btn'
+            ):
+                wdg = getattr(self, name, None)
+                if wdg is None:
+                    continue
+                try:
+                    wdg.setSizePolicy(expanding_fixed)
+                except (RuntimeError, AttributeError, TypeError, ValueError):
+                    pass
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
 
         # Populate the combo with .txt files from 'Other Works'
         other_works_dir = Path(sh.str_cwd) / "Other Works"
@@ -1284,35 +1342,113 @@ class MainWindow(QMainWindow):
         # Separator between Open Settings and the list
         settings_menu.addSeparator()
 
+        # Convenience: Select all / Deselect all controls that keep the menu open
+        # Use QWidgetAction with a QPushButton so clicking doesn't close the menu,
+        # allowing multiple changes in one go.
+        try:
+            from PySide6.QtWidgets import QWidgetAction, QPushButton
+
+            # Ensure we have a live map of checkboxes to update during bulk ops
+            if not hasattr(self, "_works_menu_checkboxes") or not isinstance(getattr(self, "_works_menu_checkboxes"), dict):
+                self._works_menu_checkboxes = {}
+
+            def _set_all_works(visible: bool) -> None:
+                current_map = dict(self.settings.get("show_work") or {})
+                val = "true" if visible else "false"
+                # Use a distinct local name to avoid shadowing outer-scope variables
+                for work_stem in self.other_works_map.keys():
+                    current_map[work_stem] = val
+                self.settings["show_work"] = current_map
+                # Update the checkbox widgets in-place without closing the menu
+                try:
+                    for work_stem, checkbox in getattr(self, "_works_menu_checkboxes", {}).items():
+                        # Block signals so we don't double-save while syncing UI
+                        bs = checkbox.blockSignals(True)
+                        try:
+                            checkbox.setChecked(visible)
+                        finally:
+                            checkbox.blockSignals(bs)
+                except (AttributeError, RuntimeError, TypeError, ValueError):
+                    pass
+                # Persist and refresh combo
+                if getattr(self, "settings_service", None):
+                    self.settings_service.save(self.settings)
+                self._refresh_other_works_combo()
+
+            # Build non-closing buttons inside the menu
+            select_all_btn = QPushButton("Select all Other Works", settings_menu)
+            select_all_btn.clicked.connect(lambda _=False: _set_all_works(True))
+            select_all_wa = QWidgetAction(settings_menu)
+            select_all_wa.setDefaultWidget(select_all_btn)
+            settings_menu.addAction(select_all_wa)
+
+            deselect_all_btn = QPushButton("Deselect all Other Works", settings_menu)
+            deselect_all_btn.clicked.connect(lambda _=False: _set_all_works(False))
+            deselect_all_wa = QWidgetAction(settings_menu)
+            deselect_all_wa.setDefaultWidget(deselect_all_btn)
+            settings_menu.addAction(deselect_all_wa)
+
+            # Separator between bulk actions and individual list
+            settings_menu.addSeparator()
+        except (ImportError, AttributeError, RuntimeError, TypeError, ValueError):
+            # If widget actions cannot be created, silently skip bulk controls
+            pass
+
         show_map = dict(self.settings.get("show_work") or {})
         # Ensure keys exist for current files
         for stem in sorted(self.other_works_map.keys()):
             if stem not in show_map:
                 show_map[stem] = "false"
 
-        # Build checkable actions
-        from PySide6.QtGui import QAction
-        for stem in sorted(self.other_works_map.keys()):
-            checked = str(show_map.get(stem, "false")).lower() == "true"
-            act = QAction(stem, self)
-            act.setCheckable(True)
-            act.setChecked(checked)
+        # Build checkable items that do NOT close the menu on toggle
+        try:
+            from PySide6.QtWidgets import QWidgetAction, QCheckBox
 
-            def _make_toggler(name: str):
-                def _toggle(_checked: bool):
-                    # Update settings with string booleans
-                    show_map_local = dict(self.settings.get("show_work") or {})
-                    show_map_local[name] = "true" if _checked else "false"
-                    self.settings["show_work"] = show_map_local
-                    # Save via settings service if available
-                    if getattr(self, "settings_service", None):
-                        self.settings_service.save(self.settings)
-                    # Refresh the combo to reflect the change
-                    self._refresh_other_works_combo()
-                return _toggle
+            # Reset and rebuild the checkbox map
+            self._works_menu_checkboxes = {}
 
-            act.toggled.connect(_make_toggler(stem))
-            settings_menu.addAction(act)
+            for stem in sorted(self.other_works_map.keys()):
+                checked = str(show_map.get(stem, "false")).lower() == "true"
+                cb = QCheckBox(stem, settings_menu)
+                cb.setChecked(checked)
+
+                def _make_toggle_cb(name: str):
+                    def _toggle(_checked: bool) -> None:
+                        show_map_local = dict(self.settings.get("show_work") or {})
+                        show_map_local[name] = "true" if _checked else "false"
+                        self.settings["show_work"] = show_map_local
+                        if getattr(self, "settings_service", None):
+                            self.settings_service.save(self.settings)
+                        self._refresh_other_works_combo()
+                    return _toggle
+
+                cb.toggled.connect(_make_toggle_cb(stem))
+                wa = QWidgetAction(settings_menu)
+                wa.setDefaultWidget(cb)
+                settings_menu.addAction(wa)
+                self._works_menu_checkboxes[stem] = cb
+        except (ImportError, AttributeError, RuntimeError, TypeError, ValueError):
+            # Fallback: if QWidgetAction/QCheckBox not available, use plain QActions
+            # (The menu will close on toggle)
+            from PySide6.QtGui import QAction
+            for stem in sorted(self.other_works_map.keys()):
+                checked = str(show_map.get(stem, "false")).lower() == "true"
+                act = QAction(stem, self)
+                act.setCheckable(True)
+                act.setChecked(checked)
+
+                def _make_toggler(name: str):
+                    def _toggle(_checked: bool):
+                        show_map_local = dict(self.settings.get("show_work") or {})
+                        show_map_local[name] = "true" if _checked else "false"
+                        self.settings["show_work"] = show_map_local
+                        if getattr(self, "settings_service", None):
+                            self.settings_service.save(self.settings)
+                        self._refresh_other_works_combo()
+                    return _toggle
+
+                act.toggled.connect(_make_toggler(stem))
+                settings_menu.addAction(act)
 
     # Public wrapper used by ui.actions to avoid accessing a protected member from outside
     def build_show_works_menu(self, settings_menu) -> None:
@@ -1732,6 +1868,16 @@ class MainWindow(QMainWindow):
         """Help section."""
 
         self.file_open(str(Path(sh.current_directory / 'HELP.txt')))
+        # Save current Bible window geometry so we can restore it on Back but
+        # only capture it once when leaving the Bible (do not overwrite while
+        # switching between auxiliary files like LICENSE/README/HELP).
+        try:
+            if not getattr(self, "_aux_origin_saved", False):
+                # Capture geometry once when first switching to an auxiliary file
+                self._saved_geometry_before_aux = self.geometry()
+                self._aux_origin_saved = True
+        except (RuntimeError, AttributeError, TypeError):
+            self._saved_geometry_before_aux = None
         winwidth: int = 830
         winheight: int = 1343
 
@@ -1746,7 +1892,33 @@ class MainWindow(QMainWindow):
         """Licence."""
 
         self.file_open(str(Path(sh.current_directory / 'LICENSE')))
-        winwidth: int = 940
+        # Save current Bible window geometry so we can restore it on Back but
+        # only capture it once when leaving the Bible (do not overwrite while
+        # switching between auxiliary files like LICENSE/README/HELP).
+        try:
+            if not getattr(self, "_aux_origin_saved", False):
+                # Capture geometry once when first switching to an auxiliary file
+                self._saved_geometry_before_aux = self.geometry()
+                self._aux_origin_saved = True
+        except (RuntimeError, AttributeError, TypeError):
+            self._saved_geometry_before_aux = None
+        # Set window width to fit 80 characters of the current editor font
+        try:
+            fm = self.textEditor.fontMetrics()
+            # Use a wide glyph for conservative per-character width
+            char_w = fm.horizontalAdvance('M') if fm else 10
+            text_w = int(char_w * 80)
+            # Add padding for frame, margins, and vertical scrollbar
+            frame_pad = getattr(self.textEditor, 'frameWidth', lambda: 2)()
+            try:
+                scroll_w = self.textEditor.verticalScrollBar().sizeHint().width()
+            except (RuntimeError, AttributeError):
+                scroll_w = 16
+            extra_pad = 12  # small extra to avoid wrapping due to rounding
+            winwidth: int = text_w + (frame_pad * 2) + scroll_w + extra_pad
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            # Fallback if metrics fail
+            winwidth = 760
         winheight: int = 1343
 
         # Allow for small screen sizes
@@ -1760,6 +1932,16 @@ class MainWindow(QMainWindow):
         """Readme file."""
 
         self.file_open(str(Path(sh.current_directory / 'README.txt')))
+        # Save current Bible window geometry so we can restore it on Back but
+        # only capture it once when leaving the Bible (do not overwrite while
+        # switching between auxiliary files like LICENSE/README/HELP).
+        try:
+            if not getattr(self, "_aux_origin_saved", False):
+                # Capture geometry once when first switching to an auxiliary file
+                self._saved_geometry_before_aux = self.geometry()
+                self._aux_origin_saved = True
+        except (RuntimeError, AttributeError, TypeError):
+            self._saved_geometry_before_aux = None
         winwidth: int = 830
         winheight: int = 1343
 
@@ -1777,11 +1959,25 @@ class MainWindow(QMainWindow):
             # print('reloaded')
             w.otherFileFlag = False
             self.file_open(str(Path(sh.current_directory / 'KJB_PCE.txt')))
-            winwidth: int = 480
-            winheight: int = 800
-            w_origin, h_origin = centerer(winwidth, winheight)
-            reset_attributes()
-            self.setGeometry(w_origin, h_origin, winwidth, winheight)
+            # Do NOT re-centre or reset attributes here.
+            # When returning from README/LICENSE/HELP via Back, preserve window
+            # geometry and Bible state so history restoration works correctly.
+            try:
+                if getattr(self, "_saved_geometry_before_aux", None):
+                    self.setGeometry(self._saved_geometry_before_aux)
+                    self._saved_geometry_before_aux = None
+                # Clear aux origin flag now that we restored the Bible
+                if getattr(self, "_aux_origin_saved", False):
+                    self._aux_origin_saved = False
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                pass
+            # Signal to Back handler that we just restored the Bible view, 
+            # so the very next Back press should be ignored to preserve
+            # the restored verse position.
+            try:
+                self._just_restored_from_aux = True
+            except (AttributeError, RuntimeError):
+                pass
 
     # ENTRY POINT FOR F3 FIND.
     # Create a slot for launching the find dialog box.
@@ -2152,7 +2348,7 @@ class MainWindow(QMainWindow):
             self.goto_line_find(current_position)
 
     def find_f4_alt(self) -> None:
-        """Repeat find frontend for Match whole words."""
+        """Repeat find frontend for Whole words."""
 
         if len(w.occurs) > 0 and w.occurrence < w.occurring:
             current_position = self.get_line_number()
@@ -2234,7 +2430,7 @@ class MainWindow(QMainWindow):
         self.move_to_line(ln)
 
     def stripped_punctuation_adjust(self, ln: int, current_position: int, start: int, end: int, truth: bool) -> int:
-        """Addition for 'Match whole words only'.
+        """Addition for 'Whole words only'.
 
         This adjustment allows for no punctuation in the stripped search text.
         """
@@ -2250,7 +2446,7 @@ class MainWindow(QMainWindow):
         return add
 
     def stripped_punctuation_adjust_ki(self, current_position: int, start: int, end: int) -> int:
-        """Addition for 'Match whole words only'.
+        """Addition for 'Whole words only'.
 
         This adjustment allows for no punctuation in the stripped search text.
         """
@@ -2848,6 +3044,12 @@ class MainWindow(QMainWindow):
         """Back key."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
+        # If we have just returned from an auxiliary file (README/LICENSE/HELP),
+        # skip one Back action to keep the restored verse position, rather than
+        # popping history to an unrelated location (often Genesis 1:1).
+        if getattr(self, "_just_restored_from_aux", False):
+            self._just_restored_from_aux = False
+            return
         w.message = ''
         if len(back) > 0:
             current_position: int = self.get_line_number()
@@ -3067,6 +3269,16 @@ class MainWindow(QMainWindow):
                     self.display_verse(last_pos)
                 else:
                     w.otherFileFlag = True
+                    # When opening non-Bible files, ensure any prior Bible highlighting is cleared
+                    try:
+                        if getattr(w, 'hiLita', None):
+                            w.hiLita.clear = True
+                            w.hiLita.clear_highlight()
+                            # Reset clear flag so future highlights (when the Bible is reopened) work normally
+                            w.hiLita.clear = False
+                    except (AttributeError, RuntimeError):
+                        # Be conservative; highlighting state is non-critical for auxiliary files
+                        pass
 
     def file_print(self) -> None:
         """File print routine."""
@@ -3198,6 +3410,11 @@ class MainWindow(QMainWindow):
         # Apply to the main editor and secondary window
         self.theme.apply_to_editor(self.textEditor)
         self.update_text_display_theme()
+        # Keep control heights consistent with the active style/theme
+        try:
+            self._normalize_control_heights()
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
         # Also refresh any currently open dialogs/windows
         if getattr(self, 'dlg', None):
             self.theme.apply_widget(self.dlg)
@@ -3209,6 +3426,40 @@ class MainWindow(QMainWindow):
             except (RuntimeError, AttributeError):
                 pass
             self.theme.apply_widget(self.text_edit_window)
+
+    def _normalize_control_heights(self) -> None:
+        """Make QComboBox controls the same height as pushbuttons.
+
+        Uses the current style's sizeHint for a reference QPushButton (OK)
+        to compute a DPI- and theme-aware height, then applies it to the
+        main comboboxes.
+        Called after UI setup and whenever the theme changes.
+        """
+        try:
+            ref_btn = getattr(self, 'okButton', None)
+            if not ref_btn:
+                return
+            ref_h = int(ref_btn.sizeHint().height())
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            ref_h = 0
+        if not ref_h:
+            return
+        # Controls to normalise to the same height as pushbuttons
+        for ctrl_name in (
+            'comboBox_1',
+            'comboBox_2',
+            'comboBox_3',
+            'other_works_combo',
+            'display_verse_input',  # F2 text entry box
+        ):
+            ctrl = getattr(self, ctrl_name, None)
+            if ctrl is None:
+                continue
+            try:
+                ctrl.setFixedHeight(ref_h)
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                # Be tolerant of lifecycle/style changes
+                pass
 
     def set_theme(self, the_settings):
         """Apply the theme from settings using ThemeManager without legacy globals."""
@@ -3333,6 +3584,14 @@ class SyntaxHighlighter(QSyntaxHighlighter):
 
     def highlightBlock(self, text) -> None:
         """Highlight a block."""
+
+        # Do not apply search/verse highlighting when viewing non-Bible files
+        try:
+            if getattr(w, 'otherFileFlag', False):
+                return
+        except (AttributeError, RuntimeError):
+            # If the state is unavailable, fall through and rely on existing guards
+            pass
 
         # Ensure _highlight_lines is populated
         if not self._highlight_lines:

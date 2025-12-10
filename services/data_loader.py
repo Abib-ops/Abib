@@ -101,7 +101,7 @@ class DataLoader:
                 if book_bounds[i] == sh.LAST_VERSE_IN_BIBLE + 1:
                     book_bounds[i] = last_seen
                 last_seen = book_bounds[i]
-        except Exception:
+        except (AttributeError, TypeError, IndexError):
             # On any unexpected issue, fall back to the original hard-coded Psalms start and an even split
             # (still monotonic). This is a defensive fallback and should not normally trigger.
             book_bounds = [0] + [i * (sh.LAST_VERSE_IN_BIBLE // (sh.BOOKS_IN_THE_BIBLE - 1)) for i in range(1, sh.BOOKS_IN_THE_BIBLE)]

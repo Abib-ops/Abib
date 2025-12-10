@@ -415,15 +415,20 @@ Prefatory note.
 
    Chapter II. An entrance to the answer unto particular objections.
    Answer to objections from Scripture, viz.:-- I. From the word "world"
-   in several scriptures:-- 1. John iii. 16 largely opened and vindicated.
+   in several scriptures:-- 
+   1.) John iii. 16 largely opened and vindicated.
 
    Chapter III. An unfolding of the remaining texts of Scripture produced
    for the confirmation of the first general objection or argument for
-   universal redemption. 2. 1 John ii. 1, 2, largely opened and
-   vindicated. 3. John vi. 51 explained. 4. A vindication of other texts
-   produced by Thomas More, viz.:-- (1.) 2 Cor. v. 19. (2.) John i. 9.
-   (3.) John i. 29. (4.) John iii. 17. (5.) John iv. 42; 1 John iv. 14;
-   John vi. 51.
+   universal redemption. 
+   2.) 1 John ii. 1, 2, largely opened and vindicated. 
+   3.) John vi. 51 explained.
+   4.) A vindication of other texts produced by Thomas More, viz.:--
+      (1.) 2 Cor. v. 19. 
+	  (2.) John i. 9.
+	  (3.) John i. 29.
+	  (4.) John iii. 17.
+	  (5.) John iv. 42; 1 John iv. 14; John vi. 51.
 
    Chapter IV. Answer to the second general objection or argument for the
    universality of redemption. II. From the word "all" in several
@@ -11390,7 +11395,7 @@ Chapter VI.
    III. "That which the Scripture layeth forth as one end of the death of
    Christ, and one ground and cause of God's exalting Christ to be the
    Lord and Judge of all, and of the equity of his judging, that is
-   certainly to be believed, Ps. xii. 6, xviii. 130, cxix. 4;
+   certainly to be believed, Ps. xii. 6, cxix. 130, 4;
 
    "But the Scripture layeth forth this for one end of the death and
    resurrection of Christ, that he might be the Lord of all, Rom. xiv. 9;

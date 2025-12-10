@@ -1755,6 +1755,24 @@ class TextDocumentWindow(QDialog):
             except (AttributeError, RuntimeError, TypeError):
                 pass
 
+            # Make the text entry box twice as wide (initially) without hard-coding pixels.
+            # Use the size hint as a baseline so it adapts to DPI and fonts.
+            try:
+                base_w = int(self.edit.sizeHint().width())
+                # Ensure a reasonable lower bound in case the sizeHint is tiny
+                min_w = max(300, base_w * 2)
+                self.edit.setMinimumWidth(min_w)
+            except (AttributeError, TypeError, ValueError, RuntimeError):
+                # Fallback to a sensible minimum width
+                self.edit.setMinimumWidth(360)
+
+            # Ensure the line edit takes available extra space when the dialog is resized
+            try:
+                # Give the line edit stretch so it grows, keep others at default
+                lay.setStretch(0, 1)
+            except (AttributeError, TypeError, RuntimeError):
+                pass
+
         # Build proper QTextDocument find flags for QPlainTextEdit.find
         # Some PySide6 builds require QFlags<QTextDocument::FindFlag> rather than plain ints.
         def build_flags(self):

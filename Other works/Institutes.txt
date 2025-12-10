@@ -4412,7 +4412,7 @@ BOOK FIRST.
    [77] In his book, De Idolatria. See also in Augustine, a letter by one
    Maximus, a grammarian of Medaura, jesting at his gods, and scoffing at
    the true religion. See, at the same time, Augustine's grave and
-   admirable reply. Ep. 42. 43.
+   admirable reply. Epistula 42 & 43.
      __________________________________________________________________
 
   CHAPTER 11.
@@ -4606,7 +4606,7 @@ BOOK FIRST.
    the whole blame of a common vice upon the Jews, be led away by vain and
    sinful enticements to sleep the sleep of death.
 
-   4. To the same effect are the words of the Psalmist (Psalms 115:4,
+   4. To the same effect are the words of the Psalmist (Psalms 115:4;
    135:15), "Their idols are silver and gold, the works of men's hands."
    From the materials of which they are made, he infers that they are not
    gods, taking it for granted that every human device concerning God is a
@@ -4638,7 +4638,7 @@ BOOK FIRST.
    order of nature, is natural to man. It is, moreover, to be observed,
    that by the mode of expression which is employed, every form of
    superstition is denounced. Being works of men, they have no authority
-   from God (Isa. 2:8, 31:7; Hos. 14:3; Mic. 5:13); and, therefore, it
+   from God (Isa. 2:8; 31:7; Hos. 14:3; Mic. 5:13); and, therefore, it
    must be regarded as a fixed principle, that all modes of worship
    devised by man are detestable. The infatuation is placed in a still
    stronger light by the Psalmist (Psalm 115:8), when he shows how aid is
@@ -7735,7 +7735,7 @@ BOOK FIRST.
    Tobit 3:17; 5:5; Mt. 26:53; Dan. 7:10; 2 Kings 6:17; Ps. 34:7.
 
    [113] Luke 15:10; Ps. 91:11; Mt. 4:6; Luke 4:10, 16, 22; Matt. 18:10;
-   Acts 7:55; Gal. 3:19; Mt. 22:80; Mt. 24:36; Eph. 30:10; 1 Peter 1:12;
+   Acts 7:55; Gal. 3:19; Mt. 22:30; Mt. 24:36; Eph. 3:10; 1 Peter 1:12;
    Heb. 1:6; Ps. 97:7.
 
    [114] 2 Cor. 4:4; John 12:31; Mt. 12:29; Eph. 2:2.
@@ -9975,7 +9975,7 @@ BOOK FIRST.
    Ordine, Lib. 1. and 2., where he admirably discusses the question,
    Whether the order of Divine Providence includes all good and evil?
 
-   [139] 2 Sam. 12:12; Jer. 1:25; Is. 5:26; 10:5; 19:25; 2 Sam. 16:10;
+   [139] 2 Sam. 12:12; Jer. 25:9; Is. 5:26; 10:5; 19:25; 2 Sam. 16:10;
    1 Kings 11:31; 1 Sam. 2:34.
 
    [140] The French is, "Car ils meslent perversment le commandement de
@@ -17410,10 +17410,10 @@ BOOK FIRST.
    [202] Or "Strong," this name being derived from a word denoting
    strength.
 
-   [203] 2 Cor. 11:2; Eph. 5:30; Jer. 62:5; Hos. 2:9; Jer. 3:1, 2; Hos.
+   [203] 2 Cor. 11:2; Eph. 5:30; Isa. 62:5; Hos. 2:9; Jer. 3:1, 2; Hos.
    2:2.
 
-   [204] 1 Sam. 14:44; 2 Kings 5:31; 2 Cor. 1:23.
+   [204] 1 Sam. 14:44; 2 Kings 6:31; 2 Cor. 1:23.
 
    [205] The French adds, "jurans par S. Jaques ou S. Antoine;"--swearing
    by St James or St Anthony.
@@ -24317,7 +24317,7 @@ BOOK FIRST.
    [286] See section 13, where it is said that this impression, sometimes
    existing in the reprobate, is called faith, but improperly.
 
-   [287] 1 Tim. 3:9; 4:1, 6; 2 Tim. 2:15; 3:18; Tit. 1:13; 2:2.
+   [287] 1 Tim. 3:9; 4:1, 6; 2 Tim. 2:15; 3:16-17; Tit. 1:13; 2:2.
 
    [288] The French adds, "Comme il montre par ses propos quel souci il en
    avoit;"--as he shows by his urgency what anxiety he felt.
@@ -32815,7 +32815,7 @@ BOOK FIRST.
 
    [434] John 3:8; 1 Pet. 4:3; 2 Tim. 2:20, 21; Luke 9:23.
 
-   [435] 2 Cor. 4:8; 2 Tim. 2:11; Phil. 3:10; Rom. 7:29, 39.
+   [435] 2 Cor. 4:8; 2 Tim. 2:11; Phil. 3:10; Rom. 8:29, 39.
      __________________________________________________________________
 
   CHAPTER 16.
@@ -37933,7 +37933,7 @@ BOOK FIRST.
 
    [492] James 1:2, 14; Mt. 4:1, 3; 1 Thess. 3:5; 2 Cor. 6:7, 8.
 
-   [493] Ps. 26:2; Gen. 22:1; Deut. 8:2; 13:3; 1 Cor. 10:13; 2 Pet. 11:9;
+   [493] Ps. 26:2; Gen. 22:1; Deut. 8:2; 13:3; 1 Cor. 10:13; 2 Pet. 2:9;
    1 Pet. 5:8. For the sense in which God is said to lead us into
    temptation, see the end of this section.
      __________________________________________________________________
@@ -41927,7 +41927,7 @@ BOOK FIRST.
    might be nourished by doctrine proceeding from the lips of the priest.
    Those magnificent titles, as when the temple is called God's rest, his
    sanctuary, his habitation, and when he is said to dwell between the
-   cherubims (Ps 32:13, 14; 80:1), are used for no other purpose than to
+   cherubims (Ps 132:13, 14; 80:1), are used for no other purpose than to
    procure respect, love, reverence, and dignity to the ministry of
    heavenly doctrine, to which otherwise the appearance of an
    insignificant human being might be in no slight degree derogatory.
@@ -44171,13 +44171,14 @@ BOOK FIRST.
    called priests, are charged, are arraigned, are shown to be guilty,
    since to those sins which we have of our own we add the deaths of other
    men, for we commit murder as often as lukewarm and silent we see them
-   daily going to destruction" (Gregor. Hom. in Ezek. 11:26 ). He calls
-   himself and others silent when less assiduous in their work than they
-   ought to be. Since he does not spare even those who did their duty
-   partially, what think you would he do in the case of those who entirely
-   neglected it? For a long time, therefore, it was regarded in the Church
-   as the first duty of a bishop to feed the people by the word of God, or
-   to edify the Church, in public and private, with sound doctrine.
+   daily going to destruction" (Gregory’s homily on Ezekiel, section 11,
+   paragraph 26.). He calls himself and others silent when less assiduous
+   in their work than they ought to be. Since he does not spare even those
+   who did their duty partially, what think you would he do in the case of
+   those who entirely neglected it? For a long time, therefore, it was
+   regarded in the Church as the first duty of a bishop to feed the people
+   by the word of God, or to edify the Church, in public and private, with
+   sound doctrine.
 
    4. As to the fact, that each province had an archbishop among the
    bishops (see chap. 7 sec. 15), and, moreover, that, in the Council of
@@ -60272,7 +60273,7 @@ BOOK FIRST.
    [677] Isidor. Lib. 7, Etymolog, allegatim, cap. Cleros. Dist. 21, 33,
    cap. Lector, et cap. Ostier.
 
-   [678] John 2:15; 10:7; Luke 4:17; Mt. 7:33; John 8:12; 13:5; Mt. 26:26;
+   [678] John 2:15; 10:7; Luke 4:17; Mt. 7:13; John 8:12; 13:5; Mt. 26:26;
    27:50.
 
    [679] The French adds, "Voila comment la tonsure n'estoit point une

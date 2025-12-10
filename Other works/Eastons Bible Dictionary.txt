@@ -9885,7 +9885,7 @@ M. G. Easton
           monarchs of Judah, the Hebrew commonwealth itself, the war-like
           Ammonites of patriarchal times, and the moral majesty of the
           Messianic age, are all compared to the towering cedar, in its
-          royal loftiness and supremacy (Isa. 2:13; Ezek. 17:3, 22, 23,
+          royal loftiness and supremacy (Isa. 2:13; Ezek. 17:3, 22, 23; 
           31:3-9; Amos 2:9; Zech. 11:1, 2; Job 40:17; Ps. 29:5; 80:10;
           92:12, etc).", Groser's Scrip. Nat. Hist. (See [105]BOX-TREE.)
 
@@ -11262,7 +11262,7 @@ M. G. Easton
 
    Clay
           This word is used of sediment found in pits or in streets (Isa.
-          57:20; Jer. 38:60), of dust mixed with spittle (John 9:6), and
+          57:20; Jer. 38:6), of dust mixed with spittle (John 9:6), and
           of potter's clay (Isa. 41:25; Nah. 3:14; Jer. 18:1-6; Rom.
           9:21). Clay was used for sealing (Job 38:14; Jer. 32:14). Our
           Lord's tomb may have been thus sealed (Matt. 27:66). The
@@ -11921,7 +11921,7 @@ M. G. Easton
           anxiety (Matt. 6:25, 34), and repining (1 Cor. 10:10). It arises
           from the inward disposition, and is the offspring of humility,
           and of an intelligent consideration of the rectitude and
-          benignity of divine providence (Ps. 96:1, 2; 145), the greatness
+          benignity of divine providence (Ps. 96:1, 2; Ps. 145), the greatness
           of the divine promises (2 Pet. 1:4), and our own unworthiness
           (Gen. 32:10); as well as from the view the gospel opens up to us
           of rest and peace hereafter (Rom. 5:2).
@@ -12431,7 +12431,7 @@ M. G. Easton
           covenant of the priesthood (Num. 25:12, 13; Deut. 33:9; Neh.
           13:29), and of the covenant of Sinai (Ex. 34:27, 28; Lev.
           26:15), which was afterwards renewed at different times in the
-          history of Israel (Deut. 29; Josh. 1:24; 2 Chr. 15; 23; 29; 34;
+          history of Israel (Deut. 29; Josh. 24; 2 Chr. 15; 23; 29; 34;
           Ezra 10; Neh. 9). In conformity with human custom, God's
           covenant is said to be confirmed with an oath (Deut. 4:31; Ps.
           89:3), and to be accompanied by a sign (Gen. 9; 17). Hence the
@@ -14625,7 +14625,7 @@ M. G. Easton
           Kings 19:35; 2 Sam. 24:15, 16; Ps. 78:49; Acts 12:23.)
 
    Destruction
-          In Job 26:6, 28:22 (Heb. abaddon) is sheol, the realm of the
+          In Job 26:6; 28:22 (Heb. abaddon) is sheol, the realm of the
           dead.
 
    Destruction, City of
@@ -16294,10 +16294,10 @@ M. G. Easton
           (Abiri) are said to have come from the desert.
 
           The principal prophecies of Scripture regarding Egypt are these,
-          Isa. 19; Jer. 43: 8-13; 44:30; 46; Ezek. 29-32; and it might be
-          easily shown that they have all been remarkably fulfilled. For
-          example, the singular disappearance of Noph (i.e., Memphis) is a
-          fulfilment of Jer. 46:19, Ezek. 30:13.
+          Isa. 19; Jer. 43: 8-13; 44:30; Chap. 46; Ezek. 29-32; and it
+		  might be easily shown that they have all been remarkably
+		  fulfilled. For example, the singular disappearance of Noph
+		  (i.e., Memphis) is a fulfilment of Jer. 46:19, Ezek. 30:13.
 
    Ehud
           Union. (1.) A descendant of Benjamin (1 Chr. 7:10), his
@@ -17416,7 +17416,7 @@ M. G. Easton
           thus evidently with him at Rome when he wrote to the Colossians.
           He was a distinguished disciple, and probably the founder of the
           Colossian church. He is also mentioned in the Epistle to
-          Philemon (1:23), where he is called by Paul his
+          Philemon (Phi 1:23), where he is called by Paul his
           "fellow-prisoner."
 
    Epaphroditus
@@ -19254,7 +19254,7 @@ M. G. Easton
           (Heb. heleb) denotes the richest part of the animal, or the
           fattest of the flock, in the account of Abel's sacrifice (Gen.
           4:4). It sometimes denotes the best of any production (Gen.
-          45:18; Num. 18:12; Ps. 81:16; 147:47). The fat of sacrifices was
+          45:18; Num. 18:12; Ps. 81:16; 147:14). The fat of sacrifices was
           to be burned (Lev. 3:9-11; 4:8; 7:3; 8:25; Num. 18:17. Comp. Ex.
           29:13-22; Lev. 3:3-5).
 
@@ -20104,7 +20104,7 @@ M. G. Easton
           hiding-place. place. This word is rendered "forest" only in 2
           Chr. 27:4. It is also rendered "wood", the "wood" in the
           "wilderness of Ziph," in which david concealed himself (1 Sam.
-          23:15), which lay south-east of Hebron. In Isa. 17:19 this word
+          23:15), which lay south-east of Hebron. In Isa. 17:9 this word
           is in Authorized Version rendered incorrectly "bough."
 
           Heb. pardes, meaning an enclosed garden or plantation. Asaph is
@@ -20291,7 +20291,7 @@ M. G. Easton
 
    Frost
           (Heb. kerah, from its smoothness) Job 37:10 (R.V., "ice"); Gen.
-          31:40; Jer. 36:30; rendered "ice" in Job 6:16, 38:29; and
+          31:40; Jer. 36:30; rendered "ice" in Job 6:16; 38:29; and
           "crystal" in Ezek. 1:22. "At the present day frost is entirely
           unknown in the lower portions of the valley of the Jordan, but
           slight frosts are sometimes felt on the sea-coast and near
@@ -20401,7 +20401,7 @@ M. G. Easton
 
           In the earliest times of which we have record kinsmen carried
           their dead to the grave (Gen. 25:9; 35:29; Judg. 16:31), but in
-          later times this was done by others (Amos 6:16).
+          later times this was done by others (Amos 6:10).
 
           Immediately after decease the body was washed, and then wrapped
           in a large cloth (Acts 9:37; Matt. 27:59; Mark 15:46). In the
@@ -21904,7 +21904,7 @@ M. G. Easton
           Lydda.
 
    Gin
-          A trap. (1.) Ps. 140:5, 141:9, Amos 3:5, the Hebrew word used,
+          A trap. (1.) Ps. 140:5; 141:9; Amos 3:5, the Hebrew word used,
           mokesh, means a noose or "snare," as it is elsewhere rendered
           (Ps. 18:5; Prov. 13:14, etc.).
 
@@ -26224,7 +26224,7 @@ M. G. Easton
           to the rigorous code. The individual offender was devoted to
           destruction (Ex. 22:20). His nearest relatives were not only
           bound to denounce him and deliver him up to punishment (Deut.
-          13:20-10), but their hands were to strike the first blow when,
+          13:6-10), but their hands were to strike the first blow when,
           on the evidence of two witnesses at least, he was stoned (Deut.
           17:2-7). To attempt to seduce others to false worship was a
           crime of equal enormity (13:6-10). An idolatrous nation shared
@@ -27917,7 +27917,7 @@ M. G. Easton
 
           The plans he adopted in replacing Jehoash on the throne of his
           ancestors are described in 2 Kings 11:2; 12:2; 2 Chr. 22:11;
-          23:24. He was among the foremost of the benefactors of the
+          Chap. 23. He was among the foremost of the benefactors of the
           kingdom, and at his death was buried in the city of David among
           the kings of Judah (2 Chr. 24:15, 16). He is said to have been
           one hundred and thirty years old.
@@ -34233,7 +34233,7 @@ M. G. Easton
           Col. 4:10; Philemon 1:24; 1 Pet. 5:13; R.V., "Mark" (q.v.).
 
    Mareshah
-          Possession, a city in the plain of Judah (John. 15:44). Here Asa
+          Possession, a city in the plain of Judah (Josh. 15:44). Here Asa
           defeated Zerah the Ethiopian (2 Chr. 14:9, 10). It is identified
           with the ruin el-Mer'ash, about 1 1/2 mile south of Beit Jibrin.
 
@@ -43140,7 +43140,7 @@ M. G. Easton
           clearness all through to the very close of the canon. The
           Messianic prophecies are too numerous to be quoted. "To him gave
           all the prophets witness." (Comp. Micah 5:2; Hag. 2:6-9; Isa.
-          7:14; 9:6, 7; 11:1, 2; 53; 60:10, 13; Ps. 16:11; 68:18.)
+          7:14; 9:6, 7; 11:1, 2; Chap. 53; 60:10, 13; Ps. 16:11; 68:18.)
 
           Many predictions also were delivered by Jesus and his apostles.
           Those of Christ were very numerous. (Comp. Matt. 10:23:24;
@@ -45160,7 +45160,7 @@ M. G. Easton
    Robbery
           Practised by the Ishmaelites (Gen. 16:12), the Chaldeans and
           Sabeans (Job 1:15, 17), and the men of Shechem (Judg. 9:25. See
-          also 1 Sam. 27:6-10; 30; Hos. 4:2; 6:9). Robbers infested Judea
+          also 1 Sam. 27:6-10; Chap 30; Hos. 4:2; 6:9). Robbers infested Judea
           in our Lord's time (Luke 10:30; John 18:40; Acts 5:36, 37;
           21:38; 2 Cor. 11:26). The words of the Authorized Version,
           "counted it not robbery to be equal," etc. (Phil. 2:6, 7), are
@@ -46241,7 +46241,7 @@ M. G. Easton
           Perfect sanctification is not attainable in this life (1 Kings
           8:46; Prov. 20:9; Eccl. 7:20; James 3:2; 1 John 1:8). See Paul's
           account of himself in Rom. 7:14-25; Phil. 3:12-14; and 1 Tim.
-          1:15; also the confessions of David (Ps. 19:12, 13; 51), of
+          1:15; also the confessions of David (Ps. 19:12, 13; Chap. 51), of
           Moses (90:8), of Job (42:5, 6), and of Daniel (9:3-20). "The
           more holy a man is, the more humble, self-renouncing,
           self-abhorring, and the more sensitive to every sin he becomes,
@@ -47321,7 +47321,7 @@ M. G. Easton
           Passover (Ex. 12:15, 16), the feast of Weeks (Deut. 16:9), of
           Tabernacles (13:15), and the Jubilee (Lev. 25:8), were all
           ordered by seven. Seven is the number of sacrifice (2 Chr.
-          29:21; Job 42:8), of purification and consecration (Lev. 42:6,
+          29:21; Job 42:8), of purification and consecration (Lev. 4:6,
           17; 8:11, 33; 14:9, 51), of forgiveness (Matt. 18:21, 22; Luke
           17:4), of reward (Deut. 28:7; 1 Sam. 2:5), and of punishment
           (Lev. 26:21, 24, 28; Deut. 28:25). It is used for any round
@@ -47660,7 +47660,7 @@ M. G. Easton
           (Neh. 12:3; marg., or Shebaniah).
 
    Shechem
-          Shoulder. (1.) The son of Hamor the Hivite (Gen. 33:19; 34).
+          Shoulder. (1.) The son of Hamor the Hivite (Ge. 33:19; Chap. 34).
 
           (2.) A descendant of Manasseh (Num. 26:31; Josh. 17:2).
 
@@ -49243,7 +49243,7 @@ M. G. Easton
           31).
 
           Before his death David gave parting instructions to his son (1
-          Kings 2:1-9; 1 Chr. 22:7-16; 28). As soon as he had settled
+          Kings 2:1-9; 1 Chr. 22:7-16; Chap. 28). As soon as he had settled
           himself in his kingdom, and arranged the affairs of his
           extensive empire, he entered into an alliance with Egypt by the
           marriage of the daughter of Pharaoh (1 Kings 3:1), of whom,
@@ -49401,8 +49401,8 @@ M. G. Easton
           Of Moses (Ex. 15; Num. 21:17; Deut. 32; Rev. 15:3), Deborah
           (Judg. 5), Hannah (1 Sam. 2), David (2 Sam. 22, and Psalms),
           Mary (Luke 1:46-55), Zacharias (Luke 1:68-79), the angels (Luke
-          2:13), Simeon (Luke 2:29), the redeemed (Rev. 5:9; 19), Solomon
-          (see [601]SOLOMON, SONGS OF).
+          2:13), Simeon (Luke 2:29), the redeemed (Rev. 5:9; Chap. 19),
+		  Solomon (see [601]SOLOMON, SONGS OF).
 
    Son of God
           The plural, "sons of God," is used (Gen. 6:2, 4) to denote the
@@ -49509,7 +49509,7 @@ M. G. Easton
           the Dead Sea and southern Ghoron the east to the Mediterranean
           on the west." In Ezek. 20:46 (21:1 in Heb.) three different
           Hebrew words are all rendered "south." (1) "Set thy face toward
-          the south" (Teman, the region on the right, 1 Sam. 33:24); (2)
+          the south" (Teman, the region on the right, Ezekiel 20:46); (2)
           "Drop thy word toward the south" (Negeb, the region of dryness,
           Josh. 15:4); (3) "Prophesy against the forest of the south
           field" (Darom, the region of brightness, Deut. 33:23). In Job

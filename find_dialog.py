@@ -4,7 +4,8 @@ from __future__ import annotations
 from typing import Tuple, Any, cast
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QDialogButtonBox
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QLabel, QStyle
+from PySide6.QtGui import QFontMetrics
 
 from ui_find import Ui_Dialog as UiDialog
 
@@ -24,6 +25,90 @@ class FindDialog(QDialog):
         self.ui = UiDialog()
         # Run the .setupUi() method to show the GUI
         self.ui.setupUi(self)
+
+        # Robust alignment: split each radio button into a left label (on the radio)
+        # and a separate right-hand QLabel for the bracketed description.
+        # This guarantees perfect alignment in proportional fonts and across DPI.
+        try:
+            # Define left and right parts
+            pairs: list[tuple[str, str]] = [
+                ("Raw Search", "(Literal search)"),
+                ("Whole words", "(Single word or phrase)"),
+                ("All the words", "(Somewhere in the verse)"),
+                ("Any of the words", "(With results sorted)"),
+            ]
+
+            radios = (
+                self.ui.radiobutton_1,
+                self.ui.radiobutton_2,
+                self.ui.radiobutton_3,
+                self.ui.radiobutton_4,
+            )
+
+            # Apply only the left text to the radio buttons
+            for rb, (left, _right) in zip(radios, pairs):
+                rb.setText(left)
+
+            # Compute the x where the right labels should start
+            prop_font = self.font()
+            fm = QFontMetrics(prop_font)
+            max_left_px = max(fm.horizontalAdvance(left) for left, _ in pairs)
+            gutter_px = max(6, fm.horizontalAdvance("  "))  # ~two-space gutter
+            # Extra uniform padding to shift the right-hand labels further right
+            extra_pad_px = max(12, fm.horizontalAdvance("    "))  # ~4 spaces or 12px minimum
+
+            # Account for the radio indicator and label spacing from the current style
+            style = self.style()
+            indicator_w = style.pixelMetric(QStyle.PixelMetric.PM_ExclusiveIndicatorWidth, None, radios[0])
+            spacing = style.pixelMetric(QStyle.PixelMetric.PM_CheckBoxLabelSpacing, None, radios[0])
+
+            # All radios share the same x; take the first
+            radios_x = min(rb.geometry().x() for rb in radios)
+            text_start_x = radios_x + max(0, indicator_w) + max(0, spacing)
+            column_x = int(text_start_x + max_left_px + gutter_px + extra_pad_px)
+
+            # Create right-hand labels and position them; keep references for show/hide
+            self._right_labels: list[QLabel] = []
+            for rb, (_left, right) in zip(radios, pairs):
+                lbl = QLabel(self)
+                lbl.setText(right)
+                lbl.setFont(prop_font)
+                # Make clicks pass through so the radio remains clickable
+                lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+                # Place the label aligned with the radio row
+                g = rb.geometry()
+                # Vertically centre text inside radio row height
+                label_height = g.height()
+                lbl.setGeometry(column_x, g.y(), max(10, self.width() - column_x - 10), label_height)
+                lbl.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
+                lbl.show()
+                self._right_labels.append(lbl)
+
+            # Keep alignment on resize
+            self._alignment_cache = {
+                "column_x": column_x,
+            }
+
+            # Store for later recalculation (resize, font changes)
+            self._pairs = pairs
+            self._radios = radios
+
+            # Connect mode toggles to also hide/show the right labels
+            # Avoid shadowing the outer-scope variable name "lbl" used above
+            cast(Any, self.ui.radiobutton_5.clicked).connect(lambda _b: [lab.show() for lab in self._right_labels])
+            cast(Any, self.ui.radiobutton_6.clicked).connect(lambda _b: [lab.hide() for lab in self._right_labels])
+        except (RuntimeError, AttributeError, TypeError, ValueError, IndexError):
+            # If anything goes wrong, leave the default texts in place.
+            self._right_labels = []
+            self._pairs = []  # type: ignore[assignment]
+            self._radios = ()  # type: ignore[assignment]
+
+        # Schedule a post-layout alignment to account for any geometry changes after show
+        try:
+            from PySide6.QtCore import QTimer  # local import to avoid polluting the module top
+            QTimer.singleShot(0, self._reposition_right_labels)
+        except (ImportError, AttributeError, RuntimeError, TypeError, ValueError):
+            pass
 
         # checks[0] is 1-4 for radiobuttons 1 to 4
         # checks[1] is 0-1 for checkBox
@@ -63,7 +148,7 @@ class FindDialog(QDialog):
             if self.ui.comboBox_2.count() > 0:
                 self.ui.comboBox_2.setCurrentIndex(self.ui.comboBox_2.count() - 1)
 
-        # Enforce range rules dynamically: start (comboBox_1) must be <= end (comboBox_2)
+        # Enforce range rules dynamically: start (comboBox_1) must be <= end (comboBox_2), 
         # and the end dropdown must reflect this by disabling invalid items.
         # Connect handlers and initialise once.
         cast(Any, self.ui.comboBox_1.currentIndexChanged).connect(self._on_start_changed)
@@ -98,6 +183,39 @@ class FindDialog(QDialog):
 
         # Dynamically show/hide the clear button based on text presence
         cast(Any, self.ui.lineEdit_1.textChanged).connect(lambda _t: self.toggle_clear_button())
+
+    # --- Layout maintenance for aligned right-hand labels ---
+    def _reposition_right_labels(self) -> None:
+        try:
+            if not getattr(self, "_right_labels", None) or not getattr(self, "_pairs", None):
+                return
+            radios = getattr(self, "_radios", ())
+            if not radios:
+                return
+            prop_font = self.font()
+            fm = QFontMetrics(prop_font)
+            max_left_px = max(fm.horizontalAdvance(left) for left, _ in self._pairs)
+            gutter_px = max(6, fm.horizontalAdvance("  "))
+            extra_pad_px = max(12, fm.horizontalAdvance("    "))
+            style = self.style()
+            indicator_w = style.pixelMetric(QStyle.PixelMetric.PM_ExclusiveIndicatorWidth, None, radios[0])
+            spacing = style.pixelMetric(QStyle.PixelMetric.PM_CheckBoxLabelSpacing, None, radios[0])
+            radios_x = min(rb.geometry().x() for rb in radios)
+            text_start_x = radios_x + max(0, indicator_w) + max(0, spacing)
+            column_x = int(text_start_x + max_left_px + gutter_px + extra_pad_px)
+            # Move labels
+            for rb, lbl in zip(radios, self._right_labels):
+                g = rb.geometry()
+                lbl.setGeometry(column_x, g.y(), max(10, self.width() - column_x - 10), g.height())
+                lbl.setFont(prop_font)
+                # Keep visibility consistent with radio
+                lbl.setVisible(rb.isVisible())
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
+
+    def resizeEvent(self, event) -> None:  # type: ignore[override]
+        super().resizeEvent(event)
+        self._reposition_right_labels()
 
     def toggle_clear_button(self) -> None:
         if self.ui.lineEdit_1.text():
@@ -143,14 +261,14 @@ class FindDialog(QDialog):
             # Prefer QStandardItemModel-style enable/disable if available
             try:
                 item = getattr(model, "item")(k)
-            except Exception:
+            except (AttributeError, TypeError):
                 item = None
             if item is not None:
                 try:
                     item.setEnabled(bool(enabled))
                     # Also affect selection to reflect disabled state in popup
                     item.setSelectable(bool(enabled))
-                except Exception:
+                except (AttributeError, RuntimeError, TypeError, ValueError):
                     # If anything goes wrong, silently ignore; snapping logic below enforces validity
                     pass
             else:
@@ -168,13 +286,13 @@ class FindDialog(QDialog):
             finally:
                 self.ui.comboBox_2.blockSignals(bs)
 
-    def _on_start_changed(self, index: int) -> None:
+    def _on_start_changed(self, _index: int) -> None:
         """When the start changes, update the end combo list and selection."""
         # Ensure end >= start
         self._apply_end_constraints()
 
     def _on_end_changed(self, index: int) -> None:
-        """When the end changes, ensure it is not less than start."""
+        """When the end changes, ensure it is not less than the start."""
         start_idx = self.ui.comboBox_1.currentIndex()
         if index < start_idx:
             bs = self.ui.comboBox_2.blockSignals(True)

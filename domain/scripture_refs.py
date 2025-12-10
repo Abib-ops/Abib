@@ -77,6 +77,42 @@ def _parse_component(val: object) -> Optional[int]:
         return None
 
 
+def _parse_verse_component(val: object) -> Optional[int]:
+    """Parse a verse component that may include ranges/lists.
+
+    Accepts inputs like:
+    - "29" -> 29
+    - "29-30" -> 29 (start of range)
+    - "29-" or "29--" -> 29 (open-ended range)
+    - "29-31,33-35" -> 29 (first unit in a list)
+    - Roman numerals are also accepted for the first token (e.g., "xv--" -> 15).
+
+    Returns an int on success, or None if invalid/unset.
+    """
+    s = _norm_str(val)
+    if s is None:
+        return None
+    # Consider only the first unit before a comma/semicolon
+    import re as _re
+    first_unit = _re.split(r"[,;]", s, maxsplit=1)[0]
+    first_unit = first_unit.strip()
+    # Extract a leading Roman numeral or arabic number from the unit
+    m = _re.match(r"^(?P<roman>[ivxlcdm]+)|^(?P<num>\d+)", first_unit, flags=_re.IGNORECASE)
+    if not m:
+        return None
+    roman = m.group("roman")
+    num = m.group("num")
+    if roman:
+        try:
+            return int(fromRoman(roman.upper()))
+        except (InvalidRomanNumeralError, ValueError, TypeError):
+            return None
+    try:
+        return int(num)
+    except (ValueError, TypeError):
+        return None
+
+
 def resolve_reference(bits: Bits) -> RefParts:
     """Resolve the (book, chapter, verse) from a user-supplied sequence of parts.
 
@@ -124,7 +160,9 @@ def resolve_reference(bits: Bits) -> RefParts:
     # Step 3: Resolve verse (bits[2])
     verse: Optional[int] = 1
     if len(bits) > 2:
-        parsed_vs = _parse_component(bits[2])
+        # Verses can be lists/ranges (e.g., "29--", "29-31,33");
+        # for navigation we use the first verse number present.
+        parsed_vs = _parse_verse_component(bits[2])
         if parsed_vs is None:
             return RefParts(book_number, chapter, None)
         verse = parsed_vs

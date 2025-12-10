@@ -197,10 +197,16 @@ _ord_re = rf"(?:(?:[1-3]{_ORD_SUFFIX}|i{{1,3}}|{_ORD_WORDS}){_SEP})?"  # 1/2/3(+
 # or i/ii/iii or words with optional sep
 _book_re = r"[A-Za-z]+"  # validated later
 # Allow colon or dot between Arabic chapter and verse, e.g. 22:17 or 22.17
-_arabic_re = rf"(?P<chap_a>\d{{1,3}}){_WS}*[:.]{_WS}*(?P<vers_a>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*)"
+# Build reusable verse-unit and list patterns.
+# Accept open-ended ranges like "29-" or "29--" (to end of chapter) by making the
+# second number optional when a hyphen/dash is present.
+_VERSE_UNIT = rf"\d{{1,3}}(?:{_WS}*[-–]{{1,2}}(?:{_WS}*\d{{1,3}})?)?"
+_VERSE_LIST = rf"{_VERSE_UNIT}(?:{_WS}*,{_WS}*{_VERSE_UNIT})*"
+
+_arabic_re = rf"(?P<chap_a>\d{{1,3}}){_WS}*[:.]{_WS}*(?P<vers_a>{_VERSE_LIST})"
 # Allow optional dot or colon after Roman chapter, e.g., xxii. 17 or xxii:17 or xxii 17
-_roman_re = rf"(?P<chap_r>[ivxlcdm]+){_WS}*[:.]?{_WS}*(?:v(?:er\.)?{_WS}*)?(?P<vers_r>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*)"
-_nochap_re = rf"(?P<vers_only>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*)"
+_roman_re = rf"(?P<chap_r>[ivxlcdm]+){_WS}*[:.]?{_WS}*(?:v(?:er\.)?{_WS}*)?(?P<vers_r>{_VERSE_LIST})"
+_nochap_re = rf"(?P<vers_only>{_VERSE_LIST})"
 
 _PATTERN = rf"""
     (?<!\w)
@@ -222,9 +228,9 @@ _PATTERN_RE = re.compile(_PATTERN, re.IGNORECASE | re.VERBOSE)
 _CONTINUATION_RE = re.compile(
     rf"^{_WS}*(?P<sep>[,;]){_WS}*"
     rf"(?:"
-    rf"(?P<chap_a>\d{{1,3}}){_WS}*[:.]{_WS}*(?P<vers_a>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*)"
-    rf"|(?P<chap_r>[ivxlcdm]+){_WS}*[:.]?{_WS}*(?P<vers_r>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*)"
-    rf"|(?P<vers_only>\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?(?:{_WS}*,{_WS}*\d{{1,3}}(?:{_WS}*[-–]{_WS}*\d{{1,3}})?)*)"
+    rf"(?P<chap_a>\d{{1,3}}){_WS}*[:.]{_WS}*(?P<vers_a>{_VERSE_LIST})"
+    rf"|(?P<chap_r>[ivxlcdm]+){_WS}*[:.]?{_WS}*(?P<vers_r>{_VERSE_LIST})"
+    rf"|(?P<vers_only>{_VERSE_LIST})"
     rf")",
     re.IGNORECASE,
 )
@@ -397,25 +403,52 @@ def lookup_scripture(bible_data: Dict[str, Any], book: str, chapter: int, verses
     full_book = CANONICAL_BOOKS.get(book_id, book)
     chapter_data = bible_data.get(full_book, {}).get(str(chapter), {})
 
+    # Normalise dashes and whitespace
     verses = verses.replace("–", "-").replace("—", "-")
+
+    # Determine the maximum verse available in this chapter (used for clamping)
+    try:
+        max_verse_in_chapter = max(int(k) for k in chapter_data.keys()) if chapter_data else 0
+    except (ValueError, TypeError):
+        max_verse_in_chapter = 0
+
     verse_numbers: List[int] = []
-    for part in verses.split(','):
-        part = part.strip().replace("–", "-").replace("—", "-")
+    for raw_part in verses.split(','):
+        part = raw_part.strip().replace("–", "-").replace("—", "-")
+        # Collapse multiple hyphens to a single hyphen so "29--" becomes "29-"
+        part = re.sub(r"-{2,}", "-", part)
+
         if '-' in part:
+            start_s, end_s = part.split('-', 1)
             try:
-                start_s, end_s = part.split('-', 1)
                 start_i = int(start_s.strip())
-                end_i = int(end_s.strip())
-                if start_i <= end_i:
-                    verse_numbers.extend(range(start_i, end_i + 1))
-                else:
-                    verse_numbers.extend(range(start_i, end_i - 1, -1))
-            except ValueError:
+            except (ValueError, TypeError):
                 return "Scripture not found."
+
+            end_s = (end_s or "").strip()
+            if end_s == "":
+                # Dangling hyphen with no numeric end: treat as a single verse.
+                # Discard the hyphen semantics and use only the start verse.
+                end_i = start_i
+            else:
+                try:
+                    end_i = int(end_s)
+                except (ValueError, TypeError):
+                    return "Scripture not found."
+
+            # Clamp end within known chapter bounds if available
+            if max_verse_in_chapter:
+                end_i = min(end_i, max_verse_in_chapter)
+
+            if start_i <= end_i:
+                verse_numbers.extend(range(start_i, end_i + 1))
+            else:
+                # Descending ranges are rare; preserve previous behaviour
+                verse_numbers.extend(range(start_i, end_i - 1, -1))
         else:
             try:
                 verse_numbers.append(int(part))
-            except ValueError:
+            except (ValueError, TypeError):
                 return "Scripture not found."
 
     results: List[str] = []
