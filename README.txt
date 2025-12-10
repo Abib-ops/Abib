@@ -4,11 +4,17 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.01
+Abib v415.02
 ------------
 
 Changelog.
 -----------
+Abib v415.02
+
+pytest                    9.0.2
+urllib3                   2.6.0
+requirements.txt updated
+
 Abib v415.01
 Updated to the following versions of the required packages:
 because of a Dependabot alert from GitHub: for urllib3 version 2.5.0.
