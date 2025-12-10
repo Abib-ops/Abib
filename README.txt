@@ -4,18 +4,56 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.02
+Abib v415.03
 ------------
 
 Changelog.
 -----------
-Abib v415.02
+Abib v415.03
+•
+The requirements.txt file was updated as follows:
+altgraph==0.17.5
+certifi==2025.11.12
+charset-normalizer==3.4.4
+colorama==0.4.6
+comtypes==1.4.13 ; sys_platform == 'win32'
+idna==3.11
+iniconfig==2.3.0
+packaging==25.0
+pefile==2024.8.26
+pluggy==1.6.0
+Pygments==2.19.2
+pyinstaller==6.17.0
+pyinstaller-hooks-contrib==2025.10
+PySide6==6.10.1 ; python_version < '3.14'
+PySide6_Addons==6.10.1 ; python_version < '3.14'
+PySide6_Essentials==6.10.1 ; python_version < '3.14'
+pytest==9.0.2
+pyttsx3==2.99
+requests==2.32.5
+roman==5.2
+setuptools==80.9.0
+shiboken6==6.10.1 ; python_version < '3.14'
+urllib3==2.6.1
+wheel==0.45.1
 
+# Windows-only dependencies
+pywin32>=308 ; sys_platform == 'win32'    # 308+ has wheels for CPython 3.13
+pywin32-ctypes==0.2.3 ; sys_platform == 'win32'
+----------------------------------------------------------------------------------------
+The CI is failing because Linux cannot install pywin32==311.
+Removed the unconditional Windows-only lines and kept only the ; sys_platform == 'win32'
+variants (and dropped pypiwin32).
+----------------------------------------------------------------------------------------
+
+Abib v415.02
+•
 pytest                    9.0.2
-urllib3                   2.6.0
+urllib3                   2.6.1
 requirements.txt updated
 
 Abib v415.01
+•
 Updated to the following versions of the required packages:
 because of a Dependabot alert from GitHub: for urllib3 version 2.5.0.
 
