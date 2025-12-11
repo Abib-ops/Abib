@@ -10800,7 +10800,7 @@ M. G. Easton
           As compared with Samuel and Kings, the Book of Chronicles omits
           many particulars there recorded (2 Sam. 6:20-23; 9; 11; 14-19,
           etc.), and includes many things peculiar to itself (1 Chr. 12;
-          22; 23-26; 27; 28; 29, etc.). Twenty whole chapters, and
+          22; 23; 24; 25; 26; 27; 28; 29, etc.). Twenty whole chapters, and
           twenty-four parts of chapters, are occupied with matter not
           found elsewhere. It also records many things in fuller detail,
           as (e.g.) the list of David's heroes (1 Chr. 12:1-37), the
@@ -16295,9 +16295,9 @@ M. G. Easton
 
           The principal prophecies of Scripture regarding Egypt are these,
           Isa. 19; Jer. 43: 8-13; 44:30; Chap. 46; Ezek. 29-32; and it
-		  might be easily shown that they have all been remarkably
-		  fulfilled. For example, the singular disappearance of Noph
-		  (i.e., Memphis) is a fulfilment of Jer. 46:19, Ezek. 30:13.
+          might be easily shown that they have all been remarkably
+          fulfilled. For example, the singular disappearance of Noph
+          (i.e., Memphis) is a fulfilment of Jer. 46:19, Ezek. 30:13.
 
    Ehud
           Union. (1.) A descendant of Benjamin (1 Chr. 7:10), his
@@ -35755,13 +35755,14 @@ M. G. Easton
 
    Michtam
           Writing; i.e., a poem or song found in the titles of Ps. 16;
-          56-60. Some translate the word "golden", i.e., precious. It is
-          rendered in the LXX. by a word meaning "tablet inscription" or a
-          "stelograph." The root of the word means to stamp or grave, and
-          hence it is regarded as denoting a composition so precious as to
-          be worthy to be engraven on a durable tablet for preservation;
-          or, as others render, "a psalm precious as stamped gold," from
-          the word kethem, "fine or stamped gold."
+          56; 57; 58; 59; 60. Some translate the word "golden", i.e.,
+          precious. It is rendered in the LXX. by a word meaning "tablet
+          inscription" or a "stelograph." The root of the word means to
+          stamp or grave, and hence it is regarded as denoting a
+          composition so precious as to be worthy to be engraven on a
+          durable tablet for preservation; or, as others render, "a psalm
+          precious as stamped gold," from the word kethem, "fine or stamped
+          gold."
 
    Middin
           Measures, one of the six cities "in the wilderness," on the west
@@ -49402,7 +49403,7 @@ M. G. Easton
           (Judg. 5), Hannah (1 Sam. 2), David (2 Sam. 22, and Psalms),
           Mary (Luke 1:46-55), Zacharias (Luke 1:68-79), the angels (Luke
           2:13), Simeon (Luke 2:29), the redeemed (Rev. 5:9; Chap. 19),
-		  Solomon (see [601]SOLOMON, SONGS OF).
+          Solomon (see [601]SOLOMON, SONGS OF).
 
    Son of God
           The plural, "sons of God," is used (Gen. 6:2, 4) to denote the

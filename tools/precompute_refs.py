@@ -30,6 +30,26 @@ Notes:
 - Normalisation matches the app: CRLF/CR are converted to LF before scanning and hashing.
 - Output files are named "<source>.refs.json.gz" placed in the output directory.
 - Existing companions are reused if content_sha256 and parser_version already match; use --force to rebuild.
+
+Recommended practice: when to bump PARSER_VERSION
+Bump the constant whenever any change could alter the produced reference set or their offsets,
+even if precompute_refs.py itself didn’t change.
+
+Examples:
+•
+Modify scripture.find_scripture_references patterns/logic (e.g. the recent no-newline regex change).
+•
+Change normalisation that affects offsets (e.g. normalize_text policy).
+•
+Change continuation handling, book normalisation, or mappings that affect book IDs or names.
+•
+Any change that would alter refs content (text, chapter/verse values, start/length) in the companion files.
+You do not need to bump it for:
+•
+Purely cosmetic refactoring of precompute_refs.py that doesn’t affect output.
+•
+Input file content changes: those are detected via content_sha256 and will trigger rebuilds even without a version bump.
+
 """
 
 from __future__ import annotations
@@ -41,7 +61,6 @@ import json
 import sys
 from pathlib import Path
 from typing import Any, Dict, List
-import csv
 
 # Ensure we can import local project modules when run from anywhere
 THIS_FILE = Path(__file__).resolve()
@@ -52,7 +71,7 @@ if str(PROJECT_ROOT) not in sys.path:
 import scripture  # type: ignore
 
 
-PARSER_VERSION = "2025-12-09-line-csv"
+PARSER_VERSION = "2025-12-10-roman-chapter-sep-guard"
 FORMAT_VERSION = 1
 
 
@@ -434,24 +453,9 @@ def main(argv: List[str] | None = None) -> int:
     if csv_rows:
         csv_path = Path(args.csv) if args.csv else (out_dir / "scripture_problems.csv")
         try:
-            csv_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(csv_path, "w", newline="", encoding="utf-8") as f:
-                writer = csv.DictWriter(
-                    f,
-                    fieldnames=[
-                        "file",
-                        "type",
-                        "book",
-                        "chapter",
-                        "verse",
-                        "line",
-                        "message",
-                        "text",
-                    ],
-                )
-                writer.writeheader()
-                for row in csv_rows:
-                    writer.writerow(row)
+            # Import locally to avoid altering global imports and preserve minimal change
+            from csv_report import write_csv, CSV_FIELDS  # type: ignore
+            write_csv(csv_path, csv_rows, fieldnames=CSV_FIELDS)
             print(f"\nProblem report written: {csv_path}")
         except Exception as e:
             print(f"\nERROR writing CSV report: {e}")

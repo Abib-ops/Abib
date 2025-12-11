@@ -1,5 +1,10 @@
 """
 This is to correct encoding errors in the downloaded UTF-8 Unicode files.
+
+It works inside the folder you specify and corrects encoding errors in the files within it.
+
+I normally use C:\Temp, I copy the files there and then run this script.
+
 """
 
 import os

@@ -344,8 +344,8 @@ Chap. I. -- Of the Scripture.
    ^b New [4] [5] [6] Testament, 
    ^c given by inspiration from God, containing all things necessary to be
       believed and done, that God may be worshipped and our souls saved.
-	  
-   ^a Isa. viii. 20; Rom. iii. 2. 
+
+   ^a Isa. viii. 20; Rom. iii. 2.
    ^b Rev. xxii. 19, 20. 
    ^c ii Tim. iii. 16, 17; Ps. xix. 7, 8; Jer. vii. 13; John xx. 31.
 
@@ -469,7 +469,7 @@ Chap. II. -- Of God.
    ^e holiness,
    ^f wisdom, and the like; which he delighteth to exercise towards his
       creatures, for the praise of his glory.
-	  
+
    ^a Ps. cxix. 68; Matt. xix. 17. 
    ^b Exod. xv. 11; Ps. lxii. 11; Rev. xix. 1. 
    ^c Zeph. iii. 5; Ps. xi. 7; Jer. xii. 1; Rom. i. 32. 
@@ -591,7 +591,7 @@ Immanent.
    ^a Eternal, 
    ^b unchangeable purposes [21] [22] [23] of his will, concerning the 
       being and well-being of his creatures.
-	  
+
    ^a Mic. v. 2; Eph. iii. 9-11; Acts xv. 18. 
    ^b Isa. xiv. 24, Isa. xlvi. 10; Rom. ix. 11; 2 Tim. ii. 19.
 
@@ -747,7 +747,7 @@ Chap. VI. -- Of God's actual Providence.
       for whom are all things; secondly, 
    ^b towards all in a general manner, yet with various and divers
       dispensations.
-	  
+
    ^a Deut. xxxii. 10; Ps. xvii. 8; Zech. ii. 8; Matt. xvi. 18;
       Matt. xix. 2, 29; 1 Pet. v. 7.
    ^b Gen. ix. 5; Ps. lxxv. 6, 7; Isa. xlv. 6, 7; Matt. v. 45.
@@ -846,7 +846,7 @@ Chap. VII. -- Of the Law of God.
       conscience; thirdly,
    ^c by bringing the whole soul under bondage to sin, death, Satan, and
       hell, so making us long and seek for a Saviour.
-	  
+
    ^a Rom. vii. 7-9; Gal. iii. 19.
    ^b Rom. iii. 19, 20; Rom. iv. 15; Rom v. 20; Gal. iii. 10.
    ^c Gal. iii. 22; Heb. ii. 15.
@@ -1088,7 +1088,7 @@ Chap. XI. -- Of the Offices of Christ; and, First, of His Kingly.
       them unto himself a willing, obedient, persevering people; secondly,
    ^b eternal and ecclesiastical, in giving perfect laws and rules for
       their government, as gathered into holy societies under him.
-	  
+
    ^a Isa. liii. 12; Isa. lix. 20, 21, with Heb. viii. 10-12;
       Isa. lxi. 1, 2; John i. 16; John xii. 32; Mark i. 15;
       Matt. xxviii. 20; 2 Cor. x. 4, 5.
@@ -1103,7 +1103,7 @@ Chap. XI. -- Of the Offices of Christ; and, First, of His Kingly.
       consciences, hardening their spirits for ruin; secondly,
    ^b external, in judgements and vengeance, which ofttimes he beginneth
       in this life, and will continue unto eternity.
-	  
+
    ^a Ps. cx. 1-7; John vi. 46; John viii. 59; John ix. 41; John xii. 40;
       2 Cor. x. 4-6; 1 Cor. v. 5; 1 Tim. i. 20.
    ^b Mark xvi. 16; Luke xix. 27; Acts xiii. 11; Rev. xvii. 14.
@@ -1162,7 +1162,7 @@ Chap. XII. -- Of Christ's Priestly Office.
       world; as
    ^b also, the presentation of himself for us in heaven, sprinkled with
       the blood of the covenant.
-	  
+
    ^a Isa. liii. 10, 12; John iii. 16; John xi. 51, John xvii. 19;
       Heb. ix. 13,14.
    ^b Heb. ix. 24.
@@ -1235,7 +1235,7 @@ Chap. XII. -- Of Christ's Priestly Office.
    ^c in him mercy, pardon, grace, and glory,
    ^d with a re-stipulation of faith from them unto this faith from them
       unto this promise, and new obedience.
-	  
+
    ^a Gen. iii. 15; Jer. xxxi. 31-34, Jer. xxxii. 40; Heb. viii. 10-12.
    ^b Gal. iii. 8, 16; Gen. xii. 3.
    ^c Rom. viii. 32; Eph. i. 3, 4.
@@ -1501,7 +1501,7 @@ Chap. XVII. -- Of Faith.
       Christ for mercy,
    ^b with a firm persuasion of heart that God is a reconciled Father unto
       us in the Son of his love.
-	  
+
    ^a i Tim. i. 16; Job xiii. 15; Job xix. 25; Rom. iv. 5.
    ^b Heb. iv. 16; Rom. viii. 38, 39; Gal. ii. 20; 2 Cor. v. 20, 21.
 
@@ -1990,7 +1990,7 @@ Chap. XXV. -- Of the Communion of Saints, -- the Fifth Privilege of Believers.
       graces, -- which is the union of the church catholic; secondly,
    ^b external and ecclesiastical, in the same outward ordinances, -- which
       is the union of particular congregations.
-	  
+
    ^a i Cor. xii. 12, 13; Eph ii. 16, 19-22; 1 Cor. x. 17;
       John xvii. 11, 21, 22; John x. 16; Heb. ii. 11.
    ^b i Cor. i. 10, 11; Rom. xii. 5; 1 Cor. xii. 27, 28; Eph iv. 11-13;

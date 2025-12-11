@@ -189,6 +189,9 @@ def classify_book_input(user_input: str) -> Dict[str, Any]:
 # Precompile the reference pattern used by both UI and scanner
 # Define a broader whitespace class that includes common Unicode spaces seen in ebooks/PDFs.
 _WS = r"[\s\u00A0\u202F\u2007\u2009\u200A\u2000-\u2006]"
+# No-newline whitespace class for intra-reference glue (spaces/tabs and narrow no-breaks only).
+# This prevents matches from spanning across line breaks into list bullets like "-2" on the next line.
+_NO_NL_WS = r"[\t \u00A0\u202F\u2007\u2009\u200A\u2000-\u2006]"
 
 _ORD_SUFFIX = r"(?:st|nd|rd)?"  # for Arabic 1st/2nd/3rd
 _ORD_WORDS = r"(?:first|second|third)"  # written-out ordinals
@@ -198,20 +201,26 @@ _ord_re = rf"(?:(?:[1-3]{_ORD_SUFFIX}|i{{1,3}}|{_ORD_WORDS}){_SEP})?"  # 1/2/3(+
 _book_re = r"[A-Za-z]+"  # validated later
 # Allow colon or dot between Arabic chapter and verse, e.g. 22:17 or 22.17
 # Build reusable verse-unit and list patterns.
-# Accept open-ended ranges like "29-" or "29--" (to end of chapter) by making the
-# second number optional when a hyphen/dash is present.
-_VERSE_UNIT = rf"\d{{1,3}}(?:{_WS}*[-–]{{1,2}}(?:{_WS}*\d{{1,3}})?)?"
-_VERSE_LIST = rf"{_VERSE_UNIT}(?:{_WS}*,{_WS}*{_VERSE_UNIT})*"
+# Accept open-ended ranges like "29-" or "29--" (to the end of the chapter)
+# by making the second number optional when a hyphen/dash is present.
+# Use no-newline whitespace around hyphens/commas to avoid bleeding across lines.
+_VERSE_UNIT = rf"\d{{1,3}}(?:{_NO_NL_WS}*[-–]{{1,2}}(?:{_NO_NL_WS}*\d{{1,3}})?)?"
+_VERSE_LIST = rf"{_VERSE_UNIT}(?:{_NO_NL_WS}*,{_NO_NL_WS}*{_VERSE_UNIT})*"
 
-_arabic_re = rf"(?P<chap_a>\d{{1,3}}){_WS}*[:.]{_WS}*(?P<vers_a>{_VERSE_LIST})"
+_arabic_re = rf"(?P<chap_a>\d{{1,3}}){_NO_NL_WS}*[:.]{_NO_NL_WS}*(?P<vers_a>{_VERSE_LIST})"
 # Allow optional dot or colon after Roman chapter, e.g., xxii. 17 or xxii:17 or xxii 17
-_roman_re = rf"(?P<chap_r>[ivxlcdm]+){_WS}*[:.]?{_WS}*(?:v(?:er\.)?{_WS}*)?(?P<vers_r>{_VERSE_LIST})"
+_roman_re = rf"(?P<chap_r>[ivxlcdm]+){_NO_NL_WS}*[:.]?{_NO_NL_WS}*(?:v(?:er\.)?{_NO_NL_WS}*)?(?P<vers_r>{_VERSE_LIST})"
 _nochap_re = rf"(?P<vers_only>{_VERSE_LIST})"
+# Chapter-only (no verses) after a book, used to carry forward book context in lists like
+# "Ps 2; 16; 18:43; 69:7-9".
+# Do not confuse with chapter:verse; the lookahead forbids ':' or '.'.
+_chap_only_ar = rf"(?P<chap_only_a>\d{{1,3}})(?=(?:{_WS}|[);,\\.\"'“”‘’]|$))"
+_chap_only_ro = rf"(?P<chap_only_r>[ivxlcdm]+)(?=(?:{_WS}|[);,\\.\"'“”‘’]|$))"
 
 _PATTERN = rf"""
     (?<!\w)
     (?P<book>{_ord_re}{_book_re})\.?{_WS}*
-    (?:{_arabic_re}|{_roman_re}|{_nochap_re})
+    (?:{_arabic_re}|{_roman_re}|{_nochap_re}|{_chap_only_ar}|{_chap_only_ro})
     # Allow quotes or allowed punctuation to immediately follow
     (?=(?:{_WS}|[);:,.\"'“”‘’]|$))
 """
@@ -228,8 +237,8 @@ _PATTERN_RE = re.compile(_PATTERN, re.IGNORECASE | re.VERBOSE)
 _CONTINUATION_RE = re.compile(
     rf"^{_WS}*(?P<sep>[,;]){_WS}*"
     rf"(?:"
-    rf"(?P<chap_a>\d{{1,3}}){_WS}*[:.]{_WS}*(?P<vers_a>{_VERSE_LIST})"
-    rf"|(?P<chap_r>[ivxlcdm]+){_WS}*[:.]?{_WS}*(?P<vers_r>{_VERSE_LIST})"
+    rf"(?P<chap_a>\d{{1,3}}){_NO_NL_WS}*[:.]{_NO_NL_WS}*(?P<vers_a>{_VERSE_LIST})"
+    rf"|(?P<chap_r>[ivxlcdm]+){_NO_NL_WS}*[:.]?{_NO_NL_WS}*(?P<vers_r>{_VERSE_LIST})"
     rf"|(?P<vers_only>{_VERSE_LIST})"
     rf")",
     re.IGNORECASE,
@@ -267,6 +276,7 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
             continue
 
         # Determine chapter/verses
+        chapter_only_reinterpreted = False  # when vers-only is reinterpreted as chapter-only while keeping regex order
         if m.group("chap_a") and m.group("vers_a"):
             try:
                 chapter = int(m.group("chap_a"))
@@ -282,13 +292,57 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
                 scan_pos = m.start() + 1
                 continue
             verses = m.group("vers_r")
+        elif m.group("chap_only_a") or m.group("chap_only_r"):
+            # Chapter-only after a book: set context but do not emit a reference for the
+            # chapter itself (consistent with semicolon chapter markers being ignored).
+            # Guard against false positives from glued tokens like "ABDI" => "ABD" + "I" (Obadiah i)
+            # and "OBAL" => "OBA" + "L" (Obadiah l).
+            # Require at least one separator (space or similar whitespace)
+            # between the book token and a Roman chapter-only.
+            if m.group("chap_only_r"):
+                # Compute the gap between the end of the book token and start of roman chapter
+                gap_start = m.end("book")
+                gap_end = m.start("chap_only_r")
+                if gap_end <= gap_start:
+                    # No separator at all: reject this match and advance
+                    scan_pos = m.start() + 1
+                    continue
+            if m.group("chap_only_a"):
+                try:
+                    chapter = int(m.group("chap_only_a"))
+                except ValueError:
+                    scan_pos = m.start() + 1
+                    continue
+            else:
+                chap_rom2 = m.group("chap_only_r").upper()
+                try:
+                    chapter = fromRoman(chap_rom2)
+                except (InvalidRomanNumeralError, ValueError):
+                    scan_pos = m.start() + 1
+                    continue
+            verses = ""
         elif m.group("vers_only"):
-            if (book_id - 1) not in sh.onechapterbooks:
-                # Not a one-chapter book; treat as false match and continue overlapping scan
-                scan_pos = m.start() + 1
-                continue
-            chapter = 1
-            verses = m.group("vers_only")
+            vo = m.group("vers_only")
+            if (book_id - 1) in sh.onechapterbooks:
+                # In one-chapter books, a book plus vers-only is valid (chapter = 1)
+                chapter = 1
+                verses = vo
+            else:
+                # Keep the current regex order but reinterpret a simple number as chapter-only
+                # when it immediately follows the book name (e.g. "Ps 2" sets chapter context).
+                if re.fullmatch(r"\d{1,3}", vo or ""):
+                    try:
+                        chapter = int(vo)
+                    except ValueError:
+                        scan_pos = m.start() + 1
+                        continue
+                    verses = ""
+                    chapter_only_reinterpreted = True
+                else:
+                    # For multi-chapter books, non-numeric vers-only (like "5-7") after the book
+                    # is not a valid top-level match; advance to allow overlaps.
+                    scan_pos = m.start() + 1
+                    continue
         else:
             scan_pos = m.start() + 1
             continue
@@ -299,16 +353,22 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
 
         start = m.start() + lead
         length = len(lstripped)
-        references.append(
-            {
-                "text": lstripped,
-                "book": book_raw,
-                "chapter": chapter,
-                "verse": verses,
-                "start": start,
-                "length": length,
-            }
-        )
+        # Only emit when we actually have verses (normal reference) or a one-chapter book reference.
+        # For chapter-only after a multi-chapter book, we skip emission but keep context for continuations.
+        emit = True
+        if (m.group("chap_only_a") or m.group("chap_only_r") or chapter_only_reinterpreted) and (book_id - 1) not in sh.onechapterbooks:
+            emit = False
+        if emit:
+            references.append(
+                {
+                    "text": lstripped,
+                    "book": book_raw,
+                    "chapter": chapter,
+                    "verse": verses,
+                    "start": start,
+                    "length": length,
+                }
+            )
 
         # Handle continuations inheriting the same book and possibly chapter.
         # Supports:
@@ -329,6 +389,27 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
                 break
             m2 = cast(re.Match[str], m2)
             sep = m2.group("sep") or ""
+            # Special rule: after a full reference, a semicolon followed by a
+            # number alone (e.g. "; 4") indicates a chapter marker, not a
+            # standalone verse reference — but only for multi‑chapter books.
+            # For one‑chapter books (e.g. Jude), "; 7" must be treated as verses in chapter 1.
+            # Update the last_chapter and skip emitting a reference for this segment when applicable.
+            if sep == ";" and m2.group("vers_only") and (book_id - 1) not in sh.onechapterbooks:
+                vo_raw = m2.group("vers_only")
+                if re.fullmatch(r"\d{1,3}", vo_raw or ""):
+                    # Look ahead: if the next token looks like a new book (e.g. "2 Thess."),
+                    # do NOT consume this as a chapter marker; let the main scanner handle it.
+                    after = tail[len(m2.group(0)) :]
+                    after = re.sub(rf"^{_WS}+", "", after)
+                    if after and (after[0].isdigit() or after[0].isupper()):
+                        # Likely a new book starts here; stop continuation.
+                        break
+                    try:
+                        last_chapter = int(vo_raw)
+                        tail_pos += len(m2.group(0))
+                        continue
+                    except ValueError:
+                        pass
             # Guard: if vers-only continuation (e.g. "; 1") is immediately followed by a plausible
             # new book token (digit or capitalised word),
             # stop continuation so the next main scan can pick it up.

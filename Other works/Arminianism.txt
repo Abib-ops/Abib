@@ -5680,7 +5680,10 @@
 
    [197] "Non alia fide quemquam hominum, sive ante legem sive legis
    tempore, justificatum esse, credendum est, quam hac eadem qua Dominus
-   Jesu," etc. -- Prosp. ad Ob. viii., Gallorum.
+   Jesu," etc. -- Prosper of Aquitaine, Ad objectiones Gallorum, objection
+   VIII. Objection VIII deals with the claim that people before Christ were
+   justified differently than Christians. Prosper counters that salvation
+   has always been through the same faith in Christ.
 
    [198] "Omnes ergo illos qui ab Abraham sursum versus ad primum hominem,
    generationis ordine conscribuntur, etsi non nomine, rebus tamen, et
@@ -6084,15 +6087,15 @@
         his Apologeticus contra Pelagianos or a related apologetic work.
         Page 621 would be from a collected edition (e.g., Migne,
         Patrologia Latina).
-		
+
    •    De Synodo Palaestina:
         Refers to the Synod of Diospolis (Lydda), 415, where Pelagius was
         examined and temporarily acquitted. Orosius was present and
         opposed the acquittal, later reporting to Augustine.
-		
+
    •    "Prae omnibus studium gerite libros S. Aug. quos ad Prosp. et
         Hilar. scripsit, memoratis fratribus legendos ingerere":
-		
+
    This is a quotation from the Epistola Synodi Byzacenae, a letter from
    the Byzacene bishops of North Africa, urging that Augustine’s
    anti-Pelagian writings to Prosper and Hilary be studied and distributed
