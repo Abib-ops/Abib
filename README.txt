@@ -4,11 +4,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.04
+Abib v415.05
 ------------
 
 Changelog.
 -----------
+Abib v415.05
+gpg signature added.
+
 Abib v415.04
 •
 Fixed a problem with the Bible referencing system.
