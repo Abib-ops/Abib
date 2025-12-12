@@ -2,7 +2,7 @@
 
 A little, fast Bible reader for your desktop or laptop.
 Abib helps you follow Scripture while listening to a sermon, a livestream, or during personal study.
-It stays out of the way and makes it easy to jump anywhere in the Bible.
+It takes little room and has separate windows for the various parts.
 
 ![Abib screenshot](Screenshot.jpg)
 
@@ -24,7 +24,7 @@ It stays out of the way and makes it easy to jump anywhere in the Bible.
 Tip: Abib can also run from source for developers; most people will prefer the installer.
 
 ## Quick start
-- Jump to a verse: type g50.7 to go to Genesis 50:7 (use a period between chapter and verse)
+- Jump to a verse: type ge50.7 to go to Genesis 50:7 (use a period between chapter and verse)
 - Or use the three drop‑down boxes (Book, Chapter, Verse)
 - Search: open the Find dialog from the menu and enter a word or phrase
 - Daily reading: open “Morning & Evening” and use the left/right controls
@@ -33,8 +33,8 @@ Tip: Abib can also run from source for developers; most people will prefer the i
 For tips and shortcuts (like changing font size), see HELP.txt in the repository or the installed folder.
 
 ## Questions
-- Updates: Abib can check for updates and offer a download when a new version is available.
-- Privacy: Abib works offline. It only accesses the internet when you choose to check for updates.
+- Updates: Abib checks for updates and offers a download when a new version is available.
+- Privacy: Abib works offline. It only accesses the internet to check for updates.
 - License: Abib is free software (GPL‑3.0 or later). See LICENSE for details.
 
 PDF resources
@@ -106,8 +106,8 @@ These Public Domain PDFs are distributed separately as release assets:
 - Morning & Evening by C. H. Spurgeon (via Eternal Life Ministries / spurgeongems.org)
 - Other Works (public-domain texts) include authors such as:
   - John Bunyan — The Pilgrim's Progress; The Holy War
-  - John Calvin — Institutes of the Christian Religion; Of Prayer; Commentaries
-  - John Owen — Pneumatologia; Catechisms
+  - John Calvin — Institutes of the Christian Religion; Of Prayer, Commentaries
+  - John Owen — Pneumatologia; Catechisms, The Doctrine of the Saints' Perseverance
   - Martin Luther — Commentary on Galatians; Small Catechism
   - Charles Hodge — Systematic Theology (Vols. I – III)
   - Orville J. Nave — Nave's Topical Bible

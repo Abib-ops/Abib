@@ -4,11 +4,15 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.05
+Abib v415.06
 ------------
 
 Changelog.
 -----------
+Abib v415.06
+Readme.md updated.
+Remove mistakenly committed empty key files.
+
 Abib v415.05
 gpg signature added.
 
