@@ -3519,7 +3519,8 @@ class MainWindow(QMainWindow):
                     try:
                         splash.finish(w)
                     except (RuntimeError, AttributeError, TypeError):
-                        splash.close()
+                        # Be robust for type checkers and stub limitations: call close() if present
+                        getattr(splash, 'close', lambda: None)()
             except (RuntimeError, AttributeError):
                 pass
             splash = None
