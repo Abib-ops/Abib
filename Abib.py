@@ -26,7 +26,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.1 and python3.13.11 (64-bit).
 
-12/12/2025
+14/12/2025
 
 python -m pip install --upgrade pip wheel
 python -m pip install -r requirements.txt
@@ -37,7 +37,7 @@ We appreciate your patience, and we welcome improvements from Linux contributors
 
 Quick start on Linux (unofficial)
 •
-Ensure Python is recent (recommended: 3.10–3.13, not 3.14+).
+Ensure Python is recent (recommended: 3.10–3.13, > 3.9 < 3.14).
 •
 Copy the Abib folder to your home directory.
 •
@@ -83,7 +83,6 @@ from pathlib import Path
 from itertools import chain, islice
 
 from typing import Any, Dict, Set, List
-from text_window import TextDocumentWindow as ExternalTextDocumentWindow
 from history import History
 history = History()
 back = history.back
@@ -107,16 +106,43 @@ from PySide6.QtCore import Qt, QRect, QEvent
 import fcs
 import shared as sh
 
-from find_dialog import FindDialog
 from ui_helpers import NoZoomPlainTextEdit
-from windows import SecondaryWindow as ExtSecondaryWindow, AboutWindow as ExtAboutWindow
-from settings_dialog import SettingsDialog
-from ui.themes import ThemeManager, ThemeState
-from services.audio import AudioService
 from services.settings import SettingsService
-from services.printing import PrintingService
-from domain.scripture_refs import resolve_reference as parse_ref, calculate_book_line as calc_line
-from ui.actions import setup_shortcuts, setup_menus_and_toolbars
+## Step 5: Reduce import and initialisation cost
+# Defer heavy/optional imports to first use instead of module import time.
+# - windows.* (secondary/about windows)
+# - find_dialog.FindDialog
+# - settings_dialog.SettingsDialog
+# - ui.themes.ThemeManager/ThemeState
+# - ui.actions (setup_shortcuts, setup_menus_and_toolbars)
+# - text_window.ExternalTextDocumentWindow
+# - domain.scripture_refs (resolve_reference, calculate_book_line)
+
+# Lazy wrappers for scripture reference helpers to avoid importing the module at startup
+_scripture_refs_cache: dict[str, Any] | None = None
+
+def parse_ref(bits):
+    """Lazy wrapper for domain.scripture_refs.resolve_reference."""
+    global _scripture_refs_cache
+    if _scripture_refs_cache is None:
+        from domain import scripture_refs as _sr  # local import
+        _scripture_refs_cache = {
+            "resolve_reference": _sr.resolve_reference,
+            "calculate_book_line": _sr.calculate_book_line,
+        }
+    return _scripture_refs_cache["resolve_reference"](bits)
+
+
+def calc_line(book_num, chapter, verse, current_line):
+    """Lazy wrapper for domain.scripture_refs.calculate_book_line."""
+    global _scripture_refs_cache
+    if _scripture_refs_cache is None:
+        from domain import scripture_refs as _sr  # local import
+        _scripture_refs_cache = {
+            "resolve_reference": _sr.resolve_reference,
+            "calculate_book_line": _sr.calculate_book_line,
+        }
+    return _scripture_refs_cache["calculate_book_line"](book_num, chapter, verse, current_line)
 
 # ---- Module-level placeholders (populated at runtime by app.run) ----
 # These keep static analysis quiet and preserve runtime assignment from app.py
@@ -911,6 +937,7 @@ class MainWindow(QMainWindow):
         
         # Theme manager (extract dark mode logic)
         # Initialise 'ThemeManager' based on persisted settings
+        from ui.themes import ThemeManager, ThemeState  # local import (deferred)
         is_dark = self.settings.get("theme", "Light") == "Dark"
         self.theme = ThemeManager(ThemeState(is_dark_mode=is_dark))
 
@@ -936,18 +963,16 @@ class MainWindow(QMainWindow):
         # Initialise here to avoid defining the attribute outside __init__.
         self._just_restored_from_aux: bool = False
 
-        # Services
-        self.audio = AudioService()
-        self.printing = PrintingService()
-
-        # Reading plans (SME) service
-        from domain.reading_plans import ReadingPlans
-        self.reading_plans = ReadingPlans()
+        # Services (lazy-initialised on first use to improve startup time)
+        self._audio = None
+        self._printing = None
+        self._reading_plans = None
 
         # Store a reference to the secondary window to manage its lifecycle
         self.secondary_window = None
 
-        # Create keyboard shortcuts via the centralised helper
+        # Create keyboard shortcuts via the centralised helper (local import to defer)
+        from ui.actions import setup_shortcuts  # local import (deferred)
         self.shortcuts_bundle = setup_shortcuts(self)
 
         #Qt.QTimer.singleShot(0, lambda: self.sme("PM", -1))  # Adjusted to yesterday evening's reading.
@@ -990,6 +1015,56 @@ class MainWindow(QMainWindow):
         """
 
         self.initui()
+
+    # --- Lazy services ---
+    @property
+    def audio(self):
+        """Audio service, created on first use."""
+        if self._audio is None:
+            try:
+                from services.audio import AudioService
+                self._audio = AudioService()
+            except Exception:
+                # Keep this attribute as None on failure and re-raise to surface the issue
+                self._audio = None
+                raise
+        return self._audio
+
+    @property
+    def printing(self):
+        """Printing service, created on first use."""
+        if self._printing is None:
+            try:
+                from services.printing import PrintingService
+                self._printing = PrintingService()
+            except Exception:
+                self._printing = None
+                raise
+        return self._printing
+
+    @property
+    def reading_plans(self):
+        """Spurgeon Morning/Evening reading plans service, created on first use."""
+        if self._reading_plans is None:
+            try:
+                from domain.reading_plans import ReadingPlans
+                self._reading_plans = ReadingPlans()
+            except Exception:
+                self._reading_plans = None
+                raise
+        return self._reading_plans
+
+    def update_other_works_search_button(self, enabled: bool | None = None) -> None:
+        """Public proxy for toggling the Other Works search button.
+
+        Provides a non-underscored API for external callers and delegates
+        to the internal implementation.
+        """
+        try:
+            self._update_other_works_search_button(enabled)
+        except (RuntimeError, AttributeError, TypeError):
+            # Match existing guarded usage pattern (best-effort toggle)
+            pass
 
     def initui(self) -> None:
         """Initialise Mainwindow GUI."""
@@ -1285,13 +1360,11 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.statusBar)
 
         # Build menus, toolbars, and actions via the centralised helper
+        from ui.actions import setup_menus_and_toolbars  # local import (deferred)
         self.actions_bundle = setup_menus_and_toolbars(self)
 
-        self.secondary_window = ExtSecondaryWindow(
-                    "Text to display",
-                    navigate_left_cb=lambda: self.display_secondary_window(-12),
-                    navigate_right_cb=lambda: self.display_secondary_window(12),
-                )
+        # Do not create the secondary window at startup (lazy-create in display_secondary_window)
+        self.secondary_window = None
 
         # Apply theme from settings during initialisation.
         self.set_theme(self.settings)
@@ -1647,6 +1720,8 @@ class MainWindow(QMainWindow):
 
         reader = getattr(self, "text_edit_window", None)
         if reader is None:
+            # Defer import to reduce startup cost
+            from text_window import TextDocumentWindow as ExternalTextDocumentWindow
             self.text_edit_window = ExternalTextDocumentWindow(
                 initial_file_path=req_path,
                 settings=self.settings,
@@ -1857,6 +1932,7 @@ class MainWindow(QMainWindow):
 
         # Initialize AboutWindow if it hasn't been created
         if self.about_window is None:
+            from windows import AboutWindow as ExtAboutWindow  # deferred import
             self.about_window = ExtAboutWindow(f"Abib {CURRENT_VERSION}")
         # Apply the theme palette to the About window (apply_widget is internally safe)
         self.theme.apply_widget(self.about_window)
@@ -1988,6 +2064,7 @@ class MainWindow(QMainWindow):
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
 
         if self.dlg is None:
+            from find_dialog import FindDialog  # deferred import
             self.dlg = FindDialog(self)
             # Apply theme palette to Find dialog (apply_widget is internally safe)
             self.theme.apply_widget(self.dlg)
@@ -1999,6 +2076,7 @@ class MainWindow(QMainWindow):
         """Show the Find window."""
 
         if self.dlg is None:
+            from find_dialog import FindDialog  # deferred import
             self.dlg = FindDialog(self)
             # Apply theme palette to Find dialog (apply_widget is internally safe)
             self.theme.apply_widget(self.dlg)
@@ -3222,8 +3300,45 @@ class MainWindow(QMainWindow):
             # print(path1, ' Opened')
         if path1:
             try:
-                with open(path1, "r", encoding="utf-8") as f_open:
-                    w.PCE_text = f_open.read()
+                text_data: str | None = None
+                # Fast path for the main Bible text: use a cached, pre-stripped file if available
+                is_bible_file = str(Path(path1).name) == "KJB_PCE.txt"
+                if is_bible_file:
+                    try:
+                        src = Path(path1)
+                        cache = src.with_name("KJB_PCE_stripped.txt")
+                        # If the cache exists, and it is up to date, read it; else build and refresh it
+                        if cache.is_file() and cache.stat().st_mtime >= src.stat().st_mtime:
+                            with cache.open("r", encoding="utf-8", buffering=(1 << 20)) as f_cache:
+                                text_data = f_cache.read()
+                        else:
+                            # Read source with a large buffer, strip copyright, then write cache
+                            with src.open("r", encoding="utf-8", buffering=(1 << 20)) as f_src:
+                                original = f_src.read()
+                            loc = original.find(EOTNOC)
+                            if loc == -1:
+                                # Keep legacy behaviour (fail loudly) if marker missing
+                                print('Failed to find the line ', EOTNOC)
+                                print('Cannot continue until this is put right.')
+                                exit()
+                            start_idx = loc + len(EOTNOC) + 1
+                            text_data = original[start_idx:]
+                            # Best-effort cache write (do not fail to open if this causes an error)
+                            try:
+                                with cache.open("w", encoding="utf-8", buffering=(1 << 20)) as f_out:
+                                    f_out.write(text_data)
+                            except (OSError, PermissionError):
+                                pass
+                    except (OSError, UnicodeDecodeError, ValueError):
+                        # Fall back to generic read if anything goes wrong in the optimised path
+                        text_data = None
+
+                if text_data is None:
+                    # Generic read path (other files or fallback), use a large buffer
+                    with open(path1, "r", encoding="utf-8", buffering=(1 << 20)) as f_open:
+                        text_data = f_open.read()
+
+                w.PCE_text = text_data
             except (FileNotFoundError, PermissionError, OSError, UnicodeDecodeError) as e3:
                 self.dialog_critical(str(e3))
             else:
@@ -3241,15 +3356,34 @@ class MainWindow(QMainWindow):
 
                 self.path1 = path1
                 if path1[-11:] == r'KJB_PCE.txt':
-                    # _ = '****END OF THE NOTICE OF COPYRIGHT****'
-                    length_of_copyright_notice: int = w.PCE_text.find(EOTNOC)
-                    if length_of_copyright_notice == -1:
-                        print('Failed to find the line ', EOTNOC)
-                        print('Cannot continue until this is put right.')
-                        exit()
-                    total_length: int = length_of_copyright_notice + len(EOTNOC) + 1
-                    w.PCE_text = w.PCE_text[total_length:]
-                self.textEditor.setPlainText(w.PCE_text)
+                    # For the Bible file, w.PCE_text is already stripped if loaded via the fast path.
+                    # If it wasn't, do a safety strip (covers first-run without cache).
+                    if EOTNOC and EOTNOC in w.PCE_text:
+                        pos = w.PCE_text.find(EOTNOC)
+                        if pos != -1:
+                            w.PCE_text = w.PCE_text[pos + len(EOTNOC) + 1:]
+
+                # Speed up large text injection by suspending updates/undo
+                doc = None
+                try:
+                    self.textEditor.setUpdatesEnabled(False)
+                    doc = self.textEditor.document()
+                    try:
+                        if doc is not None:
+                            doc.setUndoRedoEnabled(False)
+                    except (RuntimeError, AttributeError):
+                        pass
+                    self.textEditor.setPlainText(w.PCE_text)
+                finally:
+                    try:
+                        if doc is not None:
+                            doc.setUndoRedoEnabled(True)
+                    except (RuntimeError, AttributeError):
+                        pass
+                    try:
+                        self.textEditor.setUpdatesEnabled(True)
+                    except (RuntimeError, AttributeError):
+                        pass
                 self.update_title()
 
                 if path1[-11:] == r'KJB_PCE.txt':
@@ -3300,6 +3434,8 @@ class MainWindow(QMainWindow):
         - Clicking 'Reset to defaults' applies defaults immediately (persist + theme + splash).
         - OK/Cancel then simply close the dialog; OK still saves any manual changes made after.
         """
+        # Defer import to reduce startup/import-time cost
+        from settings_dialog import SettingsDialog
 
         dialog = SettingsDialog(self)
 
@@ -3489,6 +3625,7 @@ class MainWindow(QMainWindow):
 
         if not self.secondary_window or not self.secondary_window.isVisible():
             # Create a new secondary window if it doesn't exist or is closed
+            from windows import SecondaryWindow as ExtSecondaryWindow  # deferred import
             self.secondary_window = ExtSecondaryWindow(
                 sme_text,
                 navigate_left_cb=lambda: self.display_secondary_window(-12),

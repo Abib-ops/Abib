@@ -4,7 +4,7 @@ from typing import Any, Dict
 
 from PySide6.QtWidgets import QApplication, QSplashScreen
 from PySide6.QtGui import QIcon, QPixmap, QColor
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QThreadPool, QRunnable, QObject, Signal
 
 import shared as sh
 
@@ -53,6 +53,40 @@ def _assign_attrs(module, source, names) -> None:
     """Assign a list of attribute names from source onto module."""
     for name in names:
         setattr(module, name, getattr(source, name))
+
+
+class _LoadSearchSignals(QObject):
+    """Signals for background search index loading."""
+    loaded = Signal(object)
+    failed = Signal(str)
+
+
+class _LoadSearchTask(QRunnable):
+    """Background task to load search indexes without blocking the UI."""
+    def __init__(self, loader: 'DataLoader') -> None:
+        super().__init__()
+        self.loader = loader
+        self.signals = _LoadSearchSignals()
+
+    def run(self) -> None:
+        try:
+            s = self.loader.load_search()
+            self.signals.loaded.emit(s)
+        except Exception as e:  # pragma: no cover - background error path
+            try:
+                self.signals.failed.emit(str(e))
+            except (RuntimeError, TypeError):
+                pass
+
+
+class _UpdateCheckTask(QRunnable):
+    """Run update_abib() in the background to avoid blocking startup."""
+    def run(self) -> None:  # pragma: no cover - background task
+        try:
+            update_abib()
+        except (OSError, RuntimeError, ValueError):
+            # Keep silent for minimal change; could log if a logger is available
+            pass
 
 
 def _load_bible_text_and_maps(loader: DataLoader) -> None:
@@ -155,12 +189,19 @@ def run() -> None:
     AbibModule.w = w
 
     # Update and load data files
-    update_abib()
+    # Step 3: Gate and async the update check so it never blocks startup
+    if settings.get("check_updates_on_startup", False):
+        try:
+            QThreadPool.globalInstance().start(_UpdateCheckTask())
+        except (RuntimeError, TypeError):
+            # As a fallback (and to keep behaviour safe), skip update if the threadpool fails
+            pass
 
     # Use centralized DataLoader
     loader = DataLoader()
     _load_bible_text_and_maps(loader)
-    _load_search_indexes(loader)
+    # Defer loading of heavy search indexes to a background thread (Step 1)
+    # Keep SME metadata loading as-is (it's lightweight compared to search)
     _load_sme_metadata(loader)
 
     # Initialise runtime state on the window
@@ -174,6 +215,43 @@ def run() -> None:
     app.setWindowIcon(app_icon)
 
     w.show()
+
+    # Disable search in Other Works until indexes are ready, then load in the background
+    try:
+        w.update_other_works_search_button(False)
+    except (RuntimeError, AttributeError, TypeError):
+        pass
+
+    pool = QThreadPool.globalInstance()
+    task = _LoadSearchTask(loader)
+
+    def _on_search_loaded(s: object) -> None:
+        # Assign loaded search structures into the Abib module
+        _assign_attrs(
+            AbibModule,
+            s,
+            [
+                "Rnew",
+                "Rdic",
+                "Rlow",
+                "Ldic",
+                "Rstp",
+                "Rlsp",
+                "stripped_dict",
+                "strpd_low_dict",
+                "set_dict",
+                "set_lowdict",
+            ],
+        )
+        # Enable the search controls now that indexes are ready
+        try:
+            w.update_other_works_search_button(True)
+        except (RuntimeError, AttributeError, TypeError):
+            pass
+
+    # Optionally, you could connect failed to a logger/print; keep silent for minimal change
+    task.signals.loaded.connect(_on_search_loaded)
+    pool.start(task)
 
     # Keep the splash visible until the user disables it in Settings.
     # Do not auto-finish here.
