@@ -54,15 +54,58 @@ def check_for_updates(parent=None):
                 else:
                     return False, "", ""
             elif output >= 0:
+                # Already on the latest or newer (dev) version — inform the user
+                try:
+                    QMessageBox.information(
+                        parent,
+                        "Up to date",
+                        f"You are already on the latest version (current: {CURRENT_VERSION}).",
+                    )
+                except Exception:
+                    # Keep silent if UI unavailable
+                    pass
                 return False, "", ""
             return None
         else:
             QMessageBox.warning(parent, "Error", "Failed to fetch the latest version details.")
             return None
     except requests.exceptions.RequestException:
+        try:
+            QMessageBox.warning(parent, "Update check failed", "Could not reach the update server. Please try again later.")
+        except Exception:
+            pass
         return None
     except ValueError:
+        try:
+            QMessageBox.warning(parent, "Update check failed", "Received an unexpected response from the update server.")
+        except Exception:
+            pass
         return None
+
+
+def perform_update(version: str, exe_url: str) -> None:
+    """Perform the update steps without UI interaction.
+
+    Intended to be called from a background thread after the user has
+    already confirmed they want to update. This function logs to stdout
+    and returns None; it will exit the app via sys.exit(0) once the
+    installer is launched successfully.
+    """
+    path_to_setup_exe = str(Path.home() / "Downloads" / f"Abib_setup_{version}_win.exe")
+    print("Update process started...")
+    if not download_upgrade(version, exe_url):
+        print("Update aborted: Could not download upgrade.")
+        return
+    if not run_uninstaller():
+        print("Update aborted: Could not uninstall current version.")
+        return
+    if not run_installer(path_to_setup_exe):
+        print("Update aborted: Could not run the installer.")
+        return
+    print("Update completing. Installing New Version of Abib.")
+    print("Closing down the old version of Abib...")
+    from sys import exit as sys_exit
+    sys_exit(0)
 
 
 def download_upgrade(version: str, exe_url: str) -> bool:

@@ -26,7 +26,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.1 and python3.13.11 (64-bit).
 
-14/12/2025
+15/12/2025
 
 python -m pip install --upgrade pip wheel
 python -m pip install -r requirements.txt
@@ -3442,6 +3442,11 @@ class MainWindow(QMainWindow):
         # Populate the settings dialog with current settings
         prev_show_splash = bool(self.settings.get("show_splash", False))
         dialog.splash_checkbox.setChecked(prev_show_splash)
+        # Populate update-on-startup (default False if missing)
+        try:
+            dialog.update_checkbox.setChecked(bool(self.settings.get("check_updates_on_startup", False)))
+        except (AttributeError, RuntimeError):
+            pass
         dialog.theme_combobox.setCurrentText(self.settings.get("theme", "Light"))
 
         # Ensure dialog follows current theme palette
@@ -3478,6 +3483,60 @@ class MainWindow(QMainWindow):
             # Ignore failures to connect signal due to Qt object state or missing attributes
             pass
 
+        # Connect the manual "Check for updates now" button: run the check on the UI thread
+        # to present dialogs/feedback, then (if accepted) perform the heavy work in background.
+        try:
+            from PySide6.QtCore import QThreadPool, QRunnable
+            from updater import check_for_updates as _check_for_updates
+            from updater import perform_update as _perform_update
+
+            class _RunPerformUpdate(QRunnable):  # local class for this dialog session
+                def __init__(self, version: str, exe_url: str) -> None:
+                    super().__init__()
+                    self.version = version
+                    self.exe_url = exe_url
+
+                def run(self) -> None:  # pragma: no cover - background task
+                    try:
+                        _perform_update(self.version, self.exe_url)
+                    except (OSError, RuntimeError, ValueError):
+                        # Silent failure; optional: print/log
+                        pass
+
+            def _on_update_now_clicked():
+                # Run the check synchronously on the UI thread to allow QMessageBox dialogs
+                try:
+                    result = _check_for_updates(parent=dialog)
+                except (RuntimeError, TypeError, ValueError):
+                    result = None
+
+                if not result:
+                    # Either user declined, already up-to-date (info shown), or an error (warning shown)
+                    return
+
+                try:
+                    update_available, version, exe_url = result
+                except (TypeError, ValueError):
+                    return
+
+                if not update_available:
+                    return
+
+                # User accepted update; perform heavy work in the background
+                try:
+                    QThreadPool.globalInstance().start(_RunPerformUpdate(version, exe_url))
+                except (RuntimeError, TypeError):
+                    # As a last resort, perform on the current thread (may block)
+                    try:
+                        _perform_update(version, exe_url)
+                    except (OSError, RuntimeError, ValueError):
+                        pass
+
+            dialog.update_now_btn.clicked.connect(_on_update_now_clicked)
+        except (ImportError, AttributeError, RuntimeError, TypeError):
+            # If we cannot wire the button (e.g., missing attrs), ignore gracefully
+            pass
+
         if dialog.exec():  # If the dialog is accepted (OK button)
             # Determine new values; if the user pressed 'Reset to defaults', then use canonical defaults
             # (In Option B we set was_reset_to_defaults = False after immediate applying.)
@@ -3488,10 +3547,15 @@ class MainWindow(QMainWindow):
             else:
                 new_theme = dialog.theme_combobox.currentText()
                 new_show_splash = dialog.splash_checkbox.isChecked()
+                try:
+                    new_update_on_start = bool(dialog.update_checkbox.isChecked())
+                except (AttributeError, RuntimeError):
+                    new_update_on_start = bool(self.settings.get("check_updates_on_startup", False))
 
             # Update in-memory settings
             self.settings["theme"] = new_theme
             self.settings["show_splash"] = new_show_splash
+            self.settings["check_updates_on_startup"] = new_update_on_start
 
             # Save settings via service
             self.settings_service.save(self.settings)
@@ -3680,13 +3744,10 @@ class MainWindow(QMainWindow):
         # Apply to the secondary window if available
         if self.secondary_window and getattr(self.secondary_window, 'text_display', None):
             self.theme.apply_to_secondary(self.secondary_window)
-        else:
-            # Fallback if secondary_window is not ready
-            print("Error: Secondary window is not initialized or its text display is unavailable.")
-            if not self.secondary_window:
-                print("Secondary window is not initialized.")
-            else:
-                print("Secondary window's text display is unavailable.")
+            return
+        # If the secondary window (or its text display) does not exist yet, exit quietly.
+        # This method can be called during startup/theme changes before the window is created.
+        return
 #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of MainWindow class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

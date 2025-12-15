@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QCheckBox, QComboBox, QDialogButtonBox, QPushButton
+from PySide6.QtWidgets import (
+    QDialog,
+    QVBoxLayout,
+    QCheckBox,
+    QComboBox,
+    QDialogButtonBox,
+    QPushButton,
+)
 import fcs
 
 
@@ -19,10 +26,20 @@ class SettingsDialog(QDialog):
         self.splash_checkbox = QCheckBox("Show Splash Screen")
         self.layout.addWidget(self.splash_checkbox)
 
+        # Check for updates on startup (runs asynchronously)
+        self.update_checkbox = QCheckBox("Check for updates on startup (runs in background)")
+        self.update_checkbox.setToolTip("If enabled, Abib will check for updates in the background when it starts.")
+        self.layout.addWidget(self.update_checkbox)
+
         # Create theme combobox
         self.theme_combobox = QComboBox()
         self.theme_combobox.addItems(["Light", "Dark"])
         self.layout.addWidget(self.theme_combobox)
+
+        # Check for updates now (manual trigger)
+        self.update_now_btn = QPushButton("Check for updates now")
+        self.update_now_btn.setToolTip("Run the updater once now without waiting for next startup.")
+        self.layout.addWidget(self.update_now_btn)
 
         # Reset to defaults button
         self.reset_defaults_btn = QPushButton("Reset to defaults")
@@ -50,6 +67,7 @@ class SettingsDialog(QDialog):
             defaults = fcs.get_default_settings()
             # Apply defaults to controls based on the central defaults
             self.splash_checkbox.setChecked(bool(defaults.get("show_splash", False)))
+            self.update_checkbox.setChecked(bool(defaults.get("check_updates_on_startup", False)))
             self.theme_combobox.setCurrentText(defaults.get("theme", "Light"))
             # Mark that the user requested defaults so the caller can persist them on OK
             self.was_reset_to_defaults = True

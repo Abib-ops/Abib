@@ -207,7 +207,7 @@ A
           .Son of Ahimelech 1Sa 22:20
 
           .Escapes to David from the vengeance of Saul, who slew the
-          priests in the City of Nob 1Sa 22:20-23; with 22:6-19
+          priests in the City of Nob 1Sa 22:20-23; with 1Sa 22:6-19
 
           .Consults the ephod for David 1Sa 22:9-12; 30:9-12
 
@@ -454,7 +454,7 @@ A
    ABNER
           -(Son of Ner)
 
-          -Cousin of Saul 1Sa 14:50,51; with 9:1
+          -Cousin of Saul 1Sa 14:50,51; with 1Sa 9:1
 
           -Captain of the host 1Sa 14:50; 17:55; 26:5,14
 
@@ -643,7 +643,7 @@ A
 
           .Israelites in the wilderness De 29:6
 
-          .Samson Jdg 16:17; with 13:3-5,13,14; Nu 6:3,4
+          .Samson Jdg 16:17; with Jdg 13:3-5,13,14; Nu 6:3,4
 
           .Daniel Da 1:8,12
 
@@ -757,7 +757,7 @@ A
    ACHISH
           -(King of the Philistines, also called ABIMELECH)
 
-          -David escapes to 1Sa 21:10-15; Chap. 27; 1Sa 28:1,2; Chap. 29;
+          -David escapes to 1Sa 21:10-15; 27; 1Sa 28:1,2; 29;
           1Ki 2:39,40
 
    ACHMETHA
@@ -2370,7 +2370,7 @@ A
 
           .Pattern of Ex 27:1-8
 
-          .Constructed by Bezaleel Ex 38:1-7; with 37:1
+          .Constructed by Bezaleel Ex 38:1-7; with Ex 37:1
 
           .Location of Ex 40:6,29; Eze 8:16; Mt 23:35
 
@@ -3396,17 +3396,17 @@ A
 
           -Nature of Job 39; Ps 32:9; 49:12; Ec 3:18-21
 
-          -Habits of Job 12:7,8; 37:8; Chap. 39; Job 40:20; Ps 29:9;
+          -Habits of Job 12:7,8; 37:8; 39; Job 40:20; Ps 29:9;
           104:20-25; Isa 13:21,22; 34:14; Jas 3:7
 
           -Menstruation of Jer 2:24
 
           -Facts about breeding Ge 30:35-43; 31:8,9
 
-          -Instincts of De 32:11; Job 35:11; Chapters 39-41; Ps 59:6;
-          Chap. 104; Pr 6:6-8; 30:25-28; Jer 8:7; Mt 24:28
+          -Instincts of De 32:11; Job 35:11; 39; 40; 41; Ps 59:6;
+          104; Pr 6:6-8; 30:25-28; Jer 8:7; Mt 24:28
 
-          -Homes of Job 24:5; 37:8; Chap. 39; Ps 104:20-25; Isa 34:14; Jer 2:24;
+          -Homes of Job 24:5; 37:8; 39; Ps 104:20-25; Isa 34:14; Jer 2:24;
           50:39; Mr 1:13
 
           -See [189]BIRDS
@@ -3736,7 +3736,7 @@ A
 
           .Barnabas and Paul make second visit to Ac 14:26-28
 
-          .Dissension within the congregation of Ac 15:22; with 15:1-35
+          .Dissension within the congregation of Ac 15:22; with Ac 15:1-35
 
           .Paul and Peter's controversy at Ga 2:11-15
 
@@ -5407,7 +5407,7 @@ A
 
           -Israelites carried captive into 2Ki 17:3-23
 
-          -Jews carried captive to 2Ki Chapters 24-25; 2Ch 36:5-21
+          -Jews carried captive to 2Ki 24; 25; 2Ch 36:5-21
 
           -Invaded by Pharaoh-necho 2Ki 23:29
 
@@ -6100,9 +6100,9 @@ B
           .Peter writes from 1Pe 5:13
 
           .Prophecies concerning Ps 87:4; 137:8,9; Isa 13; Isa 14:4-26;
-          21:1-10; 46:1,2; Chap. 47; Isa 48:14,20; Jer 21:4-10; 25:12-14;
-          27:1-11; 28:14; 32:28; 34:2,3; 42:11,12; Chap. 43; Jer 46:13-26;
-          49:28-30; Chapters 50-51; Eze 21:19; 26; 29:17-20; 30:10; 32:11;
+          21:1-10; 46:1,2; 47; Isa 48:14,20; Jer 21:4-10; 25:12-14;
+          27:1-11; 28:14; 32:28; 34:2,3; 42:11,12; 43; Jer 46:13-26;
+          49:28-30; 50; 51; Eze 21:19; 26; 29:17-20; 30:10; 32:11;
           Da 2:21-38; 4:10-26; 5:25-29; 7; Hab 1:5-11; Zec 2:7-9
 
           -FIGURATIVE Re 14:8; 16:19; 17; 18
@@ -6133,19 +6133,19 @@ B
           .Judah 2Ki 24:1-16
 
           .Jews carried to 2Ki 25; 1Ch 9:1; 2Ch 33:11; 36:17-21; Jer 32:2;
-          39; Chap. 52
+          39; 52
 
           .Colonists from, sent to Samaria Ezr 4:9,10; with 2Ki 17:29-32
 
           .Conquest of Egypt by 2Ki 24:7
 
           .Prophecies of conquests by 2Ki 20:16-19; Jer 20:4-7;
-          Chapters 21-22; Jer 25:1-11; Chapters 27-29; Jer 32:28,29;
-          Chap. 34; Jer 36:29; 38:17,18; 43:8-13; 46:13-26; Eze 12; 17; 19;
-          21; 24; 26; Eze 29:18-20; Chap. 30; Chap. 32
+          21; 22; Jer 25:1-11; 27; 28; 29; Jer 32:28,29;
+          34; Jer 36:29; 38:17,18; 43:8-13; 46:13-26; Eze 12; 17; 19;
+          21; 24; 26; Eze 29:18-20; 30; 32
 
           .Prophetic denunciations against Ps 137:8,9; Isa 13; Isa 14:21;
-          43:14-17; Chap. 47; Jer 50; 51
+          43:14-17; 47; Jer 50; 51
 
           .GOVERNMENT OF
 
@@ -10286,7 +10286,7 @@ C
           -Of Judah in Babylon, prophecy of Isa 39:6; Jer 13:19; 20:4;
           25:2-11; 32:28
 
-          -Fulfilled 2Ki 24:11-16; Chap. 25; 2Ch 36; Jer 52:28-30
+          -Fulfilled 2Ki 24:11-16; 25; 2Ch 36; Jer 52:28-30
 
           -Jews return from Ezr 2; 3; 8
 
@@ -10638,7 +10638,7 @@ C
    CENSUS
           -The numbering of Israel
 
-          .By Moses Ex 38:26; Nu 1; Nu 3:14-43; Chap. 26
+          .By Moses Ex 38:26; Nu 1; Nu 3:14-43; 26
 
           .By David 2Sa 24:1-9; 1Ch 21:1-8; 27:24
 
@@ -12503,7 +12503,7 @@ C
 
           .Sons of Sennacherib 2Ki 19:37
 
-          .Ishmael Jer 40:14-16; Chap. 41
+          .Ishmael Jer 40:14-16; 41
 
           .Bigthan and Teresh Es 2:21
 
@@ -13210,7 +13210,7 @@ C
 
           -Indulges Gideon's tests Jdg 6:36-40
 
-          -Reasons with Job, Job Chapters 38-41
+          -Reasons with Job, Job 38; 39; 40; 41
 
           -Invites sinners, saying, "Come now, and let us reason
           together," Isa 1:18-20
@@ -13411,7 +13411,7 @@ C
           For having numbered the people of Israel 2Sa 24:10
 
           For his adultery and the murder of Uriah Ps 32; 38; Ps 40:11,12;
-          Chap. 51
+          51
 
           .Of Joab, for numbering Israel 1Ch 21:1-7
 
@@ -15562,7 +15562,7 @@ D
 
           -Given in marriage by parents Jdg 1:12,13; 1Sa 17:25; 18:20,21
 
-          -Property rights of Nu 27:1-11; Chap. 36; Jos 17:3-6; Ru 4:3
+          -Property rights of Nu 27:1-11; 36; Jos 17:3-6; Ru 4:3
 
           -Used also for granddaughter Ge 36:2
 
@@ -15670,7 +15670,7 @@ D
           .At this time probably writes Ps 141
 
           .Is refused permission to accompany the Philistines to battle
-          against the Israelites 1Sa 28:1,2; Chap. 29
+          against the Israelites 1Sa 28:1,2; 29
 
           .Rescues the people of Ziklag, who had been captured by the
           Amalekites 1Sa 30
@@ -15844,7 +15844,7 @@ D
           1Ki 1; 1Ch 23:1
 
           .Delivers his charge to Solomon 1Ki 2:1-11; 1Ch 22:6-19;
-          Chapters 28-29
+          28; 29;
 
           .Probably composes Ps 23; 145
 
@@ -18618,9 +18618,9 @@ E
           congregation of Israel De 23:8
 
           -Prophecies concerning Ge 25:23; 27:29,37-40; Nu 24:18; Isa
-          11:14; 21:11,12; Chap. 34; 63:1-4; Jer 9:25,26; 27:1-11; 49:7-22;
-          La 4:21,22; Eze 25:12-14; 32:29,30; Chap. 35; 36:5; Joe 3:19;
-          Am 1:11,12; 9:12; Ob 1:21; Mal 1:2-5
+          11:14; 21:11,12; 34; 63:1-4; Jer 9:25,26; 27:1-11;
+          49:7-22; La 4:21,22; Eze 25:12-14; 32:29,30; 35; 36:5;
+          Joe 3:19; Am 1:11,12; 9:12; Ob 1:21; Mal 1:2-5
 
    EDREI
           -(A town of Bashan)
@@ -18714,7 +18714,7 @@ E
           .Joseph takes Jesus to Mt 2:13-20
 
           .Prophecies against Ge 15:13,14; Isa 19; 20:2-6; 45:14; Jer
-          9:25,26; 43:8-13; 44:30; Chap. 46; Eze 29; 30; 31; 32; Ho 8:13;
+          9:25,26; 43:8-13; 44:30; 46; Eze 29; 30; 31; 32; Ho 8:13;
           Joe 3:11; Zec 10:11
 
           .See [1483]EGYPTIANS
@@ -19143,7 +19143,7 @@ E
           -A Benjamite citizen of Jerusalem 1Ch 8:20
 
    ELIEZER
-          -1. Abraham's servant Ge 15:2; (Ge 24:2)
+          -1. Abraham's servant Ge 15:2; 24:2
 
           -2. Son of Becher 1Ch 7:8
 
@@ -19306,7 +19306,7 @@ E
    ELIPHAZ
           -1. Son of Esau Ge 36:4,10-16; 1Ch 1:35
 
-          -2. Friend of Job, Job 2:11; Chapters 4; 5; 22; Job 42:7-9
+          -2. Friend of Job, Job 2:11; 4; 5; 22; Job 42:7-9
 
    ELIPHELEH
           -A Levite of the second degree 1Ch 15:18,21
@@ -21817,7 +21817,7 @@ F
           In prayer for himself and his adversaries Ps 109:4,24
 
           .Of Ahab, when Elijah prophesied the destruction of himself and
-          his house 1Ki 21:27; with 20:29
+          his house 1Ki 21:27; with 1Ki 20:29
 
           .Of Jehoshaphat, at the time of the invasion of the confederated
           armies of the Canaanites and Syrians 2Ch 20:3
@@ -21961,7 +21961,7 @@ F
           Jos 22:15-20
 
           .Phinehas, in turning away the anger of God at the time of the
-          plague Nu 25:11; with 25:6-15
+          plague Nu 25:11; with Nu 25:6-15
 
           .Obadiah, in sheltering one-hundred prophets against the wrath
           of Jezebel 1Ki 18:3,4
@@ -22027,7 +22027,7 @@ F
           .Men alone present at Ge 40:20; 43:32,34; 1Sa 9:22; Es 1:8,9; Mr
           6:21; Lu 14:24
 
-          -Men and women attend Ex 32:6; with 32:2,3; Da 5:1-3
+          -Men and women attend Ex 32:6; with Ex 32:2,3; Da 5:1-3
 
           -Riddles propounded at Jdg 14:12
 
@@ -24663,7 +24663,7 @@ G
 
           .Highly exalted Ps 8:1; 113:4
 
-          .Exhibited to Moses Ex 34:5-7; with 33:18-23
+          .Exhibited to Moses Ex 34:5-7; with Ex 33:18-23
 
           .Stephen Ac 7:55
 
@@ -25260,10 +25260,10 @@ G
           29:11,12; 2Ch 14:11; 16:9; 20:6; 25:8,9; Ezr 8:22; Ne 1:10; Job
           5:9; 9:4-7,10,12,13,19; 10:7; 11:10; 12:14-16; 14:20; 23:13,14;
           26:11,12,14; 34:14,15; 36:5,22,27-33; 37:1-23; 38:8,11,37; 40:9;
-          41:10,11; 42:2; Ps 2:4,5; Chap. 18; Ps 21:13; 29:3-9; 33:9;
+          41:10,11; 42:2; Ps 2:4,5; 18; 21:13; 29:3-9; 33:9;
           46:6; 62:11; 65:6,7; 66:3,7; 68:33-35; 74:13,15; 76:6,7;
           77:14,16,18; 78:12-16,26,43-51; 79:11; 89:8,9,13; 90:3; 93:1,4;
-          97:3-5; 104:7,9,29,30,32; Chap. 105; Ps 106:8; 107:25,29; 111:6;
+          97:3-5; 104:7,9,29,30,32; 105; 106:8; 107:25,29; 111:6;
           114:3-8; 115:3; 118:16; 135:6,8-12; 136:10-22; 144:5; 145:6,16;
           147:5,16,18; 148:5,8; Pr 21:30; 30:4; Isa 14:24,27; 17:13; 19:1;
           23:11; 26:4; 27:4; 31:3; 33:3,13; 40:12,22,24,26,28; 43:13,16,17;
@@ -25563,7 +25563,7 @@ G
 
           .Elijah's trials 1Ki 19
 
-          .Job's Job 3:19-23; with 1; 2
+          .Job's Job 3:19-23; with Job 1; 2
 
           .Israelites Ex 5:20-23
 
@@ -25774,14 +25774,14 @@ G
 
           .Shields of 1Ki 10:16,17
 
-          .Overlaying with Ex 25:11,13,24,28; with 25:1-40; 26:27,29;
+          .Overlaying with Ex 25:11,13,24,28; with Ex 25:1-40; 26:27,29;
           30:5; 36:34,36,38; 37:2,4,11,15; 1Ki 6:20-22,28,30,32,35
 
           .Bedsteads made of Es 1:6
 
           -Wedge of Jos 7:21; Isa 13:12
 
-          -Used as money Ge 44:8; with 44:1; 1Ch 21:25; Ezr 8:25-28; Isa
+          -Used as money Ge 44:8; with Ge 44:1; 1Ch 21:25; Ezr 8:25-28; Isa
           13:17; 60:9; Eze 7:19; 28:4; Mt 2:11; 10:9; Ac 3:6; 20:33; 1Pe
           1:18
 
@@ -25898,7 +25898,7 @@ G
    GOSHEN
           -1. A district in Egypt especially suitable for herds and flocks
 
-          .Israelites dwelt in Ge 45:10; 46:28; Chap. 47
+          .Israelites dwelt in Ge 45:10; 46:28; 47
 
           .Exempted from plagues Ex 8:22; 9:26
 
@@ -26056,8 +26056,8 @@ G
 
           .Refused to make conquest of Canaan Nu 14:1-10
 
-          .Chose, or ratified, the chief ruler Nu 27:18-23; 1Sa 10:24;
-          with 8:4-22; 11:14,15; 2Sa 3:17-21; 5:1-3; 1Ch 29:22; 2Ch 23:3
+          .Chose, or ratified, the chief ruler Nu 27:18-23; 1Sa 10:24; with
+          1Sa 8:4-22; 11:14,15; 2Sa 3:17-21; 5:1-3; 1Ch 29:22; 2Ch 23:3
 
           .Possessed veto power over the king's purposes 1Sa 14:44,45
 
@@ -26112,11 +26112,11 @@ G
           .Seeks counsel from prophets Eze 8:1; 14:1; 20:1,3; Joe 1:14;
           2:16
 
-          .Corrupt 1Ki 21:8-14; Eze 8:11,12; Mt 26:14,15; with 27:3,4
+          .Corrupt 1Ki 21:8-14; Eze 8:11,12; Mt 26:14,15; with Mt 27:3,4
 
           .A similar senate existed
 
-          Among the Egyptians Ge 50:7; with 41:37,38; Ex 10:1,7; 12:30;
+          Among the Egyptians Ge 50:7; with Ge 41:37,38; Ex 10:1,7; 12:30;
           14:5
 
           Among the Midianites and Moabites Nu 22:4,7
@@ -27253,7 +27253,7 @@ H
 
           .Abraham leaves, by divine command Ge 12:1-5
 
-          .Jacob flees to Ge 27:43; 28:7; Chap. 29
+          .Jacob flees to Ge 27:43; 28:7; 29
 
           .Returns from, with Rachel and Leah Ge 31:17-21
 
@@ -27363,7 +27363,7 @@ H
           -Used, in national jubilees, after the triumph over Goliath,
           (margin) 1Sa 18:6
 
-          -Over the armies of Ammon and Moab 2Ch 20:28; with 20:20-29
+          -Over the armies of Ammon and Moab 2Ch 20:28; with 2Ch 20:20-29
 
           -When the new walls of Jerusalem were dedicated Ne 12:27,36
 
@@ -29771,7 +29771,7 @@ H
 
           .Rabshakeh 2Ki 18:17-37
 
-          .Ahaz Isa 7:12; with 7:17-25
+          .Ahaz Isa 7:12; with Isa 7:17-25
 
           .Johanan Jer 42:1-12,20,22
 
@@ -30450,7 +30450,7 @@ I
    INDICTMENTS
           -INSTANCES OF
 
-          .Naboth on the charge of blasphemy 1Ki 21:13; with 21:1-16
+          .Naboth on the charge of blasphemy 1Ki 21:13; with 1Ki 21:1-16
 
           .Jeremiah of treasonable prophecy, but of which he was acquitted
           Jer 26:1-24
@@ -30458,10 +30458,10 @@ I
           .A second indictment Jer 37:13-15
 
           .Three Hebrew captives on the charge of defiance against
-          authority Da 3:12; with 3:1-28
+          authority Da 3:12; with Da 3:1-28
 
           .Daniel, on the charge of defiance against authority Da 6:13;
-          with 6:1-24
+          with Da 6:1-24
 
           .Jesus, under two charges
 
@@ -30568,7 +30568,7 @@ I
 
           .INSTANCES OF
 
-          Ezra Ezr 10:1; with 9
+          Ezra Ezr 10:1; with Ezr 9
 
           .Nehemiah Ne 4; 5
 
@@ -30879,7 +30879,7 @@ I
 
           -Basket of figs Jer 24
 
-          -Bonds and yokes Jer 27:2-11; Chap. 28
+          -Bonds and yokes Jer 27:2-11; 28
 
           -Illustrations on a tile Eze 4:1-3
 
@@ -31027,7 +31027,7 @@ I
           .David, in preventing foraging by his insurgent forces 1Sa 25:15
 
           .David, in his conduct while in refuge with the Philistines 1Sa
-          29:6,9; with 29:1-11
+          29:6,9; with 1Sa 29:1-11
 
           .Workmen, who repaired the temple 2Ki 12:15; 22:7
 
@@ -31081,7 +31081,7 @@ I
 
           .Judah for Joseph Ge 37:26,27
 
-          .Pharaoh's chief baker for Joseph Ge 41:9-13; with 40:14
+          .Pharaoh's chief baker for Joseph Ge 41:9-13; with Ge 40:14
 
           .Jonathan for David 1Sa 19:1-7
 
@@ -31664,14 +31664,14 @@ I
           contempt of God Isa 30:1-17; 31:1-6
 
           .Declares the goodness and longsuffering of God toward them
-          Isa 30:18-26; Chapters 32-35
+          Isa 30:18-26; 32; 33; 34; 35
 
           .Reproves the Jews for their spiritual blindness and infidelity
           Isa 42:18-25
 
           .Promises ultimate restoration of the Jews Isa 43:1-13
 
-          .Foretells the ultimate destruction of Babylon Isa 43:14-17; Chap. 47
+          .Foretells the ultimate destruction of Babylon Isa 43:14-17; 47
 
           .Exhorts the people to repent Isa 43:22-28
 
@@ -31689,7 +31689,7 @@ I
 
           .Exhorts to sanctification Isa 56:1-8
 
-          .Foretells calamities to Judah Isa 59:9-12; with 57; 58; 59
+          .Foretells calamities to Judah Isa 59:9-12; with Isa 57; 58; 59
 
           .Foreshadows the person and the kingdom of the Messiah Isa 32
 
@@ -31861,7 +31861,7 @@ I
           Jerusalem Re 21:12
 
           .Prophecies concerning Ge 15:5,13; 25:23; 26:4; 27:28,29,40;
-          48:19; Chap. 49; De 33
+          48:19; 49; De 33
 
           .Prophecies about the multitude of Ge 13:16; 15:5; 22:17; 26:4;
           28:14
@@ -31869,7 +31869,7 @@ I
           .Prophecies of their captivity in Eqypt Ge 15:13,14; Ac 7:6,7
 
           .Divided into families, each of which had a chief Nu 25:14;
-          Chap. 26; 36:1; Jos 7:14; 1Ch 4; 5; 6; 7; 8
+          26; 36:1; Jos 7:14; 1Ch 4; 5; 6; 7; 8
 
           .Number of, who went into Egypt Ge 46:8-27; Ex 1:5; De 10:22; Ac
           7:14
@@ -32006,7 +32006,7 @@ I
 
           .The erection of the tabernacle; the manufacture of the
           appurtenances including the garments of the priests; and their
-          sanctification Ex 36:8-38; Chapters 37-40
+          sanctification Ex 36:8-38; 37; 38; 39; 40;
 
           .First sacrifice offered by, under the law Le 8:14-36; 9:8-24
 
@@ -32179,12 +32179,12 @@ I
           .The people backslide again are chastened by the Philistines for
           forty years Jdg 13:1
 
-          .Led by Samson for twenty years Jdg 15:20; with 13; 14; 15; 16
+          .Led by Samson for twenty years Jdg 15:20; with Jdg 13; 14; 15; 16
 
           .Scandal of the Bethlehemite's concubine, and the consequent war
           between the Benjamites and the other tribes Jdg 19; 20; 21
 
-          .Led by Eli for forty years 1Sa 4:18; with 1; 2; 3; 4
+          .Led by Eli for forty years 1Sa 4:18; with 1Sa 1; 2; 3; 4
 
           .Struck down by the Philistines at Eben-ezer 1Sa 4:1,2,10,11
 
@@ -32501,7 +32501,7 @@ I
           .Zedekiah is made king by Nebuchadnezzar; he rebels; so,
           Nebuchadnezzar invades Judah, takes Jerusalem, and carries off
           the people to Babylon, despoiling the temple 2Ki 24:17-20; 
-          Chap. 25; 2Ch 36:11-21
+          25; 2Ch 36:11-21
 
           .The poorest of the people were left to occupy the country, and
           were joined by fragments of the army of Judah, the dispersed
@@ -32599,7 +32599,7 @@ I
           32:9-14; Jer 1:11-16; 4:5-31; 6; 7:8-34; 8; 9:9-26; 10:17-22;
           11:9-23; 13:9-27; 14:14-18; 15:1-14; 16; 17:1-4; 18:15-17; 19;
           20:5; 21:4-7; 22:24-30; 25:8-38; 28; 34; 37; 38:1-3; 42:13-22;
-          Chapters 43-45; La 5:6; Eze 4; 5; 11:7-12; 12; 15; 16; 17; 19;
+          43; 44; 45; La 5:6; Eze 4; 5; 11:7-12; 12; 15; 16; 17; 19;
           22:13-22; 23:22-35; 24; 33:21-29; Da 9:26,27; Joe 2:1-17; Am
           2:4,5; Mic 2:10; 3; 4:8-10; Hab 1:6-11; Zep 1; Zec 11; 14:1-3;
           Mal 4:1; Mt 21:33,34; 23:35-38; 24:2,14-42; Mr 13:1-13; Lu
@@ -32609,14 +32609,23 @@ I
           Eze 4:13; 5:10,12; 20:23; 36:19; Da 9:7; Joh 7:35; Ac 2:5
 
           .Of blessing and restoration Isa 1:25-27; 2:1-5; 4:2-6;
-          11:11-13; Chap. 25; 26:1,2,12-19; 27:13; 29:18-24; 30:18-26;
-          32:15-20; 33:13-24; Chap. 35; 37:31,32; 40:2,9; 41:27; Chap. 44;
-          49:13-23; Chap. 51; 52:1-12; Chap. 60; 61:4-9; Chap. 62; 66:5-22;
+          11:11-13; 25; 26:1,2,12-19; 27:13; 29:18-24; 30:18-26;
+          32:15-20; 33:13-24; 35; 37:31,32; 40:2,9; 41:27; 44; 49:13-23;
+          51; 52:1-12; 60; 61:4-9; 62; 66:5-22;
           Jer 3:14-18; 4:3-18; 12:14-16; 23:3; 24:1-7; 29:1-14; 30:3-22;
-          32:36-44; 33; 44:28; Eze 14:22,23; 16:60-63; 20:40,41; 36:1-38;
-          37:12,21; Da 11:30-45; 12:1; Joe 3; Am 9:9-15; Ob 1:17-21;
-          Mic 2:12,13; 5:3; Zep 2:7; Zec 1:14-21; 2; 8; 10:5-12; 12:1-14;
-          Chap. 13; 14:3-21; Mal 3:4; Ro 11; 2Co 3:16; Re 7:5
+          32:36-44; 33; 44:28;
+          Eze 14:22,23; 16:60-63; 20:40,41; 36:1-38; 37:12,21;
+          Da 11:30-45; 12:1;
+          Joe 3;
+          Am 9:9-15;
+          Ob 1:17-21;
+          Mic 2:12,13; 5:3;
+          Zep 2:7;
+          Zec 1:14-21; 2; 8; 10:5-12; 12:1-14; 13; 14:3-21;
+          Mal 3:4;
+          Ro 11;
+          2Co 3:16;
+          Re 7:5
 
    ISRAELITES
           -See [2333]ISRAEL
@@ -32640,7 +32649,7 @@ I
 
           .Places in the march and encampments Nu 2:3,5; 10:14,15
 
-          .Parts of Canaan allotted to Jos 19:17-23; with 17:10,11
+          .Parts of Canaan allotted to Jos 19:17-23; with Jos 17:10,11
 
           .Join Deborah and Barak in war against Sisera Jdg 5:15
 
@@ -33625,7 +33634,7 @@ J
           -Ancestor of Jesus Mt 1:11
 
           -Wicked reign and final overthrow of 2Ki 23:34-37; 24:1-6;
-          2Ch 36:4-8; Jer 22:13-19; 26:22,23; Chap. 36; Da 1:1,2
+          2Ch 36:4-8; Jer 22:13-19; 26:22,23; 36; Da 1:1,2
 
           -Dies, and is succeeded by his son, Jehoiachin 2Ki 24:6
 
@@ -34598,13 +34607,13 @@ J
           .Nicodemus comes to Jesus (in Jerusalem) Joh 3:1-21
 
           .His disciples immerse some of the people (at Aenon) Joh 3:22;
-          with 4:2
+          with Joh 4:2
 
           .Returns to Galilee Mt 4:12; Mr 1:14; Lu 4:14; Joh 4:1-3
 
           .Visits Sychar and teaches the Samaritan woman Joh 4:4-42
 
-          .Teaches in Galilee Mt 4:17; Mr 1:14; 15; Lu 4:14; 15; Joh
+          .Teaches in Galilee Mt 4:17; Mr 1:14, 15; Lu 4:14, 15; Joh
           4:43-45
 
           .Heals a nobleman's son of Capernaum (at Cana of Galilee) Joh
@@ -35140,7 +35149,7 @@ J
           .One with the Father Joh 10:30,38; 12:45; 14:7-10; 17:10
 
           .As sending the Spirit equally with the Father Joh 14:16; with
-          15:26
+          Joh 15:26
 
           .As unsearchable equally with the Father Pr 30:4; Mt 11:27
 
@@ -35149,7 +35158,7 @@ J
           .Supporter and preserver of all things Ne 9:6; with Col 1:17;
           Heb 1:3
 
-          .Acknowledged by Old Testament saints Ge 17:1; with 48:15,16;
+          .Acknowledged by Old Testament saints Ge 17:1; with Ge 48:15,16;
           32:24-30; with Ho 12:3-5; Jdg 6:22-24; 13:21,22; Job 19:25-27
 
           -UNCLASSIFIED SCRIPTURES RELATING TO THE DIVINITY OF Ge 1:1-14;
@@ -37641,7 +37650,7 @@ J
           9:7-21
 
           -2. Son of Azariah, king of Judah 2Ki 15:5-7,32,38; 1Ch 3:12;
-          2Ch 26:21-23; Chap. 27
+          2Ch 26:21-23; 27
 
           .Piety of 2Ch 27
 
@@ -37720,7 +37729,7 @@ J
           .Of David, over the offerings of the princes and people for the
           house of God 1Ch 29:10-19
 
-          .Jews, over the hanging of Haman Es 8:15,16; with 7:10
+          .Jews, over the hanging of Haman Es 8:15,16; with Es 7:10
 
           .Of Elisabeth, when Mary visited her Lu 1:5-44
 
@@ -37774,7 +37783,7 @@ J
           repented 2Co 1:24; 2:3
 
           .Of Paul and Titus, because of the hospitality of the
-          Corinthians 2Co 7:13; with 8:6; Ro 15:32; 1Co 16:18
+          Corinthians 2Co 7:13; with 2Co 8:6; Ro 15:32; 1Co 16:18
 
           .Of the Macedonian Christians, when they made a contribution for
           the Christians at Jerusalem 2Co 8:2
@@ -37870,7 +37879,7 @@ J
           .Moses' benediction upon De 33:7
 
           .Commissioned by God to lead in the conquest of the promised
-          land Jdg 1:1-3; with 1:4-21
+          land Jdg 1:1-3; with Jdg 1:4-21
 
           .Make David king 2Sa 2:1-11; 5:4,5
 
@@ -38011,7 +38020,7 @@ J
 
           .The judges of Jezreel 1Ki 21:8-13
 
-          .Pilate Mt 27:24; Mr 15:15; with 15:19-24
+          .Pilate Mt 27:24; Mr 15:15; with Mr 15:19-24
 
           .Felix Ac 24:26,27
 
@@ -38142,7 +38151,7 @@ J
 
           -Hananiah, the false prophet Jer 28:15,16,17
 
-          -Eli's house 1Sa 2:27-36; with 4:10-22
+          -Eli's house 1Sa 2:27-36; with 1Sa 4:10-22
 
           -The prophet of Judah, for disobedience 1Ki 13:1-24
 
@@ -38295,7 +38304,7 @@ K
 
           -Struck down by Chedorlaomer Ge 14:7
 
-          -Abraham lives beside the wells nearby Ge 20:1; with 14:7; 16:14
+          -Abraham lives beside the wells nearby Ge 20:1; with Ge 14:7; 16:14
 
           -Israel encamps at Nu 12:16; 13:26; 20:1; 33:36
 
@@ -38817,7 +38826,7 @@ K
 
           -Inhabitants of, who were not struck down, on account of the
           covenant made by the Israelites with the Gibeonites, but put
-          under servitude Jos 9:17; with 9:3-27
+          under servitude Jos 9:17; with Jos 9:3-27
 
           -In the territory allotted to Judah Jos 15:9,60; 18:14
 
@@ -39410,7 +39419,7 @@ L
           .Was given because of transgressions until the Messiah arrived
           Ga 3:19
 
-          .Engraved on stone Ex 20:3-17; with 24:12; 31:18; 32:16; 34:29;
+          .Engraved on stone Ex 20:3-17; with Ex 24:12; 31:18; 32:16; 34:29;
           40:20; De 4:13; 5:4-22; 9:10
 
           .See [2518]TABLES
@@ -39445,7 +39454,7 @@ L
 
           .From city to city 2Ch 17:7-10
 
-          .In synagogues Lu 4:16,32; Ac 13:14-52; 15:21; with 9:20; 14:1;
+          .In synagogues Lu 4:16,32; Ac 13:14-52; 15:21; with Ac 9:20; 14:1;
           17:1-3; 18:4,26
 
           .Expounded to the assembled nation at the Feast of Tabernacles
@@ -39852,7 +39861,7 @@ L
           -Consecration of Nu 8:6-21
 
           -Sedition among, led by Korah, Dathan, Abiram, and On, on
-          account of jealousy toward Moses and Aaron Nu 16; with 4:19,20
+          account of jealousy toward Moses and Aaron Nu 16; with Nu 4:19,20
 
           -Three divisions of, each having the name of one of its
           progenitors-Gershon, Kohath, and Merari Nu 3:17
@@ -39957,7 +39966,7 @@ L
           -Profits from
 
           .In lieu of landed inheritance, forty-eight cities with suburbs
-          were assigned to them Nu 35:2-8; with 18:24
+          were assigned to them Nu 35:2-8; with Nu 18:24
 
           .And Nu 26:62; De 10:9; 12:12,18,19; 14:27-29; 18:1-8; Jos
           13:14; 14:3; 18:7; 1Ch 6:54-81; 13:2; 2Ch 23:2; Eze 34:1-5
@@ -41419,7 +41428,7 @@ M
 
           .Haman toward Mordecai Es 3:5-15; 5:9-14
 
-          .Jeremiah's enemies Jer 26:8-11; Chap. 38
+          .Jeremiah's enemies Jer 26:8-11; 38
 
           .Nebuchadrezzar toward Zedekiah Jer 52:10,11
 
@@ -43360,7 +43369,7 @@ M
 
           -Haman Es 3:1
 
-          -Mordecai Es 10:3; with 8; 9
+          -Mordecai Es 10:3; with Es 8; 9
 
           -Daniel Da 2:48; 6:1-3
 
@@ -43651,7 +43660,7 @@ M
 
           .Isaiah Isa 22:4,5; 39:3-7
 
-          .Jeremiah Jer 17:16; 26:1-15; Chap. 28; 37:9,10,16-18
+          .Jeremiah Jer 17:16; 26:1-15; 28; 37:9,10,16-18
 
           .John the Baptist Mt 3:2-12; Mr 6:18-28; Lu 3:7-9,19
 
@@ -43693,7 +43702,7 @@ M
 
           .The old prophet of Beth-el 1Ki 13:11-32
 
-          .Jonathan Jdg 17:7-13; Chap. 18
+          .Jonathan Jdg 17:7-13; 18
 
           .Noadiah Ne 6:14
 
@@ -44604,7 +44613,7 @@ M
           55:1,2; Jer 32:9,10,25,44; La 5:4; Mic 3:11; Mt 25:18,27;
           28:12,15; Mr 14:11; Lu 9:3; 19:15,23; 22:5; Ac 7:16; 8:20
 
-          -Gold used as Ge 13:2; 24:35; 44:8; with 44:1; 1Ch 21:25; Ezr
+          -Gold used as Ge 13:2; 24:35; 44:8; with Ge 44:1; 1Ch 21:25; Ezr
           8:25-27; Isa 13:17; 46:6; 60:9; Eze 7:19; 28:4; Mt 2:11; 10:9;
           Ac 3:6; 20:33; 1Pe 1:18
 
@@ -46369,7 +46378,7 @@ N
           .Dies at the age of nine-hundred and fifty years Ge 9:28,29
 
           -2. A daughter of Zelophehad, special legislation in regard to
-          the inheritance of Nu 26:33; 27:1-7; Chap. 36; Jos 17:3-7
+          the inheritance of Nu 26:33; 27:1-7; 36; Jos 17:3-7
 
    NOB
           -A city of the tribe of Benjamin Ne 11:31,32
@@ -48995,8 +49004,8 @@ P
 
           .Of Job Job 13:4-13; 16:1-4; 17:2; 19:1-5; 30:1-10
 
-          .Of Jeremiah Jer 15:10,15; 17:15-18; 18:18-23; Chap. 26; 32:2;
-          33:1; 36:26; Chap. 37; 38:1-6
+          .Of Jeremiah Jer 15:10,15; 17:15-18; 18:18-23; 26; 32:2;
+          33:1; 36:26; 37; 38:1-6
 
           .Of Urijah Jer 26:23
 
@@ -49332,7 +49341,7 @@ P
           -8. Pharaoh-necho .His invasion of Assyria, Josiah's death 2Ki
           23:29-35; 24:7; 2Ch 35:20-24; 36:3,4; Jer 46:2; 47:1
 
-          -9. Pharaoh-hophra Jer 37:4-7; Chap. 44; Eze 17:15-17
+          -9. Pharaoh-hophra Jer 37:4-7; 44; Eze 17:15-17
 
           .Prophecies concerning Jer 44:30; 46:25,26; Eze 29; 30:21-26
 
@@ -49527,7 +49536,7 @@ P
 
           .Abimelech II Ge 26
 
-          .Achish 1Sa 21:10-15; 27:2-12; 28:1,2; Chap. 29
+          .Achish 1Sa 21:10-15; 27:2-12; 28:1,2; 29
 
           -Allowed to remain in Canaan Jdg 3:3,4
 
@@ -49563,7 +49572,7 @@ P
           -Defeated by Hezekiah 2Ki 18:8
 
           -Prophecies against Isa 9:11,12; 14:29-31; Jer 25:17-20;
-          Chap. 47; Eze 25:15-17; Am 1:6-8; Zep 2:4-7; Zec 9:5-7
+          47; Eze 25:15-17; Am 1:6-8; Zep 2:4-7; Zec 9:5-7
 
    PHILOLOGUS
           -A disciple in Rome Ro 16:15
@@ -49574,7 +49583,7 @@ P
           -A philosophical discussion about wisdom Job 28
 
           -Philosophical inductions and deductions relating to God and His
-          providence Job 5:8-20; 9; 10:2-21; 12:6-24; 33:12-30; Chap. 37
+          providence Job 5:8-20; 9; 10:2-21; 12:6-24; 33:12-30; 37
 
           -Reveals the mysteries of providence Pr 25:2; Ro 1:19,20
 
@@ -49739,7 +49748,7 @@ P
 
           -Monuments erected to commemorate events
 
-          .By Jacob, his vision of angels Ge 28:18; with 31:13; 35:14
+          .By Jacob, his vision of angels Ge 28:18; with Ge 31:13; 35:14
 
           -By Jacob, his covenant with Laban Ge 31:45
 
@@ -49754,7 +49763,7 @@ P
 
           -By Absalom, to keep his name alive 2Sa 18:18
 
-          -As a boundary Jos 15:6; with 18:17
+          -As a boundary Jos 15:6; with Jos 18:17
 
           -As a road sign 1Sa 20:19
 
@@ -49937,7 +49946,7 @@ P
 
           -Denounced as a judgment Le 26:21; De 28:59
 
-          -Foretold Re 11:6; 15:1,6-8; Chap. 16; 22:18,19
+          -Foretold Re 11:6; 15:1,6-8; 16; 22:18,19
 
           -See [3069]JUDGMENTS
 
@@ -50846,12 +50855,12 @@ P
 
           .Of Balaam De 23:5; Jos 24:10
 
-          .Of Job Job 30:20; with 42:12
+          .Of Job Job 30:20; with Job 42:12
 
           .Of the Israelites, when attacked by the Amorites De 1:45
 
           .The prayer of Jesus, "Let this cup pass away," Mt 26:39,42,44;
-          with 26:45-75
+          with Mt 26:45-75
 
           .And Mt 27
 
@@ -50864,7 +50873,7 @@ P
           honour, and long life 1Ki 3:7-14; 2Ch 1:10-12
 
           .The disciples prayed for Peter; the answer included Peter's
-          deliverance Ac 12:15; with 12:5
+          deliverance Ac 12:15; with Ac 12:5
 
           .Answer to, different from the request
 
@@ -51789,7 +51798,7 @@ P
           -See [3159]PRISONERS
 
    PRISONERS
-          -Joseph Ge 39:20-23; Chap. 40; 41:1-44
+          -Joseph Ge 39:20-23; 40; 41:1-44
 
           -Jeremiah Jer 38:6-28; 39:14
 
@@ -51892,7 +51901,7 @@ P
 
           -Amorites Ge 15:16
 
-          -Solomon 1Ki 3:14; 9:4-9; with 11:9-12
+          -Solomon 1Ki 3:14; 9:4-9; with 1Ki 11:9-12
 
           -Taught in parables of the talents and pounds Mt 25:14-30; Lu
           19:12-27
@@ -52263,7 +52272,7 @@ P
           .Conquests of Jeroboam 2Ki 14:25-28
 
           .Four generations of Jehu's descendants to sit upon the throne
-          of Israel 2Ki 10:30; with 15:12
+          of Israel 2Ki 10:30; with 2Ki 15:12
 
           .Destruction of Sennacherib's army, and his death 2Ki
           19:6,7,20-37
@@ -52816,7 +52825,7 @@ P
           .Scourging Le 19:20; De 22:18; 25:2,3; Pr 17:10; 19:29; 20:30;
           Mt 27:26; Mr 15:15; Lu 23:16; Joh 19:1; Ac 22:24,29
 
-          .Imprisonment Ge 39:20; Chap. 40
+          .Imprisonment Ge 39:20; 40
 
           .See [3239]PRISON
 
@@ -53590,7 +53599,7 @@ R
 
           .Uzzah, in steadying the ark of the covenant 2Sa 6:6,7
 
-          .David, in his generosity to Ziba 2Sa 16:4; with 19:26-29
+          .David, in his generosity to Ziba 2Sa 16:4; with 2Sa 19:26-29
 
           .Rehoboam, in forsaking the counsel of the old men 1Ki 12:8-15
 
@@ -54253,7 +54262,7 @@ R
 
           .Hezekiah 2Ki 18:3-7; 19:14-19
 
-          .Jehoshaphat 2Ch 17:3-9; Chapters 19-20
+          .Jehoshaphat 2Ch 17:3-9; 19; 20;
 
           .Jabez 1Ch 4:9,10
 
@@ -54387,7 +54396,7 @@ R
 
           .Pharaoh, of his hardness of heart Ex 9:27; 10:16,17
 
-          .Balaam, of his spiritual blindness Nu 22:34; with 22:24-35
+          .Balaam, of his spiritual blindness Nu 22:34; with Nu 22:24-35
 
           .Israelites
 
@@ -54413,10 +54422,10 @@ R
           .Achan, because of his theft Jos 7:20
 
           .Saul, at the rebuke of Samuel for not destroying the Amalekites
-          1Sa 15:24; with 15:6-31
+          1Sa 15:24; with 1Sa 15:6-31
 
           .David, at the rebuke of Nathan, the prophet, for his sins of
-          adultery and murder 2Sa 12:11,13; with 12:7-14
+          adultery and murder 2Sa 12:11,13; with 2Sa 12:7-14
 
           .See [3348]PSALMS, PENITENTIAL
 
@@ -54428,7 +54437,7 @@ R
           .When reproved by the prophet Micah Jer 26:18,19
 
           .Ahab, when reproved by Elijah for Ahab's idolatry 1Ki 21:27;
-          with 21:17-29
+          with 1Ki 21:17-29
 
           .Jehoahaz 2Ki 13:4
 
@@ -54738,9 +54747,9 @@ R
 
           .Eve Ge 3:13
 
-          .Sarah Ge 16:5; with 16:2
+          .Sarah Ge 16:5; with Ge 16:2
 
-          .Esau Ge 27:36; with 25:29-34
+          .Esau Ge 27:36; with Ge 25:29-34
 
           .Aaron Ex 32:22-24
 
@@ -55833,7 +55842,7 @@ R
 
           .INSTANCES OF
 
-          .Potiphar, putting Joseph into prison Ge 39:20; with 40:15
+          .Potiphar, putting Joseph into prison Ge 39:20; with Ge 40:15
 
           .Pharaoh, oppressing the Israelites Ex 1; 2; 3; 4; 5; 6; 7; 8;
           9; 10; 11
@@ -55987,7 +55996,7 @@ R
    RUTH
           -The daughter-in-law of Naomi Ru 1:4
 
-          -Her devotion to Naomi Ru 1:16,17; with 1:6-18
+          -Her devotion to Naomi Ru 1:16,17; with Ru 1:6-18
 
           -Goes to Bethlehem Ru 1:19,22
 
@@ -56080,7 +56089,7 @@ S
           31:10-13; Ne 8:18
 
           -Punishment to follow violation of the ordinances concerning Le
-          26:34,35; with 26:32-41; Jer 34:12-22
+          26:34,35; with Le 26:32-41; Jer 34:12-22
 
           -See [3439]JUBILEE
 
@@ -57104,7 +57113,7 @@ S
           -See [3507]PSALMS, DIDACTIC
 
    SCIENCE
-          -Observations of, and deductions from, facts Job 26:7-14; Chap. 28;
+          -Observations of, and deductions from, facts Job 26:7-14; 28;
           Ec 1:13-17
 
           -So-called, false 1Ti 6:20
@@ -57669,7 +57678,7 @@ S
           -INSTANCES OF
 
           .Abraham, when he offered to Lot (his junior) his preference of
-          the land of Canaan Ge 13:9; with 17:8
+          the land of Canaan Ge 13:9; with Ge 17:8
 
           .Moses, in choosing rather to suffer affliction with the people
           of God than to enjoy the pleasures of sin for only a little
@@ -57848,7 +57857,8 @@ S
 
           .Resisting the Holy Spirit Ac 7:51
 
-          .Walking in the counsels of an evil heart Jer 7:24; with 23:17
+          .Walking in the counsels of an evil heart Jer 7:24; with
+          Jer 23:17
 
           .Hardening the neck (metaphorically) Ne 9:16
 
@@ -58241,7 +58251,7 @@ S
 
           .Of Abimelech Ge 21:25
 
-          .Of Ziba 2Sa 16:1-4; with 19:26,27
+          .Of Ziba 2Sa 16:1-4; with 2Sa 19:26,27
 
           .Of Absalom 2Sa 13:28,29; 14:30
 
@@ -58963,7 +58973,7 @@ S
           .Jesus visits; disciples made in Joh 4:1-42
 
           -3. Son of Hamor; seduces Jacob's daughter; killed by Jacob's
-          sons Ge 33:19; Chap. 34; Jos 24:32; Jdg 9:28
+          sons Ge 33:19; 34; Jos 24:32; Jdg 9:28
 
           .Called SYCHEM Ac 7:16
 
@@ -60377,9 +60387,9 @@ S
           of the law of Moses De 27:12
 
           .Joined with the people of Judah and Benjamin in the renewal of
-          the Passover 2Ch 15:9; with 15:1-15
+          the Passover 2Ch 15:9; with 2Ch 15:1-15
 
-          .Idolatry of 2Ch 34:6; with 34:1-7
+          .Idolatry of 2Ch 34:6; with 2Ch 34:1-7
 
           .See [3666]ISRAEL
 
@@ -60646,7 +60656,7 @@ S
           7; 22; 24:6-14; 28:18; 33:25,26; 36:16-20; 39:23,24; 44:4-14; Ho
           4:1-11; 6:8-10; 7:1-7; 13; Am 2; 5; Mic 6; 7:2-6
 
-          .Babylon Jer 50:45,46; Chap. 51
+          .Babylon Jer 50:45,46; 51
 
           .See [3701]BABYLON
 
@@ -60990,7 +61000,7 @@ S
 
           .That he was seditious Lu 22:65; 23:5
 
-          .That he was a king Lu 23:2; Joh 18:37; with 19:1-5
+          .That he was a king Lu 23:2; Joh 18:37; with Joh 19:1-5
 
           .Of Paul
 
@@ -61509,7 +61519,7 @@ S
 
           .By the magicians Ex 7:11,22; 8:7,18
 
-          .By Balaam Nu 22:6; 23:23; with 22; 23
+          .By Balaam Nu 22:6; 23:23; with Nu 22; 23
 
           .By Jezebel 2Ki 9:22
 
@@ -62117,7 +62127,7 @@ S
           -Paul teaches
 
           .That the "law of the mind" is at war with the "law of the
-          members," Ro 7:23; with 7:14-24
+          members," Ro 7:23; with Ro 7:14-24
 
           .That the body must be kept under subjection 1Co 9:27
 
@@ -62396,7 +62406,7 @@ S
 
    STRATEGY
           -In war Ge 14:14,15; 32:7,8; Jos 8:3-25; Jdg 7:16-23; 20:29-43;
-          2Sa 15:32-34; with 17:7-14; Ne 6; Isa 15:1; Jer 6:5
+          2Sa 15:32-34; with 2Sa 17:7-14; Ne 6; Isa 15:1; Jer 6:5
 
           -See [3860]AMBUSHES
 
@@ -62701,7 +62711,7 @@ S
 
           .Israelites, supposing that their defeat in battle with the
           Philistines was due to their not having brought with them the
-          ark of the covenant 1Sa 4:3; with 4:10,11
+          ark of the covenant 1Sa 4:3; with 1Sa 4:10,11
 
           .Philistines, refusing to step on the threshold of the temple of
           Dagon after the image of Dagon had repeatedly fallen upon it 1Sa
@@ -63330,7 +63340,7 @@ T
 
           -The Most Holy Place Ex 26:33-35; 40:20,21; Heb 9:3-5,7,8
 
-          -The furniture of Ex 25:10-40; 27:1-8,19; Chap. 37; 38:1-8
+          -The furniture of Ex 25:10-40; 27:1-8,19; 37; 38:1-8
 
           -See [3918]ALTAR
 
@@ -64285,7 +64295,7 @@ T
           .Treasury of Mr 12:41-44
 
           .Zacharias, officiating priest in, has a vision of an angel;
-          receives promise of a son Lu 1:5-23; with 1:57-64
+          receives promise of a son Lu 1:5-23; with Lu 1:57-64
 
           .Jesus brought to, according to the law and custom Lu 2:21-39
 
@@ -64509,7 +64519,7 @@ T
 
           -Used by Micah, stolen by the Danites Jdg 17:5; 18:14,17-20
 
-          -Condemned and disposed of by Jacob Ge 35:2-4; with 31:35-39
+          -Condemned and disposed of by Jacob Ge 35:2-4; with Ge 31:35-39
 
           -Destroyed by Josiah
 
@@ -65291,7 +65301,7 @@ T
           -1. A daughter of Zelophehad Nu 26:33; 36:11; Jos 17:3
 
           .Special legislation in regard to the inheritance of Nu 27:1-11;
-          Chap. 36; Jos 17:3,4
+          36; Jos 17:3,4
 
           -2. A city of Canaan
 
@@ -65752,7 +65762,7 @@ T
    TREASURE
           -1. A thing of highly-estimated value
 
-          .Money Ge 42:25,27,28,35; 43:23; with 43:18,21,22
+          .Money Ge 42:25,27,28,35; 43:23; with Ge 43:18,21,22
 
           .Precious stones 1Ch 29:8
 
@@ -65809,7 +65819,7 @@ T
 
           -Ceding of the territory by 1Ki 9:10-14; 20:34
 
-          -Sacredness of Jos 9:16-21; with 2:8-21
+          -Sacredness of Jos 9:16-21; with Jos 2:8-21
 
           -Reciprocity 1Ki 5:1-12
 
@@ -65939,7 +65949,7 @@ T
           .When Moses waited upon the mountain Ex 32:1
 
           .When the spies brought their adverse report Nu 13:28,29,31-33;
-          14:1-4; with 14:4-12
+          14:1-4; with Nu 14:4-12
 
           .Elijah, under the juniper tree and in the cave 1Ki 19:4-15
 
@@ -67767,7 +67777,7 @@ V
           making of an idol Jdg 17:2,3
 
           .Of Hannah, to consecrate to the Lord the child for which she
-          prayed 1Sa 1:11; with 1:27,28
+          prayed 1Sa 1:11; with 1Sa 1:27,28
 
           .Of Elkanah 1Sa 1:21
 
@@ -68001,7 +68011,7 @@ W
    WAR
           -Divine approval of 2Sa 22:35
 
-          -Civil Jdg 12:1-6; Chap. 20; 2Sa 2:12-31; 3:1; 20; 1Ki 14:30;
+          -Civil Jdg 12:1-6; 20; 2Sa 2:12-31; 3:1; 20; 1Ki 14:30;
           16:21; Isa 19:2
 
           -Forbidden 2Ch 11:4
@@ -68021,7 +68031,7 @@ W
 
           -God uses, as a judgment Ex 23:24; Le 26:17,31-39; De 28:25-68;
           32:30; Jdg 2:14; 2Ki 15:37; 1Ch 5:22,26; 21:12; 2Ch 15:6;
-          12:1-12; 24:23,24; 33:11; Chap. 36; Job 19:29; Ps 44:9-16;
+          12:1-12; 24:23,24; 33:11; 36; Job 19:29; Ps 44:9-16;
           60:1-3; 105:25; Isa 5:1-8,25-30; 9:8-12; 13:3,4,9; 19:2; 34:2-6;
           43:28; 45:7; Jer 12:7,12; 46:15-17,21; 47:6,7; 48:10; 49:5;
           50:25; Eze 23:22-25; Am 3:6; 4:11; Zep 1:7-18; Zec 8:10; 14:2
@@ -69542,7 +69552,7 @@ W
 
           -Property rights of
 
-          .In inheritance Nu 27:1-11; Chap. 36; Jos 17:3-6; Job 42:15
+          .In inheritance Nu 27:1-11; 36; Jos 17:3-6; Job 42:15
 
           .To sell real estate Ru 4:3-9
 
@@ -69716,7 +69726,7 @@ W
           his vineyard 1Ki 21:1-16
 
           .Jezebel, in her evil counsels to, and influence over, Ahab 1Ki
-          21:25; with 21:17-27
+          21:25; with 1Ki 21:17-27
 
           .And 2Ki 9:30-37
 
@@ -69845,7 +69855,7 @@ W
           -Not to be added to, or taken from De 4:2; 12:32; Re 22:18,19
 
           -Conviction of sin from reading 2Ki 22:9-13; 2Ch 17:7-10;
-          Chap. 34
+          34
 
           -Fulfilled by Jesus Mt 5:17; Lu 24:27; Joh 19:24
 
@@ -70933,7 +70943,7 @@ Z
    ZELOPHEHAD
           -(Grandson of Gilead)
 
-          -His daughters petition for his inheritance Nu 27:1-11; Chap. 36;
+          -His daughters petition for his inheritance Nu 27:1-11; 36;
           Jos 17:3-6; 1Ch 7:15
 
    ZELOTES
@@ -71203,7 +71213,7 @@ Z
           .Placed in 2Sa 6:12,16; 1Ki 8:1; 1Ch 15:1,29; 2Ch 5:2
 
           .Removed from, to Solomon's temple on Mount Moriah 1Ki 8:1; 2Ch
-          5:2; with 3:1
+          5:2; with 2Ch 3:1
 
           -Collectively, the place, the forms, and the assemblies of
           Israelite worship 2Ki 19:21,31; Ps 9:11; 48:2,11,12; 74:2;
@@ -71339,7 +71349,7 @@ Z
           -Son of Elkanah 1Ch 6:26
 
    ZOPHAR
-          -One of Job's three friends Job 2:11; Chapters 11, 20; Job 42:7-9
+          -One of Job's three friends Job 2:11; 11; 20; Job 42:7-9
 
    ZOPHIM
           -1. A place on the top of Pisgah Nu 23:14
