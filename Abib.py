@@ -3484,7 +3484,7 @@ class MainWindow(QMainWindow):
             pass
 
         # Connect the manual "Check for updates now" button: run the check on the UI thread
-        # to present dialogs/feedback, then (if accepted) perform the heavy work in background.
+        # to present dialogs/feedback, then (if accepted) perform the heavy work in the background.
         try:
             from PySide6.QtCore import QThreadPool, QRunnable
             from updater import check_for_updates as _check_for_updates
@@ -3511,7 +3511,7 @@ class MainWindow(QMainWindow):
                     result = None
 
                 if not result:
-                    # Either user declined, already up-to-date (info shown), or an error (warning shown)
+                    # Either user declined, already up to date (info shown), or an error (warning shown)
                     return
 
                 try:
@@ -3534,7 +3534,7 @@ class MainWindow(QMainWindow):
 
             dialog.update_now_btn.clicked.connect(_on_update_now_clicked)
         except (ImportError, AttributeError, RuntimeError, TypeError):
-            # If we cannot wire the button (e.g., missing attrs), ignore gracefully
+            # If we cannot wire the button (e.g. missing attrs), ignore gracefully
             pass
 
         if dialog.exec():  # If the dialog is accepted (OK button)
@@ -3544,6 +3544,8 @@ class MainWindow(QMainWindow):
                 defaults = fcs.get_default_settings()
                 new_theme = defaults.get("theme", "Light")
                 new_show_splash = bool(defaults.get("show_splash", False))
+                # Also set update-on-startup from defaults to avoid uninitialised variable use
+                new_update_on_start = bool(defaults.get("check_updates_on_startup", False))
             else:
                 new_theme = dialog.theme_combobox.currentText()
                 new_show_splash = dialog.splash_checkbox.isChecked()

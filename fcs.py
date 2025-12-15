@@ -27,7 +27,11 @@ def get_default_settings() -> Any:
     """
     return {
         "theme": "Light",
-        "show_splash": "false",
+        # Default to not showing splash and not checking updates on startup
+        # (older machines benefit from faster startup).
+        # These are booleans.
+        "show_splash": False,
+        "check_updates_on_startup": False,
         "devotional_font_size": 12,
         "bible_font_size": 12,
         "main_window": {
@@ -60,6 +64,9 @@ def get_default_settings() -> Any:
             "Pilgrims-Progress": [624, 50, 70, 736, 599],
             "Institutes": [0, 50, 70, 736, 599],
             "Naves Topical Bible": [0, 50, 70, 736, 599],
+            # Calvin commentaries no longer require per-volume settings entries.
+            # They are opened via a dedicated handler with internal mappings and
+            # optional index support, so we keep only a single umbrella entry.
             "Calvin - Commentaries": [0, 50, 70, 736, 599],
             "Catechisms John Owen": [0, 50, 70, 736, 599],
             "Commentary on Galatians Luther": [0, 50, 70, 736, 599],
@@ -74,51 +81,6 @@ def get_default_settings() -> Any:
             "Systematic Theology - Vol. II": [0, 50, 70, 736, 599],
             "Systematic Theology - Vol. III": [0, 50, 70, 736, 599],
             "The Holy War": [0, 50, 70, 736, 599],
-            "calcom01": [15, 50, 70, 736, 599],
-            "calcom02": [15, 50, 70, 736, 599],
-            "calcom03": [15, 50, 70, 736, 599],
-            "calcom04": [15, 50, 70, 736, 599],
-            "calcom05": [15, 50, 70, 736, 599],
-            "calcom06": [15, 50, 70, 736, 599],
-            "calcom07": [15, 50, 70, 736, 599],
-            "calcom08": [15, 50, 70, 736, 599],
-            "calcom09": [15, 50, 70, 736, 599],
-            "calcom10": [15, 50, 70, 736, 599],
-            "calcom11": [15, 50, 70, 736, 599],
-            "calcom12": [30, 50, 70, 736, 599],
-            "calcom13": [30, 50, 70, 736, 599],
-            "calcom14": [30, 50, 70, 736, 599],
-            "calcom15": [30, 50, 70, 736, 599],
-            "calcom16": [30, 50, 70, 736, 599],
-            "calcom17": [36, 50, 70, 736, 599],
-            "calcom18": [36, 50, 70, 736, 599],
-            "calcom19": [36, 50, 70, 736, 599],
-            "calcom20": [36, 50, 70, 736, 599],
-            "calcom21": [15, 50, 70, 736, 599],
-            "calcom22": [15, 50, 70, 736, 599],
-            "calcom23": [15, 50, 70, 736, 599],
-            "calcom24": [15, 50, 70, 736, 599],
-            "calcom25": [15, 50, 70, 736, 599],
-            "calcom26": [15, 50, 70, 736, 599],
-            "calcom27": [15, 50, 70, 736, 599],
-            "calcom28": [15, 50, 70, 736, 599],
-            "calcom29": [15, 50, 70, 736, 599],
-            "calcom30": [15, 50, 70, 736, 599],
-            "calcom31": [15, 50, 70, 736, 599],
-            "calcom32": [15, 50, 70, 736, 599],
-            "calcom33": [15, 50, 70, 736, 599],
-            "calcom34": [15, 50, 70, 736, 599],
-            "calcom35": [15, 50, 70, 736, 599],
-            "calcom36": [15, 50, 70, 736, 599],
-            "calcom37": [15, 50, 70, 736, 599],
-            "calcom38": [15, 50, 70, 736, 599],
-            "calcom39": [15, 50, 70, 736, 599],
-            "calcom40": [0, 50, 70, 736, 599],
-            "calcom41": [15, 50, 70, 736, 599],
-            "calcom42": [15, 50, 70, 736, 599],
-            "calcom43": [15, 50, 70, 736, 599],
-            "calcom44": [15, 50, 70, 736, 599],
-            "calcom45": [15, 50, 70, 736, 599],
         }
     }
 

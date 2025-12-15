@@ -4,13 +4,19 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.09
+Abib v415.10
 ------------
 
 Changelog.
 -----------
-Abib v415.09
+Abib v415.10
+Ran precompute_refs.py to update "Naves", and checked as far as 'JEWELS'.
+Fixed some linter errors in updater.py and Abib.py.
+fcs.get_default_settings of settings.json was modified.
 
+Abib v415.09
+"Naves" checked and edited to remove some problems, but incomplete.
+Update check on startup made optional, "Check for updates now" button was added.
 
 Abib v415.08
 Minor bugfix.
@@ -516,11 +522,13 @@ Extensively refactored.  Nothing major to the logic.
 Except:
 Bugfix correcting Back and especially Forward not working properly.
 
-Another bug fixed regarding the following verses; Joshua 15:1,Job 7:1, Psalm 70:1, Psalm 92:1, Hosea 8:1, and
-Romans 8:1.  These are all first verses of chapters that start with italicised first words and were displayed
-incorrectly when viewed using Back and Forward.
+Another bug fixed regarding the following verses; Joshua 15:1,Job 7:1,
+Psalm 70:1, Psalm 92:1, Hosea 8:1, and Romans 8:1.
+These are all first verses of chapters that start with italicised first
+words and were displayed incorrectly when viewed using Back and Forward.
 
-Some changes to the way that the Find process works and to the highlighting of the search key.
+Some changes to the Find process workings and to the highlighting of
+the search key.
 
 Abib3.9.1b
 Built with Python11.1 and Pyside6 to make the operation faster.
