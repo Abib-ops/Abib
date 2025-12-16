@@ -110,3 +110,9 @@ class SettingsService:
 
     def update_devotional_font_size(self, new_size: int) -> None:
         fcs.update_devotional_font_size(new_size, str(self.paths.settings_file))
+
+    def get_reader_font_size(self) -> int:
+        return fcs.get_reader_font_size(str(self.paths.settings_file))
+
+    def update_reader_font_size(self, new_size: int) -> None:
+        fcs.update_reader_font_size(new_size, str(self.paths.settings_file))

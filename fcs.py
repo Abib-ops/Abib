@@ -34,6 +34,8 @@ def get_default_settings() -> Any:
         "check_updates_on_startup": False,
         "devotional_font_size": 12,
         "bible_font_size": 12,
+        # Font size for the 'Other Works' reader window
+        "reader_font_size": 12,
         "main_window": {
             "x": 25,
             "y": 41,
@@ -524,6 +526,29 @@ def get_bible_font_size(filename="settings.json"):
     """
     settings = load_settings_from_file(filename)
     return settings.get("bible_font_size", 12)
+
+
+def update_reader_font_size(new_size: Any, filename: str = "settings.json") -> None:
+    """
+    Update the 'Other Works' reader font size in the settings file.
+    """
+    settings = load_settings_from_file(filename)
+    try:
+        settings["reader_font_size"] = int(new_size)
+    except (TypeError, ValueError):
+        settings["reader_font_size"] = 12
+    save_settings_to_file(settings, filename)
+
+
+def get_reader_font_size(filename: str = "settings.json") -> int:
+    """
+    Get the current 'Other Works' reader font size from settings.
+    """
+    settings = load_settings_from_file(filename)
+    try:
+        return int(settings.get("reader_font_size", 12))
+    except (TypeError, ValueError):
+        return 12
 
 
 def compare_versions(version1, version2):

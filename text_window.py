@@ -101,7 +101,14 @@ class TextDocumentWindow(QDialog):
             self.reset_scroll_btn = None
 
         self.text_edit = QPlainTextEdit()
-        self.text_edit.setFont(QFont("Cascadia Mono", 12))
+        # Reader font size (persisted in settings.json)
+        try:
+            # Prefer an explicit settings file path when provided by the app
+            settings_path = str(self.settings_path) if self.settings_path else "settings.json"
+            self.reader_fontsize: int = int(fcs.get_reader_font_size(settings_path))
+        except (TypeError, ValueError, OSError):
+            self.reader_fontsize = 12
+        self.text_edit.setFont(QFont("Cascadia Mono", int(self.reader_fontsize)))
         self.text_edit.setReadOnly(True)
         # Ensure readable colours regardless of global theme settings
         is_dark = self.settings.get("theme", "Light") == "Dark"
@@ -122,6 +129,16 @@ class TextDocumentWindow(QDialog):
             pal.setColor(QPalette.ColorRole.HighlightedText, QColor("#000000"))
             self.text_edit.setPalette(pal)
         self.layout.addWidget(self.text_edit)
+
+        # Keep references to QShortcut instances
+        self._shortcuts: list[QShortcut] = []
+        try:
+            self._shortcuts.append(self._make_shortcut(QKeySequence("Ctrl++"), self.increase_reader_font_size))
+            self._shortcuts.append(self._make_shortcut(QKeySequence("Ctrl+="), self.increase_reader_font_size))
+            self._shortcuts.append(self._make_shortcut(QKeySequence("Ctrl+-"), self.decrease_reader_font_size))
+        except Exception:
+            # Shortcuts are optional; do not fail window creation
+            pass
 
         # Save scroll position per file
         self._is_loading: bool = False
@@ -301,6 +318,57 @@ class TextDocumentWindow(QDialog):
         except (RuntimeError, AttributeError, TypeError):
             # Shortcuts are optional; ignore failures gracefully
             pass
+
+    # -------- Reader font size controls (shortcuts + persistence) --------
+    def _make_shortcut(self, seq: QKeySequence, slot):
+        """Create a QShortcut and keep a reference to avoid GC."""
+        sc = QShortcut(seq, self)
+        try:
+            sc.setContext(Qt.ShortcutContext.WindowShortcut)
+        except Exception:
+            pass
+        try:
+            sc.activated.connect(slot)
+        except Exception:
+            pass
+        return sc
+
+    def _persist_reader_font_size(self) -> None:
+        try:
+            path = str(self.settings_path) if self.settings_path else "settings.json"
+            fcs.update_reader_font_size(int(getattr(self, "reader_fontsize", 12)), path)
+        except (ValueError, TypeError, OSError):
+            pass
+
+    def _apply_reader_font(self, size: int) -> None:
+        try:
+            size_int = int(size)
+        except (TypeError, ValueError):
+            size_int = 12
+        # Update widget font
+        try:
+            f = self.text_edit.font()
+            f.setPointSize(size_int)
+        except Exception:
+            f = QFont("Cascadia Mono", size_int)
+        self.text_edit.setFont(f)
+        # Save and persist
+        self.reader_fontsize = size_int
+        self._persist_reader_font_size()
+
+    def increase_reader_font_size(self) -> None:
+        try:
+            cur = int(getattr(self, "reader_fontsize", 12))
+        except (TypeError, ValueError):
+            cur = 12
+        self._apply_reader_font(min(cur + 1, 72))
+
+    def decrease_reader_font_size(self) -> None:
+        try:
+            cur = int(getattr(self, "reader_fontsize", 12))
+        except (TypeError, ValueError):
+            cur = 12
+        self._apply_reader_font(max(cur - 1, 6))
 
     # -------- Settings helpers for per-file scroll + geometry --------
     def _ensure_positions_dict(self) -> None:

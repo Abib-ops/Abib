@@ -4,13 +4,17 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.10
+Abib v415.11
 ------------
 
 Changelog.
 -----------
+Abib v415.11
+README.md updated.
+The font size of the reader window text can now be adjusted Ctrl++ and Ctrl+- to zoom in and out.
+
 Abib v415.10
-Ran precompute_refs.py to update "Naves", and checked as far as 'JEWELS'.
+Ran precompute_refs.py to update "Naves" and checked as far as 'JEWELS'.
 Fixed some linter errors in updater.py and Abib.py.
 fcs.get_default_settings of settings.json was modified.
 
