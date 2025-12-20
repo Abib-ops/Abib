@@ -33,6 +33,7 @@ from PySide6.QtWidgets import (
 import fcs
 import scripture
 import shared as sh
+from ui_helpers import SimpleScripturePopup
 
 
 # Helper: Safely resolve QTextDocument find flags in a way that keeps static analysers happy
@@ -136,7 +137,7 @@ class TextDocumentWindow(QDialog):
             self._shortcuts.append(self._make_shortcut(QKeySequence("Ctrl++"), self.increase_reader_font_size))
             self._shortcuts.append(self._make_shortcut(QKeySequence("Ctrl+="), self.increase_reader_font_size))
             self._shortcuts.append(self._make_shortcut(QKeySequence("Ctrl+-"), self.decrease_reader_font_size))
-        except Exception:
+        except (RuntimeError, AttributeError, TypeError, ValueError):
             # Shortcuts are optional; do not fail window creation
             pass
 
@@ -219,6 +220,9 @@ class TextDocumentWindow(QDialog):
         self.text_edit.viewport().setAttribute(Qt.WidgetAttribute.WA_Hover, True)
 
         self.popup_window = None
+        # Initialise the popup helper so static analysers know this attribute exists
+        # (actual instance may be created lazily where needed)
+        self._popup_helper: SimpleScripturePopup | None = None
 
         # Lazy highlighting state
         self._all_references: List[Dict[str, Any]] = []
@@ -325,11 +329,11 @@ class TextDocumentWindow(QDialog):
         sc = QShortcut(seq, self)
         try:
             sc.setContext(Qt.ShortcutContext.WindowShortcut)
-        except Exception:
+        except (RuntimeError, AttributeError, TypeError, ValueError):
             pass
         try:
             sc.activated.connect(slot)
-        except Exception:
+        except (RuntimeError, AttributeError, TypeError, ValueError):
             pass
         return sc
 
@@ -349,7 +353,7 @@ class TextDocumentWindow(QDialog):
         try:
             f = self.text_edit.font()
             f.setPointSize(size_int)
-        except Exception:
+        except (RuntimeError, AttributeError, TypeError, ValueError):
             f = QFont("Cascadia Mono", size_int)
         self.text_edit.setFont(f)
         # Save and persist
@@ -2118,6 +2122,12 @@ class TextDocumentWindow(QDialog):
         Extracted from duplicated blocks to avoid code repetition.
         """
         # Compute target position based on cursor rect and editor origin
+        if hasattr(self, '_popup_helper') and isinstance(self._popup_helper, SimpleScripturePopup):
+            try:
+                self._popup_helper.move_to(self.text_edit, pos, y_offset=y_offset)
+                return
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                pass
         cursor = self.text_edit.cursorForPosition(pos)
         cursor_rect = self.text_edit.cursorRect(cursor)
         global_cursor_top_left = self.text_edit.mapToGlobal(cursor_rect.topLeft())
@@ -2356,29 +2366,38 @@ class TextDocumentWindow(QDialog):
                 self.popup_window = None
             self.current_reference = hovered_reference
 
-        self.popup_window = QWidget()
-        self.popup_window.setWindowFlags(Qt.WindowType.ToolTip)
-        self.popup_window.setStyleSheet("border: 2px solid blue;")
-
         scriptures, canonical = self.get_scripture(hovered_reference)
         scriptur = scriptures + "\n" + canonical + " KJV"
 
-        label = QLabel(scriptur, self.popup_window)
-        label.setFont(self.text_edit.font())
-        label.setWordWrap(True)
-        label.setFixedWidth(self.text_edit.width())
-        label.adjustSize()
-
-        layout = QVBoxLayout(self.popup_window)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(label)
-        self.popup_window.adjustSize()
-
-        self._move_popup_to_cursor(pos, y_offset=60)
-
-        self.popup_window.show()
+        # Use the shared popup helper for consistent behaviour and look
+        if not hasattr(self, '_popup_helper') or not isinstance(self._popup_helper, SimpleScripturePopup):
+            self._popup_helper = SimpleScripturePopup()
+        try:
+            self._popup_helper.show(self.text_edit, scriptur, pos, self.text_edit.font())
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            # Fallback to the legacy widget path if anything fails
+            self.popup_window = QWidget()
+            self.popup_window.setWindowFlags(Qt.WindowType.ToolTip)
+            self.popup_window.setStyleSheet("border: 2px solid blue;")
+            label = QLabel(scriptur, self.popup_window)
+            label.setFont(self.text_edit.font())
+            label.setWordWrap(True)
+            label.setFixedWidth(self.text_edit.width())
+            label.adjustSize()
+            layout = QVBoxLayout(self.popup_window)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(label)
+            self.popup_window.adjustSize()
+            self._move_popup_to_cursor(pos, y_offset=60)
+            self.popup_window.show()
 
     def closePopup(self):
+        # Prefer the shared helper
+        if hasattr(self, '_popup_helper') and isinstance(self._popup_helper, SimpleScripturePopup):
+            try:
+                self._popup_helper.hide()
+            except (RuntimeError, AttributeError):
+                pass
         if self.popup_window and self.popup_window.isVisible():
             self.popup_window.close()
             self.popup_window = None

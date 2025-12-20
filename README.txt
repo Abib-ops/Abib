@@ -4,11 +4,15 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.11
+Abib v415.12
 ------------
 
 Changelog.
 -----------
+Abib v415.12
+Removed the Calvin Commentary.
+Added John Gill's Exposition of the Entire Bible.
+
 Abib v415.11
 README.md updated.
 The font size of the reader window text can now be adjusted Ctrl++ and Ctrl+- to zoom in and out.
@@ -738,3 +742,47 @@ stores triples as [book_id, chapter_idx, verse_idx] with 0-based indexing.
 Examples
 - resolve_reference(["Genesis", "1", "1"]) -> (1, 1, 1)
 - calculate_book_line(1, 1, 1, _) -> index of [0, 0, 0] in shared.Info
+
+
+Using the John Gill Bible Commentary
+------------------------------------
+
+Abib includes John Gill’s Exposition of the whole Bible in a separate window.
+
+Open the Gill window
+- Click the Commentary button in the main window. The Gill window opens as a
+  separate (top‑level) window, so you can move/resize it independently.
+
+What it shows
+- The window title displays the current reference (e.g. “Gill Commentary —
+  Genesis 1:1”). For one‑chapter books the chapter number is omitted.
+- Commentary is rendered as HTML using the same font family as the main reader
+  and is left‑aligned.
+
+Zoom
+- Ctrl++ (or Ctrl+=) to increase font size; Ctrl+- to decrease. The size is
+  saved and restored across runs.
+
+Scripture links and popups
+- References inside the commentary are highlighted. Hovering shows a small
+  popup with verse text and a canonical line (e.g. “Psalms 33:6 KJV”).
+- Clicking a reference navigates the main Bible window to that verse.
+- Popups match the look/behaviour of the “Other Works” reader.
+
+Auto‑follow setting
+- Help → Settings → “Gill: Auto‑follow main window” lets the Gill window follow
+  the current Bible verse automatically. Turn it off to let the Gill window stay
+  where it is until you change it.
+
+Missing commentary
+- When a verse has no Gill entry, the window displays “No commentary for this verse”.
+
+Where the data lives
+- Database file: gill.cmt.sqlite (in the application folder).
+- Table: commentary (columns: id, book, chapter, fromverse, toverse, data).
+- Lookups are performed by (book, chapter, fromverse), with ranged rows handled
+  via fromverse ≤ verse ≤ toverse. No precompute step is required.
+
+Saved settings
+- The Gill window position/size and its font size are saved in settings.json
+  under “gill_commentary_window” and “gill_commentary_font_size”.

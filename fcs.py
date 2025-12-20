@@ -66,15 +66,11 @@ def get_default_settings() -> Any:
             "Pilgrims-Progress": [624, 50, 70, 736, 599],
             "Institutes": [0, 50, 70, 736, 599],
             "Naves Topical Bible": [0, 50, 70, 736, 599],
-            # Calvin commentaries no longer require per-volume settings entries.
-            # They are opened via a dedicated handler with internal mappings and
-            # optional index support, so we keep only a single umbrella entry.
-            "Calvin - Commentaries": [0, 50, 70, 736, 599],
+            # Reserved for future commentary integrations (e.g. John Gill)
             "Catechisms John Owen": [0, 50, 70, 736, 599],
             "Commentary on Galatians Luther": [0, 50, 70, 736, 599],
             "Election A. W. Pink": [0, 50, 70, 1232, 599],
             "Election C. D. Cole": [0, 50, 70, 736, 599],
-            "Of Prayer - Calvin": [0, 50, 70, 736, 599],
             "Pneumatologia": [0, 50, 70, 736, 599],
             "Puritan Catechism": [0, 50, 70, 736, 599],
             "Sermons on Proverbs": [0, 50, 70, 736, 599],
@@ -547,6 +543,30 @@ def get_reader_font_size(filename: str = "settings.json") -> int:
     settings = load_settings_from_file(filename)
     try:
         return int(settings.get("reader_font_size", 12))
+    except (TypeError, ValueError):
+        return 12
+
+
+# ---- Gill Commentary font helpers ----
+def update_commentary_font_size(new_size: Any, filename: str = "settings.json") -> None:
+    """
+    Update the Gill Commentary window font size in the settings file.
+    """
+    settings = load_settings_from_file(filename)
+    try:
+        settings["gill_commentary_font_size"] = int(new_size)
+    except (TypeError, ValueError):
+        settings["gill_commentary_font_size"] = 12
+    save_settings_to_file(settings, filename)
+
+
+def get_commentary_font_size(filename: str = "settings.json") -> int:
+    """
+    Get the current Gill Commentary window font size from settings.
+    """
+    settings = load_settings_from_file(filename)
+    try:
+        return int(settings.get("gill_commentary_font_size", 12))
     except (TypeError, ValueError):
         return 12
 

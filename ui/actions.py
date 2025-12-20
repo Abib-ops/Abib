@@ -159,6 +159,30 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
         # If dynamic building fails, ignore to keep the app functional
         pass
 
+    # Gill settings toggles
+    try:
+        from services.settings import SettingsService  # local import to avoid circular at module import time
+        ss = SettingsService()
+        gill_auto_follow = ss.get_gill_auto_follow()
+        settings_menu.addSeparator()
+        gill_follow_action = QAction("Gill: Auto-follow main window", window)
+        gill_follow_action.setCheckable(True)
+        gill_follow_action.setChecked(gill_auto_follow)
+        def _toggle_follow(checked: bool):
+            try:
+                # Persist via settings service
+                ss.set_gill_auto_follow(checked)
+                # Let the main window react if it provides a handler
+                handler = getattr(window, "set_gill_auto_follow", None)
+                if callable(handler):
+                    handler(checked)
+            except (RuntimeError, AttributeError, TypeError, ValueError, OSError, PermissionError):
+                pass
+        gill_follow_action.toggled.connect(_toggle_follow)
+        settings_menu.addAction(gill_follow_action)
+    except (ImportError, RuntimeError, AttributeError, TypeError, ValueError, OSError, PermissionError):
+        pass
+
     actions = [
         open_file_action, print_action, exit_action,
         copy_action, select_action,

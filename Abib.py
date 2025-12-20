@@ -26,7 +26,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.1 and python3.13.11 (64-bit).
 
-16/12/2025
+20/12/2025
 
 python -m pip install --upgrade pip wheel
 python -m pip install -r requirements.txt
@@ -83,6 +83,7 @@ from pathlib import Path
 from itertools import chain, islice
 
 from typing import Any, Dict, Set, List
+from typing import cast
 from history import History
 history = History()
 back = history.back
@@ -94,9 +95,8 @@ w: Any | None = None
 splash: Any | None = None
 
 from PySide6.QtWidgets import (QMainWindow, QWidget,
-                               QPlainTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
-                               QPushButton, QVBoxLayout, QInputDialog,
-                               QStatusBar, QFileDialog, QSplashScreen, QSizePolicy)
+                               QPlainTextEdit, QTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
+                               QPushButton, QVBoxLayout, QStatusBar, QFileDialog, QSplashScreen, QSizePolicy)
 
 from PySide6.QtGui import (QMouseEvent, QKeyEvent, QSyntaxHighlighter, QColor, QFont,
                            QTextCursor, QTextCharFormat, QPixmap, QKeySequence, QShortcut)
@@ -104,9 +104,10 @@ from PySide6.QtGui import (QMouseEvent, QKeyEvent, QSyntaxHighlighter, QColor, Q
 from PySide6.QtCore import Qt, QRect, QEvent
 
 import fcs
+import sqlite3
 import shared as sh
 
-from ui_helpers import NoZoomPlainTextEdit
+from ui_helpers import NoZoomPlainTextEdit, SimpleScripturePopup
 from services.settings import SettingsService
 ## Step 5: Reduce import and initialisation cost
 # Defer heavy/optional imports to first use instead of module import time.
@@ -504,372 +505,936 @@ def sizer(window_height: int, window_width: int) -> tuple[int, int]:
     return window_height, window_width
 
 
-def commentary() -> None:
-    """Open a Calvin commentary file.
+class GillCommentaryWindow(QWidget):
+    """A simple verse-by-verse commentary reader for John Gill.
 
-    Enhanced behavior:
-    - If a current Bible book is selected, try to open the mapped Calvin volume automatically.
-    - If Calvin does not have a commentary for that book in this set, show a soft message,
-      then fall back to the chooser.
-    - If context is unavailable, fall back to the chooser.
+    Uses SQLite file (gill.cmt.sqlite) with table 'commentary' columns:
+    1:id, 2:book, 3:chapter, 4:fromverse, 5:toverse, 6:data
+    Lookup now uses (book, chapter, fromverse) — no reliance on the global id.
     """
-    # Static mapping from Bible book name (as displayed in self.nwin) to a Calvin file.
-    # This uses the first volume where a work spans multiple files.
-    CALVIN_BOOK_TO_FILE: dict[str, str] = {
-        # Pentateuch
-        "Genesis": "calcom01.txt",
-        "Exodus": "calcom03.txt",          # Harmony of the Law, vol. 1
-        "Leviticus": "calcom03.txt",       # Harmony of the Law, vol. 1
-        "Numbers": "calcom03.txt",         # Harmony of the Law, vol. 1
-        "Deuteronomy": "calcom03.txt",     # Harmony of the Law, vol. 1
+    def __init__(self, db_path: Path, parent: QWidget | None = None) -> None:
+        # Force this widget to be a top-level window regardless of parent
+        super().__init__(parent if parent is None else None)
+        self._db_path = Path(db_path)
+        self._conn: sqlite3.Connection | None = None
+        # Current global verse index within Abib (0 to LAST_VERSE_IN_BIBLE)
+        self._x: int = 0
+        # Settings service for persisting geometry and font
+        self._settings_service = SettingsService()
 
-        # Historical books (where extant)
-        "Joshua": "calcom07.txt",
-        # Calvin did not leave full commentaries on Judges, Ruth, Samuel, Kings, Chronicles, Ezra, Nehemiah, Esther
-
-        # Wisdom/Poetry
-        "Job": "calcom11.txt",             # Job vol. 1 (set contains multiple vols)
-        "Psalms": "calcom08.txt",          # Psalms vol. 1
-        "Proverbs": "calcom10.txt",        # Proverbs (Lectures) vol. 1
-        "Ecclesiastes": "calcom09.txt",    # Ecclesiastes
-        "Song of Solomon": "calcom12.txt",  # Song of Solomon
-
-        # Major prophets
-        "Isaiah": "calcom13.txt",          # Isaiah vol. 1
-        "Jeremiah": "calcom17.txt",        # Jeremiah & Lamentations vol. 1
-        "Lamentations": "calcom17.txt",    # in the Jeremiah set
-        "Ezekiel": "calcom22.txt",         # Ezekiel vol. 1
-        "Daniel": "calcom24.txt",          # Daniel
-
-        # Minor prophets (Twelve)
-        "Hosea": "calcom26.txt",
-        "Joel": "calcom26.txt",
-        "Amos": "calcom26.txt",
-        "Obadiah": "calcom26.txt",
-        "Jonah": "calcom26.txt",
-        "Micah": "calcom28.txt",           # Later volumes continue the series
-        "Nahum": "calcom28.txt",
-        "Habakkuk": "calcom28.txt",
-        "Zephaniah": "calcom29.txt",
-        "Haggai": "calcom29.txt",
-        "Zechariah": "calcom30.txt",
-        "Malachi": "calcom30.txt",
-
-        # Gospels and Acts
-        "Matthew": "calcom32.txt",         # Matthew
-        "Mark": "calcom33.txt",            # Mark
-        "Luke": "calcom37.txt",            # Luke
-        "John": "calcom34.txt",            # John vol. 1
-        "Acts": "calcom36.txt",            # Acts vol. 1
-
-        # Pauline epistles
-        "Romans": "calcom38.txt",
-        "I Corinthians": "calcom39.txt",
-        "II Corinthians": "calcom40.txt",
-        "Galatians": "calcom42.txt",
-        "Ephesians": "calcom42.txt",
-        "Philippians": "calcom42.txt",
-        "Colossians": "calcom42.txt",
-        "I Thessalonians": "calcom42.txt",
-        "II Thessalonians": "calcom42.txt",
-        "I Timothy": "calcom43.txt",
-        "II Timothy": "calcom43.txt",
-        "Titus": "calcom43.txt",
-        "Philemon": "calcom43.txt",
-        "Hebrews": "calcom44.txt",
-
-        # General epistles and Revelation
-        "James": "calcom45.txt",
-        "I Peter": "calcom45.txt",
-        "II Peter": "calcom45.txt",
-        "I John": "calcom45.txt",
-        "II John": "calcom45.txt",
-        "III John": "calcom45.txt",
-        "Jude": "calcom45.txt",
-        "Revelation": "calcom25.txt",
-    }
-
-    # ---- Precise index support (optional but preferred) ----
-    from json import load as _json_load
-    _CALVIN_INDEX_PATH = Path(sh.str_cwd) / "Calvin" / "calvin_index.json"
-    _calvin_index_cache: dict | None = getattr(commentary, "_calvin_index_cache", None)
-
-    def _load_index() -> dict:
-        nonlocal _calvin_index_cache
-        if isinstance(_calvin_index_cache, dict) and _calvin_index_cache.get("version") == 1:
-            return _calvin_index_cache
+        self.setWindowTitle("Gill Commentary")
         try:
-            if _CALVIN_INDEX_PATH.is_file():
-                with _CALVIN_INDEX_PATH.open("r", encoding="utf-8") as f:
-                    data = _json_load(f)
-                if isinstance(data, dict) and data.get("version") == 1 and isinstance(data.get("entries"), dict):
-                    _calvin_index_cache = data
-                    setattr(commentary, "_calvin_index_cache", data)
-                    return data
-        except (OSError, ValueError, TypeError) as _e:
-            print("Could not load Calvin index:", _e)
-        _calvin_index_cache = {}
-        setattr(commentary, "_calvin_index_cache", _calvin_index_cache)
-        return _calvin_index_cache
+            # Ensure it is a standalone window (not embedded in MainWindow)
+            self.setWindowFlag(Qt.WindowType.Window, True)
+        except (RuntimeError, AttributeError, TypeError):
+            pass
 
-    def _lookup_precise(lookup_book_name: str, chapter: int | None, verse: int | None):
-        """Return tuple (file_path_str, char_offset) or (None, None) if not found.
-        Falls back to chapter level if the verse is not indexed.
+        # Restore saved geometry (position and size)
+        try:
+            gx, gy, gw, gh = self._settings_service.get_window_geometry("gill_commentary_window")
+            self.setGeometry(gx, gy, gw, gh)
+        except (RuntimeError, TypeError, ValueError):
+            # Fall back to a reasonable default size
+            try:
+                self.resize(820, 640)
+            except (RuntimeError, TypeError, ValueError):
+                pass
+
+        layout = QGridLayout(self)
+        # Switch to a rich-text capable viewer so we can render HTML from the DB
+        self.viewer = QTextEdit(self)
+        self.viewer.setReadOnly(True)
+        # Force a left-to-right layout to avoid right-justified paragraphs due to RTL fragments
+        try:
+            self.viewer.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
+        except (AttributeError, RuntimeError, TypeError):
+            pass
+        # Improve interaction: allow selecting text; do NOT make links clickable
+        try:
+            flags = self.viewer.textInteractionFlags()
+            # Enable selection by mouse and keyboard
+            flags |= Qt.TextInteractionFlag.TextSelectableByMouse
+            flags |= Qt.TextInteractionFlag.TextSelectableByKeyboard
+            # Ensure link-clicking is disabled
+            try:
+                flags &= ~Qt.TextInteractionFlag.LinksAccessibleByMouse
+            except (AttributeError, TypeError):
+                pass
+            try:
+                flags &= ~Qt.TextInteractionFlag.LinksAccessibleByKeyboard
+            except (AttributeError, TypeError):
+                pass
+            self.viewer.setTextInteractionFlags(flags)
+        except (AttributeError, TypeError, RuntimeError):
+            pass
+        # Apply the same font as the main Bible window, if available
+        try:
+            if hasattr(w, "textEditor") and getattr(w, "textEditor", None) is not None:
+                self.viewer.setFont(w.textEditor.font())
+                # Also, enforce as the document default so HTML respects app font
+                try:
+                    self.viewer.document().setDefaultFont(self.viewer.font())
+                except (RuntimeError, AttributeError, TypeError, ValueError):
+                    pass
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
+        layout.addWidget(self.viewer, 0, 0, 1, 3)
+
+        self.btn_prev = QPushButton("◀ Prev", self)
+        self.btn_next = QPushButton("Next ▶", self)
+        self.btn_close = QPushButton("Close", self)
+        self.btn_prev.clicked.connect(self._on_prev)
+        self.btn_next.clicked.connect(self._on_next)
+        self.btn_close.clicked.connect(self.close)
+        layout.addWidget(self.btn_prev, 1, 0)
+        layout.addWidget(self.btn_close, 1, 1)
+        layout.addWidget(self.btn_next, 1, 2)
+
+        # Set the initial the font size from settings and apply as both widget and document font
+        try:
+            fs = int(self._settings_service.get_commentary_font_size())
+            if fs < 8:
+                fs = 8
+            if fs > 40:
+                fs = 40
+            fnt = self.viewer.font()
+            if hasattr(fnt, "setPointSize"):
+                fnt.setPointSize(fs)
+                self.viewer.setFont(fnt)
+                try:
+                    self.viewer.document().setDefaultFont(fnt)
+                except (RuntimeError, AttributeError, TypeError, ValueError):
+                    pass
+                # Provide a gentle default stylesheet so legacy <FONT> tags don't override too much
+                try:
+                    css = (
+                        "body, p, div { "
+                        f"font-family: '{fnt.family()}'; "
+                        f"font-size: {fnt.pointSize()}pt; "
+                        "text-align: left; direction: ltr; }"
+                        "a.bible { color: #2160FF; text-decoration: underline; }"
+                        "a.bible:hover { background-color: #fff1b8; }"
+                    )
+                    self.viewer.document().setDefaultStyleSheet(css)
+                except (RuntimeError, AttributeError, TypeError, ValueError):
+                    pass
+        except (TypeError, ValueError):
+            pass
+
+        # Keyboard shortcuts for zooming (Ctrl++ / Ctrl+= / Ctrl+-)
+        self._shortcuts: list[QShortcut] = []
+        try:
+            sc_inc1 = QShortcut(QKeySequence("Ctrl++"), self)
+            sc_inc1.activated.connect(self.increase_font_size)
+            self._shortcuts.append(sc_inc1)
+            sc_inc2 = QShortcut(QKeySequence("Ctrl+="), self)
+            sc_inc2.activated.connect(self.increase_font_size)
+            self._shortcuts.append(sc_inc2)
+            sc_dec = QShortcut(QKeySequence("Ctrl+-"), self)
+            sc_dec.activated.connect(self.decrease_font_size)
+            self._shortcuts.append(sc_dec)
+        except (RuntimeError, TypeError, ValueError):
+            pass
+
+        # --- Scripture reference hover popup support ---
+        self._hover_timer = None
+        self._pending_hover_pos = None
+        # Hover timing control
+        self._hover_delay_ms: int = 120
+        self._hide_delay_ms: int = 160
+        # Track current hovered href to prevent blinking when the cursor jiggles
+        self._current_href: str | None = None
+        # Shared tooltip helper
+        self._popup_helper: SimpleScripturePopup | None = SimpleScripturePopup()
+        # Debounced hide timer for popup
+        try:
+            from PySide6.QtCore import QTimer as _QTimer
+            self._hide_timer = _QTimer(self)
+            self._hide_timer.setSingleShot(True)
+            self._hide_timer.setInterval(self._hide_delay_ms)
+            self._hide_timer.timeout.connect(self._close_popup)
+        except (RuntimeError, AttributeError, TypeError, ImportError):
+            self._hide_timer = None
+        try:
+            # Enable mouse tracking to get hover events
+            self.viewer.setMouseTracking(True)
+            self.viewer.viewport().setMouseTracking(True)
+            self.viewer.viewport().installEventFilter(self)
+            # Also, filter key events in the editor itself
+            self.viewer.installEventFilter(self)
+            # Mark interaction while dragging the scrollbar
+            try:
+                sb = self.viewer.verticalScrollBar()
+                if sb is not None:
+                    sb.sliderPressed.connect(self._mark_user_interaction)  # type: ignore[attr-defined]
+                    sb.sliderMoved.connect(self._mark_user_interaction)    # type: ignore[attr-defined]
+                    sb.sliderReleased.connect(self._mark_user_interaction) # type: ignore[attr-defined]
+            except (RuntimeError, AttributeError, TypeError):
+                pass
+        except (RuntimeError, AttributeError):
+            pass
+
+        # Click-to-navigate (default on) and auto-follow support
+        self._click_to_navigate: bool = True
+        self._auto_follow_enabled: bool = False
+        self._follow_timer = None
+        # Interaction gate to pause auto-follow while the user is scrolling/dragging/pressing keys
+        self._interacting_until: float = 0.0
+        self._interaction_quiet_ms: int = 1200
+        # Debounce for follow sync
+        self._follow_debounce = None
+        try:
+            self._auto_follow_enabled = bool(self._settings_service.get_gill_auto_follow())
+            if self._auto_follow_enabled:
+                from PySide6.QtCore import QTimer
+                self._follow_timer = QTimer(self)
+                self._follow_timer.setInterval(500)
+                # Coalesce ticks using a short debounce before syncing
+                if self._follow_debounce is None:
+                    self._follow_debounce = QTimer(self)
+                    self._follow_debounce.setSingleShot(True)
+                    self._follow_debounce.setInterval(220)
+                    self._follow_debounce.timeout.connect(self._sync_with_main)
+                self._follow_timer.timeout.connect(self._schedule_sync)
+                self._follow_timer.start()
+        except (RuntimeError, AttributeError, TypeError, ValueError, ImportError):
+            pass
+
+    # --------- DB helpers ---------
+    def _ensure_conn(self) -> sqlite3.Connection:
+        if self._conn is None:
+            self._conn = sqlite3.connect(str(self._db_path))
+        return self._conn
+
+    def closeEvent(self, event):  # type: ignore[override]
+        try:
+            if self._conn is not None:
+                self._conn.close()
+        except sqlite3.Error:
+            pass
+        # Persist final geometry on close
+        try:
+            self._settings_service.save_window_geometry(
+                "gill_commentary_window", int(self.x()), int(self.y()), int(self.width()), int(self.height())
+            )
+        except (RuntimeError, TypeError, ValueError):
+            pass
+        self._conn = None
+        super().closeEvent(event)
+
+    # Persist geometry on move/resize
+    def moveEvent(self, event):  # type: ignore[override]
+        try:
+            self._settings_service.save_window_geometry(
+                "gill_commentary_window", int(self.x()), int(self.y()), int(self.width()), int(self.height())
+            )
+        except (RuntimeError, TypeError, ValueError):
+            pass
+        try:
+            return super().moveEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
+    def resizeEvent(self, event):  # type: ignore[override]
+        try:
+            self._settings_service.save_window_geometry(
+                "gill_commentary_window", int(self.x()), int(self.y()), int(self.width()), int(self.height())
+            )
+        except (RuntimeError, TypeError, ValueError):
+            pass
+        try:
+            return super().resizeEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
+    def showEvent(self, event):  # type: ignore[override]
+        try:
+            if self._auto_follow_enabled and self._follow_timer is not None:
+                self._follow_timer.start()
+        except (RuntimeError, AttributeError):
+            pass
+        try:
+            return super().showEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
+    def hideEvent(self, event):  # type: ignore[override]
+        try:
+            if self._follow_timer is not None:
+                self._follow_timer.stop()
+        except (RuntimeError, AttributeError):
+            pass
+        try:
+            return super().hideEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
+    # --------- Public API ---------
+    def set_reference(self, book: int, chapter: int, verse: int) -> None:
+        """Compatibility wrapper: set by the (book, chapter, verse).
+
+        Maps to the global index _x by scanning sh.Info and delegates to set_position.
+        """
+        b = int(book)
+        c0 = int(chapter) - 1
+        v0 = int(verse) - 1
+        # Linear search — acceptable for sporadic calls
+        x = None
+        try:
+            for i, entry in enumerate(sh.Info[0: sh.LAST_VERSE_IN_BIBLE + 1], start=0):
+                if int(entry[0]) == b and int(entry[1]) == c0 and int(entry[2]) == v0:
+                    x = i
+                    break
+        except (TypeError, ValueError, IndexError):
+            x = None
+        if x is None:
+            # Fallback to Genesis 1:1 (0-based)
+            x = 0
+        self.set_position(x)
+
+    def set_position(self, x: int) -> None:
+        """Set the current global verse index and display its commentary."""
+        try:
+            x = int(x)
+        except (TypeError, ValueError):
+            x = 1
+        if x < 0:
+            x = 0
+        if x > sh.LAST_VERSE_IN_BIBLE:
+            x = sh.LAST_VERSE_IN_BIBLE
+        self._x = x
+        self._display_current()
+
+    # --------- Navigation ---------
+    def _on_prev(self) -> None:
+        if self._x <= 0:
+            return
+        self._x -= 1
+        self._display_current()
+
+    def _on_next(self) -> None:
+        if self._x >= sh.LAST_VERSE_IN_BIBLE:
+            return
+        self._x += 1
+        self._display_current()
+
+    # --------- Queries ---------
+    def _fetch_commentary_text(self, book: int, chapter: int, verse: int) -> str | None:
+        """Return commentary text for the specific verse (book, chapter, verse)."""
+        try:
+            b = int(book)
+            c = int(chapter)
+            v = int(verse)
+        except (TypeError, ValueError):
+            return None
+
+        try:
+            cur = self._ensure_conn().cursor()
+            # 1) Try exact match on fromverse
+            try:
+                cur.execute(
+                    "SELECT data FROM commentary WHERE book=? AND chapter=? AND fromverse=? LIMIT 1",
+                    (b, c, v),
+                )
+                row = cur.fetchone()
+                if row and row[0] is not None:
+                    return str(row[0])
+            except sqlite3.Error:
+                pass
+
+            # 2) Try range match: v BETWEEN fromverse AND COALESCE(toverse, fromverse)
+            try:
+                cur.execute(
+                    """
+                    SELECT data
+                    FROM commentary
+                    WHERE book=? AND chapter=?
+                      AND fromverse <= ?
+                      AND COALESCE(toverse, fromverse) >= ?
+                    ORDER BY (COALESCE(toverse, fromverse) - fromverse) ASC
+                    LIMIT 1
+                    """,
+                    (b, c, v, v),
+                )
+                row = cur.fetchone()
+                if row and row[0] is not None:
+                    return str(row[0])
+            except sqlite3.Error:
+                pass
+
+            # 3) Cautious fallback: some DBs may store 0-based verses; try v-1
+            v0 = v - 1
+            if v0 >= 0:
+                try:
+                    cur.execute(
+                        "SELECT data FROM commentary WHERE book=? AND chapter=? AND fromverse=? LIMIT 1",
+                        (b, c, v0),
+                    )
+                    row = cur.fetchone()
+                    if row and row[0] is not None:
+                        return str(row[0])
+                except sqlite3.Error:
+                    pass
+                try:
+                    cur.execute(
+                        """
+                        SELECT data
+                        FROM commentary
+                        WHERE book=? AND chapter=?
+                          AND fromverse <= ?
+                          AND COALESCE(toverse, fromverse) >= ?
+                        ORDER BY (COALESCE(toverse, fromverse) - fromverse) ASC
+                        LIMIT 1
+                        """,
+                        (b, c, v0, v0),
+                    )
+                    row = cur.fetchone()
+                    if row and row[0] is not None:
+                        return str(row[0])
+                except sqlite3.Error:
+                    pass
+        except (sqlite3.Error, TypeError, ValueError):
+            return None
+        return None
+
+    def _display_current(self) -> None:
+        """Render the current x into the window."""
+        try:
+            entry = sh.Info[self._x]
+            b = int(entry[0])
+            c = int(entry[1]) + 1
+            v = int(entry[2]) + 1
+        except (IndexError, TypeError, ValueError):
+            b, c, v = 1, 1, 1
+
+        try:
+            db_b = int(b) + 1
+            if int(b) == 1:
+                # Genesis appears to be stored as book=1 in the DB; keep others offset by +1
+                db_b = 1
+        except (TypeError, ValueError):
+            db_b = b
+        # Special-case: some environments report Gen 1:1 as v=2 via sh.Info; normalise to 1.
+        v_db = v
+        v_title = v
+        if b == 1 and c == 1 and v == 2:
+            v_db = 1
+            v_title = 1
+        text = self._fetch_commentary_text(db_b, c, v_db)
+        # Title with book name (e.g. "Exodus 1:1"), falling back to numbers if needed
+        try:
+            title_ref = f"{b} {c}:{v_title}"
+            if hasattr(w, "nwin"):
+                try:
+                    book_str = w.nwin[int(b)]
+                    if book_str:
+                        if int(b) in getattr(sh, "onechapterbooks", ()):  # e.g., Jude
+                            title_ref = f"{book_str} {v_title}"
+                        else:
+                            title_ref = f"{book_str} {c}:{v_title}"
+                except (TypeError, ValueError, IndexError, AttributeError):
+                    pass
+            self.setWindowTitle(f"Gill Commentary — {title_ref}")
+        except (RuntimeError, TypeError, ValueError):
+            self.setWindowTitle("Gill Commentary")
+
+        if text is None or text.strip() == "":
+            try:
+                self.viewer.setHtml("<p>No commentary for this verse</p>")
+            except (RuntimeError, TypeError, ValueError):
+                self.viewer.setPlainText("No commentary for this verse")
+        else:
+            # Wrap in a body so our default stylesheet applies consistently
+            try:
+                # Enforce left alignment and LTR direction at the HTML root
+                # Ensure anchors for scripture references are visually highlighted via CSS
+                self.viewer.setHtml(f"<body dir='ltr' style='text-align:left'>{text}</body>")
+            except (RuntimeError, TypeError, ValueError):
+                # Fallback to plain text if the HTML is severely malformed
+                self.viewer.setPlainText(text)
+
+        # After content is set, refresh highlights (CSS) and prepare hover handlers
+        try:
+            # Nothing to compute for CSS-based highlighting; ensure the popup is closed
+            self._close_popup()
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
+
+    # --------- Font size controls ---------
+    def _apply_font_size(self, size: int) -> None:
+        try:
+            s = int(size)
+        except (TypeError, ValueError):
+            s = 12
+        if s < 8:
+            s = 8
+        if s > 40:
+            s = 40
+        try:
+            fnt = self.viewer.font()
+            fnt.setPointSize(s)
+            self.viewer.setFont(fnt)
+            try:
+                self.viewer.document().setDefaultFont(fnt)
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                pass
+            try:
+                css = (
+                    "body, p, div { "
+                    f"font-family: '{fnt.family()}'; "
+                    f"font-size: {fnt.pointSize()}pt; "
+                    "text-align: left; direction: ltr; }"
+                )
+                self.viewer.document().setDefaultStyleSheet(css)
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                pass
+            self._settings_service.update_commentary_font_size(s)
+        except (RuntimeError, TypeError, ValueError):
+            pass
+
+    def increase_font_size(self) -> None:
+        try:
+            current = int(self.viewer.font().pointSize())
+        except (TypeError, ValueError):
+            current = 12
+        self._apply_font_size(current + 1)
+
+    def decrease_font_size(self) -> None:
+        try:
+            current = int(self.viewer.font().pointSize())
+        except (TypeError, ValueError):
+            current = 12
+        self._apply_font_size(current - 1)
+
+    # --------- Hover popup logic for scripture refs ---------
+    def eventFilter(self, obj, event):  # type: ignore[override]
+        try:
+            et = event.type()
+            # Mark interaction on wheel, mouse press/release/drag, and navigation keys
+            if obj in (self.viewer, self.viewer.viewport()):
+                if et == QEvent.Type.Wheel:
+                    self._mark_user_interaction()
+                elif et in (QEvent.Type.MouseButtonPress, QEvent.Type.MouseButtonRelease):
+                    self._mark_user_interaction()
+                elif et == QEvent.Type.MouseMove:
+                    try:
+                        # Consider the user interacting when any mouse button is pressed while moving
+                        if isinstance(event, QMouseEvent) and event.buttons() != Qt.MouseButton.NoButton:
+                            self._mark_user_interaction()
+                    except (RuntimeError, AttributeError, TypeError, ValueError):
+                        pass
+                elif et == QEvent.Type.KeyPress:
+                    # Navigation keys indicate interaction
+                    try:
+                        self._mark_user_interaction()
+                    except (RuntimeError, AttributeError):
+                        pass
+
+            if obj is self.viewer.viewport():
+                if et == QEvent.Type.Leave:
+                    self._current_href = None
+                    self._cancel_hover()
+                    self._close_popup()
+                elif et == QEvent.Type.MouseMove:
+                    # Use Qt6-compatible mouse position API; avoid accessing attributes on QEvent directly
+                    try:
+                        if isinstance(event, QMouseEvent):
+                            qp = event.position().toPoint()
+                            href_now = self._href_at_with_slop(qp)
+                            if not href_now:
+                                # Schedule a short delayed hide to avoid blinking
+                                self._cancel_hover()
+                                try:
+                                    if self._hide_timer is not None:
+                                        self._hide_timer.start(self._hide_delay_ms)
+                                except (RuntimeError, AttributeError):
+                                    self._close_popup()
+                            else:
+                                # Over a bible anchor — cancel pending hide and schedule/refresh popup
+                                if self._hide_timer is not None and self._hide_timer.isActive():
+                                    try:
+                                        self._hide_timer.stop()
+                                    except (RuntimeError, AttributeError):
+                                        pass
+                                if href_now != self._current_href:
+                                    self._current_href = href_now
+                                    self._schedule_hover(qp)
+                                else:
+                                    # Same href — keep popup visible and follow the cursor
+                                    try:
+                                        if self._popup_helper is not None:
+                                            self._popup_helper.move_to(self.viewer, qp)
+                                    except (RuntimeError, AttributeError, TypeError, ValueError):
+                                        pass
+                    except (RuntimeError, AttributeError, TypeError, ValueError):
+                        pass
+                elif et == QEvent.Type.MouseButtonRelease and self._click_to_navigate:
+                    try:
+                        if isinstance(event, QMouseEvent):
+                            qp = event.position().toPoint()
+                            href = self.viewer.anchorAt(qp)
+                            if isinstance(href, str) and href.lstrip().startswith(('#b', '#B')):
+                                bcv = self._parse_href_to_bcv(href)
+                                if bcv is not None and hasattr(w, 'move_to_line') and callable(getattr(w, 'move_to_line')):
+                                    b, c, v = bcv
+                                    try:
+                                        current_ln = w.get_line_number() if hasattr(w, 'get_line_number') else 0
+                                    except (RuntimeError, AttributeError, TypeError, ValueError):
+                                        current_ln = 0
+                                    try:
+                                        ln = calc_line(b, c, v, current_ln)
+                                        w.move_to_line(int(ln))
+                                    except (RuntimeError, AttributeError, TypeError, ValueError):
+                                        pass
+                                self._close_popup()
+                                return True
+                    except (RuntimeError, AttributeError, TypeError, ValueError):
+                        pass
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
+        try:
+            return super().eventFilter(obj, event)
+        except (RuntimeError, AttributeError, TypeError):
+            return False
+
+    def _schedule_hover(self, pos):
+        self._pending_hover_pos = pos
+        try:
+            if self._hover_timer is None:
+                from PySide6.QtCore import QTimer
+                self._hover_timer = QTimer(self)
+                self._hover_timer.setSingleShot(True)
+                self._hover_timer.timeout.connect(self._perform_hover)
+            # Short hover delay for a responsive feel
+            self._hover_timer.start(int(self._hover_delay_ms))
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            # If timer setup fails, fall back to immediate handling
+            self._perform_hover()
+
+    def _cancel_hover(self):
+        try:
+            if self._hover_timer is not None:
+                self._hover_timer.stop()
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
+        self._pending_hover_pos = None
+
+    def _perform_hover(self):
+        pos = self._pending_hover_pos
+        self._pending_hover_pos = None
+        if pos is None:
+            return
+        try:
+            href = self._href_at_with_slop(pos)
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            href = ""
+        if not href:
+            # If nothing resolved, begin hide debounce
+            try:
+                if self._hide_timer is not None:
+                    self._hide_timer.start(self._hide_delay_ms)
+            except (RuntimeError, AttributeError):
+                self._close_popup()
+            return
+        # Only handle internal bible refs, e.g. #b43.3.16
+        if not isinstance(href, str) or not href.lstrip().startswith(('#b', '#B')):
+            try:
+                if self._hide_timer is not None:
+                    self._hide_timer.start(self._hide_delay_ms)
+            except (RuntimeError, AttributeError):
+                self._close_popup()
+            return
+        ref_text = self._resolve_href_to_text(href)
+        if not ref_text:
+            try:
+                if self._hide_timer is not None:
+                    self._hide_timer.start(self._hide_delay_ms)
+            except (RuntimeError, AttributeError):
+                self._close_popup()
+            return
+        self._show_popup(ref_text, pos)
+        self._current_href = href
+
+    def _resolve_href_to_text(self, href: str) -> str | None:
+        """Parse Gill anchors hrefs robustly and returns verse text plus canonical reference.
+
+        Supported examples:
+        #b43.3.16
+        #b43.3.16-18
+        #b43.3.16,18,20-22
+        #B43.3.16 (case-insensitive)
+        #b43.3.16,’ (trailing punctuation)
+        #b43.3 (chapter only → verse 1)
+        #b43.3.16a (letter suffix ignored)
         """
         try:
-            index_data = _load_index()
-            entries = index_data.get("entries") if isinstance(index_data, dict) else None
-            if not isinstance(entries, dict):
-                return None, None
-            b = entries.get(str(lookup_book_name)) or entries.get(lookup_book_name)
-            if not isinstance(b, dict):
-                return None, None
-            chs = b.get("chapters")
-            if not isinstance(chs, dict) or chapter is None:
-                return None, None
-            ch = chs.get(str(int(chapter)))
-            if not isinstance(ch, dict):
-                return None, None
-            f = ch.get("file")
-            if not isinstance(f, str):
-                return None, None
-            # Prefer verse-level offset if available
-            if isinstance(verse, int):
-                vs = ch.get("verses")
-                if isinstance(vs, dict):
-                    vo = vs.get(str(verse))
-                    if isinstance(vo, int) and vo >= 0:
-                        return str(Path(sh.str_cwd) / "Calvin" / f), int(vo)
-            # Else fallback to the chapter offset
-            off = ch.get("offset")
-            if isinstance(off, int) and off >= 0:
-                return str(Path(sh.str_cwd) / "Calvin" / f), int(off)
-            return None, None
+            s = href.strip()
+            if not s:
+                return None
+            # Trim leading '#'
+            if s.startswith('#'):
+                s = s[1:]
+            # Tolerate leading 'b' or 'B'
+            if s and (s[0] in ('b', 'B')):
+                s = s[1:]
+            parts = s.split('.')
+            if len(parts) < 2:
+                return None
+            b = int(parts[0])
+            c = int(parts[1])
+            versespec = parts[2] if len(parts) >= 3 else '1'
+            # Normalise: replace en/em dashes, strip spaces, remove trailing punctuation and letter suffixes
+            versespec = versespec.replace('–', '-').replace('—', '-')
+            versespec = versespec.strip()
+            # Drop trailing punctuation
+            versespec = versespec.rstrip(" ,;:.')]}\"”」}")
+            # Chapter-only → verse 1
+            if not versespec:
+                versespec = '1'
+            segments = [seg.strip() for seg in versespec.split(',') if seg.strip()]
+            verse_list: list[int] = []
+            display_segments: list[str] = []
+            for seg in segments:
+                # Remove letter suffixes like 16a
+                seg_norm = re.sub(r"(?i)[a-z]+$", "", seg).strip()
+                if not seg_norm:
+                    continue
+                if '-' in seg_norm:
+                    lhs, rhs = seg_norm.split('-', 1)
+                    try:
+                        v1 = int(lhs)
+                        v2 = int(rhs)
+                    except (TypeError, ValueError):
+                        continue
+                    # Clamp to sensible bounds
+                    if v1 > v2:
+                        v1, v2 = v2, v1
+                    v1 = max(1, min(v1, sh.MAX_VERSES_PER_CHAPTER))
+                    v2 = max(1, min(v2, sh.MAX_VERSES_PER_CHAPTER))
+                    verse_list.extend(range(v1, v2 + 1))
+                    display_segments.append(f"{v1}-{v2}")
+                else:
+                    try:
+                        v = int(seg_norm)
+                    except (TypeError, ValueError):
+                        continue
+                    v = max(1, min(v, sh.MAX_VERSES_PER_CHAPTER))
+                    verse_list.append(v)
+                    display_segments.append(str(v))
+            # De-duplicate while preserving order
+            seen: set[int] = set()
+            verses_ordered: list[int] = []
+            for vv in verse_list or [1]:
+                if vv not in seen:
+                    seen.add(vv)
+                    verses_ordered.append(vv)
+
+            # Build verse text(s)
+            texts: list[str] = []
+            for v in verses_ordered:
+                x = self._global_index_for_bcv(b, c, v)
+                if x is None:
+                    continue
+                try:
+                    ln = int(next(islice(Amap, x, None)))
+                    texts.append(KJV[ln])
+                except (StopIteration, TypeError, ValueError, IndexError):
+                    continue
+            if not texts:
+                return None
+
+            # Compose canonical reference line like Other Works: BookName Chap:VerseSpec
+            # (or just VerseSpec for 1‑chapter books)
+            try:
+                book_name = str(b)
+                if hasattr(w, 'nwin'):
+                    try:
+                        nm = w.nwin[int(b) - 1]
+                        if nm:
+                            book_name = nm
+                    except (TypeError, ValueError, IndexError, AttributeError):
+                        pass
+                # Use the original normalised versespec for display
+                versespec_display = ",".join(display_segments) if display_segments else '1'
+                if (int(b) - 1) in getattr(sh, 'onechapterbooks', ()):  # one-chapter books, e.g., Jude
+                    canonical = f"{book_name} {versespec_display}"
+                else:
+                    canonical = f"{book_name} {int(c)}:{versespec_display}"
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                canonical = f"{b} {c}:{','.join(display_segments) if display_segments else '1'}"
+
+            return "\n".join(texts) + "\n" + canonical + " KJV"
         except (RuntimeError, AttributeError, TypeError, ValueError):
-            return None, None
+            return None
 
-    def _open_chooser() -> None:
-        """Existing chooser fallback."""
+    @staticmethod
+    def _parse_href_to_bcv(href: str) -> tuple[int, int, int] | None:
+        """Return the first verse target (book, chapter, verse) from a Gill href.
+
+        Accepts ranges/lists and returns the first number; chapter-only → (b, c, 1).
+        """
         try:
-            calvin_dir = Path(sh.str_cwd) / "Calvin"
-            files = sorted([p for p in calvin_dir.glob("*.txt") if p.is_file()])
-            if not files:
-                QMessageBox.information(
-                    None,
-                    "Calvin Commentaries",
-                    "No commentary files found in the Calvin folder."
-                )
+            s = href.strip()
+            if s.startswith('#'):
+                s = s[1:]
+            if s and (s[0] in ('b', 'B')):
+                s = s[1:]
+            parts = s.split('.')
+            if len(parts) < 2:
+                return None
+            b = int(parts[0])
+            c = int(parts[1])
+            vpart = parts[2] if len(parts) >= 3 else '1'
+            vpart = vpart.replace('–', '-').replace('—', '-').strip()
+            vpart = vpart.rstrip(" ,;:.')]}\"”」}")
+            if not vpart:
+                vpart = '1'
+            first_seg = vpart.split(',')[0].strip()
+            first_seg = re.sub(r"(?i)[a-z]+$", "", first_seg).strip()
+            if '-' in first_seg:
+                first_seg = first_seg.split('-', 1)[0].strip()
+            v = int(first_seg)
+            if v < 1:
+                v = 1
+            return b, c, v
+        except (TypeError, ValueError, IndexError, AttributeError):
+            return None
+
+    def _sync_with_main(self) -> None:
+        try:
+            if not self._auto_follow_enabled:
                 return
-            labels = sorted(p.name for p in files)
-            choice, ok = QInputDialog.getItem(
-                w,  # parent to keep it on top of the main window
-                "Calvin Commentaries",
-                "Open:",
-                labels,
-                0,
-                False,
-            )
-            if ok and choice:
-                path = str(calvin_dir / choice)
-                try:
-                    w.open_text_file_in_window(path)
-                except (RuntimeError, FileNotFoundError, OSError, ValueError, AttributeError) as e4:
-                    print("Could not open commentary window:", e4)
-        except (OSError, RuntimeError, ValueError) as e5:
-            QMessageBox.warning(None, "Calvin Commentaries", f"An error occurred: {e5}")
-
-    # Try context-aware open first
-    try:
-        book_name: str | None = None
-        # Determine the most accurate current verse position:
-        # 1) Fresh top-of-screen verse via get_line_number() (reflects current view)
-        # 2) Last explicitly clicked verse (_last_clicked_position)
-        # 3) Current caret line
-        # 4) Last context position (if any)
-        # 5) Finally, fall back to the combobox selection.
-        current_position: int | None = None
-        # 1) Fresh top-of-screen context (independent of caret)
-        if current_position is None:
+            # Defer while the user is interacting (scrolling/dragging/keys)
             try:
-                if w and hasattr(w, "get_line_number"):
-                    current_position = int(w.get_line_number())
-            except (RuntimeError, AttributeError, TypeError, ValueError):
-                current_position = None
-        # 2) Last explicitly clicked verse
-        if current_position is None:
-            try:
-                pos = getattr(w, "_last_clicked_position", None)
-                if isinstance(pos, int) and 0 <= pos <= sh.LAST_VERSE_IN_BIBLE:
-                    current_position = pos
-            except (AttributeError, TypeError, ValueError):
-                current_position = None
-        # 3) Fallback to the caret line if available
-        if current_position is None:
-            try:
-                cursor = w.textEditor.textCursor()
-                line_no = int(cursor.blockNumber())
-                if line_no in Amap:
-                    current_position = Amap.index(line_no)
-                else:
-                    found = False
-                    for delta in range(1, 13):
-                        ln_back = line_no - delta
-                        if ln_back in Amap:
-                            current_position = Amap.index(ln_back)
-                            found = True
-                            break
-                        ln_fwd = line_no + delta
-                        if ln_fwd in Amap:
-                            current_position = Amap.index(ln_fwd)
-                            found = True
-                            break
-                    if not found:
-                        current_position = None
-            except (RuntimeError, AttributeError, TypeError, ValueError):
-                current_position = None
-        # 4) Last general context position (from previous navigations)
-        if current_position is None:
-            try:
-                pos = getattr(w, "_last_context_position", None)
-                if isinstance(pos, int) and 0 <= pos <= sh.LAST_VERSE_IN_BIBLE:
-                    current_position = pos
-            except (AttributeError, TypeError, ValueError):
-                current_position = None
-
-        if current_position is not None and w and hasattr(w, "nwin"):
-            try:
-                book_idx_0_based = int(sh.Info[current_position][0])
-                if 0 <= book_idx_0_based < len(w.nwin):
-                    book_name = w.nwin[book_idx_0_based]
-            except (IndexError, KeyError, TypeError, ValueError):
-                book_name = None
-        # Secondary fallback: read from the book combobox if present
-        if not book_name and w and hasattr(w, "comboBox_1") and hasattr(w, "nwin") and isinstance(w.nwin, list):
-            try:
-                idx = w.comboBox_1.currentIndex()
-                if 0 <= idx < len(w.nwin):
-                    book_name = w.nwin[idx]
-            except (RuntimeError, AttributeError, TypeError, ValueError):
-                book_name = None
-
-        if book_name:
-            # Attempt precise index lookup first (guarded)
-            chap_num: int | None = None
-            verse_num: int | None = None
-            try:
-                if current_position is not None:
-                    chap_num = int(sh.Info[current_position][1]) + 1
-                    verse_num = int(sh.Info[current_position][2]) + 1
-            except (IndexError, TypeError, ValueError):
-                chap_num = chap_num or None
-                verse_num = verse_num or None
-
-            precise_path, precise_offset = _lookup_precise(book_name, chap_num, verse_num)
-            if precise_path and isinstance(precise_offset, int):
-                # Strictly validate the index file against our static mapping to avoid bad jumps.
-                expected_file = CALVIN_BOOK_TO_FILE.get(book_name)
-                try:
-                    idx_name = Path(str(precise_path)).name if precise_path else ""
-                except (OSError, TypeError, ValueError):
-                    idx_name = ""
-                if isinstance(expected_file, str) and idx_name.lower() == expected_file.lower():
-                    try:
-                        w.open_text_file_in_window(str(precise_path))
-                        reader = getattr(w, "text_edit_window", None)
-                        if reader and hasattr(reader, "goto_char_offset"):
-                            reader.goto_char_offset(int(precise_offset))
-                        return
-                    except (RuntimeError, FileNotFoundError, OSError, ValueError, AttributeError) as e_prec:
-                        print("Could not open precise commentary location:", e_prec)
-                else:
-                    # Ignore mismatched indices entirely; rely on robust static mapping below.
-                    if not getattr(commentary, "_warned_bad_index", False):
-                        print("Warning: Ignoring Calvin index due to mismatch for", book_name)
-                        setattr(commentary, "_warned_bad_index", True)
-
-            target = CALVIN_BOOK_TO_FILE.get(book_name)
-            # Minimal multi-volume routing where we know the split, to improve chapter landing
-            try:
-                if book_name == "Genesis" and isinstance(chap_num, int):
-                    # Volume 2 begins at Genesis 24
-                    if chap_num >= 24:
-                        target = "calcom02.txt"
-            except (TypeError, ValueError):
+                if time.monotonic() < self._interacting_until:
+                    return
+            except (RuntimeError, AttributeError):
                 pass
-            if target:
-                calvin_path = Path(sh.str_cwd) / "Calvin" / target
-                if calvin_path.is_file():
-                    try:
-                        # Open the file in the reader window
-                        w.open_text_file_in_window(str(calvin_path))
+            getter = getattr(w, "_get_current_bcv", None)
+            if callable(getter):
+                b, c, v = getter()
+                # Compare to the current window position
+                try:
+                    entry = sh.Info[self._x]
+                    # sh.Info stores book, chapter, verse as 0-based integers
+                    cb = int(entry[0]) + 1
+                    cc = int(entry[1]) + 1
+                    cv = int(entry[2]) + 1
+                except (IndexError, TypeError, ValueError):
+                    cb, cc, cv = -1, -1, -1
+                if (int(b), int(c), int(v)) != (cb, cc, cv):
+                    self.set_reference(int(b), int(c), int(v))
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
 
-                        # After opening, try to jump near the relevant chapter anchor
-                        try:
-                            reader = getattr(w, "text_edit_window", None)
-                            if chap_num and reader and hasattr(reader, "goto_text_anchors"):
-                                # Build a small set of likely anchors in various styles
-                                bn = str(book_name)
-                                c = int(chap_num)
-                                anchors: list[str] = []
-
-                                def add(*vals: str):
-                                    for v in vals:
-                                        if v:
-                                            anchors.append(v)
-
-                                # Common chapter headings
-                                add(f"Chapter {c}", f"CHAPTER {c}", f"Chap. {c}", f"CHAP. {c}")
-                                # Psalms often use PSALM N
-                                if bn == "Psalms":
-                                    add(f"Psalm {c}", f"PSALM {c}")
-                                # Proverbs lectures
-                                if bn == "Proverbs":
-                                    add(f"Lecture {c}", f"LECTURE {c}")
-                                # John/Acts sometimes have numerals as headings too; fall back to book and number
-                                add(f"{bn} {c}")
-                                # Some sets embed Roman numerals; try a simple roman form as well
-                                try:
-                                    from roman import toRoman  # type: ignore
-                                    r = toRoman(c)
-                                    add(f"Chapter {r}", f"CHAPTER {r}", f"{bn} {r}")
-                                except (ImportError, ValueError, TypeError):
-                                    pass
-
-                                # Deduplicate while preserving order
-                                seen = set()
-                                anchors = [a for a in anchors if not (a in seen or seen.add(a))]
-                                reader.goto_text_anchors(anchors)
-                        except (RuntimeError, AttributeError, TypeError, ValueError):
-                            pass
-
-                        return
-                    except (RuntimeError, FileNotFoundError, OSError, ValueError, AttributeError) as e6:
-                        print("Could not open mapped commentary window:", e6)
-                # Mapped but file missing — fall through to chooser with notice
-                QMessageBox.information(
-                    w,
-                    "Calvin Commentaries",
-                    f"Could not locate the mapped commentary file for {book_name}: {target}.\n"
-                    f"Please choose a file manually."
-                )
-                _open_chooser()
-                return
+    def set_auto_follow(self, enabled: bool) -> None:
+        self._auto_follow_enabled = bool(enabled)
+        try:
+            if enabled:
+                from PySide6.QtCore import QTimer
+                if self._follow_timer is None:
+                    self._follow_timer = QTimer(self)
+                    self._follow_timer.setInterval(500)
+                if self._follow_debounce is None:
+                    self._follow_debounce = QTimer(self)
+                    self._follow_debounce.setSingleShot(True)
+                    self._follow_debounce.setInterval(220)
+                    self._follow_debounce.timeout.connect(self._sync_with_main)
+                # Use debounced scheduling for smoother behaviour
+                try:
+                    # Avoid duplicate connections
+                    self._follow_timer.timeout.disconnect()
+                except (RuntimeError, TypeError, AttributeError):
+                    pass
+                self._follow_timer.timeout.connect(self._schedule_sync)
+                self._follow_timer.start()
             else:
-                # No mapping for this book — gentle notice then chooser
-                QMessageBox.information(
-                    w,
-                    "Calvin Commentaries",
-                    f"Calvin does not have a commentary for {book_name} in this set, or it is not mapped.\n"
-                    f"Please choose from the available Calvin volumes."
-                )
-                _open_chooser()
-                return
-        # If no context, open chooser
-        _open_chooser()
-    except (RuntimeError, AttributeError, TypeError, ValueError) as exc:
-        # As a final safety net, show chooser
-        print("Commentary handler error:", exc)
-        _open_chooser()
+                if self._follow_timer is not None:
+                    self._follow_timer.stop()
+        except (RuntimeError, AttributeError, TypeError, ValueError, ImportError):
+            pass
+
+    def _schedule_sync(self) -> None:
+        """Coalesce follow ticks into a single sync after a short delay."""
+        try:
+            if self._follow_debounce is not None and not self._follow_debounce.isActive():
+                self._follow_debounce.start()
+        except (RuntimeError, AttributeError):
+            # Fallback to direct sync
+            self._sync_with_main()
+
+    @staticmethod
+    def _global_index_for_bcv(b: int, c: int, v: int) -> int | None:
+        """Resolve (book, chapter, verse) 1-based to global index using sh.Info (0-based for all three)."""
+        try:
+            # sh.Info entries are 0-based: (book0, chapter0, verse0)
+            bb, cc, vv = int(b) - 1, int(c) - 1, int(v) - 1
+            for i, entry in enumerate(sh.Info[0: sh.LAST_VERSE_IN_BIBLE + 1], start=0):
+                if int(entry[0]) == bb and int(entry[1]) == cc and int(entry[2]) == vv:
+                    return i
+        except (IndexError, TypeError, ValueError):
+            return None
+        return None
+
+    def _show_popup(self, text: str, pos) -> None:
+        try:
+            if self._popup_helper is None:
+                self._popup_helper = SimpleScripturePopup()
+            # Delegate rendering/positioning to the shared helper
+            self._popup_helper.show(self.viewer, text, pos, self.viewer.font())
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
+
+    def _close_popup(self) -> None:
+        try:
+            if self._popup_helper is not None:
+                self._popup_helper.hide()
+        except (RuntimeError, AttributeError):
+            pass
+
+    # --------- Interaction & hover helpers ---------
+    def _mark_user_interaction(self) -> None:
+        """Mark a short quiet period during which auto-follow is paused."""
+        try:
+            self._interacting_until = time.monotonic() + (self._interaction_quiet_ms / 1000.0)
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            self._interacting_until = 0.0
+
+    def _href_at_with_slop(self, p) -> str:
+        """Return an anchor href at or very near the point, tolerant to tiny jitter."""
+        try:
+            from PySide6.QtCore import QPoint
+        except ImportError:
+            QPoint = None  # type: ignore
+        candidates = ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1))
+        for dx, dy in candidates:
+            try:
+                pt = p
+                if QPoint is not None and hasattr(p, 'x'):
+                    pt = QPoint(p.x() + dx, p.y() + dy)
+                href = self.viewer.anchorAt(pt)
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                href = ""
+            if isinstance(href, str) and href.lstrip().startswith(("#b", "#B")):
+                return href
+        return ""
+
+
+def commentary() -> None:
+    """Open or focus the John Gill commentary window for the current verse."""
+    try:
+        if hasattr(w, "open_commentary_window") and callable(w.open_commentary_window):
+            w.open_commentary_window()
+        else:
+            # Fallback message if method not available for any reason
+            QMessageBox.information(
+                w,
+                "Commentary",
+                "Commentary feature is not available in this context."
+            )
+    except Exception as exc:
+        # Non-fatal UI error; log to console.
+        print("Commentary open error:", exc)
 
 
 class MainWindow(QMainWindow):
@@ -962,6 +1527,9 @@ class MainWindow(QMainWindow):
         # next Back press should be ignored to preserve the restored position.
         # Initialise here to avoid defining the attribute outside __init__.
         self._just_restored_from_aux: bool = False
+
+        # Gill commentary window (lazy-created on first use)
+        self._gill_win: GillCommentaryWindow | None = None
 
         # Services (lazy-initialised on first use to improve startup time)
         self._audio = None
@@ -1256,8 +1824,15 @@ class MainWindow(QMainWindow):
         self.buttonf13.clicked.connect(commentary)
         # Place the Commentary pushbutton to the right of Forward (row 3, col 4)
         grid.addWidget(self.buttonf13, 3, 4)
-        self.buttonf13.setToolTip("Open Calvin’s Commentaries (Ctrl+Shift+C)")
+        self.buttonf13.setToolTip("Open Commentaries (Ctrl+Shift+C)")
         self.buttonf13.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        # Add a keyboard shortcut to open Gill Commentary (Ctrl+Shift+C)
+        try:
+            shortcut_cmt = QShortcut(QKeySequence("Ctrl+Shift+C"), self)
+            shortcut_cmt.activated.connect(commentary)
+        except (RuntimeError, TypeError, AttributeError):
+            pass
 
         # Bottom row layout:
         # - Place the Other Works combobox with double width (cols 0–1), matching the Book combobox size.
@@ -2709,6 +3284,84 @@ class MainWindow(QMainWindow):
 
         self.statusBar.showMessage(message)
         self.statusBar.repaint()
+
+    # ---- Gill Commentary integration ----
+    def _get_current_bcv(self) -> tuple[int, int, int]:
+        """Return (book, chapter, verse) 1-based from the current context position."""
+        try:
+            pos = int(self._last_context_position) if getattr(self, "_last_context_position", 0) else int(self.get_line_number())
+        except (TypeError, ValueError, AttributeError):
+            pos = 0
+        try:
+            entry = sh.Info[pos]
+            # Info stores [book(1..66), chapter(0..), verse(0..)]
+            b = int(entry[0])
+            c = int(entry[1]) + 1
+            v = int(entry[2]) + 1
+            return b, c, v
+        except (IndexError, TypeError, ValueError):
+            return 1, 1, 1
+
+    def open_commentary_window(self) -> None:
+        """Open or focus the Gill commentary window centered on the current verse."""
+        # Resolve DB path in the application folder
+        db_path = Path(sh.str_cwd) / "gill.cmt.sqlite"
+        if not db_path.exists():
+            try:
+                QMessageBox.warning(self, "Commentary", f"Database not found:\n{db_path}")
+            except (RuntimeError, TypeError):
+                pass
+            return
+
+        b, c, v = self._get_current_bcv()
+        # Note: previous usage of a local 'pos' (global verse index) was removed to satisfy linters
+        # since we look up commentary by (book, chapter, verse) only.
+
+        # Lazily create the window
+        if self._gill_win is None:
+            try:
+                # Create as a true top-level window (no parent) so it can be viewed independently
+                self._gill_win = GillCommentaryWindow(db_path=db_path, parent=None)
+                # Apply auto-follow preference on creation
+                try:
+                    if isinstance(self._gill_win, GillCommentaryWindow):
+                        self._gill_win.set_auto_follow(self.settings_service.get_gill_auto_follow())
+                except (RuntimeError, AttributeError, TypeError, ValueError):
+                    pass
+            except (RuntimeError, TypeError, sqlite3.Error) as exc:
+                try:
+                    QMessageBox.critical(self, "Commentary", f"Unable to open commentary window.\n{exc}")
+                except (RuntimeError, TypeError):
+                    pass
+                self._gill_win = None
+                return
+
+        # Update content and show the window
+        try:
+            # Use (book, chapter, fromverse) lookups per current DB access strategy
+            if isinstance(self._gill_win, GillCommentaryWindow):
+                win = cast(GillCommentaryWindow, self._gill_win)
+                win.set_reference(b, c, v)
+        except (AttributeError, TypeError, ValueError):
+            pass
+        try:
+            self._gill_win.show()
+            self._gill_win.raise_()
+            self._gill_win.activateWindow()
+        except (RuntimeError, AttributeError, TypeError):
+            pass
+
+    def set_gill_auto_follow(self, enabled: bool) -> None:
+        """Toggle auto-follow for the Gill commentary window and persist the setting."""
+        try:
+            self.settings_service.set_gill_auto_follow(bool(enabled))
+        except (RuntimeError, TypeError, ValueError):
+            pass
+        try:
+            if getattr(self, "_gill_win", None) is not None and isinstance(self._gill_win, GillCommentaryWindow):
+                self._gill_win.set_auto_follow(bool(enabled))
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
 
     # ENTRY POINT FOR F2 DISPLAY VERSE.
     def goto_line(self, ref: str = '') -> None:

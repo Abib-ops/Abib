@@ -2,7 +2,7 @@
 ABIB HELP:
 **********
 
-Abib Bible Reader v415.11
+Abib Bible Reader v415.12
 
 Follow Scripture on your PC while listening to a sermon or message.
 
@@ -21,14 +21,14 @@ Or, you can start again from the beginning and follow the instructions below.
 
 First, uninstall any previous version of this program.
 
-Get the "Abib_setup_415.11_win.exe" file from 'Abib-ops' on GitHub,
+Get the "Abib_setup_415.12_win.exe" file from 'Abib-ops' on GitHub,
 find it in the 'Abib' repository.
 
 **************************************************
 * See: https://github.com/Abib-ops/Abib/releases *
 **************************************************
 
-Next, double-click the "Abib_setup_415.11_win.exe" installer and follow
+Next, double-click the "Abib_setup_415.12_win.exe" installer and follow
 the instructions, mostly click Next a few times, agree to the
 licence, and Abib will install. Please ignore any negative windows that
 claim that Abib is from an unknown author.
@@ -90,16 +90,16 @@ boxes.  It has an "F2, Enter or OK to search for a verse." tooltip.
 The 'F2' key is used to move the focus to the text entry box if it
 has been moved away.
 
-Enter a 'p' into the box and press Enter.  Psalm 1 will be displayed.
-Enter an 'r' into the box and press Enter.  Ruth Chapter 1 shows.
-Enter a 'j' into the box and press Enter.  Joshua Chapter 1 shows.
+Enter 'ps' into the box and press Enter.  Psalm 1 will be displayed.
+Enter 'ru' into the box and press Enter.  Ruth Chapter 1 shows.
+Enter 'jos' into the box and press Enter. Joshua Chapter 1 shows.
 
 There are 66 books in the Bible and only 26 letters in the alphabet,
 so we can use more than one letter to identify a book title.
 
 Examples "na" when entered will take you to Nahum 1:1
 
-"g" will go to Genesis 1:1
+"ge" will go to Genesis 1:1
 
 "php" will be Philippians 1:1
 
@@ -108,12 +108,70 @@ Examples "na" when entered will take you to Nahum 1:1
 Now to get to the exact verse desired: type your reference in the form
 [Book][Chapter].[Verse]
 
-For example, g50.7 will bring up Genesis 50:7
+For example, ge50.7 will bring up Genesis 50:7
 
-(There is no need to type the colon as the full stop is recognised, and
-it is easier than typing the colon, e.g. with a numeric keypad.)
+John Gill Bible Commentary window.
+----------------------------------
 
-And notice there is no space between the g and the 5 as it is
+Abib includes John Gill’s Exposition of the whole Bible. You can open a
+separate commentary window that follows the current verse and shows Gill’s
+notes formatted as HTML.
+
+How to open
+- Click the Commentary button on the main window. The Gill window opens as
+  an independent (top‑level) window, so you can place it anywhere.
+- A keyboard shortcut may also be available on your system to open it.
+
+What you’ll see
+- The window title shows the current reference (e.g. “Gill Commentary —
+  Genesis 1:1”). For one‑chapter books (e.g. Jude) the chapter number is
+  omitted.
+- The commentary text is rendered as HTML. It uses the same font family as
+  the main window and is left‑aligned for readability.
+
+Zooming the font
+- Use Ctrl++ (or Ctrl+=) to increase and Ctrl+- to decrease the font size.
+- The chosen size is remembered between runs.
+
+Scripture popups and navigation
+- Scripture references inside the commentary are highlighted. Hovering a
+  reference shows a small popup with the verse text and a canonical line
+  (e.g. “Psalms 33:6 KJV”).
+- Clicking a reference navigates the main Bible window to that verse.
+- Popups match the look and behaviour of the “Other Works” reader.
+
+Auto‑follow
+- In Help → Settings there is an option “Gill: Auto‑follow main window”.
+  When enabled, the Gill window automatically follows the verse you move
+  to in the Bible window. When disabled, it stays where it is until you
+  navigate with its Prev/Next buttons or click a link.
+
+Missing entries
+- If the commentary does not contain an entry for a specific verse, the
+  window shows “No commentary for this verse”.
+
+Where the commentary is stored
+- File: gill.cmt.sqlite in the Abib application folder.
+- Table: commentary, with columns: id, book, chapter, fromverse, toverse,
+  data (HTML).
+- Lookups use book, chapter and fromverse (or a within ‑ range match when
+  toverse spans multiple verses). No precompute step is required.
+
+Saved settings
+- Abib stores the Gill window position/size and its font size in
+  settings.json under keys like “gill_commentary_window” and
+  “gill_commentary_font_size”.
+
+Notes
+- The Gill commentary window is independent; you can keep it open while
+  navigating elsewhere. At the very start of the Bible (Genesis 1:1),
+  Prev has no effect; Next moves to Genesis 1:2 as expected.
+
+(There is no need to type a colon in the text entry box used to display a
+particular verse, as the full stop is recognised, and it is easier than
+typing the colon, e.g. with a numeric keypad.)
+
+And notice there is no space between the ge and the 5 as it is
 unnecessary, but if you put one in, it will still work.
 
 There is a quick way to move within the same chapter by just entering
@@ -259,16 +317,16 @@ ability to copy from the text.
 8) Using the text entry box to enter an abbreviated passage reference.
 For best results, it will be necessary to learn the abbreviations for
 the names of the books. You can look them up in the index just before
-Genesis.  Type 'g' for Genesis and then scroll back.  Many of the
-abbreviations can be shortened to one letter; generally the book that
-appears first in the Bible will have the single letter shortcut i.e.
-'j' is for Joshua, not Judges, Job, Jeremiah, Joel, Jonah, John, James,
-or Jude.  In fact, as there are so many books beginning with 'j', it is
+Genesis.  Type 'ge' for Genesis and then scroll back.  Many of the
+abbreviations can be shortened to two letters; generally the book that
+appears first in the Bible will have the twin letter shortcut i.e.
+but 'jo' is for John, not Joshua, Job, or Jonah.
+In fact, as there are so many books beginning with 'j', it is
 best to learn their abbreviations.
 
-Here is an improved copy of the index from the Bible.  Notice that
-Roman numerals can be used in the abbreviations and that there are
-many others that are not listed here.  You may find that the abbreviation
+There is an improved copy of the index above. Notice that Roman
+numerals can be used in the abbreviations and that there are many
+others that are not listed.  You may find that the abbreviation
 you try does not work, and you are taken to the wrong book at first,
 there is a learning curve, but it is well worth climbing the 'Hill of
 Difficulty'.
@@ -522,7 +580,7 @@ Installing Abib on Linux.
 -------------------------
 (You can try, but it will need quite a bit of modification to make it work.)
 
-Get the "Abib_linux_415.11.tar.bz2" file from the author.
+Get the "Abib_linux_415.12.tar.bz2" file from the author.
 
     If you can get it, then it may be an earlier version because of
     recent changes that work on Windows only, and the direction of
@@ -530,7 +588,7 @@ Get the "Abib_linux_415.11.tar.bz2" file from the author.
     But with some modifications, it could be made to work on Linux.
 
 Move it to your home folder or desired location and navigate there.
-Expand the compressed archive with: tar -jxvf Abib_linux_415.11.tar.bz2
+Expand the compressed archive with: tar -jxvf Abib_linux_415.12.tar.bz2
 
 $ chmod +x Abib will make sure that the executable flag is set.
 

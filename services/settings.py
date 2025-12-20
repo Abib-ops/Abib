@@ -116,3 +116,27 @@ class SettingsService:
 
     def update_reader_font_size(self, new_size: int) -> None:
         fcs.update_reader_font_size(new_size, str(self.paths.settings_file))
+
+    # ---- Gill Commentary font helpers ----
+    def get_commentary_font_size(self) -> int:
+        return fcs.get_commentary_font_size(str(self.paths.settings_file))
+
+    def update_commentary_font_size(self, new_size: int) -> None:
+        fcs.update_commentary_font_size(new_size, str(self.paths.settings_file))
+
+    # ---- Gill Commentary behaviour toggles ----
+    def get_gill_auto_follow(self) -> bool:
+        try:
+            val = self.settings.get("gill_auto_follow", "false")
+            if isinstance(val, bool):
+                return val
+            return str(val).lower() == "true"
+        except (AttributeError, TypeError, ValueError):
+            return False
+
+    def set_gill_auto_follow(self, enabled: bool) -> None:
+        try:
+            self.settings["gill_auto_follow"] = bool(enabled)
+            self.save(self.settings)
+        except (RuntimeError, TypeError, ValueError, OSError, PermissionError):
+            pass
