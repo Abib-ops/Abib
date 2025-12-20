@@ -8,6 +8,8 @@ from PySide6.QtWidgets import (
     QComboBox,
     QDialogButtonBox,
     QPushButton,
+    QLabel,
+    QSpinBox,
 )
 import fcs
 
@@ -47,6 +49,29 @@ class SettingsDialog(QDialog):
         self.reset_defaults_btn.clicked.connect(self.reset_to_defaults)
         self.layout.addWidget(self.reset_defaults_btn)
 
+        # Gill: Show scripture popups
+        self.gill_show_popups_checkbox = QCheckBox("Gill: Show scripture popups")
+        self.gill_show_popups_checkbox.setToolTip("If disabled, scripture popups in the Gill window will never be shown.")
+        self.layout.addWidget(self.gill_show_popups_checkbox)
+
+        # --- Gill settings ---
+        # Hover delay (ms)
+        self.gill_hover_label = QLabel("Gill: Popup hover delay (ms)")
+        self.layout.addWidget(self.gill_hover_label)
+        self.gill_hover_spin = QSpinBox()
+        self.gill_hover_spin.setRange(0, 5000)
+        self.gill_hover_spin.setSingleStep(10)
+        self.gill_hover_spin.setToolTip("Delay before showing the scripture popup when hovering a link in Gill.")
+        self.layout.addWidget(self.gill_hover_spin)
+        # Hide delay (ms)
+        self.gill_hide_label = QLabel("Gill: Popup hide delay (ms)")
+        self.layout.addWidget(self.gill_hide_label)
+        self.gill_hide_spin = QSpinBox()
+        self.gill_hide_spin.setRange(0, 5000)
+        self.gill_hide_spin.setSingleStep(10)
+        self.gill_hide_spin.setToolTip("Delay before hiding the scripture popup after moving off the link in Gill.")
+        self.layout.addWidget(self.gill_hide_spin)
+
         # Create the button box with correct typing
         button_types = QDialogButtonBox.StandardButton
         buttons = button_types.Ok | button_types.Cancel  # type: ignore
@@ -69,6 +94,10 @@ class SettingsDialog(QDialog):
             self.splash_checkbox.setChecked(bool(defaults.get("show_splash", False)))
             self.update_checkbox.setChecked(bool(defaults.get("check_updates_on_startup", False)))
             self.theme_combobox.setCurrentText(defaults.get("theme", "Light"))
+            self.gill_show_popups_checkbox.setChecked(bool(defaults.get("gill_show_popups", True)))
+            # Gill timing defaults
+            self.gill_hover_spin.setValue(int(defaults.get("gill_hover_delay_ms", 120)))
+            self.gill_hide_spin.setValue(int(defaults.get("gill_hide_delay_ms", 160)))
             # Mark that the user requested defaults so the caller can persist them on OK
             self.was_reset_to_defaults = True
         except (RuntimeError, AttributeError, TypeError):

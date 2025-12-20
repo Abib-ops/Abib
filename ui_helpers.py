@@ -2,7 +2,16 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt, QEvent, QPoint
-from PySide6.QtWidgets import QPlainTextEdit, QDialog, QWidget, QLabel, QVBoxLayout
+from PySide6.QtWidgets import (
+    QPlainTextEdit,
+    QDialog,
+    QWidget,
+    QLabel,
+    QVBoxLayout,
+    QTextEdit,
+)
+from PySide6.QtGui import QGuiApplication
+import math
 import fcs
 
 
@@ -62,39 +71,53 @@ class SimpleScripturePopup:
 
     def __init__(self) -> None:
         self._widget: QWidget | None = None
-        self._label: QLabel | None = None
+        self._text: QLabel | None = None
 
     def ensure_created(self) -> None:
         if self._widget is None:
+            # Use a standard ToolTip window (with native frame)
             self._widget = QWidget(None, Qt.WindowType.ToolTip)
+            # Keep a simple stylesheet border; native frame may result in a double outline as before
+            self._widget.setStyleSheet("border: 2px solid #2160FF;")
             try:
-                self._widget.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
-            except (RuntimeError, AttributeError, TypeError, ValueError):
+                self._widget.setContentsMargins(0, 0, 0, 0)
+            except Exception:
                 pass
-            self._widget.setStyleSheet("border: 2px solid blue;")
             lay = QVBoxLayout(self._widget)
             lay.setContentsMargins(0, 0, 0, 0)
-            self._label = QLabel(self._widget)
-            self._label.setWordWrap(True)
-            lay.addWidget(self._label)
+            # Use a QLabel (non-interactive) as in the pre-selection state
+            self._text = QLabel(self._widget)
+            try:
+                self._text.setWordWrap(True)
+                try:
+                    self._text.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+                except Exception:
+                    pass
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                pass
+            lay.addWidget(self._text)
 
     def show(self, host_editor: QWidget, text: str, pos: QPoint, font) -> None:
         self.ensure_created()
-        assert self._widget is not None and self._label is not None
+        assert self._widget is not None and self._text is not None
         try:
-            self._label.setFont(font)
+            self._text.setFont(font)
         except (RuntimeError, AttributeError, TypeError, ValueError):
             pass
-        self._label.setText(text)
-        # Match the width of the host editor for readability
         try:
-            self._label.setFixedWidth(host_editor.width())
+            self._text.setText(text)
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
+        # Match the width of the host editor and let QLabel compute its own height
+        try:
+            self._text.setFixedWidth(host_editor.width())
         except (RuntimeError, AttributeError, TypeError, ValueError):
             pass
         try:
             self._widget.adjustSize()
         except (RuntimeError, AttributeError, TypeError, ValueError):
             pass
+        # Position after final sizing so flip/clamp uses the final height
         self.move_to(host_editor, pos)
         try:
             self._widget.show()
@@ -111,8 +134,35 @@ class SimpleScripturePopup:
             rect = getattr(host_editor, 'cursorRect')(cursor)
             global_tl = host_editor.mapToGlobal(rect.topLeft())
             editor_tl = host_editor.mapToGlobal(host_editor.rect().topLeft())
+            editor_br = host_editor.mapToGlobal(host_editor.rect().bottomRight())
             popup_x = editor_tl.x()
+
+            # Measure popup height safely
+            try:
+                popup_h = int(self._widget.height())
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                popup_h = 0
+
+            # Default: position below the cursor
             popup_y = global_tl.y() + y_offset
+
+            # If there isn't enough space below, flip above the cursor
+            try:
+                space_below = int(editor_br.y()) - int(popup_y) - int(popup_h)
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                space_below = 0
+            if space_below < 0:
+                # Place above the cursor using the same offset distance
+                popup_y = global_tl.y() - y_offset - popup_h
+
+            # Clamp Y within the visible editor bounds so the popup never renders off-screen
+            min_y = int(editor_tl.y())
+            max_y = int(editor_br.y()) - popup_h
+            if max_y < min_y:
+                # Degenerate case: ensure at least min_y
+                max_y = min_y
+            popup_y = max(min_y, min(popup_y, max_y))
+
             self._widget.move(popup_x, popup_y)
         except (RuntimeError, AttributeError, TypeError, ValueError):
             # Fallback: place at editor's top-left
@@ -129,3 +179,10 @@ class SimpleScripturePopup:
             except (RuntimeError, AttributeError):
                 pass
             # Do not delete this; reuse across hovers
+            
+    def is_visible(self) -> bool:
+        """Return True if the popup widget exists and is currently visible."""
+        try:
+            return bool(self._widget is not None and self._widget.isVisible())
+        except (RuntimeError, AttributeError):
+            return False

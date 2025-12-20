@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Abib — Copyright © 2004–2025 The Abib Contributors
+Abib — Copyright © 2003–2025 The Abib Contributors
 Licensed under the GNU General Public License v3.0 or later (GPL-3.0-or-later).
 See LICENSE for the full text.
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -639,9 +639,20 @@ class GillCommentaryWindow(QWidget):
         # --- Scripture reference hover popup support ---
         self._hover_timer = None
         self._pending_hover_pos = None
-        # Hover timing control
-        self._hover_delay_ms: int = 120
-        self._hide_delay_ms: int = 160
+        # Hover timing control (load from settings)
+        try:
+            self._hover_delay_ms: int = int(self._settings_service.get_gill_hover_delay_ms())
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            self._hover_delay_ms = 120
+        try:
+            self._hide_delay_ms: int = int(self._settings_service.get_gill_hide_delay_ms())
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            self._hide_delay_ms = 160
+        # Master toggle for popups
+        try:
+            self._popups_enabled: bool = bool(self._settings_service.get_gill_show_popups())
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            self._popups_enabled = True
         # Track current hovered href to prevent blinking when the cursor jiggles
         self._current_href: str | None = None
         # Shared tooltip helper
@@ -674,31 +685,16 @@ class GillCommentaryWindow(QWidget):
         except (RuntimeError, AttributeError):
             pass
 
-        # Click-to-navigate (default on) and auto-follow support
+        # (Ctrl-freeze disabled)
+
+        # Click-to-navigate (default on)
         self._click_to_navigate: bool = True
-        self._auto_follow_enabled: bool = False
-        self._follow_timer = None
-        # Interaction gate to pause auto-follow while the user is scrolling/dragging/pressing keys
+        # Auto-follow feature removed. Keep harmless interaction fields for compatibility.
         self._interacting_until: float = 0.0
         self._interaction_quiet_ms: int = 1200
-        # Debounce for follow sync
-        self._follow_debounce = None
-        try:
-            self._auto_follow_enabled = bool(self._settings_service.get_gill_auto_follow())
-            if self._auto_follow_enabled:
-                from PySide6.QtCore import QTimer
-                self._follow_timer = QTimer(self)
-                self._follow_timer.setInterval(500)
-                # Coalesce ticks using a short debounce before syncing
-                if self._follow_debounce is None:
-                    self._follow_debounce = QTimer(self)
-                    self._follow_debounce.setSingleShot(True)
-                    self._follow_debounce.setInterval(220)
-                    self._follow_debounce.timeout.connect(self._sync_with_main)
-                self._follow_timer.timeout.connect(self._schedule_sync)
-                self._follow_timer.start()
-        except (RuntimeError, AttributeError, TypeError, ValueError, ImportError):
-            pass
+        # Small per-window cache for href → resolved verse text to avoid repeat work while hovering
+        self._ref_cache: dict[str, str] = {}
+        # (Auto-follow initialization removed)
 
     # --------- DB helpers ---------
     def _ensure_conn(self) -> sqlite3.Connection:
@@ -707,6 +703,25 @@ class GillCommentaryWindow(QWidget):
         return self._conn
 
     def closeEvent(self, event):  # type: ignore[override]
+        # Safety: stop timers and hide popup to prevent stray callbacks after the window closes
+        try:
+            self._cancel_hover()
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
+        try:
+            if self._hide_timer is not None:
+                self._hide_timer.stop()
+        except (RuntimeError, AttributeError):
+            pass
+        try:
+            if self._hover_timer is not None:
+                self._hover_timer.stop()
+        except (RuntimeError, AttributeError):
+            pass
+        try:
+            self._close_popup()
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
         try:
             if self._conn is not None:
                 self._conn.close()
@@ -749,21 +764,11 @@ class GillCommentaryWindow(QWidget):
 
     def showEvent(self, event):  # type: ignore[override]
         try:
-            if self._auto_follow_enabled and self._follow_timer is not None:
-                self._follow_timer.start()
-        except (RuntimeError, AttributeError):
-            pass
-        try:
             return super().showEvent(event)
         except (RuntimeError, AttributeError, TypeError):
             return None
 
     def hideEvent(self, event):  # type: ignore[override]
-        try:
-            if self._follow_timer is not None:
-                self._follow_timer.stop()
-        except (RuntimeError, AttributeError):
-            pass
         try:
             return super().hideEvent(event)
         except (RuntimeError, AttributeError, TypeError):
@@ -899,6 +904,12 @@ class GillCommentaryWindow(QWidget):
 
     def _display_current(self) -> None:
         """Render the current x into the window."""
+        # Clear the per-window hover cache when content changes
+        try:
+            self._ref_cache.clear()
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            # Be tolerant if an attribute is missing for any reason
+            pass
         try:
             entry = sh.Info[self._x]
             b = int(entry[0])
@@ -1012,6 +1023,8 @@ class GillCommentaryWindow(QWidget):
             et = event.type()
             # Mark interaction on wheel, mouse press/release/drag, and navigation keys
             if obj in (self.viewer, self.viewer.viewport()):
+                # (Ctrl-freeze removed: no auto-unfreeze checks)
+
                 if et == QEvent.Type.Wheel:
                     self._mark_user_interaction()
                 elif et in (QEvent.Type.MouseButtonPress, QEvent.Type.MouseButtonRelease):
@@ -1029,13 +1042,29 @@ class GillCommentaryWindow(QWidget):
                         self._mark_user_interaction()
                     except (RuntimeError, AttributeError):
                         pass
+                    # (Ctrl+C copy and Ctrl-freeze removed)
 
             if obj is self.viewer.viewport():
                 if et == QEvent.Type.Leave:
+                    # Always close on leave
                     self._current_href = None
                     self._cancel_hover()
                     self._close_popup()
                 elif et == QEvent.Type.MouseMove:
+                    # (Ctrl-freeze removed: no bypass of MouseMove)
+                    # Respect the global "show popups" toggle: if disabled, ensure none are shown
+                    if not getattr(self, "_popups_enabled", True):
+                        try:
+                            self._cancel_hover()
+                            # Start a short hide; or close immediately if timer absent
+                            if self._hide_timer is not None:
+                                self._hide_timer.start(self._hide_delay_ms)
+                            else:
+                                self._close_popup()
+                        except (RuntimeError, AttributeError, TypeError, ValueError):
+                            pass
+                        # Skip any hover handling when disabled
+                        return False
                     # Use Qt6-compatible mouse position API; avoid accessing attributes on QEvent directly
                     try:
                         if isinstance(event, QMouseEvent):
@@ -1049,6 +1078,8 @@ class GillCommentaryWindow(QWidget):
                                         self._hide_timer.start(self._hide_delay_ms)
                                 except (RuntimeError, AttributeError):
                                     self._close_popup()
+                                # Allow re-trigger when we come back to the same href
+                                self._current_href = None
                             else:
                                 # Over a bible anchor — cancel pending hide and schedule/refresh popup
                                 if self._hide_timer is not None and self._hide_timer.isActive():
@@ -1060,10 +1091,21 @@ class GillCommentaryWindow(QWidget):
                                     self._current_href = href_now
                                     self._schedule_hover(qp)
                                 else:
-                                    # Same href — keep popup visible and follow the cursor
+                                    # Same href — if a popup is hidden, re-schedule showing it, else follow the cursor
                                     try:
-                                        if self._popup_helper is not None:
-                                            self._popup_helper.move_to(self.viewer, qp)
+                                        ph = self._popup_helper
+                                        if ph is not None:
+                                            # Prefer helper API if available
+                                            try:
+                                                is_vis = bool(getattr(ph, 'is_visible') and ph.is_visible())  # type: ignore[attr-defined]
+                                            except (RuntimeError, AttributeError, TypeError, ValueError):
+                                                # If helper API missing or failed, assume not visible
+                                                # (avoid private access)
+                                                is_vis = False
+                                            if not is_vis:
+                                                self._schedule_hover(qp)
+                                            else:
+                                                ph.move_to(self.viewer, qp)
                                     except (RuntimeError, AttributeError, TypeError, ValueError):
                                         pass
                     except (RuntimeError, AttributeError, TypeError, ValueError):
@@ -1098,6 +1140,9 @@ class GillCommentaryWindow(QWidget):
             return False
 
     def _schedule_hover(self, pos):
+        # Respect popups toggle
+        if not getattr(self, "_popups_enabled", True):
+            return
         self._pending_hover_pos = pos
         try:
             if self._hover_timer is None:
@@ -1120,6 +1165,9 @@ class GillCommentaryWindow(QWidget):
         self._pending_hover_pos = None
 
     def _perform_hover(self):
+        # Respect popups toggle
+        if not getattr(self, "_popups_enabled", True):
+            return
         pos = self._pending_hover_pos
         self._pending_hover_pos = None
         if pos is None:
@@ -1152,6 +1200,12 @@ class GillCommentaryWindow(QWidget):
             except (RuntimeError, AttributeError):
                 self._close_popup()
             return
+        # Optional polish: stop pending hide before showing to avoid races
+        try:
+            if self._hide_timer is not None and self._hide_timer.isActive():
+                self._hide_timer.stop()
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
         self._show_popup(ref_text, pos)
         self._current_href = href
 
@@ -1168,6 +1222,17 @@ class GillCommentaryWindow(QWidget):
         #b43.3.16a (letter suffix ignored)
         """
         try:
+            # Fast path: return from cache if available
+            try:
+                cached = self._ref_cache.get(href)  # type: ignore[attr-defined]
+                if cached:
+                    return cached
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                # If cache not present (older object), create it lazily
+                try:
+                    self._ref_cache = {}
+                except (RuntimeError, AttributeError, TypeError, ValueError):
+                    pass
             s = href.strip()
             if not s:
                 return None
@@ -1263,7 +1328,18 @@ class GillCommentaryWindow(QWidget):
             except (RuntimeError, AttributeError, TypeError, ValueError):
                 canonical = f"{b} {c}:{','.join(display_segments) if display_segments else '1'}"
 
-            return "\n".join(texts) + "\n" + canonical + " KJV"
+            # Compose the body and then exactly one line break before the canonical reference
+            body = "\n".join([str(t).rstrip() for t in texts]).rstrip()
+            canonical_line = f"{canonical} KJV"
+            result = body + "\n" + canonical_line
+            # Store in a small cache (simple cap to prevent unbounded growth)
+            try:
+                if len(self._ref_cache) > 256:  # type: ignore[attr-defined]
+                    self._ref_cache.clear()     # type: ignore[attr-defined]
+                self._ref_cache[href] = result   # type: ignore[attr-defined]
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                pass
+            return result
         except (RuntimeError, AttributeError, TypeError, ValueError):
             return None
 
@@ -1300,68 +1376,7 @@ class GillCommentaryWindow(QWidget):
         except (TypeError, ValueError, IndexError, AttributeError):
             return None
 
-    def _sync_with_main(self) -> None:
-        try:
-            if not self._auto_follow_enabled:
-                return
-            # Defer while the user is interacting (scrolling/dragging/keys)
-            try:
-                if time.monotonic() < self._interacting_until:
-                    return
-            except (RuntimeError, AttributeError):
-                pass
-            getter = getattr(w, "_get_current_bcv", None)
-            if callable(getter):
-                b, c, v = getter()
-                # Compare to the current window position
-                try:
-                    entry = sh.Info[self._x]
-                    # sh.Info stores book, chapter, verse as 0-based integers
-                    cb = int(entry[0]) + 1
-                    cc = int(entry[1]) + 1
-                    cv = int(entry[2]) + 1
-                except (IndexError, TypeError, ValueError):
-                    cb, cc, cv = -1, -1, -1
-                if (int(b), int(c), int(v)) != (cb, cc, cv):
-                    self.set_reference(int(b), int(c), int(v))
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            pass
-
-    def set_auto_follow(self, enabled: bool) -> None:
-        self._auto_follow_enabled = bool(enabled)
-        try:
-            if enabled:
-                from PySide6.QtCore import QTimer
-                if self._follow_timer is None:
-                    self._follow_timer = QTimer(self)
-                    self._follow_timer.setInterval(500)
-                if self._follow_debounce is None:
-                    self._follow_debounce = QTimer(self)
-                    self._follow_debounce.setSingleShot(True)
-                    self._follow_debounce.setInterval(220)
-                    self._follow_debounce.timeout.connect(self._sync_with_main)
-                # Use debounced scheduling for smoother behaviour
-                try:
-                    # Avoid duplicate connections
-                    self._follow_timer.timeout.disconnect()
-                except (RuntimeError, TypeError, AttributeError):
-                    pass
-                self._follow_timer.timeout.connect(self._schedule_sync)
-                self._follow_timer.start()
-            else:
-                if self._follow_timer is not None:
-                    self._follow_timer.stop()
-        except (RuntimeError, AttributeError, TypeError, ValueError, ImportError):
-            pass
-
-    def _schedule_sync(self) -> None:
-        """Coalesce follow ticks into a single sync after a short delay."""
-        try:
-            if self._follow_debounce is not None and not self._follow_debounce.isActive():
-                self._follow_debounce.start()
-        except (RuntimeError, AttributeError):
-            # Fallback to direct sync
-            self._sync_with_main()
+    # (Auto-follow methods removed)
 
     @staticmethod
     def _global_index_for_bcv(b: int, c: int, v: int) -> int | None:
@@ -1390,6 +1405,52 @@ class GillCommentaryWindow(QWidget):
             if self._popup_helper is not None:
                 self._popup_helper.hide()
         except (RuntimeError, AttributeError):
+            pass
+        # Ensure we don’t stick with a stale href when a popup is closed
+        self._current_href = None
+
+    def set_popups_enabled(self, enabled: bool) -> None:
+        """Enable/disable scripture popups at runtime.
+        When disabling, cancel timers and hide any visible popup immediately.
+        """
+        self._popups_enabled = bool(enabled)
+        if not self._popups_enabled:
+            try:
+                self._cancel_hover()
+                if self._hide_timer is not None:
+                    self._hide_timer.stop()
+            except (RuntimeError, AttributeError):
+                pass
+            self._close_popup()
+
+    def set_popup_timing(self, hover_ms: int, hide_ms: int) -> None:
+        """Update popup timing (hover/hide delays) at runtime.
+        Values are clamped to sensible bounds.
+        """
+        try:
+            h = int(hover_ms)
+        except (TypeError, ValueError):
+            h = self._hover_delay_ms
+        try:
+            d = int(hide_ms)
+        except (TypeError, ValueError):
+            d = self._hide_delay_ms
+        # Clamp
+        if h < 0:
+            h = 0
+        if h > 5000:
+            h = 5000
+        if d < 0:
+            d = 0
+        if d > 5000:
+            d = 5000
+        self._hover_delay_ms = h
+        self._hide_delay_ms = d
+        try:
+            if self._hide_timer is not None:
+                # Update timer interval for later and current debounced hides
+                self._hide_timer.setInterval(self._hide_delay_ms)
+        except (RuntimeError, AttributeError, TypeError, ValueError):
             pass
 
     # --------- Interaction & hover helpers ---------
@@ -3322,12 +3383,6 @@ class MainWindow(QMainWindow):
             try:
                 # Create as a true top-level window (no parent) so it can be viewed independently
                 self._gill_win = GillCommentaryWindow(db_path=db_path, parent=None)
-                # Apply auto-follow preference on creation
-                try:
-                    if isinstance(self._gill_win, GillCommentaryWindow):
-                        self._gill_win.set_auto_follow(self.settings_service.get_gill_auto_follow())
-                except (RuntimeError, AttributeError, TypeError, ValueError):
-                    pass
             except (RuntimeError, TypeError, sqlite3.Error) as exc:
                 try:
                     QMessageBox.critical(self, "Commentary", f"Unable to open commentary window.\n{exc}")
@@ -3351,17 +3406,7 @@ class MainWindow(QMainWindow):
         except (RuntimeError, AttributeError, TypeError):
             pass
 
-    def set_gill_auto_follow(self, enabled: bool) -> None:
-        """Toggle auto-follow for the Gill commentary window and persist the setting."""
-        try:
-            self.settings_service.set_gill_auto_follow(bool(enabled))
-        except (RuntimeError, TypeError, ValueError):
-            pass
-        try:
-            if getattr(self, "_gill_win", None) is not None and isinstance(self._gill_win, GillCommentaryWindow):
-                self._gill_win.set_auto_follow(bool(enabled))
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            pass
+    # Auto-follow toggle removed from MainWindow.
 
     # ENTRY POINT FOR F2 DISPLAY VERSE.
     def goto_line(self, ref: str = '') -> None:
@@ -4101,6 +4146,20 @@ class MainWindow(QMainWindow):
         except (AttributeError, RuntimeError):
             pass
         dialog.theme_combobox.setCurrentText(self.settings.get("theme", "Light"))
+        # Gill: Show scripture popups
+        try:
+            dialog.gill_show_popups_checkbox.setChecked(bool(self.settings_service.get_gill_show_popups()))
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            dialog.gill_show_popups_checkbox.setChecked(True)
+        # Gill popup timing settings
+        try:
+            dialog.gill_hover_spin.setValue(int(self.settings_service.get_gill_hover_delay_ms()))
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            dialog.gill_hover_spin.setValue(120)
+        try:
+            dialog.gill_hide_spin.setValue(int(self.settings_service.get_gill_hide_delay_ms()))
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            dialog.gill_hide_spin.setValue(160)
 
         # Ensure dialog follows current theme palette
         self.theme.apply_widget(dialog)
@@ -4199,6 +4258,9 @@ class MainWindow(QMainWindow):
                 new_show_splash = bool(defaults.get("show_splash", False))
                 # Also set update-on-startup from defaults to avoid uninitialised variable use
                 new_update_on_start = bool(defaults.get("check_updates_on_startup", False))
+                new_gill_show_popups = bool(defaults.get("gill_show_popups", True))
+                new_gill_hover = int(defaults.get("gill_hover_delay_ms", 120))
+                new_gill_hide = int(defaults.get("gill_hide_delay_ms", 160))
             else:
                 new_theme = dialog.theme_combobox.currentText()
                 new_show_splash = dialog.splash_checkbox.isChecked()
@@ -4206,6 +4268,18 @@ class MainWindow(QMainWindow):
                     new_update_on_start = bool(dialog.update_checkbox.isChecked())
                 except (AttributeError, RuntimeError):
                     new_update_on_start = bool(self.settings.get("check_updates_on_startup", False))
+                try:
+                    new_gill_show_popups = bool(dialog.gill_show_popups_checkbox.isChecked())
+                except (RuntimeError, AttributeError):
+                    new_gill_show_popups = self.settings_service.get_gill_show_popups()
+                try:
+                    new_gill_hover = int(dialog.gill_hover_spin.value())
+                except (RuntimeError, AttributeError, TypeError, ValueError):
+                    new_gill_hover = self.settings_service.get_gill_hover_delay_ms()
+                try:
+                    new_gill_hide = int(dialog.gill_hide_spin.value())
+                except (RuntimeError, AttributeError, TypeError, ValueError):
+                    new_gill_hide = self.settings_service.get_gill_hide_delay_ms()
 
             # Update in-memory settings
             self.settings["theme"] = new_theme
@@ -4215,6 +4289,19 @@ class MainWindow(QMainWindow):
             # Save settings via service
             self.settings_service.save(self.settings)
 
+            # Persist Gill popup timing via SettingsService APIs
+            try:
+                self.settings_service.set_gill_hover_delay_ms(int(new_gill_hover))
+                self.settings_service.set_gill_hide_delay_ms(int(new_gill_hide))
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                pass
+
+            # Persist Gill show popups toggle
+            try:
+                self.settings_service.set_gill_show_popups(bool(new_gill_show_popups))
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                pass
+
             # Apply theme (if needed)
             self.set_theme(self.settings)
 
@@ -4223,6 +4310,15 @@ class MainWindow(QMainWindow):
             global splash, w
             # Update splash screen visibility based on prior and new states
             self._update_splash_visibility(prev_show_splash, new_show_splash)
+
+            # If the Gill window is open, apply the new popup timing immediately
+            try:
+                if getattr(self, "_gill_win", None) is not None and isinstance(self._gill_win, GillCommentaryWindow):
+                    self._gill_win.set_popup_timing(int(new_gill_hover), int(new_gill_hide))
+                    # Also apply popups enabled/disabled immediately
+                    self._gill_win.set_popups_enabled(bool(new_gill_show_popups))
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                pass
 
     @staticmethod
     def _update_splash_visibility(prev_show: bool, new_show: bool) -> None:

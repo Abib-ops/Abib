@@ -125,18 +125,83 @@ class SettingsService:
         fcs.update_commentary_font_size(new_size, str(self.paths.settings_file))
 
     # ---- Gill Commentary behaviour toggles ----
-    def get_gill_auto_follow(self) -> bool:
+    # Auto-follow support removed.
+
+    # ---- Gill Commentary: popups master toggle ----
+    def get_gill_show_popups(self) -> bool:
+        """Return whether Gill scripture popups are enabled. Defaults to True."""
         try:
-            val = self.settings.get("gill_auto_follow", "false")
+            val = self.settings.get("gill_show_popups", True)
             if isinstance(val, bool):
                 return val
-            return str(val).lower() == "true"
+            # Accept common truthy strings
+            return str(val).lower() not in ("false", "0", "no", "off")
         except (AttributeError, TypeError, ValueError):
-            return False
+            return True
 
-    def set_gill_auto_follow(self, enabled: bool) -> None:
+    def set_gill_show_popups(self, enabled: bool) -> None:
         try:
-            self.settings["gill_auto_follow"] = bool(enabled)
+            self.settings["gill_show_popups"] = bool(enabled)
+            self.save(self.settings)
+        except (RuntimeError, TypeError, ValueError, OSError, PermissionError):
+            pass
+
+    # ---- Gill Commentary popup timing ----
+    def get_gill_hover_delay_ms(self) -> int:
+        """Return hover delay in milliseconds for Gill popups.
+        Defaults to 120 ms if not set or invalid.
+        """
+        try:
+            val = int(self.settings.get("gill_hover_delay_ms", 120))
+        except (TypeError, ValueError):
+            val = 120
+        # Clamp to reasonable bounds
+        if val < 0:
+            val = 0
+        if val > 5000:
+            val = 5000
+        return val
+
+    def set_gill_hover_delay_ms(self, delay_ms: int) -> None:
+        try:
+            d = int(delay_ms)
+        except (TypeError, ValueError):
+            d = 120
+        if d < 0:
+            d = 0
+        if d > 5000:
+            d = 5000
+        try:
+            self.settings["gill_hover_delay_ms"] = d
+            self.save(self.settings)
+        except (RuntimeError, TypeError, ValueError, OSError, PermissionError):
+            pass
+
+    def get_gill_hide_delay_ms(self) -> int:
+        """Return hide delay in milliseconds for Gill popups.
+        Defaults to 160 ms if not set or invalid.
+        """
+        try:
+            val = int(self.settings.get("gill_hide_delay_ms", 160))
+        except (TypeError, ValueError):
+            val = 160
+        if val < 0:
+            val = 0
+        if val > 5000:
+            val = 5000
+        return val
+
+    def set_gill_hide_delay_ms(self, delay_ms: int) -> None:
+        try:
+            d = int(delay_ms)
+        except (TypeError, ValueError):
+            d = 160
+        if d < 0:
+            d = 0
+        if d > 5000:
+            d = 5000
+        try:
+            self.settings["gill_hide_delay_ms"] = d
             self.save(self.settings)
         except (RuntimeError, TypeError, ValueError, OSError, PermissionError):
             pass

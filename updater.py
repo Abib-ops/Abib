@@ -62,7 +62,7 @@ def check_for_updates(parent=None):
                         f"You are already on the latest version (current: {CURRENT_VERSION}).",
                     )
                 except (RuntimeError, AttributeError, TypeError):
-                    # Keep silent if UI is unavailable or the widget state is invalid
+                    # Keep silent if the UI is unavailable or the widget state is invalid
                     pass
                 return False, "", ""
             return None

@@ -12,6 +12,7 @@ Changelog.
 Abib v415.12
 Removed the Calvin Commentary.
 Added John Gill's Exposition of the Entire Bible.
+The auto-follow option in settings is not recommended.
 
 Abib v415.11
 README.md updated.
