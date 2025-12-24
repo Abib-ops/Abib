@@ -276,7 +276,6 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
             continue
 
         # Determine chapter/verses
-        chapter_only_reinterpreted = False  # when vers-only is reinterpreted as chapter-only while keeping regex order
         if m.group("chap_a") and m.group("vers_a"):
             try:
                 chapter = int(m.group("chap_a"))
@@ -337,7 +336,6 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
                         scan_pos = m.start() + 1
                         continue
                     verses = ""
-                    chapter_only_reinterpreted = True
                 else:
                     # For multi-chapter books, non-numeric vers-only (like "5-7") after the book
                     # is not a valid top-level match; advance to allow overlaps.
@@ -353,12 +351,9 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
 
         start = m.start() + lead
         length = len(lstripped)
-        # Only emit when we actually have verses (normal reference) or a one-chapter book reference.
-        # For chapter-only after a multi-chapter book, we skip emission but keep context for continuations.
-        emit = True
-        if (m.group("chap_only_a") or m.group("chap_only_r") or chapter_only_reinterpreted) and (book_id - 1) not in sh.onechapterbooks:
-            emit = False
-        if emit:
+        # Only emit references that include verses.
+        # Chapter-only references are used to update the context for continuations but are not interactive.
+        if verses:
             references.append(
                 {
                     "text": lstripped,
@@ -394,6 +389,7 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
             # standalone verse reference — but only for multi‑chapter books.
             # For one‑chapter books (e.g. Jude), "; 7" must be treated as verses in chapter 1.
             # Update the last_chapter and skip emitting a reference for this segment when applicable.
+            is_chapter_only = False
             if sep == ";" and m2.group("vers_only") and (book_id - 1) not in sh.onechapterbooks:
                 vo_raw = m2.group("vers_only")
                 if re.fullmatch(r"\d{1,3}", vo_raw or ""):
@@ -406,22 +402,10 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
                         break
                     try:
                         last_chapter = int(vo_raw)
-                        tail_pos += len(m2.group(0))
-                        continue
+                        is_chapter_only = True
                     except ValueError:
                         pass
-            # Guard: if vers-only continuation (e.g. "; 1") is immediately followed by a plausible
-            # new book token (digit or capitalised word),
-            # stop continuation so the next main scan can pick it up.
-            if m2.group("vers_only"):
-                # Only accept verse-only when the separator was a semicolon.
-                if sep != ";":
-                    break
-                after = tail[len(m2.group(0)) :]
-                after = re.sub(rf"^{_WS}+", "", after)
-                if after and (after[0].isdigit() or after[0].isupper()):
-                    break
-
+            
             seg_full = m2.group(0)
             seg_lstripped = seg_full.lstrip()
             seg_lead = len(seg_full) - len(seg_lstripped)
@@ -441,8 +425,14 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
                     break
                 verses2 = m2.group("vers_r")
                 last_chapter = chapter2
+            elif is_chapter_only:
+                verses2 = ""
             elif m2.group("vers_only"):
-                # vers-only; reuse last_chapter (already ensured sep was ';')
+                # vers-only; reuse last_chapter.
+                # Allow both comma and semicolon here; we already matched _CONTINUATION_RE,
+                # which ensures one of them was present.
+                # Comma is safe because _PATTERN_RE
+                # already greedily matched on-line lists.
                 verses2 = m2.group("vers_only")
             else:
                 break
@@ -450,16 +440,17 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
             verses2 = re.sub(rf"^{_WS}+", "", verses2)
             verses2 = re.sub(rf"(?:{_WS}|[)\];:.,\"'“”‘’])+$", "", verses2)
 
-            references.append(
-                {
-                    "text": seg_lstripped,
-                    "book": book_raw,
-                    "chapter": last_chapter,
-                    "verse": verses2,
-                    "start": start2,
-                    "length": len(seg_lstripped),
-                }
-            )
+            if verses2:
+                references.append(
+                    {
+                        "text": seg_lstripped,
+                        "book": book_raw,
+                        "chapter": last_chapter,
+                        "verse": verses2,
+                        "start": start2,
+                        "length": len(seg_lstripped),
+                    }
+                )
 
             tail_pos += len(seg_full)
 

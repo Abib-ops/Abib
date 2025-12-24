@@ -71,7 +71,7 @@ if str(PROJECT_ROOT) not in sys.path:
 import scripture  # type: ignore
 
 
-PARSER_VERSION = "2025-12-10-roman-chapter-sep-guard"
+PARSER_VERSION = "2025-12-23-suppress-chapter-only-v2"
 FORMAT_VERSION = 1
 
 

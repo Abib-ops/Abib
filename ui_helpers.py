@@ -8,10 +8,9 @@ from PySide6.QtWidgets import (
     QWidget,
     QLabel,
     QVBoxLayout,
-    QTextEdit,
+    QScrollArea,
 )
 from PySide6.QtGui import QGuiApplication
-import math
 import fcs
 
 
@@ -60,10 +59,11 @@ class NoZoomDialog(QDialog):
 
 
 class SimpleScripturePopup:
-    """Lightweight tooltip-like popup used by both Other Works and Gill windows.
+    """Lightweight scrollable tooltip popup used by both Other Works and Gill windows.
 
     Provides identical look and behavior:
     - ToolTip window with blue border
+    - QScrollArea to handle long content without screen overflow
     - QLabel with word wrap, width matched to the host editor's width
     - Positioning near the text cursor for a given mouse position
     - No mouse interaction (transparent to the pointer)
@@ -72,57 +72,166 @@ class SimpleScripturePopup:
     def __init__(self) -> None:
         self._widget: QWidget | None = None
         self._text: QLabel | None = None
+        self._scroll: QScrollArea | None = None
+        self._is_dark: bool | None = None
 
     def ensure_created(self) -> None:
         if self._widget is None:
-            # Use a standard ToolTip window (with native frame)
-            self._widget = QWidget(None, Qt.WindowType.ToolTip)
-            # Keep a simple stylesheet border; native frame may result in a double outline as before
-            self._widget.setStyleSheet("border: 2px solid #2160FF;")
+            # Use ToolTip + Frameless to avoid native frame double-borders
+            self._widget = QWidget(None, Qt.WindowType.ToolTip | Qt.WindowType.FramelessWindowHint)
+            self._widget.setObjectName("ScripturePopup")
+            # Default stylesheet (will be updated by apply_theme)
+            self._widget.setStyleSheet("#ScripturePopup { background-color: #ffffff; border: 2px solid #2160FF; }")
             try:
                 self._widget.setContentsMargins(0, 0, 0, 0)
-            except Exception:
+            except (RuntimeError, AttributeError):
                 pass
             lay = QVBoxLayout(self._widget)
             lay.setContentsMargins(0, 0, 0, 0)
-            # Use a QLabel (non-interactive) as in the pre-selection state
-            self._text = QLabel(self._widget)
+
+            # Scroll area for long references
+            self._scroll = QScrollArea(self._widget)
+            self._scroll.setWidgetResizable(True)
+            self._scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+            # Ensure the scroll area doesn't have its own background/border
+            self._scroll.setStyleSheet("background: transparent; border: none;")
+
+            # Use a QLabel (non-interactive) for the text
+            self._text = QLabel()
             try:
                 self._text.setWordWrap(True)
+                self._text.setContentsMargins(6, 4, 6, 4)
+                # Ensure the text is readable; will be updated by apply_theme
+                self._text.setStyleSheet("color: #000000; background: transparent; border: none;")
                 try:
-                    self._text.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
-                except Exception:
+                    self._widget.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+                except (RuntimeError, AttributeError):
                     pass
             except (RuntimeError, AttributeError, TypeError, ValueError):
                 pass
-            lay.addWidget(self._text)
+            
+            self._scroll.setWidget(self._text)
+            lay.addWidget(self._scroll)
 
-    def show(self, host_editor: QWidget, text: str, pos: QPoint, font) -> None:
+    def apply_theme(self, is_dark: bool) -> None:
+        """Update the popup colours to match the theme (dark or light)."""
         self.ensure_created()
-        assert self._widget is not None and self._text is not None
+        if self._is_dark == is_dark:
+            return
+        self._is_dark = is_dark
+        
+        if is_dark:
+            # Match ThemeManager dark palette: Window/Base #121212, WindowText/Text #f0f0f0, Highlight #2a5adf
+            bg = "#121212"
+            fg = "#f0f0f0"
+            border = "#2a5adf"
+        else:
+            # Match ThemeManager light palette: Window #ffffff, Text #000000, Highlight #cce8ff
+            bg = "#ffffff"
+            fg = "#000000"
+            border = "#2160FF" # Keep the distinctive blue for light mode
+
+        try:
+            if self._widget:
+                self._widget.setStyleSheet(f"""
+                    #ScripturePopup {{
+                        background-color: {bg};
+                        border: 2px solid {border};
+                    }}
+                """)
+            if self._text:
+                self._text.setStyleSheet(f"color: {fg}; background: transparent; border: none;")
+        except (RuntimeError, AttributeError):
+            pass
+
+    def show(self, host_editor: QWidget, text: str, pos: QPoint, font, is_dark: bool | None = None) -> None:
+        self.ensure_created()
+        assert self._widget is not None and self._text is not None and self._scroll is not None
+        
+        # Determine theme if not provided
+        if is_dark is None:
+            try:
+                # Heuristic: check if the text colour is lighter than the background
+                pal = host_editor.palette()
+                bg = pal.color(host_editor.backgroundRole())
+                is_dark = bg.lightness() < 128
+            except (RuntimeError, AttributeError):
+                is_dark = False
+        
+        self.apply_theme(is_dark)
+
+        # Only update text if it changed to avoid layout churn
+        try:
+            if self._text.text() != text:
+                self._text.setText(text)
+        except (RuntimeError, AttributeError):
+            pass
+
         try:
             self._text.setFont(font)
         except (RuntimeError, AttributeError, TypeError, ValueError):
             pass
+
+        # Match the width of the host editor
         try:
-            self._text.setText(text)
+            w = host_editor.width()
+            self._widget.setFixedWidth(w)
         except (RuntimeError, AttributeError, TypeError, ValueError):
             pass
-        # Match the width of the host editor and let QLabel compute its own height
+
+        # Limit height to avoid covering too much screen (max 60% of screen height)
         try:
-            self._text.setFixedWidth(host_editor.width())
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            pass
+            screen = QGuiApplication.primaryScreen()
+            if screen:
+                available_h = screen.availableGeometry().height()
+                max_h = int(available_h * 0.6)
+            else:
+                max_h = 600
+        except (RuntimeError, AttributeError):
+            max_h = 600
+
+        # Determine target height based on content
         try:
-            self._widget.adjustSize()
+            # Use heightForWidth to get the required height for the given width.
+            # Inner width available for content is w - 4 (due to 2px borders).
+            hfw = self._text.heightForWidth(w - 4)
+            if hfw < 0:
+                # Fallback to sizeHint if heightForWidth is not supported (though QLabel supports it)
+                hfw = self._text.sizeHint().height()
+
+            # Account for 2px border on top and bottom (total 4px)
+            needed_h = hfw + 4
+            
+            if needed_h > max_h:
+                self._widget.setFixedHeight(max_h)
+            else:
+                # Set to exact needed height
+                self._widget.setFixedHeight(needed_h)
         except (RuntimeError, AttributeError, TypeError, ValueError):
-            pass
+            # Fallback to previous behavior if calculation fails
+            try:
+                self._widget.adjustSize()
+                if self._widget.height() > max_h:
+                    self._widget.setFixedHeight(max_h)
+            except (RuntimeError, AttributeError):
+                pass
+
         # Position after final sizing so flip/clamp uses the final height
         self.move_to(host_editor, pos)
         try:
             self._widget.show()
         except (RuntimeError, AttributeError, TypeError, ValueError):
             pass
+
+    def scroll_by(self, delta_y: int) -> None:
+        """Scroll the internal area by a pixel delta (forwarded from host)."""
+        if self._scroll is not None:
+            try:
+                bar = self._scroll.verticalScrollBar()
+                if bar and bar.isVisible():
+                    bar.setValue(bar.value() - delta_y)
+            except (RuntimeError, AttributeError):
+                pass
 
     def move_to(self, host_editor: QWidget, pos: QPoint, y_offset: int = 60) -> None:
         if self._widget is None:

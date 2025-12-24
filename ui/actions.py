@@ -7,7 +7,6 @@ from typing import List, Optional
 from PySide6.QtGui import QAction, QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import QToolBar
 from PySide6.QtCore import QSize
-from sys import exit
 
 
 @dataclass
@@ -82,7 +81,7 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
     icon3_path = Path('images') / 'exit.png'
     exit_action = QAction(QIcon(str(icon3_path)), "Exit", window)
     exit_action.setStatusTip("Exit the program")
-    exit_action.triggered.connect(exit)
+    exit_action.triggered.connect(window.close)
     file_menu.addAction(exit_action)
 
     # Edit toolbar/menu

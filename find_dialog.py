@@ -17,9 +17,10 @@ class FindDialog(QDialog):
     MainWindow instance for data (nwin) and actions (findf3, close_find_window).
     """
 
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent=None, settings_service: Any | None = None) -> None:
         super().__init__(parent)
         self._main = parent  # MainWindow reference
+        self.settings_service = settings_service
 
         # Create an instance of the GUI
         self.ui = UiDialog()
@@ -114,7 +115,17 @@ class FindDialog(QDialog):
         # checks[1] is 0-1 for checkBox
         # checks[2] is 5-6 for radiobuttons 5 & 6
         self.checks = [1, 0, 5]
-        self.setGeometry(700, 300, 400, 378)
+
+        # Load window geometry from settings
+        try:
+            if self.settings_service:
+                gx, gy, gw, gh = self.settings_service.get_window_geometry("find_window")
+            else:
+                import fcs
+                gx, gy, gw, gh = fcs.get_window_geometry("find_window")
+            self.setGeometry(gx, gy, gw, gh)
+        except (RuntimeError, TypeError, ValueError):
+            self.setGeometry(700, 300, 400, 378)
 
         self.ui.lineEdit_1.setToolTip("press RETURN to find")
         cast(Any, self.ui.lineEdit_1.returnPressed).connect(self.getter)
@@ -331,3 +342,28 @@ class FindDialog(QDialog):
         self.check_changed()
         self.radiobutton1_4_changed()
         self.radiobutton5_6_changed()
+
+    def closeEvent(self, event):
+        """Handle window close event - save geometry"""
+        try:
+            geometry = self.geometry()
+            if self.settings_service:
+                self.settings_service.save_window_geometry(
+                    "find_window",
+                    geometry.x(),
+                    geometry.y(),
+                    geometry.width(),
+                    geometry.height(),
+                )
+            else:
+                import fcs
+                fcs.save_window_geometry(
+                    "find_window",
+                    geometry.x(),
+                    geometry.y(),
+                    geometry.width(),
+                    geometry.height(),
+                )
+        except (RuntimeError, TypeError, ValueError):
+            pass
+        super().closeEvent(event)

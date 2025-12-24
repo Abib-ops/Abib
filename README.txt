@@ -4,15 +4,20 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.12
+Abib v415.13
 ------------
 
 Changelog.
 -----------
-Abib v415.12
-Removed the Calvin Commentary.
+Abib v415.13
+Some optimisations were made to the code.
+Performed a significant refactoring of the main application file, `Abib.py`.
+Changes to the Bible reference popup window were made.
+
+Abib v415.12 and 12a
+Removed the Calvin Commentary and all 45 calcom files.
 Added John Gill's Exposition of the Entire Bible.
-The auto-follow option in settings is not recommended.
+The auto-follow option in settings is not recommended. It is not in the last versions.
 
 Abib v415.11
 README.md updated.

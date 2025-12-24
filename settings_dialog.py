@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
+from typing import Any
+
 from PySide6.QtWidgets import (
     QDialog,
     QVBoxLayout,
@@ -15,11 +17,22 @@ import fcs
 
 
 class SettingsDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, settings_service: Any | None = None):
         super().__init__(parent)
+        self.settings_service = settings_service
 
         self.setWindowTitle("Settings")
         self.layout = QVBoxLayout(self)
+
+        # Load window geometry from settings
+        try:
+            if self.settings_service:
+                gx, gy, gw, gh = self.settings_service.get_window_geometry("settings_window")
+            else:
+                gx, gy, gw, gh = fcs.get_window_geometry("settings_window")
+            self.setGeometry(gx, gy, gw, gh)
+        except (RuntimeError, TypeError, ValueError):
+            self.resize(400, 500)
 
         # Track whether the user requested defaults
         self.was_reset_to_defaults = False
@@ -103,3 +116,27 @@ class SettingsDialog(QDialog):
         except (RuntimeError, AttributeError, TypeError):
             # Ignore typical Qt/attribute/type issues without masking unrelated errors
             pass
+
+    def closeEvent(self, event):
+        """Handle window close event - save geometry"""
+        try:
+            geometry = self.geometry()
+            if self.settings_service:
+                self.settings_service.save_window_geometry(
+                    "settings_window",
+                    geometry.x(),
+                    geometry.y(),
+                    geometry.width(),
+                    geometry.height(),
+                )
+            else:
+                fcs.save_window_geometry(
+                    "settings_window",
+                    geometry.x(),
+                    geometry.y(),
+                    geometry.width(),
+                    geometry.height(),
+                )
+        except (RuntimeError, TypeError, ValueError):
+            pass
+        super().closeEvent(event)

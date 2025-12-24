@@ -54,6 +54,31 @@ def get_default_settings() -> Any:
             "width": 736,
             "height": 599,
         },
+        "about_window": {
+            "x": 100,
+            "y": 100,
+            "width": 480,
+            "height": 810
+        },
+        "find_window": {
+            "x": 100,
+            "y": 100,
+            "width": 640,
+            "height": 334
+        },
+        "settings_window": {
+            "x": 100,
+            "y": 100,
+            "width": 400,
+            "height": 500
+        },
+        "reader_find_window": {
+            "x": 100,
+            "y": 100,
+            "width": 500,
+            "height": 100
+        },
+        "last_bible_position": 0,
         # Map of the 'Other Works' file stems to string booleans "true"/"false" indicating
         # whether they should be shown in the reader window combo box.
         # This map is generated and kept in sync at the application startup based on
@@ -336,7 +361,7 @@ def isRoman(s: str) -> bool:
     return bool(re.match(roman_pattern, s))
 
 
-def update_devotional_font_size(new_size: Any, filename="settings.json"):
+def update_devotional_font_size(new_size: Any, filename: str | Path = "settings.json"):
     """
     Update the devotional font size in the settings file.
     """
@@ -346,7 +371,7 @@ def update_devotional_font_size(new_size: Any, filename="settings.json"):
     # print(f"DEBUG: Updated devotional fontsize to: {new_size}")
 
 
-def get_devotional_font_size(filename="settings.json") -> int:
+def get_devotional_font_size(filename: str | Path = "settings.json") -> int:
     """
     Get the current devotional font size from settings.
     """
@@ -354,7 +379,7 @@ def get_devotional_font_size(filename="settings.json") -> int:
     return settings.get("devotional_font_size", 12)
 
 
-def load_settings_from_file(filename="settings.json") -> Any:
+def load_settings_from_file(filename: str | Path = "settings.json") -> Any:
     """
     Load the settings dictionary from a JSON file.
     If the file is missing, empty, malformed, or has partial settings, return defaults.
@@ -362,10 +387,15 @@ def load_settings_from_file(filename="settings.json") -> Any:
     # Default settings
     default_settings = get_default_settings()
 
-    # Check if the file exists
+    # Resolve the full path
     settings_dir = Path(sh.user_settings_dir)
-    settings_dir.mkdir(parents=True, exist_ok=True)  # Create a directory if it doesn't exist
-    filename = settings_dir / filename
+    full_path = Path(filename)
+    if not full_path.is_absolute():
+        full_path = settings_dir / filename
+    
+    # Ensure directory exists
+    full_path.parent.mkdir(parents=True, exist_ok=True)
+    filename = full_path
 
     if not path.exists(filename):
         print("Settings file does not exist. Using default settings.")
@@ -401,9 +431,16 @@ def load_settings_from_file(filename="settings.json") -> Any:
                 del settings_here["pilgrims_progress_window"]
                 changed = True
 
+            if "gill_commentary_font_size" in settings_here:
+                # Migrate to the new key if it's missing
+                if "gill_font_size" not in settings_here:
+                    settings_here["gill_font_size"] = settings_here["gill_commentary_font_size"]
+                del settings_here["gill_commentary_font_size"]
+                changed = True
+
             # Persist clean-up if anything was removed
             if changed:
-                save_settings_to_file(settings_here)
+                save_settings_to_file(settings_here, str(filename))
 
             return settings_here
 
@@ -415,11 +452,11 @@ def load_settings_from_file(filename="settings.json") -> Any:
         return default_settings
 
 
-def save_window_geometry(window_name: str, x: int, y: int, width: int, height: int):
+def save_window_geometry(window_name: str, x: int, y: int, width: int, height: int, filename: str | Path = "settings.json"):
     """Save window geometry to settings"""
     # print(f"DEBUG: Saving geometry for {window_name}: x={x}, y={y}, w={width}, h={height}")
 
-    settings = load_settings_from_file()
+    settings = load_settings_from_file(filename)
     # print(f"DEBUG: Current settings keys: {list(settings.keys())}")
 
     if window_name not in settings:
@@ -432,18 +469,18 @@ def save_window_geometry(window_name: str, x: int, y: int, width: int, height: i
 
     # print(f"DEBUG: Updated settings for {window_name}: {settings[window_name]}")
 
-    save_settings_to_file(settings)
+    save_settings_to_file(settings, filename)
     # print(f"DEBUG: Settings saved to file")
 
 
-def get_window_geometry(window_name: str) -> tuple[int, int, int, int]:
+def get_window_geometry(window_name: str, filename: str | Path = "settings.json") -> tuple[int, int, int, int]:
     """Get window geometry from settings"""
 
-    settings = load_settings_from_file()
+    settings = load_settings_from_file(filename)
     # print(f"DEBUG: Loading geometry for {window_name}")
     # print(f"DEBUG: Available settings keys: {list(settings.keys())}")
-    width, height = get_screen_size()
-    # print(f"DEBUG: Screen size from fcs.py: {width}x{height}")
+    _, sheight = get_screen_size()
+    # print(f"DEBUG: Screen size from fcs.py: {sheight}")
 
     if window_name in settings:
         window_settings = settings[window_name]
@@ -454,30 +491,47 @@ def get_window_geometry(window_name: str) -> tuple[int, int, int, int]:
             window_settings.get("width", 737),
             window_settings.get("height", 518)
         )
-        if result[0] < 0:
-            result = (100, result[1], result[2], result[3])
-        if result[1] < 0:
-            result = (result[0], 100, result[2], result[3])
-        if result[0] + result[2] > width:
-            result = (0, result[1], 737, result[3])
-        if result[1] + result[3] > height:
-            result = (result[0], 100, result[2], 518)
-        # print(f"DEBUG: Returning geometry of {window_name}: {result}")
-        return result
+        # Relaxed multi-monitor aware clamping:
+        # 1. Allow negative X/Y (secondary monitors to the left/top)
+        # 2. Allow X/Y beyond primary width/height (secondary monitors to the right/bottom)
+        # 3. Only clamp if the window is likely completely off-screen or excessively far.
+        # We'll use a very generous virtual desktop bound.
+        VIRTUAL_LIMIT = 10000 
+        
+        rx, ry, rw, rh = result
+        if not (-VIRTUAL_LIMIT < rx < VIRTUAL_LIMIT):
+            rx = 100
+        if not (-VIRTUAL_LIMIT < ry < VIRTUAL_LIMIT):
+            ry = 100
+        if rw <= 0 or rw > VIRTUAL_LIMIT:
+            rw = 737
+        if rh <= 0 or rh > VIRTUAL_LIMIT:
+            rh = 518
+            
+        # Ensure at least a small portion of the window title bar area could be visible
+        # on the primary screen if it's not on a secondary monitor.
+        # But honestly, it's safer to just let the OS handle it if the coordinates are "reasonable".
+        
+        return rx, ry, rw, rh
     else:
         # Return default values
         # print(f"DEBUG: No settings found for {window_name}, using defaults")
         return 100, 100, 640, 518
 
 
-def save_settings_to_file(the_settings, filename="settings.json"):
+def save_settings_to_file(the_settings: dict[str, Any], filename: str | Path = "settings.json"):
     """
     Save the given settings dictionary to a JSON file.
     """
     # print(f"DEBUG: Saving settings to file: {filename}")
     # print(f"DEBUG: Settings: {the_settings}")
     settings_dir = Path(sh.user_settings_dir)
-    filename = settings_dir / filename
+    full_path = Path(filename)
+    if not full_path.is_absolute():
+        full_path = settings_dir / filename
+    
+    full_path.parent.mkdir(parents=True, exist_ok=True)
+    filename = full_path
 
     try:
         # Explicitly annotate the file object
@@ -506,7 +560,7 @@ def setup_Abib_settings(abib_directory: Path) -> None:
         print(f"Settings.json already exists in {abib_directory}")
 
 
-def update_bible_font_size(new_size, filename="settings.json"):
+def update_bible_font_size(new_size: Any, filename: str | Path = "settings.json"):
     """
     Update the Bible font size in the settings file.
     """
@@ -516,7 +570,7 @@ def update_bible_font_size(new_size, filename="settings.json"):
     # print(f"DEBUG: Updated Bible fontsize to: {new_size}")
 
 
-def get_bible_font_size(filename="settings.json"):
+def get_bible_font_size(filename: str | Path = "settings.json"):
     """
     Get the current Bible font size from settings.
     """
@@ -524,7 +578,7 @@ def get_bible_font_size(filename="settings.json"):
     return settings.get("bible_font_size", 12)
 
 
-def update_reader_font_size(new_size: Any, filename: str = "settings.json") -> None:
+def update_reader_font_size(new_size: Any, filename: str | Path = "settings.json") -> None:
     """
     Update the 'Other Works' reader font size in the settings file.
     """
@@ -536,7 +590,7 @@ def update_reader_font_size(new_size: Any, filename: str = "settings.json") -> N
     save_settings_to_file(settings, filename)
 
 
-def get_reader_font_size(filename: str = "settings.json") -> int:
+def get_reader_font_size(filename: str | Path = "settings.json") -> int:
     """
     Get the current 'Other Works' reader font size from settings.
     """
@@ -548,25 +602,27 @@ def get_reader_font_size(filename: str = "settings.json") -> int:
 
 
 # ---- Gill Commentary font helpers ----
-def update_commentary_font_size(new_size: Any, filename: str = "settings.json") -> None:
+def update_commentary_font_size(new_size: Any, filename: str | Path = "settings.json") -> None:
     """
     Update the Gill Commentary window font size in the settings file.
     """
     settings = load_settings_from_file(filename)
     try:
-        settings["gill_commentary_font_size"] = int(new_size)
+        settings["gill_font_size"] = int(new_size)
+        # Clean up legacy key
+        settings.pop("gill_commentary_font_size", None)
     except (TypeError, ValueError):
-        settings["gill_commentary_font_size"] = 12
+        settings["gill_font_size"] = 12
     save_settings_to_file(settings, filename)
 
 
-def get_commentary_font_size(filename: str = "settings.json") -> int:
+def get_commentary_font_size(filename: str | Path = "settings.json") -> int:
     """
     Get the current Gill Commentary window font size from settings.
     """
     settings = load_settings_from_file(filename)
     try:
-        return int(settings.get("gill_commentary_font_size", 12))
+        return int(settings.get("gill_font_size", settings.get("gill_commentary_font_size", 12)))
     except (TypeError, ValueError):
         return 12
 

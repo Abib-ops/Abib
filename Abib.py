@@ -26,7 +26,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.1 and python3.13.11 (64-bit).
 
-20/12/2025
+24/12/2025
 
 python -m pip install --upgrade pip wheel
 python -m pip install -r requirements.txt
@@ -80,7 +80,7 @@ setrecursionlimit(200)
 
 from copy import deepcopy
 from pathlib import Path
-from itertools import chain, islice
+from itertools import islice
 
 from typing import Any, Dict, Set, List
 from typing import cast
@@ -98,7 +98,7 @@ from PySide6.QtWidgets import (QMainWindow, QWidget,
                                QPlainTextEdit, QTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
                                QPushButton, QVBoxLayout, QStatusBar, QFileDialog, QSplashScreen, QSizePolicy)
 
-from PySide6.QtGui import (QMouseEvent, QKeyEvent, QSyntaxHighlighter, QColor, QFont,
+from PySide6.QtGui import (QMouseEvent, QKeyEvent, QWheelEvent, QSyntaxHighlighter, QColor, QFont,
                            QTextCursor, QTextCharFormat, QPixmap, QKeySequence, QShortcut)
 
 from PySide6.QtCore import Qt, QRect, QEvent
@@ -109,6 +109,7 @@ import shared as sh
 
 from ui_helpers import NoZoomPlainTextEdit, SimpleScripturePopup
 from services.settings import SettingsService
+from services.search_service import findf3_ww_ac, findf3_ww_all, findf3_ww_any
 ## Step 5: Reduce import and initialisation cost
 # Defer heavy/optional imports to first use instead of module import time.
 # - windows.* (secondary/about windows)
@@ -190,150 +191,8 @@ except (AttributeError, OSError) as e:
     print(f"Error setting APP ID: {e}")
 
 
-def back_push(current_position: int) -> None:
-    """Push onto the back stack (delegates to History)."""
-    history.back_push(w, current_position)
 
 
-def back_pop() -> int:
-    """Pop from the back stack (delegates to History)."""
-    return history.back_pop(w)
-
-
-def forward_push(current_position) -> None:
-    """Push onto the forward stack (delegates to History)."""
-    history.forward_push(w, int(current_position))
-
-
-def forward_pop() -> int:
-    """Pop from the forward stack (delegates to History)."""
-    return history.forward_pop(w)
-
-
-def iterate_list(keywords: list[str], r_list: list) -> None:
-    """Iterate over r_list and find all the occurrences of key(s) in keywords."""
-
-    #  global w ----- Probably unnecessary!
-    w.occurring = 0
-    w.occur = []
-    for i in w.occurs:
-        coordinates = []
-        for key in keywords:
-            pattern = fcs.create_pattern(key)
-            for m in re.finditer(pattern, r_list[i]):
-                w.occurring += 1
-                coordinates.append((m.start(), m.end()))
-        if coordinates:
-            w.occur.append(coordinates)
-
-
-def findf3_ww_ac(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list: list) -> None:
-    """Whole words (phrase)."""
-
-    liszt = w.key.split(' ')
-    s = _set[liszt[0]] & _set[liszt[1]]
-    if numwords > 2:
-        for i in range(2, numwords):
-            j = liszt[i]
-            s = s & _set[j]
-    w.occur = sorted(list(s))
-    w.occurs = []
-
-    pattern = re.compile(rf"\b{re.escape(w.key)}\b")
-
-    for i in w.occur:
-        if x1 <= i <= x2 and pattern.search(r_list[i]):
-            w.occurs.append(i)
-
-    liszt = [w.key]
-    iterate_list(liszt, r_list)
-    c = 0
-    for i in w.occur:
-        li = len(i)
-        c += li
-    w.occurring = c
-
-
-def findf3_ww_all(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list: list) -> None:
-    """Match all the words (phrase)."""
-
-    liszt = w.key.split(' ')
-    try:
-        s = _set[liszt[0]] & _set[liszt[1]]
-    except KeyError:
-        print(f'liszt[0] {liszt[0]}')
-        print(f'liszt[1] {liszt[1]}')
-        raise KeyError
-
-    if numwords > 2:
-        for i in range(2, numwords):
-            s = s & _set[liszt[i]]
-    w.occur = sorted(list(s))
-    w.occurs = []
-    for i in w.occur:
-        if i < x1 or i > x2:
-            continue
-        w.occurs.append(i)
-    iterate_list(liszt, r_list)
-    w.occurring = len(w.occurs)
-
-
-def check_count_sort(liszt: list[str], r_list: list) -> None:
-    """Check matched words are whole, count and sort w.occurs (Any)."""
-
-    w.count = []
-    iterate_list(liszt, r_list)
-    lo = len(w.occur)
-
-    # If no occurrences found, set occurring to 0 and return early
-    if lo == 0:
-        w.occurring = 0
-        return
-
-    for i in range(lo):
-        w.count.append(len(w.occur[i]))
-
-    w.count, w.occurs, w.occur = zip(
-        *sorted(zip(w.count, w.occurs, w.occur), reverse=True))
-
-    w.occur = list(w.occur)
-    w.occurs = list(w.occurs)
-
-    newt: list = []
-    newts: list = []
-    j = w.count[0]
-    k = 0
-    t: list = []
-    ts: list = []
-    for i in w.count:
-        if (i == j) and (k < lo):
-            wok = w.occur[k]
-            t.append(wok)
-            woks = w.occurs[k]
-            ts.append(woks)
-            k += 1
-            j = i
-        elif (i != j) or (k == lo - 1):
-            t.reverse()
-            ts.reverse()
-            newt.append(t)
-            newts.append(ts)
-            t = []
-            ts = []
-            if k < lo:
-                j = w.count[k]
-                wok = w.occur[k]
-                t.append(wok)
-                woks = w.occurs[k]
-                ts.append(woks)
-                k += 1
-    t.reverse()
-    ts.reverse()
-    newt.append(t)
-    newts.append(ts)
-    w.occur = list(chain.from_iterable(newt))
-    w.occurs = list(chain.from_iterable(newts))
-    w.occurring = len(w.occurs)
 
 
 def prep_statusbar_message(index: int):
@@ -397,23 +256,11 @@ def occurrent1() -> int:
     return current_position
 
 
-def findf3_ww_any(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list: list) -> None:
+def findf3_ww_any(x1: int, x2: int, _set: Dict[str, Set], r_list: list, win: 'MainWindow') -> None:
     """Match any word."""
 
-    liszt: list[str] = w.key.split(' ')
-    s: Set = set()
-    s = s.union(_set[liszt[0]], _set[liszt[1]])
-    if numwords > 2:
-        for i in range(2, numwords):
-            s = s.union(_set[liszt[i]])
-    w.occur = sorted(list(s))
-    w.occurs = []
-    for i in w.occur:
-        if i < x1 or i > x2:
-            continue
-        w.occurs.append(i)
-
-    check_count_sort(liszt, r_list)
+    from services.search_service import findf3_ww_any as _find_any
+    _find_any(x1, x2, _set, r_list, win)
 
 
 def make_offset(ln: int) -> int:
@@ -512,7 +359,7 @@ class GillCommentaryWindow(QWidget):
     1:id, 2:book, 3:chapter, 4:fromverse, 5:toverse, 6:data
     Lookup now uses (book, chapter, fromverse) — no reliance on the global id.
     """
-    def __init__(self, db_path: Path, parent: QWidget | None = None) -> None:
+    def __init__(self, db_path: Path, parent: QWidget | None = None, settings_service: SettingsService | None = None) -> None:
         # Force this widget to be a top-level window regardless of parent
         super().__init__(parent if parent is None else None)
         self._db_path = Path(db_path)
@@ -520,7 +367,7 @@ class GillCommentaryWindow(QWidget):
         # Current global verse index within Abib (0 to LAST_VERSE_IN_BIBLE)
         self._x: int = 0
         # Settings service for persisting geometry and font
-        self._settings_service = SettingsService()
+        self._settings_service = settings_service if settings_service is not None else SettingsService()
 
         self.setWindowTitle("Gill Commentary")
         try:
@@ -657,6 +504,7 @@ class GillCommentaryWindow(QWidget):
         self._current_href: str | None = None
         # Shared tooltip helper
         self._popup_helper: SimpleScripturePopup | None = SimpleScripturePopup()
+        self._is_dark: bool = False
         # Debounced hide timer for popup
         try:
             from PySide6.QtCore import QTimer as _QTimer
@@ -694,7 +542,26 @@ class GillCommentaryWindow(QWidget):
         self._interaction_quiet_ms: int = 1200
         # Small per-window cache for href → resolved verse text to avoid repeat work while hovering
         self._ref_cache: dict[str, str] = {}
-        # (Auto-follow initialization removed)
+        # (Auto-follow initialisation removed)
+
+    def apply_theme(self, is_dark: bool) -> None:
+        """Update the viewer colours and internal popup helper to match the theme."""
+        self._is_dark = is_dark
+        try:
+            if is_dark:
+                # Use identical dark styles as ThemeManager for QPlainTextEdit/QTextEdit
+                self.viewer.setStyleSheet("QTextEdit { background-color: #121212; color: #ffffff; }")
+            else:
+                self.viewer.setStyleSheet("QTextEdit { background-color: #ffffff; color: #000000; }")
+        except (RuntimeError, AttributeError):
+            pass
+        
+        # Ensure the popup helper matches the new theme if it exists
+        if self._popup_helper is not None:
+            try:
+                self._popup_helper.apply_theme(is_dark)
+            except (RuntimeError, AttributeError):
+                pass
 
     # --------- DB helpers ---------
     def _ensure_conn(self) -> sqlite3.Connection:
@@ -729,8 +596,9 @@ class GillCommentaryWindow(QWidget):
             pass
         # Persist final geometry on close
         try:
+            geom = self.geometry()
             self._settings_service.save_window_geometry(
-                "gill_commentary_window", int(self.x()), int(self.y()), int(self.width()), int(self.height())
+                "gill_commentary_window", int(geom.x()), int(geom.y()), int(geom.width()), int(geom.height())
             )
         except (RuntimeError, TypeError, ValueError):
             pass
@@ -740,8 +608,9 @@ class GillCommentaryWindow(QWidget):
     # Persist geometry on move/resize
     def moveEvent(self, event):  # type: ignore[override]
         try:
+            geom = self.geometry()
             self._settings_service.save_window_geometry(
-                "gill_commentary_window", int(self.x()), int(self.y()), int(self.width()), int(self.height())
+                "gill_commentary_window", int(geom.x()), int(geom.y()), int(geom.width()), int(geom.height())
             )
         except (RuntimeError, TypeError, ValueError):
             pass
@@ -752,8 +621,9 @@ class GillCommentaryWindow(QWidget):
 
     def resizeEvent(self, event):  # type: ignore[override]
         try:
+            geom = self.geometry()
             self._settings_service.save_window_geometry(
-                "gill_commentary_window", int(self.x()), int(self.y()), int(self.width()), int(self.height())
+                "gill_commentary_window", int(geom.x()), int(geom.y()), int(geom.width()), int(geom.height())
             )
         except (RuntimeError, TypeError, ValueError):
             pass
@@ -776,24 +646,11 @@ class GillCommentaryWindow(QWidget):
 
     # --------- Public API ---------
     def set_reference(self, book: int, chapter: int, verse: int) -> None:
-        """Compatibility wrapper: set by the (book, chapter, verse).
-
-        Maps to the global index _x by scanning sh.Info and delegates to set_position.
-        """
-        b = int(book)
-        c0 = int(chapter) - 1
-        v0 = int(verse) - 1
-        # Linear search — acceptable for sporadic calls
-        x = None
+        """Compatibility wrapper: set by the 1-based (book, chapter, verse)."""
         try:
-            for i, entry in enumerate(sh.Info[0: sh.LAST_VERSE_IN_BIBLE + 1], start=0):
-                if int(entry[0]) == b and int(entry[1]) == c0 and int(entry[2]) == v0:
-                    x = i
-                    break
-        except (TypeError, ValueError, IndexError):
-            x = None
-        if x is None:
-            # Fallback to Genesis 1:1 (0-based)
+            # Use fast O(1) lookup via calc_line
+            x = calc_line(book, chapter, verse, 0)
+        except (TypeError, ValueError):
             x = 0
         self.set_position(x)
 
@@ -920,21 +777,18 @@ class GillCommentaryWindow(QWidget):
 
         try:
             db_b = int(b) + 1
-            if int(b) == 1:
-                # Genesis appears to be stored as book=1 in the DB; keep others offset by +1
-                db_b = 1
         except (TypeError, ValueError):
             db_b = b
         # Special-case: some environments report Gen 1:1 as v=2 via sh.Info; normalise to 1.
         v_db = v
         v_title = v
-        if b == 1 and c == 1 and v == 2:
+        if b == 0 and c == 1 and v == 2:
             v_db = 1
             v_title = 1
         text = self._fetch_commentary_text(db_b, c, v_db)
         # Title with book name (e.g. "Exodus 1:1"), falling back to numbers if needed
         try:
-            title_ref = f"{b} {c}:{v_title}"
+            title_ref = f"{b + 1} {c}:{v_title}"
             if hasattr(w, "nwin"):
                 try:
                     book_str = w.nwin[int(b)]
@@ -1000,6 +854,8 @@ class GillCommentaryWindow(QWidget):
             except (RuntimeError, AttributeError, TypeError, ValueError):
                 pass
             self._settings_service.update_commentary_font_size(s)
+            # Refresh the display to apply the new font size to the HTML content
+            self._display_current()
         except (RuntimeError, TypeError, ValueError):
             pass
 
@@ -1027,6 +883,14 @@ class GillCommentaryWindow(QWidget):
 
                 if et == QEvent.Type.Wheel:
                     self._mark_user_interaction()
+                    # Forward-wheel events to popup helper for scrolling long refs
+                    try:
+                        ph = getattr(self, "_popup_helper", None)
+                        if ph is not None and ph.is_visible() and isinstance(event, QWheelEvent):
+                            ph.scroll_by(event.angleDelta().y())
+                            return True
+                    except (RuntimeError, AttributeError):
+                        pass
                 elif et in (QEvent.Type.MouseButtonPress, QEvent.Type.MouseButtonRelease):
                     self._mark_user_interaction()
                 elif et == QEvent.Type.MouseMove:
@@ -1115,7 +979,7 @@ class GillCommentaryWindow(QWidget):
                         if isinstance(event, QMouseEvent):
                             qp = event.position().toPoint()
                             href = self.viewer.anchorAt(qp)
-                            if isinstance(href, str) and href.lstrip().startswith(('#b', '#B')):
+                            if isinstance(href, str) and href.lstrip().startswith(('#b', '#B', '#c', '#C')):
                                 bcv = self._parse_href_to_bcv(href)
                                 if bcv is not None and hasattr(w, 'move_to_line') and callable(getattr(w, 'move_to_line')):
                                     b, c, v = bcv
@@ -1124,8 +988,11 @@ class GillCommentaryWindow(QWidget):
                                     except (RuntimeError, AttributeError, TypeError, ValueError):
                                         current_ln = 0
                                     try:
-                                        ln = calc_line(b, c, v, current_ln)
-                                        w.move_to_line(int(ln))
+                                        idx = calc_line(b, c, v, current_ln)
+                                        w.display_verse(int(idx))
+                                        # For commentary links (#c), also update the Gill window itself
+                                        if href.lstrip().startswith(('#c', '#C')):
+                                            self.set_position(int(idx))
                                     except (RuntimeError, AttributeError, TypeError, ValueError):
                                         pass
                                 self._close_popup()
@@ -1184,8 +1051,8 @@ class GillCommentaryWindow(QWidget):
             except (RuntimeError, AttributeError):
                 self._close_popup()
             return
-        # Only handle internal bible refs, e.g. #b43.3.16
-        if not isinstance(href, str) or not href.lstrip().startswith(('#b', '#B')):
+        # Only handle internal bible refs, e.g. #b43.3.16 or #c40.21.33
+        if not isinstance(href, str) or not href.lstrip().startswith(('#b', '#B', '#c', '#C')):
             try:
                 if self._hide_timer is not None:
                     self._hide_timer.start(self._hide_delay_ms)
@@ -1214,6 +1081,7 @@ class GillCommentaryWindow(QWidget):
 
         Supported examples:
         #b43.3.16
+        #c1.2.9 (commentary link)
         #b43.3.16-18
         #b43.3.16,18,20-22
         #B43.3.16 (case-insensitive)
@@ -1239,8 +1107,8 @@ class GillCommentaryWindow(QWidget):
             # Trim leading '#'
             if s.startswith('#'):
                 s = s[1:]
-            # Tolerate leading 'b' or 'B'
-            if s and (s[0] in ('b', 'B')):
+            # Tolerate leading 'b', 'B', 'c' or 'C'
+            if s and (s[0] in ('b', 'B', 'c', 'C')):
                 s = s[1:]
             parts = s.split('.')
             if len(parts) < 2:
@@ -1353,7 +1221,7 @@ class GillCommentaryWindow(QWidget):
             s = href.strip()
             if s.startswith('#'):
                 s = s[1:]
-            if s and (s[0] in ('b', 'B')):
+            if s and (s[0] in ('b', 'B', 'c', 'C')):
                 s = s[1:]
             parts = s.split('.')
             if len(parts) < 2:
@@ -1396,7 +1264,8 @@ class GillCommentaryWindow(QWidget):
             if self._popup_helper is None:
                 self._popup_helper = SimpleScripturePopup()
             # Delegate rendering/positioning to the shared helper
-            self._popup_helper.show(self.viewer, text, pos, self.viewer.font())
+            is_dark = self._is_dark
+            self._popup_helper.show(self.viewer, text, pos, self.viewer.font(), is_dark=is_dark)
         except (RuntimeError, AttributeError, TypeError, ValueError):
             pass
 
@@ -1476,7 +1345,7 @@ class GillCommentaryWindow(QWidget):
                 href = self.viewer.anchorAt(pt)
             except (RuntimeError, AttributeError, TypeError, ValueError):
                 href = ""
-            if isinstance(href, str) and href.lstrip().startswith(("#b", "#B")):
+            if isinstance(href, str) and href.lstrip().startswith(("#b", "#B", "#c", "#C")):
                 return href
         return ""
 
@@ -1503,12 +1372,13 @@ class MainWindow(QMainWindow):
 
     def __init__(self, *args, **kwargs) -> None:
         """Initialise."""
+        settings_service = kwargs.pop("settings_service", None)
         super(MainWindow, self).__init__(*args, **kwargs)
 
         # Load saved settings or initialise default ones.
 
         # Settings service and window geometry
-        self.settings_service = SettingsService()
+        self.settings_service = settings_service if settings_service is not None else SettingsService()
         x6, y6, width6, height6 = self.settings_service.get_window_geometry("main_window")
         self.setGeometry(x6, y6, width6, height6)
 
@@ -1567,10 +1437,9 @@ class MainWindow(QMainWindow):
         is_dark = self.settings.get("theme", "Light") == "Dark"
         self.theme = ThemeManager(ThemeState(is_dark_mode=is_dark))
 
-        # Initialise the last known Bible position to satisfy linters and ensure availability
-        # throughout the object's lifecycle.
+        # Initialise the last known Bible position from settings.
         # This is updated at various navigation points.
-        self._last_bible_position: int = 0
+        self._last_bible_position: int = self.settings_service.get_last_bible_position()
         # Track the last explicitly clicked position in the Bible view (used for context actions)
         self._last_clicked_position: int = 0
         # Track the last general context position used by features like Commentary
@@ -1643,6 +1512,25 @@ class MainWindow(QMainWindow):
                 pass
         """
 
+        # Search and runtime state
+        self.occurring: int = 0
+        self.occurrence: int = 0
+        self.occur: list = []
+        self.occurs: list = []
+        self.count: list = []
+        self.key: str = ' '
+        self.keym: str = ''
+        self.message: str = ''
+        self.store: str = ' '
+        self.gent: Any | None = None
+        self.no_f3_yet: int = 0
+        self.yend: int = 0
+        self.finding: int = 0
+        self.verse: int = 0
+        self.PCE_text: list = []
+        self.otherFileFlag: bool = True
+        self.y: int = 0
+
         self.initui()
 
     # --- Lazy services ---
@@ -1698,29 +1586,59 @@ class MainWindow(QMainWindow):
     def initui(self) -> None:
         """Initialise Mainwindow GUI."""
 
-        # w_origin, h_origin = centerer(self.winwidth, self.winheight)
-        # self.setGeometry(w_origin, h_origin, self.winwidth, self.winheight)
-
         fixedfont: QFont = QFont("Cascadia Mono", self.fontsize, QFont.Weight.Medium)
         self.textEditor.setFont(fixedfont)
         self.textEditor.setReadOnly(True)
-        # Capture mouse clicks inside the Bible text area so we can
-        # position the clicked verse at the bottom of the screen
         try:
             self.textEditor.viewport().installEventFilter(self)
         except (RuntimeError, AttributeError):
             pass
 
+        self._setup_input_fields()
+        self._setup_comboboxes()
+        
+        self.hiLita: SyntaxHighlighter = SyntaxHighlighter(self.textEditor.document())
+
+        grid: QGridLayout = QGridLayout()
+        grid.setSpacing(2)
+        self.setLayout(grid)
+
+        for _col in range(5):
+            try:
+                grid.setColumnStretch(_col, 1)
+            except (RuntimeError, AttributeError, TypeError):
+                pass
+
+        grid.addWidget(self.textEditor, 0, 0, 1, 5)
+        self.textEditor.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+
+        self._layout_widgets(grid)
+        self._setup_other_works(grid)
+
+        container: QWidget = QWidget()
+        container.setLayout(grid)
+        self.setCentralWidget(container)
+        self.display_verse_input.setFocus()
+
+        self.statusBar = QStatusBar()
+        self.setStatusBar(self.statusBar)
+
+        # Build menus, toolbars, and actions via the centralised helper
+        from ui.actions import setup_menus_and_toolbars  # local import (deferred)
+        self.actions_bundle = setup_menus_and_toolbars(self)
+
+        self.secondary_window = None
+        self.set_theme(self.settings)
+
+    def _setup_input_fields(self) -> None:
         self.display_verse_input: QLineEdit = QLineEdit()
         self.display_verse_input.setToolTip("F2, Enter or OK to search for a verse.")
-        # self.display_verse_input.returnPressed.connect(self.goto_line)
-        self.display_verse_input.setGeometry(QRect(50, 50, 200, 25))  # Reduce the width to 200
-        self.display_verse_input.installEventFilter(self)  # Install event filter for custom key handling
-
-        # Store command history and variables
+        self.display_verse_input.setGeometry(QRect(50, 50, 200, 25))
+        self.display_verse_input.installEventFilter(self)
         self.command_history = []
         self.history_index = -1
 
+    def _setup_comboboxes(self) -> None:
         self.comboBox_1: QComboBox = QComboBox()
         self.comboBox_1.addItems(self.nwin)
         self.comboBox_1.setCurrentIndex(0)
@@ -1736,108 +1654,69 @@ class MainWindow(QMainWindow):
         self.comboBox_3.setCurrentIndex(0)
         self.comboBox_3.activated.connect(self.goto_verse)
 
-        self.hiLita: SyntaxHighlighter = SyntaxHighlighter(self.textEditor.document())
-
-        grid: QGridLayout = QGridLayout()
-        grid.setSpacing(2)
-        self.setLayout(grid)
-
-        # Configure a 5-column grid where each column has equal stretch so they
-        # share available width uniformly as the window resizes.
-        for _col in range(5):
-            try:
-                grid.setColumnStretch(_col, 1)
-            except (RuntimeError, AttributeError, TypeError):
-                pass
-
-        # Let the Bible text editor take up the extra space to the right by spanning all 5 columns on row 0.
-        # Note: Columns 0–4 are used on later rows for controls; spanning on row 0 does not affect them.
-        grid.addWidget(self.textEditor, 0, 0, 1, 5)
-        self.textEditor.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-
-        # Make Book combo double width (two columns)
+    def _layout_widgets(self, grid: QGridLayout) -> None:
+        # Row 1: Books (cols 0-1), Chapters (col 2), Verses (col 3), Fullscreen (col 4)
         grid.addWidget(self.comboBox_1, 1, 0, 1, 2)
         self.comboBox_1.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        # Make Chapter combo a single width (same as a pushbutton)
         grid.addWidget(self.comboBox_2, 1, 2)
         self.comboBox_2.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        # Verse combo stays single-width on the top control row (moved left to column 3)
         grid.addWidget(self.comboBox_3, 1, 3)
-        
-        # Columns 0–4 are used for controls on rows 1–5.
-        # Some columns on certain rows may be intentionally left empty,
-        # but all five columns have equal stretch so they remain equal
-        # in width and expand uniformly with the window.
         self.comboBox_3.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        # F2 text entry should be double the width of pushbuttons
+        # Row 2: Input (cols 0-1), OK (col 2), Theme (col 3), Devotional (col 4)
         grid.addWidget(self.display_verse_input, 2, 0, 1, 2)
         self.display_verse_input.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         self.okButton = QPushButton("OK")
         self.okButton.setStyleSheet("QPushButton { text-align: left; }")
-        self.okButton.setGeometry(QRect(200, 200, 75, 30))  # Position the "OK" button
-
-        # OK button follows the F2 entry
-        grid.addWidget(self.okButton, 2, 2)
         self.okButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.okButton.setToolTip("Enter")
         self.display_verse_input.returnPressed.connect(self.goto_line)
         self.okButton.clicked.connect(self.goto_line)
+        grid.addWidget(self.okButton, 2, 2)
 
-        # Ensure comboboxes visually match button height
-        try:
-            self._normalize_control_heights()
-        except (RuntimeError, AttributeError, TypeError):
-            pass
-
-        # Theme toggle button (Light/Dark), replacing the old Quit button
         self.buttonTheme = QPushButton("Light/Dark")
         self.buttonTheme.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonTheme.clicked.connect(self.toggle_dark_mode)
-        # Theme toggle shifted right to account for widened F2 and OK
-        grid.addWidget(self.buttonTheme, 2, 3)
         self.buttonTheme.setToolTip("Toggle Light/Dark theme")
         self.buttonTheme.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        grid.addWidget(self.buttonTheme, 2, 3)
 
+        # Row 3: Find (col 0), Find Next (col 1), Back (col 2), Forward (col 3), Commentary (col 4)
         self.buttonf3 = QPushButton("Find", self)
         self.buttonf3.setStyleSheet("QPushButton { text-align: left; }")
-        self.buttonf3.clicked.connect(self.f3)
+        self.buttonf3.clicked.connect(self.search_current_word)
         self.buttonf3.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.buttonf3.setToolTip("F3")
-        # Place Find at row 3, column 0
         grid.addWidget(self.buttonf3, 3, 0)
 
         self.buttonf4 = QPushButton("Find Next")
         self.buttonf4.setStyleSheet("QPushButton { text-align: left; }")
-        self.buttonf4.clicked.connect(self.f4)
+        self.buttonf4.clicked.connect(self.repeat_find_forward)
         self.buttonf4.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.buttonf4.setToolTip("F4")
-        # Place Find Next at row 3, column 1
         grid.addWidget(self.buttonf4, 3, 1)
 
         self.buttonf5 = QPushButton("Back")
         self.buttonf5.setStyleSheet("QPushButton { text-align: left; }")
-        self.buttonf5.clicked.connect(self.f5)
-        # Place Back at row 3, column 2
-        grid.addWidget(self.buttonf5, 3, 2)
+        self.buttonf5.clicked.connect(self.history_back)
         self.buttonf5.setToolTip("F5")
         self.buttonf5.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        grid.addWidget(self.buttonf5, 3, 2)
 
         self.buttonf6 = QPushButton("Forward")
         self.buttonf6.setStyleSheet("QPushButton { text-align: left; }")
-        self.buttonf6.clicked.connect(self.f6)
-        # Place Forward at row 3, column 3
-        grid.addWidget(self.buttonf6, 3, 3)
+        self.buttonf6.clicked.connect(self.history_forward)
         self.buttonf6.setToolTip("F6")
         self.buttonf6.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        grid.addWidget(self.buttonf6, 3, 3)
 
+        # Row 4: Book- (col 0), Book+ (col 1), Chapter- (col 2), Chapter+ (col 3)
         self.buttonf7 = QPushButton("Book-")
         self.buttonf7.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf7.clicked.connect(self.earlier_book)
         self.buttonf7.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.buttonf7.setToolTip("F7")
-        # Place the 'Book-' pushbutton at row 4, column 0
         grid.addWidget(self.buttonf7, 4, 0)
 
         self.buttonf8 = QPushButton("Book+")
@@ -1845,165 +1724,112 @@ class MainWindow(QMainWindow):
         self.buttonf8.clicked.connect(self.later_book)
         self.buttonf8.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.buttonf8.setToolTip("F8")
-        # Place the Book+ pushbutton at row 4, column 1
         grid.addWidget(self.buttonf8, 4, 1)
 
         self.buttonf10 = QPushButton("Chapter-")
         self.buttonf10.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf10.clicked.connect(self.earlier_chapter)
-        # Place the 'Chapter-' pushbutton at row 4, column 2
-        grid.addWidget(self.buttonf10, 4, 2)
         self.buttonf10.setToolTip("F10")
         self.buttonf10.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        grid.addWidget(self.buttonf10, 4, 2)
 
         self.buttonf11 = QPushButton("Chapter+")
         self.buttonf11.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf11.clicked.connect(self.later_chapter)
-        # Place the Chapter+ pushbutton at row 4, column 3
-        grid.addWidget(self.buttonf11, 4, 3)
         self.buttonf11.setToolTip("F11")
         self.buttonf11.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        grid.addWidget(self.buttonf11, 4, 3)
 
+        # Specialized Buttons
         self.buttonf9 = QPushButton("Fullscreen")
         self.buttonf9.setStyleSheet("QPushButton { text-align: left; }")
-        self.buttonf9.clicked.connect(self.f9)
+        self.buttonf9.clicked.connect(self.open_commentary_window_shortcut)
         self.buttonf9.setToolTip("F9")
         self.buttonf9.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        # Move the Fullscreen pushbutton to the top control row, rightmost column (col 4)
         grid.addWidget(self.buttonf9, 1, 4)
 
         self.buttonf12 = QPushButton("Devotional")
         self.buttonf12.setStyleSheet("QPushButton { text-align: left; }")
-        self.buttonf12.clicked.connect(self.f12)
+        self.buttonf12.clicked.connect(self.show_devotional)
         self.buttonf12.setToolTip("F12")
         self.buttonf12.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        # Place the Devotional pushbutton to the right of Light/Dark (row 2, col 4)
         grid.addWidget(self.buttonf12, 2, 4)
 
         self.buttonf13 = QPushButton("Commentary")
         self.buttonf13.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf13.clicked.connect(commentary)
-        # Place the Commentary pushbutton to the right of Forward (row 3, col 4)
-        grid.addWidget(self.buttonf13, 3, 4)
         self.buttonf13.setToolTip("Open Commentaries (Ctrl+Shift+C)")
         self.buttonf13.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        grid.addWidget(self.buttonf13, 3, 4)
 
-        # Add a keyboard shortcut to open Gill Commentary (Ctrl+Shift+C)
         try:
             shortcut_cmt = QShortcut(QKeySequence("Ctrl+Shift+C"), self)
             shortcut_cmt.activated.connect(commentary)
         except (RuntimeError, TypeError, AttributeError):
             pass
 
-        # Bottom row layout:
-        # - Place the Other Works combobox with double width (cols 0–1), matching the Book combobox size.
-        # - Place the "Last" and "Search" pushbuttons as single-column buttons to the right (cols 2 and 3).
-        # (Row indices are zero-based here; this is row 5 in our grid.)
-        self.other_works_combo = QComboBox()
-        self.other_works_combo.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        # Re-apply control height so the new combobox matches button height as well
         try:
             self._normalize_control_heights()
         except (RuntimeError, AttributeError, TypeError):
             pass
 
-        # Option A: Add a one-click button to jump to the last read item
+    def _setup_other_works(self, grid: QGridLayout) -> None:
+        self.other_works_combo = QComboBox()
+        self.other_works_combo.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
         self.last_work_btn = QPushButton("Last")
-        # Left-justify the button text as requested
-        try:
-            self.last_work_btn.setStyleSheet("QPushButton { text-align: left; }")
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            pass
+        self.last_work_btn.setStyleSheet("QPushButton { text-align: left; }")
         self.last_work_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.last_work_btn.setToolTip("Open the last read book (Ctrl+L)")
         self.last_work_btn.clicked.connect(self._select_last_other_work)
 
-        # Add a Search button for searching within the Other Works reader window
         self.search_work_btn = QPushButton("Search")
-        # Left-justify the button text as requested
-        try:
-            self.search_work_btn.setStyleSheet("QPushButton { text-align: left; }")
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            pass
+        self.search_work_btn.setStyleSheet("QPushButton { text-align: left; }")
         self.search_work_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        # Allow these buttons to expand with their grid columns; avoid fixed widths.
         self.search_work_btn.setToolTip("Search in the opened Other Works text (Ctrl+F)")
         self.search_work_btn.clicked.connect(self._open_reader_search)
-        # Disabled (greyed out) until a reader window is displayed
-        try:
-            self.search_work_btn.setEnabled(False)
-        except (RuntimeError, AttributeError, TypeError):
-            pass
+        self.search_work_btn.setEnabled(False)
 
-        # Place the widgets on the grid as requested
-        grid.addWidget(self.other_works_combo, 5, 0, 1, 2)  # span columns 0–1 (double width like Book)
-        grid.addWidget(self.last_work_btn, 5, 2)            # single-column button
-        grid.addWidget(self.search_work_btn, 5, 3)          # single-column button
+        grid.addWidget(self.other_works_combo, 5, 0, 1, 2)
+        grid.addWidget(self.last_work_btn, 5, 2)
+        grid.addWidget(self.search_work_btn, 5, 3)
 
-        # Ensure all column widgets expand horizontally to use their equal column widths
-        try:
-            expanding_fixed = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-            for name in (
-                'comboBox_1','comboBox_2','comboBox_3','display_verse_input','okButton','buttonTheme',
-                'buttonf3','buttonf4','buttonf5','buttonf6','buttonf7','buttonf8','buttonf9',
-                'buttonf10','buttonf11','buttonf12','buttonf13','other_works_combo','last_work_btn','search_work_btn'
-            ):
-                wdg = getattr(self, name, None)
-                if wdg is None:
-                    continue
-                try:
-                    wdg.setSizePolicy(expanding_fixed)
-                except (RuntimeError, AttributeError, TypeError, ValueError):
-                    pass
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            pass
+        # Set the sizing policy for all controls
+        expanding_fixed = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        controls = [
+            'comboBox_1', 'comboBox_2', 'comboBox_3', 'display_verse_input', 'okButton', 'buttonTheme',
+            'buttonf3', 'buttonf4', 'buttonf5', 'buttonf6', 'buttonf7', 'buttonf8', 'buttonf9',
+            'buttonf10', 'buttonf11', 'buttonf12', 'buttonf13', 'other_works_combo', 'last_work_btn', 'search_work_btn'
+        ]
+        for name in controls:
+            wdg = getattr(self, name, None)
+            if wdg:
+                wdg.setSizePolicy(expanding_fixed)
 
-        # Populate the combo with .txt files from 'Other Works'
+        # Populate
         other_works_dir = Path(sh.str_cwd) / "Other Works"
-        files = sorted([p for p in other_works_dir.glob("*.txt") if p.is_file()])
-        self.other_works_map = {p.stem: str(p) for p in files}
-        # Populate combo filtered by settings['show_work'] values
-        self._refresh_other_works_combo()
+        if other_works_dir.exists():
+            files = sorted([p for p in other_works_dir.glob("*.txt") if p.is_file()])
+            self.other_works_map = {p.stem: str(p) for p in files}
+            self._refresh_other_works_combo()
 
-        # Default selection: last viewed item if available; else Pilgrims-Progress; else leave as first item
-        last_work = self.settings.get("last_other_work") if isinstance(self.settings, dict) else None
-        if last_work and last_work in self.other_works_map:
-            self.other_works_combo.setCurrentText(last_work)
-        elif "Pilgrims-Progress" in self.other_works_map:
-            self.other_works_combo.setCurrentText("Pilgrims-Progress")
+            last_work = self.settings.get("last_other_work") if isinstance(self.settings, dict) else None
+            if last_work and last_work in self.other_works_map:
+                self.other_works_combo.setCurrentText(last_work)
+            elif "Pilgrims-Progress" in self.other_works_map:
+                self.other_works_combo.setCurrentText("Pilgrims-Progress")
 
-        # When selection changes, open or update the document reader window
         self.other_works_combo.currentTextChanged.connect(self._open_other_work)
-        # Also handle a user clicking the already-selected item (e.g., default on first click)
         self.other_works_combo.activated.connect(
             lambda index: self._open_other_work(self.other_works_combo.itemText(index))
         )
 
-        # Option B: Keyboard shortcut to jump to the last read Other Work
         try:
             self.shortcut_last_work = QShortcut(QKeySequence("Ctrl+L"), self)
             self.shortcut_last_work.setContext(Qt.ShortcutContext.WindowShortcut)
             self.shortcut_last_work.activated.connect(self._select_last_other_work)
         except (RuntimeError, AttributeError, TypeError):
-            # If shortcuts aren't available on this platform/Qt version, ignore gracefully
             pass
-        container: QWidget = QWidget()
-        container.setLayout(grid)
-        self.setCentralWidget(container)
-        self.display_verse_input.setFocus()
-
-        self.statusBar = QStatusBar()
-        self.setStatusBar(self.statusBar)
-
-        # Build menus, toolbars, and actions via the centralised helper
-        from ui.actions import setup_menus_and_toolbars  # local import (deferred)
-        self.actions_bundle = setup_menus_and_toolbars(self)
-
-        # Do not create the secondary window at startup (lazy-create in display_secondary_window)
-        self.secondary_window = None
-
-        # Apply theme from settings during initialisation.
-        self.set_theme(self.settings)
 
         # self.update_title()
         self.show()
@@ -2292,13 +2118,80 @@ class MainWindow(QMainWindow):
         # Pass the event to the parent class
         return super().eventFilter(source, event)
 
+    def moveEvent(self, event):
+        try:
+            geometry = self.geometry()
+            self.settings_service.save_window_geometry(
+                "main_window",
+                geometry.x(), geometry.y(), geometry.width(), geometry.height()
+            )
+        except (RuntimeError, TypeError, ValueError):
+            pass
+        try:
+            return super().moveEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
+    def resizeEvent(self, event):
+        try:
+            geometry = self.geometry()
+            self.settings_service.save_window_geometry(
+                "main_window",
+                geometry.x(), geometry.y(), geometry.width(), geometry.height()
+            )
+        except (RuntimeError, TypeError, ValueError):
+            pass
+        try:
+            return super().resizeEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
     def closeEvent(self, event: Any):
-        """Handle window close event - save geometry"""
+        """Handle window close event - save geometry and close child windows"""
+        # Save main window geometry and state
         geometry = self.geometry()
         self.settings_service.save_window_geometry(
             "main_window",
             geometry.x(), geometry.y(), geometry.width(), geometry.height()
         )
+
+        # Persist last Bible position
+        try:
+            self.settings_service.update_last_bible_position(int(self._last_bible_position))
+        except (AttributeError, TypeError, ValueError):
+            pass
+        
+        # Explicitly close secondary windows to ensure they trigger their own closeEvent/save logic
+        try:
+            if self._gill_win is not None:
+                self._gill_win.close()
+        except (RuntimeError, AttributeError):
+            pass
+            
+        try:
+            if self.text_edit_window is not None:
+                self.text_edit_window.close()
+        except (RuntimeError, AttributeError):
+            pass
+            
+        try:
+            if self.secondary_window is not None:
+                self.secondary_window.close()
+        except (RuntimeError, AttributeError):
+            pass
+
+        try:
+            if self.about_window is not None:
+                self.about_window.close()
+        except (RuntimeError, AttributeError):
+            pass
+
+        try:
+            if self.dlg is not None:
+                self.dlg.close()
+        except (RuntimeError, AttributeError):
+            pass
+
         event.accept()
 
     def increase_font_size(self):
@@ -2361,7 +2254,8 @@ class MainWindow(QMainWindow):
             self.text_edit_window = ExternalTextDocumentWindow(
                 initial_file_path=req_path,
                 settings=self.settings,
-                settings_path=getattr(self, "user_settings_path", None)
+                settings_path=getattr(self, "user_settings_path", None),
+                settings_service=self.settings_service
             )
             # When the user clicks a scripture reference in the reader, navigate here
             try:
@@ -2569,7 +2463,7 @@ class MainWindow(QMainWindow):
         # Initialize AboutWindow if it hasn't been created
         if self.about_window is None:
             from windows import AboutWindow as ExtAboutWindow  # deferred import
-            self.about_window = ExtAboutWindow(f"Abib {CURRENT_VERSION}")
+            self.about_window = ExtAboutWindow(f"Abib {CURRENT_VERSION}", settings_service=self.settings_service)
         # Apply the theme palette to the About window (apply_widget is internally safe)
         self.theme.apply_widget(self.about_window)
         self.about_window.show()
@@ -2701,7 +2595,7 @@ class MainWindow(QMainWindow):
 
         if self.dlg is None:
             from find_dialog import FindDialog  # deferred import
-            self.dlg = FindDialog(self)
+            self.dlg = FindDialog(self, settings_service=self.settings_service)
             # Apply theme palette to Find dialog (apply_widget is internally safe)
             self.theme.apply_widget(self.dlg)
             self.dlg.exec()
@@ -2713,7 +2607,7 @@ class MainWindow(QMainWindow):
 
         if self.dlg is None:
             from find_dialog import FindDialog  # deferred import
-            self.dlg = FindDialog(self)
+            self.dlg = FindDialog(self, settings_service=self.settings_service)
             # Apply theme palette to Find dialog (apply_widget is internally safe)
             self.theme.apply_widget(self.dlg)
             self.dlg.show()
@@ -2745,7 +2639,7 @@ class MainWindow(QMainWindow):
             self.find_f4_alt()
         elif self.dlg.checks[0] == 1:
             if self.gent is None:
-                self.f3()
+                self.search_current_word()
             else:
                 self.find_f4()
 
@@ -2960,12 +2854,12 @@ class MainWindow(QMainWindow):
                 self.statusBar.repaint()
         elif numwords > 1:
             if self.dlg.checks[0] == 2:
-                findf3_ww_ac(x1, x2, numwords, set_, r_list)
+                findf3_ww_ac(x1, x2, numwords, set_, r_list, self)
             elif self.dlg.checks[0] == 3:
-                findf3_ww_all(x1, x2, numwords, set_, r_list)
+                findf3_ww_all(x1, x2, numwords, set_, r_list, self)
             elif self.dlg.checks[0] == 4:
-                numwords, w.key = fcs.any_of_the_words_lookup(w.key, set_)
-                findf3_ww_any(x1, x2, numwords, set_, r_list)
+                _, w.key = fcs.any_of_the_words_lookup(w.key, set_)
+                findf3_ww_any(x1, x2, set_, r_list, self)
             if w.occurring != 0:
                 if self.dlg.checks[0] != 2:     # Not whole words
                     current_position = w.occurs[0]
@@ -2999,9 +2893,11 @@ class MainWindow(QMainWindow):
             # List of lists with tuple of the word positions, within the related verse.
             liszt = [w.key]
             if self.dlg.checks[0] == 4:
-                check_count_sort(liszt, r_list)
+                from services.search_service import check_count_sort
+                check_count_sort(liszt, r_list, self)
             else:
-                iterate_list(liszt, r_list)
+                from services.search_service import iterate_list
+                iterate_list(liszt, r_list, self)
 
             if self.dlg.checks[0] > 2:
                 w.occur_ww_1 = deepcopy(w.occur)
@@ -3035,13 +2931,13 @@ class MainWindow(QMainWindow):
             current_position = self.get_line_number()
 
             if forward:
-                back_push(current_position)
+                history.back_push(w, current_position)
                 while forward:
                     b_ = forward.pop()
                     back.append(b_)
             else:
                 forward.clear()
-                back_push(current_position)
+                history.back_push(w, current_position)
 
             # Ensure self.gent is a valid generator
             if self.gent is None:
@@ -3067,14 +2963,14 @@ class MainWindow(QMainWindow):
         if len(w.occurs) > 0 and w.occurrence < w.occurring:
             current_position = self.get_line_number()
             if forward:
-                back_push(current_position)
+                history.back_push(w, current_position)
                 while forward:
                     b_ = forward.pop()
                     back.append(b_)
             else:
                 current_position = w.occurs[w.verse]
                 forward.clear()
-                back_push(current_position)
+                history.back_push(w, current_position)
 
             if self.dlg.checks[0] == 2 or self.dlg.checks[2] == 6:
                 current_position = occurrent1()
@@ -3355,8 +3251,8 @@ class MainWindow(QMainWindow):
             pos = 0
         try:
             entry = sh.Info[pos]
-            # Info stores [book(1..66), chapter(0..), verse(0..)]
-            b = int(entry[0])
+            # Info stores [book(0..65), chapter(0..), verse(0..)]
+            b = int(entry[0]) + 1
             c = int(entry[1]) + 1
             v = int(entry[2]) + 1
             return b, c, v
@@ -3382,7 +3278,8 @@ class MainWindow(QMainWindow):
         if self._gill_win is None:
             try:
                 # Create as a true top-level window (no parent) so it can be viewed independently
-                self._gill_win = GillCommentaryWindow(db_path=db_path, parent=None)
+                # Share the same settings service to avoid cache divergence
+                self._gill_win = GillCommentaryWindow(db_path=db_path, parent=None, settings_service=self.settings_service)
             except (RuntimeError, TypeError, sqlite3.Error) as exc:
                 try:
                     QMessageBox.critical(self, "Commentary", f"Unable to open commentary window.\n{exc}")
@@ -3397,6 +3294,12 @@ class MainWindow(QMainWindow):
             if isinstance(self._gill_win, GillCommentaryWindow):
                 win = cast(GillCommentaryWindow, self._gill_win)
                 win.set_reference(b, c, v)
+                # Apply the current theme
+                try:
+                    win.apply_theme(self.theme.state.is_dark_mode)
+                    self.theme.apply_widget(win)
+                except (RuntimeError, AttributeError):
+                    pass
         except (AttributeError, TypeError, ValueError):
             pass
         try:
@@ -3416,7 +3319,7 @@ class MainWindow(QMainWindow):
         reset_attributes()
         current_position: int = self.get_line_number()
         forward.clear()
-        back_push(current_position)
+        history.back_push(w, current_position)
         if not ref:
             ref = self.display_verse_input.text()
             # print(f"ref: {ref}")
@@ -3443,7 +3346,7 @@ class MainWindow(QMainWindow):
         reset_attributes()
         current_position = self.get_line_number()
         forward.clear()
-        back_push(current_position)
+        history.back_push(w, current_position)
         book: int = self.comboBox_1.currentIndex()
         # book is an index 0-65
         if book == sh.BOOKS_IN_THE_BIBLE - 1:
@@ -3758,7 +3661,7 @@ class MainWindow(QMainWindow):
         elif event.buttons() == Qt.MouseButton.RightButton:
             pass
         elif event.buttons() == Qt.MouseButton.MiddleButton and w.no_f3_yet == 1:
-            self.f4()
+            self.repeat_find_forward()
         elif event.buttons() == Qt.MouseButton.MiddleButton and w.no_f3_yet == 0:
             current_position = self.get_line_number()
             self.ref_to_statusbar(current_position)
@@ -3767,19 +3670,19 @@ class MainWindow(QMainWindow):
         """Key trapping routine."""
 
         qtcore_keys_dict = {
-            Qt.Key.Key_F2: self.f2,
-            Qt.Key.Key_F3: self.f3,
-            Qt.Key.Key_F4: self.f4,
-            Qt.Key.Key_F5: self.f5,
-            Qt.Key.Key_F6: self.f6,
+            Qt.Key.Key_F2: self.navigate_to_verse,
+            Qt.Key.Key_F3: self.search_current_word,
+            Qt.Key.Key_F4: self.repeat_find_forward,
+            Qt.Key.Key_F5: self.history_back,
+            Qt.Key.Key_F6: self.history_forward,
             Qt.Key.Key_F7: self.earlier_book,
             Qt.Key.Key_F8: self.later_book,
-            Qt.Key.Key_F9: self.f9,
+            Qt.Key.Key_F9: self.open_commentary_window_shortcut,
             Qt.Key.Key_F10: self.earlier_chapter,
             Qt.Key.Key_F11: self.later_chapter,
             Qt.Key.Key_C: self.C,
             Qt.Key.Key_Question: self.feature,
-            Qt.Key.Key_F12: self.f12,
+            Qt.Key.Key_F12: self.show_devotional,
             Qt.Key.Key_Q: exit}
 
         if event.key():
@@ -3790,23 +3693,23 @@ class MainWindow(QMainWindow):
         else:
             pass
 
-    def f2(self) -> None:
+    def navigate_to_verse(self) -> None:
         """F2 key for passage reference entry."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         self.display_verse_input.setFocus()
         self.statusBar.clearMessage()
 
-    def f3(self) -> None:
+    def search_current_word(self) -> None:
         """F3 key for find key entry."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         current_position: int = self.get_line_number()
         forward.clear()
-        back_push(current_position)
+        history.back_push(w, current_position)
         self.onFindBtnClicked()
 
-    def f4(self) -> None:
+    def repeat_find_forward(self) -> None:
         """Find the next key F4."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
@@ -3816,7 +3719,7 @@ class MainWindow(QMainWindow):
             self.textEditor.setFocus()
             self.find_next()
 
-    def f5(self) -> None:
+    def history_back(self) -> None:
         """Back key."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
@@ -3829,26 +3732,26 @@ class MainWindow(QMainWindow):
         w.message = ''
         if len(back) > 0:
             current_position: int = self.get_line_number()
-            forward_push(current_position)
-            current_position = back_pop()
+            history.forward_push(w, current_position)
+            current_position = history.back_pop(w)
             self.se_display_verse(current_position)
 
-    def f6(self) -> None:
+    def history_forward(self) -> None:
         """Forward key."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         if len(forward) > 0:
             current_position: int = self.get_line_number()
-            back_push(current_position)
-            current_position = forward_pop()
+            history.back_push(w, current_position)
+            current_position = history.forward_pop(w)
             self.se_display_verse(current_position)
 
-    def f9(self) -> None:
+    def open_commentary_window_shortcut(self) -> None:
         """F9 Fullscreen toggle key."""
 
         self.toggle_fullscreen()
 
-    def f12(self) -> None:
+    def show_devotional(self) -> None:
         """F12 Devotional key."""
 
         self.display_secondary_window()
@@ -3875,7 +3778,7 @@ class MainWindow(QMainWindow):
         else:
             current_position = sh.Info.index([newbook, 0, 0])
             forward.clear()
-            back_push(current_position)
+            history.back_push(w, current_position)
             self.display_verse(current_position)
 
     def later_book(self) -> None:
@@ -3891,7 +3794,7 @@ class MainWindow(QMainWindow):
         else:
             current_position = sh.Info.index([newbook, 0, 0])
             forward.clear()
-            back_push(current_position)
+            history.back_push(w, current_position)
             self.display_verse(current_position)
 
     def earlier_chapter(self) -> None:
@@ -3917,7 +3820,7 @@ class MainWindow(QMainWindow):
             book = newbook
         current_position = sh.Info.index([book, newchapter, 0])
         forward.clear()
-        back_push(current_position)
+        history.back_push(w, current_position)
         self.display_verse(current_position)
 
     def later_chapter(self) -> None:
@@ -3945,7 +3848,7 @@ class MainWindow(QMainWindow):
             book = newbook
         current_position = sh.Info.index([book, newchapter, 0])
         forward.clear()
-        back_push(current_position)
+        history.back_push(w, current_position)
         self.display_verse(current_position)
 
     def on_error(self, message: str, millisecond_delay: int, clearbool: bool) -> None:
@@ -4135,7 +4038,7 @@ class MainWindow(QMainWindow):
         # Defer import to reduce startup/import-time cost
         from settings_dialog import SettingsDialog
 
-        dialog = SettingsDialog(self)
+        dialog = SettingsDialog(self, settings_service=self.settings_service)
 
         # Populate the settings dialog with current settings
         prev_show_splash = bool(self.settings.get("show_splash", False))
@@ -4378,6 +4281,12 @@ class MainWindow(QMainWindow):
             except (RuntimeError, AttributeError):
                 pass
             self.theme.apply_widget(self.text_edit_window)
+        if getattr(self, '_gill_win', None):
+            try:
+                self._gill_win.apply_theme(self.theme.state.is_dark_mode)
+            except (RuntimeError, AttributeError):
+                pass
+            self.theme.apply_widget(self._gill_win)
 
     def _normalize_control_heights(self) -> None:
         """Make QComboBox controls the same height as pushbuttons.
@@ -4446,6 +4355,7 @@ class MainWindow(QMainWindow):
                 sme_text,
                 navigate_left_cb=lambda: self.display_secondary_window(-12),
                 navigate_right_cb=lambda: self.display_secondary_window(12),
+                settings_service=self.settings_service
             )
             self.secondary_window.show()
         else:

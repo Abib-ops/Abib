@@ -15,6 +15,8 @@ from PySide6.QtGui import (
     QKeySequence,
     QTextDocument,
     QShortcut,
+    QMouseEvent,
+    QWheelEvent,
 )
 from PySide6.QtWidgets import (
     QDialog,
@@ -67,12 +69,22 @@ class TextDocumentWindow(QDialog):
     displayedChanged = Signal(bool)
     def __init__(self, initial_file_path: str | None = None,
                  settings: Dict[str, Any] | None = None,
-                 settings_path: str | None = None) -> None:
+                 settings_path: str | None = None,
+                 settings_service: Any | None = None) -> None:
         super().__init__()
 
         # Externalised settings (instead of relying on globals)
+        self.settings_service: Any | None = settings_service
         self.settings: Dict[str, Any] = settings if isinstance(settings, dict) else {}
         self.settings_path: str | None = settings_path
+        
+        # If a service is provided, prefer its managed settings and path
+        if self.settings_service is not None:
+            try:
+                self.settings = self.settings_service.settings
+                self.settings_path = str(self.settings_service.user_settings_path)
+            except (AttributeError, RuntimeError, TypeError):
+                pass
 
         self.current_reference = None
         self.current_file_stem = None
@@ -104,10 +116,8 @@ class TextDocumentWindow(QDialog):
         self.text_edit = QPlainTextEdit()
         # Reader font size (persisted in settings.json)
         try:
-            # Prefer an explicit settings file path when provided by the app
-            settings_path = str(self.settings_path) if self.settings_path else "settings.json"
-            self.reader_fontsize: int = int(fcs.get_reader_font_size(settings_path))
-        except (TypeError, ValueError, OSError):
+            self.reader_fontsize: int = int(self.settings.get("reader_font_size", 12))
+        except (TypeError, ValueError):
             self.reader_fontsize = 12
         self.text_edit.setFont(QFont("Cascadia Mono", int(self.reader_fontsize)))
         self.text_edit.setReadOnly(True)
@@ -339,8 +349,15 @@ class TextDocumentWindow(QDialog):
 
     def _persist_reader_font_size(self) -> None:
         try:
-            path = str(self.settings_path) if self.settings_path else "settings.json"
-            fcs.update_reader_font_size(int(getattr(self, "reader_fontsize", 12)), path)
+            val = int(getattr(self, "reader_fontsize", 12))
+            if self.settings_service:
+                self.settings_service.update_reader_font_size(val)
+            else:
+                path = str(self.settings_path) if self.settings_path else "settings.json"
+                fcs.update_reader_font_size(val, path)
+                # Also update local self.settings if available to avoid stale saves later
+                if isinstance(self.settings, dict):
+                    self.settings["reader_font_size"] = val
         except (ValueError, TypeError, OSError):
             pass
 
@@ -388,22 +405,21 @@ class TextDocumentWindow(QDialog):
         try:
             if None in (x, y, w, h):
                 return None
-            sx, sy = fcs.get_screen_size()
-            gx = int(x)
-            gy = int(y)
-            gw = int(w)
-            gh = int(h)
-            # Basic sanity clamps similar to fcs.get_window_geometry
-            if gx < 0:
+
+            # Use relaxed multi-monitor aware clamping similar to fcs.get_window_geometry
+            VIRTUAL_LIMIT = 10000
+
+            gx, gy, gw, gh = int(x), int(y), int(w), int(h)
+
+            if not (-VIRTUAL_LIMIT < gx < VIRTUAL_LIMIT):
                 gx = 100
-            if gy < 0:
+            if not (-VIRTUAL_LIMIT < gy < VIRTUAL_LIMIT):
                 gy = 100
-            if gx + gw > sx:
-                gx = max(0, sx - max(640, gw))
-                gw = min(gw, sx)
-            if gy + gh > sy:
-                gy = max(0, sy - max(400, gh))
-                gh = min(gh, sy)
+            if gw <= 0 or gw > VIRTUAL_LIMIT:
+                gw = 736
+            if gh <= 0 or gh > VIRTUAL_LIMIT:
+                gh = 599
+
             return gx, gy, gw, gh
         except (ValueError, TypeError, AttributeError):
             return None
@@ -467,9 +483,19 @@ class TextDocumentWindow(QDialog):
             ]
 
             self.settings["last_read_positions"][stem] = payload
+            # Also ensure this work is recorded as the last one read
+            try:
+                self.settings["last_other_work"] = stem
+            except (TypeError, KeyError):
+                pass
 
             # Persist
-            if self.settings_path:
+            if self.settings_service:
+                try:
+                    self.settings_service.save(self.settings)
+                except (RuntimeError, AttributeError, TypeError, ValueError, OSError):
+                    pass
+            elif self.settings_path:
                 fcs.save_settings_to_file(self.settings, self.settings_path)
             else:
                 fcs.save_settings_to_file(self.settings)
@@ -567,6 +593,13 @@ class TextDocumentWindow(QDialog):
                 pass
             # Release the guard but keep the previous state intact
             self._is_loading = prev_loading
+        
+        # Ensure the popup helper matches the new theme if it exists
+        if hasattr(self, '_popup_helper') and isinstance(self._popup_helper, SimpleScripturePopup):
+            try:
+                self._popup_helper.apply_theme(is_dark)
+            except (RuntimeError, AttributeError):
+                pass
 
     def _save_scroll_for(self, stem: Any, value: Any) -> None:
         """Persist the reading position for a given file stem.
@@ -1047,15 +1080,61 @@ class TextDocumentWindow(QDialog):
         except (AttributeError, RuntimeError):
             self._is_loading = False
 
-    def closeEvent(self, event):
-        # Save per-file geometry so each text remembers its own window placement
+    def _save_current_geometry(self):
+        # Save geometry
         try:
+            g = self.geometry()
+            # 1. Update the global/default reader window position in the settings dict
+            if isinstance(self.settings, dict):
+                if "reader_window" not in self.settings:
+                    self.settings["reader_window"] = {}
+                self.settings["reader_window"].update({
+                    "x": int(g.x()),
+                    "y": int(g.y()),
+                    "width": int(g.width()),
+                    "height": int(g.height())
+                })
+
+            # 2. Save per-file geometry if a work is loaded
             stem = getattr(self, "current_file_stem", None)
             if stem:
-                g = self.geometry()
+                # _write_entry also persists in the whole settings dict, including our "reader_window" update
                 self._write_entry(stem, geometry=(int(g.x()), int(g.y()), int(g.width()), int(g.height())))
+            else:
+                # No work loaded, just persist global settings (theme, reader_window, etc.)
+                if self.settings_service:
+                    self.settings_service.save(self.settings)
+                elif self.settings_path:
+                    fcs.save_settings_to_file(self.settings, self.settings_path)
+                else:
+                    fcs.save_settings_to_file(self.settings)
         except (ValueError, TypeError, AttributeError, RuntimeError, OSError):
             pass
+
+    def moveEvent(self, event):
+        self._save_current_geometry()
+        try:
+            return super().moveEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
+    def resizeEvent(self, event):
+        self._save_current_geometry()
+        try:
+            return super().resizeEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
+    def closeEvent(self, event):
+        self._save_current_geometry()
+
+        # Explicitly close the modeless find dialog if it exists
+        if getattr(self, "_find_dlg", None):
+            try:
+                self._find_dlg.close()
+            except (RuntimeError, AttributeError):
+                pass
+
         # Notify listeners that this window is no longer displayed
         try:
             self.displayedChanged.emit(False)
@@ -1314,6 +1393,10 @@ class TextDocumentWindow(QDialog):
             # Set the loading guard to suppress save events during programmatic changes
             self._is_loading = True
             self.current_file_stem = stem
+            try:
+                self.settings["last_other_work"] = stem
+            except (TypeError, KeyError):
+                pass
 
             # Determine the last position from the per-file map; default to 0 if missing
             last_position = self._get_saved_position(stem)
@@ -1845,6 +1928,42 @@ class TextDocumentWindow(QDialog):
             except (AttributeError, TypeError, RuntimeError):
                 pass
 
+            # Load window geometry from settings
+            try:
+                ss = getattr(parent, "settings_service", None)
+                if ss:
+                    gx, gy, gw, gh = ss.get_window_geometry("reader_find_window")
+                else:
+                    gx, gy, gw, gh = fcs.get_window_geometry("reader_find_window")
+                self.setGeometry(gx, gy, gw, gh)
+            except (RuntimeError, TypeError, ValueError):
+                pass
+
+        def closeEvent(self, event):
+            """Handle window close event - save geometry"""
+            try:
+                geometry = self.geometry()
+                ss = getattr(self._parent, "settings_service", None)
+                if ss:
+                    ss.save_window_geometry(
+                        "reader_find_window",
+                        geometry.x(),
+                        geometry.y(),
+                        geometry.width(),
+                        geometry.height(),
+                    )
+                else:
+                    fcs.save_window_geometry(
+                        "reader_find_window",
+                        geometry.x(),
+                        geometry.y(),
+                        geometry.width(),
+                        geometry.height(),
+                    )
+            except (RuntimeError, TypeError, ValueError):
+                pass
+            super().closeEvent(event)
+
         # Build proper QTextDocument find flags for QPlainTextEdit.find
         # Some PySide6 builds require QFlags<QTextDocument::FindFlag> rather than plain ints.
         def build_flags(self):
@@ -2196,8 +2315,8 @@ class TextDocumentWindow(QDialog):
         self._extra_selections = []
 
         # Expand the visible range a bit to avoid edge flicker
-        visible_start = max(0, top_pos - 200)
-        visible_end = bot_pos + 200
+        visible_start = max(0, top_pos)
+        visible_end = bot_pos
 
         # Ensure refs sorted once
         self._ensure_refs_sorted()
@@ -2207,6 +2326,8 @@ class TextDocumentWindow(QDialog):
         # Binary search to find the first reference near the visible start
         lo, hi = 0, len(refs) - 1
         start_idx = 0
+        # Use a larger buffer (100 chars) to ensure references that start off-screen
+        # but span into the viewport are caught.
         search_key = max(0, visible_start - 100)
         while lo <= hi:
             mid = (lo + hi) // 2
@@ -2263,7 +2384,7 @@ class TextDocumentWindow(QDialog):
             end = start + int(r.get('length', 0))
             if pos < start:
                 hi = mid - 1
-            elif pos > end:
+            elif pos >= end:
                 lo = mid + 1
             else:
                 return r
@@ -2289,7 +2410,10 @@ class TextDocumentWindow(QDialog):
         elif event.type() == QEvent.Type.MouseButtonPress:
             # Handle clicks on highlighted references to open them in the main Bible window
             try:
-                pos = event.position().toPoint()
+                if isinstance(event, QMouseEvent):
+                    pos = event.position().toPoint()
+                else:
+                    pos = QPoint(0, 0)
             except (AttributeError, RuntimeError, TypeError):
                 pos = QPoint(0, 0)
             cursor = self.text_edit.cursorForPosition(pos)
@@ -2321,7 +2445,10 @@ class TextDocumentWindow(QDialog):
                 self.closePopup()
         elif event.type() == QEvent.Type.MouseMove:
             # Copy the QPoint from the event immediately. Qt may delete the event after this method returns.
-            pos = event.position().toPoint()
+            if isinstance(event, QMouseEvent):
+                pos = event.position().toPoint()
+            else:
+                return super().eventFilter(obj, event)
             cursor = self.text_edit.cursorForPosition(pos)
             position = cursor.position()
             # O(log N) lookup using precomputed ranges
@@ -2333,6 +2460,16 @@ class TextDocumentWindow(QDialog):
                 self._pending_hover_pos = pos
                 if not self._hover_timer.isActive():
                     self._hover_timer.start()
+        elif event.type() == QEvent.Type.Wheel:
+            # If the popup helper is showing a long reference, scroll it instead of the document
+            if hasattr(self, '_popup_helper') and isinstance(self._popup_helper, SimpleScripturePopup):
+                try:
+                    if self._popup_helper.is_visible() and isinstance(event, QWheelEvent):
+                        # Forward the vertical delta
+                        self._popup_helper.scroll_by(event.angleDelta().y())
+                        return True
+                except (RuntimeError, AttributeError):
+                    pass
         return super().eventFilter(obj, event)
 
     def handle_hover(self, pos: QPoint):
@@ -2342,9 +2479,7 @@ class TextDocumentWindow(QDialog):
         hovered_reference = self._ref_at_position(position)
 
         if hovered_reference is None:
-            if self.popup_window is not None:
-                self.popup_window.close()
-                self.popup_window = None
+            self.closePopup()
             self.current_reference = None
             return
 
@@ -2354,35 +2489,56 @@ class TextDocumentWindow(QDialog):
             self.current_reference.get("length") == hovered_reference.get("length")
         )
 
+        # Check if the helper or legacy is already visible for this reference
         if same_reference:
-            if self.popup_window is None or not self.popup_window.isVisible():
-                pass
-            else:
+            is_any_visible = False
+            if hasattr(self, '_popup_helper') and self._popup_helper:
+                try:
+                    is_any_visible = self._popup_helper.is_visible()
+                except (RuntimeError, AttributeError):
+                    pass
+            
+            if not is_any_visible and self.popup_window and self.popup_window.isVisible():
+                is_any_visible = True
+                
+            if is_any_visible:
                 self._move_popup_to_cursor(pos, y_offset=60)
                 return
-        else:
-            if self.popup_window is not None:
-                self.popup_window.close()
-                self.popup_window = None
-            self.current_reference = hovered_reference
 
+        # New reference or popup hidden: update and show
+        self.current_reference = hovered_reference
         scriptures, canonical = self.get_scripture(hovered_reference)
         scriptur = scriptures + "\n" + canonical + " KJV"
 
         # Use the shared popup helper for consistent behaviour and look
         if not hasattr(self, '_popup_helper') or not isinstance(self._popup_helper, SimpleScripturePopup):
             self._popup_helper = SimpleScripturePopup()
+        
+        # Ensure the legacy popup is closed before showing the helper to avoid "double blue box"
+        if self.popup_window:
+            try:
+                self.popup_window.close()
+                self.popup_window = None
+            except (RuntimeError, AttributeError):
+                pass
+
         try:
-            self._popup_helper.show(self.text_edit, scriptur, pos, self.text_edit.font())
+            is_dark = self.settings.get("theme", "Light") == "Dark"
+            self._popup_helper.show(self.text_edit, scriptur, pos, self.text_edit.font(), is_dark=is_dark)
         except (RuntimeError, AttributeError, TypeError, ValueError):
-            # Fallback to the legacy widget path if anything fails
+            # Fallback to the legacy widget path if helper fails
+            is_dark = self.settings.get("theme", "Light") == "Dark"
             self.popup_window = QWidget()
-            self.popup_window.setWindowFlags(Qt.WindowType.ToolTip)
-            self.popup_window.setStyleSheet("border: 2px solid blue;")
+            self.popup_window.setWindowFlags(Qt.WindowType.ToolTip | Qt.WindowType.FramelessWindowHint)
+            bg = "#121212" if is_dark else "#ffffff"
+            border = "#2a5adf" if is_dark else "#2160FF"
+            fg = "#f0f0f0" if is_dark else "#000000"
+            self.popup_window.setStyleSheet(f"background-color: {bg}; border: 2px solid {border};")
             label = QLabel(scriptur, self.popup_window)
             label.setFont(self.text_edit.font())
             label.setWordWrap(True)
             label.setFixedWidth(self.text_edit.width())
+            label.setStyleSheet(f"color: {fg}; border: none;")
             label.adjustSize()
             layout = QVBoxLayout(self.popup_window)
             layout.setContentsMargins(0, 0, 0, 0)

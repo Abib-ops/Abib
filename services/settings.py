@@ -81,48 +81,81 @@ class SettingsService:
         return self._settings
 
     def save(self, settings: Optional[Dict[str, Any]] = None) -> None:
-        if settings is None:
-            settings = self._settings
-        if settings is None:
-            settings = {}
-        fcs.save_settings_to_file(settings, str(self.paths.settings_file))
-        # Keep cache in sync
-        self._settings = dict(settings)
+        """Persist settings to disk using a robust merge to avoid data loss."""
+        # Use the provided settings dict or fall back to the cached internal one
+        source = settings if settings is not None else self._settings
+        if source is None:
+            source = {}
+
+        # Robust merge: reload from disk and update with current changes
+        try:
+            on_disk = fcs.load_settings_from_file(str(self.paths.settings_file))
+            on_disk.update(source)
+            final_to_save = on_disk
+        except (OSError, ValueError):
+            final_to_save = source
+
+        fcs.save_settings_to_file(final_to_save, str(self.paths.settings_file))
+
+        # Synchronise the internal cache IN-PLACE.
+        # This ensures that all UI components holding a reference to self.settings (via SettingsService.settings)
+        # immediately see the merged, up-to-date values.
+        if final_to_save is not self._settings:
+            self._settings.update(final_to_save)
 
     # ---- Window geometry helpers ----
-    @staticmethod
-    def get_window_geometry(window_name: str) -> Tuple[int, int, int, int]:
-        return fcs.get_window_geometry(window_name)
+    def get_window_geometry(self, window_name: str) -> Tuple[int, int, int, int]:
+        return fcs.get_window_geometry(window_name, str(self.paths.settings_file))
 
-    @staticmethod
-    def save_window_geometry(window_name: str, x: int, y: int, width: int, height: int) -> None:
-        fcs.save_window_geometry(window_name, x, y, width, height)
+    def save_window_geometry(self, window_name: str, x: int, y: int, width: int, height: int) -> None:
+        if window_name not in self.settings:
+            self.settings[window_name] = {}
+        self.settings[window_name].update({
+            "x": int(x),
+            "y": int(y),
+            "width": int(width),
+            "height": int(height)
+        })
+        self.save()
 
     # ---- Optional font helpers passthrough ----
     def get_bible_font_size(self) -> int:
-        return fcs.get_bible_font_size(str(self.paths.settings_file))
+        return int(self.settings.get("bible_font_size", 12))
 
     def update_bible_font_size(self, new_size: int) -> None:
-        fcs.update_bible_font_size(new_size, str(self.paths.settings_file))
+        self.settings["bible_font_size"] = int(new_size)
+        self.save()
 
     def get_devotional_font_size(self) -> int:
-        return fcs.get_devotional_font_size(str(self.paths.settings_file))
+        return int(self.settings.get("devotional_font_size", 14))
 
     def update_devotional_font_size(self, new_size: int) -> None:
-        fcs.update_devotional_font_size(new_size, str(self.paths.settings_file))
+        self.settings["devotional_font_size"] = int(new_size)
+        self.save()
 
     def get_reader_font_size(self) -> int:
-        return fcs.get_reader_font_size(str(self.paths.settings_file))
+        return int(self.settings.get("reader_font_size", 12))
 
     def update_reader_font_size(self, new_size: int) -> None:
-        fcs.update_reader_font_size(new_size, str(self.paths.settings_file))
+        self.settings["reader_font_size"] = int(new_size)
+        self.save()
+
+    def get_last_bible_position(self) -> int:
+        return int(self.settings.get("last_bible_position", 0))
+
+    def update_last_bible_position(self, pos: int) -> None:
+        self.settings["last_bible_position"] = int(pos)
+        self.save()
 
     # ---- Gill Commentary font helpers ----
     def get_commentary_font_size(self) -> int:
-        return fcs.get_commentary_font_size(str(self.paths.settings_file))
+        return int(self.settings.get("gill_font_size", self.settings.get("gill_commentary_font_size", 12)))
 
     def update_commentary_font_size(self, new_size: int) -> None:
-        fcs.update_commentary_font_size(new_size, str(self.paths.settings_file))
+        self.settings["gill_font_size"] = int(new_size)
+        # Clean up legacy key if present
+        self.settings.pop("gill_commentary_font_size", None)
+        self.save()
 
     # ---- Gill Commentary behaviour toggles ----
     # Auto-follow support removed.

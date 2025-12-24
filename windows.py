@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
-from typing import Callable
+from typing import Callable, Any
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QKeySequence
@@ -26,20 +26,26 @@ class SecondaryWindow(NoZoomDialog):
         text: str,
         navigate_left_cb: Callable[[], None] | None = None,
         navigate_right_cb: Callable[[], None] | None = None,
+        settings_service: Any | None = None,
     ):
         """
         Initialise the secondary window to display text.
         :param text: The text to display in the window.
         :param navigate_left_cb: Callback invoked when the left arrow is clicked.
         :param navigate_right_cb: Callback invoked when the right arrow is clicked.
+        :param settings_service: Optional SettingsService for persistence.
         """
         super().__init__()
 
         if not isinstance(text, str):
             raise ValueError(f"Expected a string for 'text', but got {type(text).__name__}")
 
+        self.settings_service = settings_service
         # Load window geometry from settings
-        x7, y7, width7, height7 = fcs.get_window_geometry("devotional_window")
+        if self.settings_service:
+            x7, y7, width7, height7 = self.settings_service.get_window_geometry("devotional_window")
+        else:
+            x7, y7, width7, height7 = fcs.get_window_geometry("devotional_window")
 
         # Window setup
         self.setWindowTitle("C H Spurgeon's Morning and Evening Readings")
@@ -137,20 +143,53 @@ class SecondaryWindow(NoZoomDialog):
 
         # Save font size to settings
         try:
-            fcs.update_devotional_font_size(self.fontsize)
+            if self.settings_service:
+                self.settings_service.update_devotional_font_size(self.fontsize)
+            else:
+                fcs.update_devotional_font_size(self.fontsize)
         except (PermissionError, OSError, ValueError, TypeError) as e5:
             print(f"Failed to save font size: {e5}")
 
+    def _save_current_geometry(self):
+        """Persist current geometry to settings"""
+        try:
+            geometry = self.geometry()
+            if self.settings_service:
+                self.settings_service.save_window_geometry(
+                    "devotional_window",
+                    geometry.x(),
+                    geometry.y(),
+                    geometry.width(),
+                    geometry.height(),
+                )
+            else:
+                fcs.save_window_geometry(
+                    "devotional_window",
+                    geometry.x(),
+                    geometry.y(),
+                    geometry.width(),
+                    geometry.height(),
+                )
+        except (RuntimeError, TypeError, ValueError):
+            pass
+
+    def moveEvent(self, event):
+        self._save_current_geometry()
+        try:
+            return super().moveEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
+    def resizeEvent(self, event):
+        self._save_current_geometry()
+        try:
+            return super().resizeEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
     def closeEvent(self, event):
         """Handle window close event - save geometry"""
-        geometry = self.geometry()
-        fcs.save_window_geometry(
-            "devotional_window",
-            geometry.x(),
-            geometry.y(),
-            geometry.width(),
-            geometry.height(),
-        )
+        self._save_current_geometry()
         event.accept()
 
     def update_content(self, new_text: str) -> None:
@@ -180,11 +219,25 @@ class SecondaryWindow(NoZoomDialog):
 
 
 class AboutWindow(QMainWindow):
-    def __init__(self, version_text: str):
+    def __init__(self, version_text: str, settings_service: Any | None = None):
         super().__init__()
         self.setWindowTitle(version_text)
+        self.settings_service = settings_service
 
-        self.resize(480, 810)
+        # Default size
+        winwidth: int = 480
+        winheight: int = 810
+
+        # Load window geometry from settings
+        try:
+            if self.settings_service:
+                gx, gy, gw, gh = self.settings_service.get_window_geometry("about_window")
+            else:
+                gx, gy, gw, gh = fcs.get_window_geometry("about_window")
+            self.setGeometry(gx, gy, gw, gh)
+        except (RuntimeError, TypeError, ValueError):
+            self.resize(winwidth, winheight)
+
         self.content = None
 
         # Create a QLabel widget
@@ -212,7 +265,7 @@ class AboutWindow(QMainWindow):
         self.setCentralWidget(container)
 
     def about(self) -> str:
-        """Load the 'About' content from ABOUT.txt and set geometry."""
+        """Load the 'About' content from ABOUT.txt."""
         content: str = ""
         try:
             with open("ABOUT.txt", "r", encoding="utf-8") as file_about:
@@ -222,12 +275,46 @@ class AboutWindow(QMainWindow):
         except UnicodeDecodeError:
             content = "Error: Unable to decode ABOUT.txt. Please make sure the file encoding is UTF-8."
 
-        winwidth: int = 480
-        winheight: int = 810
-
-        # Fit and centre for small screens
-        winheight, winwidth = fit_to_screen(winheight, winwidth)
-        w_origin, h_origin = center_on_screen(winwidth, winheight)
-        self.setGeometry(w_origin, h_origin, winwidth, winheight)
-
         return content
+
+    def _save_current_geometry(self):
+        """Persist current geometry to settings"""
+        try:
+            geometry = self.geometry()
+            if self.settings_service:
+                self.settings_service.save_window_geometry(
+                    "about_window",
+                    geometry.x(),
+                    geometry.y(),
+                    geometry.width(),
+                    geometry.height(),
+                )
+            else:
+                fcs.save_window_geometry(
+                    "about_window",
+                    geometry.x(),
+                    geometry.y(),
+                    geometry.width(),
+                    geometry.height(),
+                )
+        except (RuntimeError, TypeError, ValueError):
+            pass
+
+    def moveEvent(self, event):
+        self._save_current_geometry()
+        try:
+            return super().moveEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
+    def resizeEvent(self, event):
+        self._save_current_geometry()
+        try:
+            return super().resizeEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
+    def closeEvent(self, event):
+        """Handle window close event - save geometry"""
+        self._save_current_geometry()
+        event.accept()

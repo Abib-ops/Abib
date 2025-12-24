@@ -15,6 +15,7 @@ Not this crowded normally.
 - Simple 'Find': find words and phrases fast in the Bible.
 - Search the Books, Commentaries and Dictionaries, with the 'Search' button.  
 - Built‑in daily readings: Spurgeon’s Morning & Evening
+- John Gill Exposition of the Entire Bible — click the Commentary button.
 - Extras: Pilgrim’s Progress and other classic works included
 - Light or Dark theme; font size you can adjust with Ctrl++ and Ctrl+-.
 - Works offline; no accounts, no telemetry.
@@ -73,6 +74,7 @@ These Public Domain PDFs are distributed separately and can be downloaded from h
 - [Easton's Bible Dictionary—M. G. Easton](https://github.com/Abib-ops/Abib/releases/download/414.15/Easton.s.Bible.Dictionary.-.M.G.Easton.pdf)
 - [Enchiridion—St. Augustine](https://github.com/Abib-ops/Abib/releases/download/414.15/Enchiridion.-.St.Augustine.pdf)
 - [Exposition of Songs—John Gill](https://github.com/Abib-ops/Abib/releases/download/414.15/Exposition.of.Songs.-.John.Gill.pdf)
+- [Foxe Book of Martyrs](https://github.com/Abib-ops/Abib/releases/download/414.15/Foxe.s.Book.of.Martyrs.pdf)
 - [Institutes—John Calvin](https://github.com/Abib-ops/Abib/releases/download/414.15/Institutes.-.John.Calvin.pdf)
 - [Let My People Go—J. Parnell McCarter](https://github.com/Abib-ops/Abib/releases/download/414.15/Let.My.People.Go.pdf)
 - [Literature of the Modern Era—J. Parnell McCarter](https://github.com/Abib-ops/Abib/releases/download/414.15/Literature.of.the.Modern.Era.pdf)
