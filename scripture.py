@@ -384,27 +384,33 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
                 break
             m2 = cast(re.Match[str], m2)
             sep = m2.group("sep") or ""
-            # Special rule: after a full reference, a semicolon followed by a
-            # number alone (e.g. "; 4") indicates a chapter marker, not a
-            # standalone verse reference — but only for multi‑chapter books.
-            # For one‑chapter books (e.g. Jude), "; 7" must be treated as verses in chapter 1.
-            # Update the last_chapter and skip emitting a reference for this segment when applicable.
+            # Check for book-start lookahead to avoid consuming ordinals of new books
+            # (e.g. "2Jo 1:9; 3Jo 1:11" should not take "3" as a verse/chapter of 2 John).
             is_chapter_only = False
-            if sep == ";" and m2.group("vers_only") and (book_id - 1) not in sh.onechapterbooks:
+            if m2.group("vers_only"):
                 vo_raw = m2.group("vers_only")
                 if re.fullmatch(r"\d{1,3}", vo_raw or ""):
-                    # Look ahead: if the next token looks like a new book (e.g. "2 Thess."),
-                    # do NOT consume this as a chapter marker; let the main scanner handle it.
                     after = tail[len(m2.group(0)) :]
                     after = re.sub(rf"^{_WS}+", "", after)
-                    if after and (after[0].isdigit() or after[0].isupper()):
-                        # Likely a new book starts here; stop continuation.
+                    # Heuristic for the new book start: digit, uppercase letter, or ordinal suffix
+                    if after and (
+                        after[0].isdigit()
+                        or after[0].isupper()
+                        or re.match(r"(?:st|nd|rd|th)\b", after, re.I)
+                    ):
                         break
-                    try:
-                        last_chapter = int(vo_raw)
-                        is_chapter_only = True
-                    except ValueError:
-                        pass
+
+                    # Special rule: after a full reference, a semicolon followed by a
+                    # number alone (e.g. "; 4") indicates a chapter marker, not a
+                    # standalone verse reference — but only for multi‑chapter books.
+                    # For one‑chapter books (e.g. Jude), "; 7" must be treated as verses in chapter 1.
+                    # Update the last_chapter and skip emitting a reference for this segment when applicable.
+                    if sep == ";" and (book_id - 1) not in sh.onechapterbooks:
+                        try:
+                            last_chapter = int(vo_raw)
+                            is_chapter_only = True
+                        except ValueError:
+                            pass
             
             seg_full = m2.group(0)
             seg_lstripped = seg_full.lstrip()

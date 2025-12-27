@@ -32,10 +32,14 @@ def get_default_settings() -> Any:
         # These are booleans.
         "show_splash": False,
         "check_updates_on_startup": False,
+        "unified_font_size": False,
         "devotional_font_size": 12,
         "bible_font_size": 12,
         # Font size for the 'Other Works' reader window
         "reader_font_size": 12,
+        # Whether scripture popups in the reader should automatically scroll the view
+        # if the popup otherwise obscure the reference itself.
+        "reader_auto_scroll_popups": True,
         "main_window": {
             "x": 25,
             "y": 41,

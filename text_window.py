@@ -273,6 +273,19 @@ class TextDocumentWindow(QDialog):
             # Fallback timer placeholder
             self._highlight_debounce = None  # type: ignore
         self.text_edit.verticalScrollBar().valueChanged.connect(self._on_scrollbar_value_changed)
+        
+        # Auto-scrolling state for scripture popups
+        self._auto_scroll_timer = QTimer(self)
+        self._auto_scroll_timer.setInterval(20) # ~50 FPS
+        self._auto_scroll_timer.timeout.connect(self._do_auto_scroll)
+        
+        self._auto_scroll_delay_timer = QTimer(self)
+        self._auto_scroll_delay_timer.setSingleShot(True)
+        self._auto_scroll_delay_timer.setInterval(600) 
+        self._auto_scroll_delay_timer.timeout.connect(self._start_auto_scroll)
+        
+        self._scrolling_reference = None
+        self._last_mouse_char_pos = -1
 
         # Debounced hover handling to avoid heavy work on every mouse move
         self._hover_timer: QTimer = QTimer(self)
@@ -361,7 +374,7 @@ class TextDocumentWindow(QDialog):
         except (ValueError, TypeError, OSError):
             pass
 
-    def _apply_reader_font(self, size: int) -> None:
+    def apply_font_size(self, size: int) -> None:
         try:
             size_int = int(size)
         except (TypeError, ValueError):
@@ -369,6 +382,8 @@ class TextDocumentWindow(QDialog):
         # Update widget font
         try:
             f = self.text_edit.font()
+            if f.pointSize() == size_int:
+                return
             f.setPointSize(size_int)
         except (RuntimeError, AttributeError, TypeError, ValueError):
             f = QFont("Cascadia Mono", size_int)
@@ -377,19 +392,35 @@ class TextDocumentWindow(QDialog):
         self.reader_fontsize = size_int
         self._persist_reader_font_size()
 
+        # Unified font size support: notify the main window
+        try:
+            from PySide6.QtWidgets import QApplication
+            for widget in QApplication.topLevelWidgets():
+                if widget.__class__.__name__ == "MainWindow":
+                    if bool(getattr(widget, "settings", {}).get("unified_font_size", False)):
+                        ws = getattr(widget, "settings_service", None)
+                        if ws and ws.get_bible_font_size() != size_int:
+                            ws.update_bible_font_size(size_int)
+                            af = getattr(widget, "apply_font_size", None)
+                            if af:
+                                af()
+                    break
+        except (AttributeError, RuntimeError):
+            pass
+
     def increase_reader_font_size(self) -> None:
         try:
             cur = int(getattr(self, "reader_fontsize", 12))
         except (TypeError, ValueError):
             cur = 12
-        self._apply_reader_font(min(cur + 1, 72))
+        self.apply_font_size(min(cur + 1, 72))
 
     def decrease_reader_font_size(self) -> None:
         try:
             cur = int(getattr(self, "reader_fontsize", 12))
         except (TypeError, ValueError):
             cur = 12
-        self._apply_reader_font(max(cur - 1, 6))
+        self.apply_font_size(max(cur - 1, 6))
 
     # -------- Settings helpers for per-file scroll + geometry --------
     def _ensure_positions_dict(self) -> None:
@@ -2390,6 +2421,41 @@ class TextDocumentWindow(QDialog):
                 return r
         return None
 
+    def _get_ref_vertical_range(self, ref: Dict[str, Any]) -> tuple[int, int]:
+        """Return the (top, bottom) global Y coordinates of the reference."""
+        start = ref.get('abs_start', 0)
+        length = ref.get('length', 0)
+        
+        cursor = QTextCursor(self.text_edit.document())
+        cursor.setPosition(start)
+        rect_start = self.text_edit.cursorRect(cursor)
+        cursor.setPosition(start + length)
+        rect_end = self.text_edit.cursorRect(cursor)
+        
+        viewport = self.text_edit.viewport()
+        top = viewport.mapToGlobal(rect_start.topLeft()).y()
+        bottom = viewport.mapToGlobal(rect_end.bottomLeft()).y()
+        return min(top, bottom), max(top, bottom)
+
+    def _check_popup_overlap(self, ref: Dict[str, Any], pos: QPoint, text: str) -> bool:
+        """Check if the popup at current position would overlap the reference."""
+        # Check if the feature is disabled in settings
+        if not self.settings.get("reader_auto_scroll_popups", True):
+            return False
+
+        if not hasattr(self, '_popup_helper') or not self._popup_helper:
+            # Lazily initialise if needed for prediction
+            from ui_helpers import SimpleScripturePopup
+            self._popup_helper = SimpleScripturePopup()
+            
+        px, py, pw, ph = self._popup_helper.predict_geometry(
+            self.text_edit, text, pos, self.text_edit.font()
+        )
+        ref_top, ref_bottom = self._get_ref_vertical_range(ref)
+        
+        # Check the vertical intersection between popup range [py, py+ph] and ref range [ref_top, ref_bottom]
+        return max(py, ref_top) < min(py + ph, ref_bottom)
+
     def _do_hover(self):
         if self._pending_hover_pos is None:
             return
@@ -2405,9 +2471,11 @@ class TextDocumentWindow(QDialog):
                 self._hover_timer.stop()
             except (RuntimeError, AttributeError):
                 pass
+            self._stop_auto_scroll()
             self._pending_hover_pos = None
             self.closePopup()
         elif event.type() == QEvent.Type.MouseButtonPress:
+            self._stop_auto_scroll()
             # Handle clicks on highlighted references to open them in the main Bible window
             try:
                 if isinstance(event, QMouseEvent):
@@ -2479,6 +2547,7 @@ class TextDocumentWindow(QDialog):
         hovered_reference = self._ref_at_position(position)
 
         if hovered_reference is None:
+            self._stop_auto_scroll()
             self.closePopup()
             self.current_reference = None
             return
@@ -2488,6 +2557,21 @@ class TextDocumentWindow(QDialog):
             self.current_reference.get("abs_start") == hovered_reference.get("abs_start") and
             self.current_reference.get("length") == hovered_reference.get("length")
         )
+
+        # If over a valid reference, check for overlap before showing
+        scriptures, canonical = self.get_scripture(hovered_reference)
+        scriptur = scriptures + "\n" + canonical + " KJV"
+        
+        if self._check_popup_overlap(hovered_reference, pos, scriptur):
+            if not self._auto_scroll_timer.isActive() and not self._auto_scroll_delay_timer.isActive():
+                self._scrolling_reference = hovered_reference
+                # Store character position under the mouse to allow "sticking"
+                self._last_mouse_char_pos = self.text_edit.cursorForPosition(pos).position()
+                self._auto_scroll_delay_timer.start()
+            return
+
+        # No overlap: stop any scrolling and show popup normally
+        self._stop_auto_scroll()
 
         # Check if the helper or legacy is already visible for this reference
         if same_reference:
@@ -2557,6 +2641,44 @@ class TextDocumentWindow(QDialog):
         if self.popup_window and self.popup_window.isVisible():
             self.popup_window.close()
             self.popup_window = None
+
+    def _start_auto_scroll(self):
+        self._auto_scroll_timer.start()
+
+    def _do_auto_scroll(self):
+        from PySide6.QtGui import QCursor
+        if not self._scrolling_reference:
+            self._stop_auto_scroll()
+            return
+            
+        vbar = self.text_edit.verticalScrollBar()
+        old_val = vbar.value()
+        # Scroll text UP (increase scroll value) to bring reference to the top
+        vbar.setValue(old_val + 2)
+        
+        if vbar.value() == old_val: # Reached end
+            self._stop_auto_scroll()
+            return
+
+        # Make the mouse "stick" to the reference text
+        if self._last_mouse_char_pos >= 0:
+            cursor = QTextCursor(self.text_edit.document())
+            cursor.setPosition(self._last_mouse_char_pos)
+            new_rect = self.text_edit.cursorRect(cursor)
+            new_global_pos = self.text_edit.viewport().mapToGlobal(new_rect.center())
+            QCursor.setPos(new_global_pos)
+            
+            # Check if the popup can now be shown
+            pos_viewport = self.text_edit.viewport().mapFromGlobal(new_global_pos)
+            scriptures, canonical = self.get_scripture(self._scrolling_reference)
+            if not self._check_popup_overlap(self._scrolling_reference, pos_viewport, scriptures + "\n" + canonical + " KJV"):
+                self._stop_auto_scroll()
+                self.handle_hover(pos_viewport)
+
+    def _stop_auto_scroll(self):
+        self._auto_scroll_timer.stop()
+        self._auto_scroll_delay_timer.stop()
+        self._scrolling_reference = None
 
     @staticmethod
     def find_scripture_references(text):

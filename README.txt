@@ -4,11 +4,36 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.13
+Abib v415.14
 ------------
 
 Changelog.
------------
+------------
+Abib v415.14
+A bug was observed during the now completed, proofreading of
+"Naves Topical Bible".
+
+Confirmed the bug: `_CONTINUATION_RE` in `scripture.py` greedily matches
+the leading digit of a numbered book (like "3" in "3Jo") as a verse
+continuation from a preceding reference, especially when that preceding
+reference is a one-chapter book. This causes "2Jo 1:9; 3Jo 1:11" to be
+parsed as "2Jo 1:9" and "2Jo 1:3", while failing to recognise "3Jo 1:11"
+because the "3" was consumed.
+
+This issue with incorrect reference identification after one-chapter books
+was fixed by refactoring the lookahead check in the scripture reference
+parser. A robust heuristic was implemented to correctly detect new numbered
+book starts. The fix was verified with comprehensive tests and did not break
+standard chapter transitions.
+
+An automated scrolling feature for scripture reference popups was implemented
+to prevent popups from obscuring hovered multi-line references.
+
+A new setting was implemented to allow users to choose between unified or
+independent font sizes for all windows. The setting includes a checkbox in
+the Settings dialog and synchronises font sizes across windows when enabled.
+The feature was tested and includes reset functionality to default settings.
+
 Abib v415.13
 Some optimisations were made to the code.
 Performed a significant refactoring of the main application file, `Abib.py`.

@@ -26,7 +26,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.1 and python3.13.11 (64-bit).
 
-24/12/2025
+27/12/2025
 
 python -m pip install --upgrade pip wheel
 python -m pip install -r requirements.txt
@@ -826,7 +826,7 @@ class GillCommentaryWindow(QWidget):
             pass
 
     # --------- Font size controls ---------
-    def _apply_font_size(self, size: int) -> None:
+    def apply_font_size(self, size: int) -> None:
         try:
             s = int(size)
         except (TypeError, ValueError):
@@ -837,6 +837,10 @@ class GillCommentaryWindow(QWidget):
             s = 40
         try:
             fnt = self.viewer.font()
+            # Avoid redundant application
+            if fnt.pointSize() == s:
+                return
+
             fnt.setPointSize(s)
             self.viewer.setFont(fnt)
             try:
@@ -854,6 +858,16 @@ class GillCommentaryWindow(QWidget):
             except (RuntimeError, AttributeError, TypeError, ValueError):
                 pass
             self._settings_service.update_commentary_font_size(s)
+
+            # Unified font size support: notify the main window
+            if bool(self._settings_service.settings.get("unified_font_size", False)):
+                global w
+                if w and hasattr(w, "apply_font_size"):
+                    # Only notify if the main window's font size is different
+                    if w.settings_service.get_bible_font_size() != s:
+                        w.settings_service.update_bible_font_size(s)
+                        w.apply_font_size()
+
             # Refresh the display to apply the new font size to the HTML content
             self._display_current()
         except (RuntimeError, TypeError, ValueError):
@@ -864,14 +878,14 @@ class GillCommentaryWindow(QWidget):
             current = int(self.viewer.font().pointSize())
         except (TypeError, ValueError):
             current = 12
-        self._apply_font_size(current + 1)
+        self.apply_font_size(current + 1)
 
     def decrease_font_size(self) -> None:
         try:
             current = int(self.viewer.font().pointSize())
         except (TypeError, ValueError):
             current = 12
-        self._apply_font_size(current - 1)
+        self.apply_font_size(current - 1)
 
     # --------- Hover popup logic for scripture refs ---------
     def eventFilter(self, obj, event):  # type: ignore[override]
@@ -2213,6 +2227,39 @@ class MainWindow(QMainWindow):
         # Create a QFont object and apply it to the QPlainTextEdit
         font = QFont("Cascadia Mono", self.fontsize)
         self.textEditor.setFont(font)
+
+        # Propagate to other windows if the unified font size is enabled
+        if bool(self.settings.get("unified_font_size", False)):
+            # 1. Reader Window
+            reader = getattr(self, "text_edit_window", None)
+            if reader:
+                try:
+                    # Avoid recursive calls: only apply if different
+                    if int(getattr(reader, "reader_fontsize", 0)) != self.fontsize:
+                        reader.apply_font_size(self.fontsize)
+                except (AttributeError, RuntimeError, TypeError, ValueError):
+                    pass
+
+            # 2. Gill Commentary Window
+            gill = getattr(self, "_gill_win", None)
+            if gill:
+                try:
+                    # Check current font size from viewer
+                    current_gill_font = gill.viewer.font()
+                    if current_gill_font.pointSize() != self.fontsize:
+                        gill.apply_font_size(self.fontsize)
+                except (AttributeError, RuntimeError, TypeError, ValueError):
+                    pass
+
+            # 3. Secondary (Devotional) Window
+            secondary = getattr(self, "secondary_window", None)
+            if secondary:
+                try:
+                    if int(getattr(secondary, "fontsize", 0)) != self.fontsize:
+                        secondary.fontsize = self.fontsize
+                        secondary.update_font()
+                except (AttributeError, RuntimeError, TypeError, ValueError):
+                    pass
 
     def feature(self) -> None:
         """Open the Other Works reader window for the currently selected item."""
@@ -4048,6 +4095,10 @@ class MainWindow(QMainWindow):
             dialog.update_checkbox.setChecked(bool(self.settings.get("check_updates_on_startup", False)))
         except (AttributeError, RuntimeError):
             pass
+        try:
+            dialog.unified_font_size_checkbox.setChecked(bool(self.settings.get("unified_font_size", False)))
+        except (AttributeError, RuntimeError):
+            pass
         dialog.theme_combobox.setCurrentText(self.settings.get("theme", "Light"))
         # Gill: Show scripture popups
         try:
@@ -4161,6 +4212,7 @@ class MainWindow(QMainWindow):
                 new_show_splash = bool(defaults.get("show_splash", False))
                 # Also set update-on-startup from defaults to avoid uninitialised variable use
                 new_update_on_start = bool(defaults.get("check_updates_on_startup", False))
+                new_unified_font_size = bool(defaults.get("unified_font_size", False))
                 new_gill_show_popups = bool(defaults.get("gill_show_popups", True))
                 new_gill_hover = int(defaults.get("gill_hover_delay_ms", 120))
                 new_gill_hide = int(defaults.get("gill_hide_delay_ms", 160))
@@ -4171,6 +4223,10 @@ class MainWindow(QMainWindow):
                     new_update_on_start = bool(dialog.update_checkbox.isChecked())
                 except (AttributeError, RuntimeError):
                     new_update_on_start = bool(self.settings.get("check_updates_on_startup", False))
+                try:
+                    new_unified_font_size = bool(dialog.unified_font_size_checkbox.isChecked())
+                except (AttributeError, RuntimeError):
+                    new_unified_font_size = bool(self.settings.get("unified_font_size", False))
                 try:
                     new_gill_show_popups = bool(dialog.gill_show_popups_checkbox.isChecked())
                 except (RuntimeError, AttributeError):
@@ -4188,6 +4244,19 @@ class MainWindow(QMainWindow):
             self.settings["theme"] = new_theme
             self.settings["show_splash"] = new_show_splash
             self.settings["check_updates_on_startup"] = new_update_on_start
+            self.settings["unified_font_size"] = new_unified_font_size
+
+            # If unified font size was just enabled, sync all font sizes to bible_font_size
+            if new_unified_font_size:
+                bible_size = self.settings_service.get_bible_font_size()
+                self.settings_service.update_reader_font_size(bible_size)
+                self.settings_service.update_devotional_font_size(bible_size)
+                self.settings_service.update_commentary_font_size(bible_size)
+                # Update in-memory settings to match
+                self.settings["bible_font_size"] = bible_size
+                self.settings["reader_font_size"] = bible_size
+                self.settings["devotional_font_size"] = bible_size
+                self.settings["gill_font_size"] = bible_size
 
             # Save settings via service
             self.settings_service.save(self.settings)

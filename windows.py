@@ -138,6 +138,12 @@ class SecondaryWindow(NoZoomDialog):
 
     def update_font(self):
         """Update the text widget font and immediately save to settings"""
+        try:
+            if self.text_display.font().pointSize() == self.fontsize:
+                return
+        except (AttributeError, RuntimeError):
+            pass
+
         font: QFont = QFont("Cascadia Mono", self.fontsize, QFont.Weight.Medium)
         self.text_display.setFont(font)
 
@@ -147,6 +153,23 @@ class SecondaryWindow(NoZoomDialog):
                 self.settings_service.update_devotional_font_size(self.fontsize)
             else:
                 fcs.update_devotional_font_size(self.fontsize)
+
+            # Unified font size support: notify main window
+            from PySide6.QtWidgets import QApplication
+            for widget in QApplication.topLevelWidgets():
+                # Check for MainWindow by class name to avoid circular imports
+                if widget.__class__.__name__ == "MainWindow":
+                    try:
+                        if bool(getattr(widget, "settings", {}).get("unified_font_size", False)):
+                            ws = getattr(widget, "settings_service", None)
+                            if ws and ws.get_bible_font_size() != self.fontsize:
+                                ws.update_bible_font_size(self.fontsize)
+                                af = getattr(widget, "apply_font_size", None)
+                                if af:
+                                    af()
+                    except (AttributeError, RuntimeError):
+                        pass
+                    break
         except (PermissionError, OSError, ValueError, TypeError) as e5:
             print(f"Failed to save font size: {e5}")
 

@@ -223,6 +223,66 @@ class SimpleScripturePopup:
         except (RuntimeError, AttributeError, TypeError, ValueError):
             pass
 
+    def predict_geometry(self, host_editor: QWidget, text: str, pos: QPoint, font) -> tuple[int, int, int, int]:
+        """Calculate where the popup would be positioned and its size without showing it."""
+        self.ensure_created()
+        
+        # 1. Calculate width matched to editor
+        try:
+            w = host_editor.width()
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            w = 400
+            
+        # 2. Calculate height based on content
+        try:
+            screen = QGuiApplication.primaryScreen()
+            available_h = screen.availableGeometry().height() if screen else 1080
+            max_h = int(available_h * 0.6)
+            
+            # Temporarily set text/font to measure
+            if self._text:
+                old_text = self._text.text()
+                old_font = self._text.font()
+                self._text.setText(text)
+                self._text.setFont(font)
+                hfw = self._text.heightForWidth(w - 4)
+                if hfw < 0:
+                    hfw = self._text.sizeHint().height()
+                popup_h = min(hfw + 4, max_h)
+                # Restore
+                self._text.setText(old_text)
+                self._text.setFont(old_font)
+            else:
+                popup_h = 200
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            popup_h = 200
+            
+        # 3. Calculate position (logic matching move_to)
+        try:
+            # host_editor is a QTextEdit/QPlainTextEdit
+            cursor = getattr(host_editor, 'cursorForPosition')(pos)
+            rect = getattr(host_editor, 'cursorRect')(cursor)
+            global_tl = host_editor.mapToGlobal(rect.topLeft())
+            editor_tl = host_editor.mapToGlobal(host_editor.rect().topLeft())
+            editor_br = host_editor.mapToGlobal(host_editor.rect().bottomRight())
+            
+            popup_x = editor_tl.x()
+            y_offset = 60
+            popup_y = global_tl.y() + y_offset
+            
+            if (editor_br.y() - popup_y - popup_h) < 0:
+                popup_y = global_tl.y() - y_offset - popup_h
+                
+            min_y = editor_tl.y()
+            max_y = editor_br.y() - popup_h
+            if max_y < min_y:
+                max_y = min_y
+            popup_y = max(min_y, min(popup_y, max_y))
+            
+            return (popup_x, popup_y, w, popup_h)
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            return (0, 0, w, popup_h)
+
     def scroll_by(self, delta_y: int) -> None:
         """Scroll the internal area by a pixel delta (forwarded from host)."""
         if self._scroll is not None:

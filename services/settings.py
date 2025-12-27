@@ -124,6 +124,7 @@ class SettingsService:
 
     def update_bible_font_size(self, new_size: int) -> None:
         self.settings["bible_font_size"] = int(new_size)
+        self._update_all_fonts_if_unified(new_size)
         self.save()
 
     def get_devotional_font_size(self) -> int:
@@ -131,6 +132,7 @@ class SettingsService:
 
     def update_devotional_font_size(self, new_size: int) -> None:
         self.settings["devotional_font_size"] = int(new_size)
+        self._update_all_fonts_if_unified(new_size)
         self.save()
 
     def get_reader_font_size(self) -> int:
@@ -138,6 +140,7 @@ class SettingsService:
 
     def update_reader_font_size(self, new_size: int) -> None:
         self.settings["reader_font_size"] = int(new_size)
+        self._update_all_fonts_if_unified(new_size)
         self.save()
 
     def get_last_bible_position(self) -> int:
@@ -155,7 +158,17 @@ class SettingsService:
         self.settings["gill_font_size"] = int(new_size)
         # Clean up legacy key if present
         self.settings.pop("gill_commentary_font_size", None)
+        self._update_all_fonts_if_unified(new_size)
         self.save()
+
+    def _update_all_fonts_if_unified(self, new_size: int) -> None:
+        if bool(self.settings.get("unified_font_size", False)):
+            size = int(new_size)
+            self.settings["bible_font_size"] = size
+            self.settings["reader_font_size"] = size
+            self.settings["devotional_font_size"] = size
+            self.settings["gill_font_size"] = size
+            self.settings.pop("gill_commentary_font_size", None)
 
     # ---- Gill Commentary behaviour toggles ----
     # Auto-follow support removed.
