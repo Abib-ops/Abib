@@ -1,3 +1,9 @@
+# Abib
+# Copyright (C) 2003–2026 <Contributors>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# -*- coding: utf-8 -*-
+
 import re
 import os
 import sys
@@ -45,7 +51,7 @@ def normalize_apostrophes(text):
 
 def process_file(filepath):
     """
-    Processes a single file: reads, normalizes, and asks for confirmation to save.
+    Processes a single file: reads, normalises, and asks for confirmation to save.
     """
     if not os.path.isfile(filepath):
         print(f"Skipping {filepath} (not a file).")

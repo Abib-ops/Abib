@@ -1,4 +1,9 @@
+# Abib
+# Copyright (C) 2003–2026 <Contributors>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # -*- coding: utf-8 -*-
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -1625,13 +1630,17 @@ class TextDocumentWindow(QDialog):
             # Disconnect any previously connected slot to avoid duplicates and warnings
             try:
                 prev_slot = getattr(self, "_load_timeout_slot", None)
-                if prev_slot is not None:
-                    self._load_timer.timeout.disconnect(prev_slot)
+                if prev_slot is not None and self._load_timer is not None:
+                    # Cast to Any to satisfy static analysis if it doesn't recognise SignalInstance
+                    timeout_signal: Any = self._load_timer.timeout
+                    timeout_signal.disconnect(prev_slot)
             except (RuntimeError, TypeError):
                 pass
             self._load_timeout_slot = None
             self._load_timer.setInterval(10)
-            self._load_timer.timeout.connect(_step)
+            # Cast to Any to satisfy static analysis if it doesn't recognise SignalInstance
+            timeout_signal_connect: Any = self._load_timer.timeout
+            timeout_signal_connect.connect(_step)
             # Remember the connected slot so we can disconnect it explicitly next time
             self._load_timeout_slot = _step
             self._load_timer.start()
@@ -2656,7 +2665,7 @@ class TextDocumentWindow(QDialog):
         # Scroll text UP (increase scroll value) to bring reference to the top
         vbar.setValue(old_val + 2)
         
-        if vbar.value() == old_val: # Reached end
+        if vbar.value() == old_val: # Reached the end
             self._stop_auto_scroll()
             return
 

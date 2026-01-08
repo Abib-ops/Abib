@@ -1,3 +1,5 @@
+This project is licensed under GPL‑3.0‑or‑later
+
 # Abib Bible Reader
 
 A compact and fast Bible reader for your desktop or laptop.
@@ -25,6 +27,7 @@ Not this crowded normally.
    - https://github.com/Abib-ops/Abib/releases
 2) Run the installer and follow the prompts.
 3) Launch “Abib” from your Start menu.
+
 
 ## Quick start
 - Jump to a verse: type ge50.7 to go to Genesis 50:7 (use a period between chapter and verse)
@@ -134,12 +137,12 @@ These Public Domain PDFs are distributed separately and can be downloaded from h
 - Reuben Archer Torrey — Torrey's New Topical Textbook			
 - Rev. Dr. Horatius Bonar, D.D. — God's Way of Peace			
 - Richard Baxter — A Call to the Unconverted to Turn and Live			
-- Robert Jamieson, A. R. Fausset, and David Brown — Commentary Critical and Explanatory on the Whole Bible			
+- Robert Jamieson, A. R. Fausset and David Brown — Commentary Critical and Explanatory on the Whole Bible			
 - Sadhu Sundar Singh — At The Master's Feet			
 		
 - Many public-domain texts were sourced via the Christian Classics Ethereal Library (CCEL, ccel.org).
 - Project Gutenberg https://www.gutenberg.org/.
 - The Library of Christian Classics
 - archive.org
-- 
+
 © 2025 Andrew Kingston

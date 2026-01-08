@@ -1,4 +1,9 @@
+# Abib
+# Copyright (C) 2003–2026 <Contributors>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # -*- coding: utf-8 -*-
+
 from __future__ import annotations
 
 from PySide6.QtCore import Qt, QEvent, QPoint
@@ -61,7 +66,7 @@ class NoZoomDialog(QDialog):
 class SimpleScripturePopup:
     """Lightweight scrollable tooltip popup used by both Other Works and Gill windows.
 
-    Provides identical look and behavior:
+    Provides identical look and behaviour:
     - ToolTip window with blue border
     - QScrollArea to handle long content without screen overflow
     - QLabel with word wrap, width matched to the host editor's width
@@ -177,8 +182,8 @@ class SimpleScripturePopup:
             w = host_editor.width()
             self._widget.setFixedWidth(w)
         except (RuntimeError, AttributeError, TypeError, ValueError):
-            pass
-
+            w = 400  # Default fallback width
+            
         # Limit height to avoid covering too much screen (max 60% of screen height)
         try:
             screen = QGuiApplication.primaryScreen()
@@ -193,7 +198,7 @@ class SimpleScripturePopup:
         # Determine target height based on content
         try:
             # Use heightForWidth to get the required height for the given width.
-            # Inner width available for content is w - 4 (due to 2px borders).
+            # The inner width available for content is w - 4 (due to 2px borders).
             hfw = self._text.heightForWidth(w - 4)
             if hfw < 0:
                 # Fallback to sizeHint if heightForWidth is not supported (though QLabel supports it)
@@ -205,10 +210,10 @@ class SimpleScripturePopup:
             if needed_h > max_h:
                 self._widget.setFixedHeight(max_h)
             else:
-                # Set to exact needed height
+                # Set to the exact necessary height
                 self._widget.setFixedHeight(needed_h)
         except (RuntimeError, AttributeError, TypeError, ValueError):
-            # Fallback to previous behavior if calculation fails
+            # Fallback to previous behaviour if calculation fails
             try:
                 self._widget.adjustSize()
                 if self._widget.height() > max_h:
@@ -223,11 +228,43 @@ class SimpleScripturePopup:
         except (RuntimeError, AttributeError, TypeError, ValueError):
             pass
 
+    @staticmethod
+    def _calculate_position(host_editor: QWidget, pos: QPoint, popup_h: int, y_offset: int = 60) -> tuple[int, int]:
+        """Shared logic to calculate (x, y) coordinates for the popup."""
+        try:
+            # host_editor is a QTextEdit/QPlainTextEdit
+            cursor = getattr(host_editor, 'cursorForPosition')(pos)
+            rect = getattr(host_editor, 'cursorRect')(cursor)
+            global_tl = host_editor.mapToGlobal(rect.topLeft())
+            editor_tl = host_editor.mapToGlobal(host_editor.rect().topLeft())
+            editor_br = host_editor.mapToGlobal(host_editor.rect().bottomRight())
+
+            popup_x = editor_tl.x()
+            popup_y = global_tl.y() + y_offset
+
+            if (editor_br.y() - popup_y - popup_h) < 0:
+                popup_y = global_tl.y() - y_offset - popup_h
+
+            min_y = int(editor_tl.y())
+            max_y = int(editor_br.y()) - popup_h
+            if max_y < min_y:
+                max_y = min_y
+            popup_y = max(min_y, min(popup_y, max_y))
+
+            return popup_x, popup_y
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            # Fallback
+            try:
+                editor_tl = host_editor.mapToGlobal(host_editor.rect().topLeft())
+                return editor_tl.x(), editor_tl.y()
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                return 0, 0
+
     def predict_geometry(self, host_editor: QWidget, text: str, pos: QPoint, font) -> tuple[int, int, int, int]:
         """Calculate where the popup would be positioned and its size without showing it."""
         self.ensure_created()
         
-        # 1. Calculate width matched to editor
+        # 1. Calculate width matched to the editor
         try:
             w = host_editor.width()
         except (RuntimeError, AttributeError, TypeError, ValueError):
@@ -257,31 +294,9 @@ class SimpleScripturePopup:
         except (RuntimeError, AttributeError, TypeError, ValueError):
             popup_h = 200
             
-        # 3. Calculate position (logic matching move_to)
-        try:
-            # host_editor is a QTextEdit/QPlainTextEdit
-            cursor = getattr(host_editor, 'cursorForPosition')(pos)
-            rect = getattr(host_editor, 'cursorRect')(cursor)
-            global_tl = host_editor.mapToGlobal(rect.topLeft())
-            editor_tl = host_editor.mapToGlobal(host_editor.rect().topLeft())
-            editor_br = host_editor.mapToGlobal(host_editor.rect().bottomRight())
-            
-            popup_x = editor_tl.x()
-            y_offset = 60
-            popup_y = global_tl.y() + y_offset
-            
-            if (editor_br.y() - popup_y - popup_h) < 0:
-                popup_y = global_tl.y() - y_offset - popup_h
-                
-            min_y = editor_tl.y()
-            max_y = editor_br.y() - popup_h
-            if max_y < min_y:
-                max_y = min_y
-            popup_y = max(min_y, min(popup_y, max_y))
-            
-            return (popup_x, popup_y, w, popup_h)
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            return (0, 0, w, popup_h)
+        # 3. Calculate position
+        popup_x, popup_y = SimpleScripturePopup._calculate_position(host_editor, pos, popup_h)
+        return popup_x, popup_y, w, popup_h
 
     def scroll_by(self, delta_y: int) -> None:
         """Scroll the internal area by a pixel delta (forwarded from host)."""
@@ -298,48 +313,16 @@ class SimpleScripturePopup:
             return
         # Compute target position based on cursor rect and editor origin
         try:
-            # host_editor is a QTextEdit/QPlainTextEdit; both implement cursorForPosition/cursorRect
-            cursor = getattr(host_editor, 'cursorForPosition')(pos)
-            rect = getattr(host_editor, 'cursorRect')(cursor)
-            global_tl = host_editor.mapToGlobal(rect.topLeft())
-            editor_tl = host_editor.mapToGlobal(host_editor.rect().topLeft())
-            editor_br = host_editor.mapToGlobal(host_editor.rect().bottomRight())
-            popup_x = editor_tl.x()
-
             # Measure popup height safely
             try:
                 popup_h = int(self._widget.height())
             except (RuntimeError, AttributeError, TypeError, ValueError):
                 popup_h = 0
 
-            # Default: position below the cursor
-            popup_y = global_tl.y() + y_offset
-
-            # If there isn't enough space below, flip above the cursor
-            try:
-                space_below = int(editor_br.y()) - int(popup_y) - int(popup_h)
-            except (RuntimeError, AttributeError, TypeError, ValueError):
-                space_below = 0
-            if space_below < 0:
-                # Place above the cursor using the same offset distance
-                popup_y = global_tl.y() - y_offset - popup_h
-
-            # Clamp Y within the visible editor bounds so the popup never renders off-screen
-            min_y = int(editor_tl.y())
-            max_y = int(editor_br.y()) - popup_h
-            if max_y < min_y:
-                # Degenerate case: ensure at least min_y
-                max_y = min_y
-            popup_y = max(min_y, min(popup_y, max_y))
-
+            popup_x, popup_y = SimpleScripturePopup._calculate_position(host_editor, pos, popup_h, y_offset)
             self._widget.move(popup_x, popup_y)
         except (RuntimeError, AttributeError, TypeError, ValueError):
-            # Fallback: place at editor's top-left
-            try:
-                editor_tl = host_editor.mapToGlobal(host_editor.rect().topLeft())
-                self._widget.move(editor_tl)
-            except (RuntimeError, AttributeError, TypeError, ValueError):
-                pass
+            pass
 
     def hide(self) -> None:
         if self._widget is not None:

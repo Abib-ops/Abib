@@ -1,3 +1,7 @@
+# Abib
+# Copyright (C) 2003–2026 <Contributors>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # -*- coding: utf-8 -*-
 
 ################################################################################
@@ -11,7 +15,7 @@ from os import getenv
 from json import loads
 from platform import system
 
-CURRENT_VERSION = "415.14"
+CURRENT_VERSION = "415.15"
 current_directory: Path = Path.cwd()
 str_cwd: str = str(current_directory)
 # settings_file: Path = current_directory / 'settings.json'

@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
+
+# Abib
+# Copyright (C) 2003–2026 <Contributors>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # -*- coding: utf-8 -*-
+
 """
 Tool: find_unknown_bible_abbrevs.py
 
@@ -10,7 +16,7 @@ Purpose:
 What's new:
     - Supports older dotted/roman formats such as "Book. iii. 16." or
       "1 Cor. xiii. 4–7." in addition to modern forms like "Jn 3:16".
-    - Normalizes the captured book token (lowercase, remove spaces/periods,
+    - Normalises the captured book token (lowercase, remove spaces/periods,
       convert leading roman I/II/III → 1/2/3) before checking against
       `bibledict`.
 
@@ -119,7 +125,7 @@ def normalize_book_token(token: str) -> str:
     """
     # Work with a version that still preserves spaces for roman handling
     t0 = token.strip().lower()
-    # Remove trailing dot that sometimes accompanies abbreviations (e.g., "Jn.")
+    # Remove the trailing dot that sometimes goes with abbreviations (e.g., "Jn.")
     if t0.endswith('.'):
         t0 = t0[:-1]
     # Prefer converting leading roman numerals only when separated by a space

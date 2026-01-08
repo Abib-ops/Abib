@@ -1,3 +1,9 @@
+# Abib
+# Copyright (C) 2003–2026 <Contributors>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# -*- coding: utf-8 -*-
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -6,7 +12,8 @@ from typing import Any, Dict, Optional, Tuple
 
 import fcs
 import shared as sh
-from os import PathLike
+
+__all__ = ["SettingsPaths", "SettingsService"]
 
 
 @dataclass
@@ -52,9 +59,9 @@ class SettingsService:
 
         # Synchronise the "show_work" map with files present in "Other Works".
         try:
-            other_works_dir: Path | str | PathLike[str] = Path(sh.str_cwd) / "Other Works"
+            other_works_dir: Path = Path(sh.str_cwd) / "Other Works"
             stems_on_disk = set(
-                p.stem for p in Path(other_works_dir).glob("*.txt") if p.is_file()
+                p.stem for p in other_works_dir.glob("*.txt") if p.is_file()
             )
         except (OSError, TypeError, ValueError):
             stems_on_disk = set()

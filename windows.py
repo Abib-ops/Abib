@@ -1,4 +1,9 @@
+# Abib
+# Copyright (C) 2003–2026 <Contributors>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # -*- coding: utf-8 -*-
+
 from __future__ import annotations
 
 from typing import Callable, Any
@@ -17,7 +22,7 @@ from PySide6.QtWidgets import (
 )
 
 import fcs
-from ui_helpers import NoZoomDialog, center_on_screen, fit_to_screen
+from ui_helpers import NoZoomDialog
 
 
 class SecondaryWindow(NoZoomDialog):
@@ -154,7 +159,7 @@ class SecondaryWindow(NoZoomDialog):
             else:
                 fcs.update_devotional_font_size(self.fontsize)
 
-            # Unified font size support: notify main window
+            # Unified font size support: notify the main window
             from PySide6.QtWidgets import QApplication
             for widget in QApplication.topLevelWidgets():
                 # Check for MainWindow by class name to avoid circular imports
@@ -268,7 +273,7 @@ class AboutWindow(QMainWindow):
         self.label = label
 
         # Load About.txt content
-        self.content = self.about()
+        self.content = AboutWindow.about()
 
         # Set the contents of the QLabel
         label.setText(self.content)
@@ -287,7 +292,8 @@ class AboutWindow(QMainWindow):
         layout.addWidget(label)
         self.setCentralWidget(container)
 
-    def about(self) -> str:
+    @staticmethod
+    def about() -> str:
         """Load the 'About' content from ABOUT.txt."""
         content: str = ""
         try:
@@ -297,8 +303,23 @@ class AboutWindow(QMainWindow):
             content = "ABOUT.txt file not found."
         except UnicodeDecodeError:
             content = "Error: Unable to decode ABOUT.txt. Please make sure the file encoding is UTF-8."
-
-        return content
+        
+        license_notice = (
+            "\n\n---\n\n"
+            "Abib Bible Reader\n"
+            "Copyright © 2003–2025 The Abib Contributors\n\n"
+            "This program is free software: you can redistribute it and/or modify "
+            "it under the terms of the GNU General Public License as published by "
+            "the Free Software Foundation, either version 3 of the License, or "
+            "(at your option) any later version.\n\n"
+            "This program is distributed in the hope that it will be useful, "
+            "but WITHOUT ANY WARRANTY; without even the implied warranty of "
+            "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the "
+            "GNU General Public License for more details.\n\n"
+            "You should have received a copy of the GNU General Public License "
+            "along with this program.  If not, see <https://www.gnu.org/licenses/>."
+        )
+        return content + license_notice
 
     def _save_current_geometry(self):
         """Persist current geometry to settings"""

@@ -1,17 +1,25 @@
+This project is licensed under GPL‑3.0‑or‑later
+
+-*- coding: utf-8 -*-
+
 ************
 ABIB README:
 ************
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.14
+Abib v415.15
 ------------
 
 Changelog.
 ------------
+Abib v415.15
+Security update.
+urllib3 updated to 2.6.3
+
 Abib v415.14
 A bug was observed during the now completed, proofreading of
-"Naves Topical Bible".
+"Nave's Topical Bible".
 
 Confirmed the bug: `_CONTINUATION_RE` in `scripture.py` greedily matches
 the leading digit of a numbered book (like "3" in "3Jo") as a verse
@@ -157,7 +165,7 @@ wheel                     0.45.1
 
 Some changes to the requirements.txt file were made to accommodate the new
 versions of the packages.
-Changes to the stylesheet to improve the appearance of pushbuttons, comboboxes,
+Changes to the stylesheet to improve the appearance of pushbuttons, comboboxes
 and textboxes.
 
 Extensive editing of the "Other Works texts was carried out to remove
@@ -448,7 +456,7 @@ Bug fixed regarding installation.
 About.txt changed for cross-platform compatibility.
 
 The current implementation requires that you either provide no arguments or exactly three arguments, in the
-following order: font-size, width, and height. By default, these values are set to "14 480 810" respectively.
+following order: font-size, width and height. By default, these values are set to "14 480 810" respectively.
 Consequently, if you only wish to modify the font size, you must supply all three parameters, e.g. "11 480 810"
 or "12 480 810." This approach ensures that a wide range of window sizes can be accommodated to suit different screens.
 
@@ -484,7 +492,7 @@ Changed the ABOUT.txt window to have THE HOLY BIBLE title page.
 Much, much more debugging and testing, e.g. miv.ii resolves to Micah 4:2 not 1004.2
 
 Abib408
-Devotional, Commentary, and a blank button are added.
+Devotional, Commentary and a blank button are added.
 The Commentary button is for future use.
 Buttons rearranged to accommodate new ones.
 Spurgeon's Morning and Evening Readings added.
@@ -505,7 +513,7 @@ Dark mode option introduced.
 Splash screen made optional.
 Find dialog text entry box retains focus now.
 F2 Display text entry box retains focus now.
-Linux and Windows versions identical code.
+Linux and Windows versions have identical code.
 
 Abib404
 F2 passage entry invalid text before and after valid entry is now ignored.
@@ -539,7 +547,7 @@ Assured centering of the Abib window on startup.
 Also, of some of the other windows except.
 
 Abib397
-Changes to About, Help, Readme, and Copyright windows.
+Changes to About, Help, Readme and Copyright windows.
 
 Abib396
 Python 3.13.1 updated version
@@ -562,7 +570,7 @@ Except:
 Bugfix correcting Back and especially Forward not working properly.
 
 Another bug fixed regarding the following verses; Joshua 15:1,Job 7:1,
-Psalm 70:1, Psalm 92:1, Hosea 8:1, and Romans 8:1.
+Psalm 70:1, Psalm 92:1, Hosea 8:1 and Romans 8:1.
 These are all first verses of chapters that start with italicised first
 words and were displayed incorrectly when viewed using Back and Forward.
 
@@ -601,7 +609,7 @@ This is how to use it (The default font size is 14):
 
        Here width and height can be adjusted from default values.
 
-    3) Click on Apply, then Continue for Administrative permission, and
+    3) Click on Apply, then Continue for Administrative permission and
        then OK.
 
     4) If you have another shortcut in the taskbar, you will need to

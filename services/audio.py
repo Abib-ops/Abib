@@ -1,8 +1,14 @@
+# Abib
+# Copyright (C) 2003–2026 <Contributors>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# -*- coding: utf-8 -*-
+
 from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any, cast
 
 import shared as sh
 
@@ -58,7 +64,7 @@ class AudioService:
                 except (TypeError, ValueError, AttributeError):
                     pass
             # Keep a persistent instance so the backend stays initialised
-            self._effect = effect
+            self._effect = cast(Any, effect)
         except (RuntimeError, AttributeError, OSError):
             # Any failure here disables audio but must never crash the app
             self._effect = None

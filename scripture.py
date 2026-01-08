@@ -1,4 +1,9 @@
+# Abib
+# Copyright (C) 2003–2026 <Contributors>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # -*- coding: utf-8 -*-
+
 """
 Scripture parsing, normalisation, and lookup utilities.
 
@@ -8,7 +13,7 @@ so it can be maintained and tested in one place.
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, cast
+from typing import Any, Dict, List
 from roman import fromRoman, InvalidRomanNumeralError
 import shared as sh
 
@@ -228,7 +233,7 @@ _PATTERN = rf"""
 # Compile once for performance; allows scanning whole documents efficiently
 _PATTERN_RE = re.compile(_PATTERN, re.IGNORECASE | re.VERBOSE)
 
-# Precompile continuation pattern at module scope.
+# Precompile the continuation pattern at module scope.
 # Enhancements:
 # - Allow both comma and semicolon separators for continuations that start a new chapter
 #   (either Arabic or Roman numerals), e.g. ", 4:5" or ", lxvii. 1".
@@ -258,8 +263,6 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
         m = _PATTERN_RE.search(text, scan_pos)
         if not m:
             break
-        # Narrow type for static analysis tools
-        m = cast(re.Match[str], m)
 
         full = m.group(0)
         # Strip leading whitespace using the broadened whitespace class
@@ -382,7 +385,6 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
             m2 = _CONTINUATION_RE.match(tail)
             if not m2:
                 break
-            m2 = cast(re.Match[str], m2)
             sep = m2.group("sep") or ""
             # Check for book-start lookahead to avoid consuming ordinals of new books
             # (e.g. "2Jo 1:9; 3Jo 1:11" should not take "3" as a verse/chapter of 2 John).
@@ -469,7 +471,7 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
 def lookup_scripture(bible_data: Dict[str, Any], book: str, chapter: int, verses: str) -> str:
     """Look up verse text(s) from bible_data, returning a human-readable string.
 
-    - Normalizes book token
+    - Normalises book token
     - Supports verse lists and ranges, including en/em dashes
     - Returns a friendly message when a verse is not found
     """

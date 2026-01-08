@@ -1,3 +1,9 @@
+# Abib
+# Copyright (C) 2003–2026 <Contributors>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# -*- coding: utf-8 -*-
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -78,7 +84,7 @@ class ThemeManager:
         # Tooltips
         pal.setColor(QPalette.ColorRole.ToolTipBase, QColor(40, 40, 40))
         pal.setColor(QPalette.ColorRole.ToolTipText, QColor(240, 240, 240))
-        return cast(QPaletteT, pal)
+        return pal
 
     @staticmethod
     def _build_light_palette() -> QPaletteT:
@@ -96,7 +102,7 @@ class ThemeManager:
         pal.setColor(QPalette.ColorRole.HighlightedText, QColor(0, 0, 0))
         pal.setColor(QPalette.ColorRole.ToolTipBase, QColor(255, 255, 220))
         pal.setColor(QPalette.ColorRole.ToolTipText, QColor(0, 0, 0))
-        return cast(QPaletteT, pal)
+        return pal
 
     def apply_app_palette(self) -> None:
         """Apply the current theme's palette to the QApplication (if available)."""
@@ -154,7 +160,7 @@ class ThemeManager:
             self._using_fusion = False
 
         pal = self._build_dark_palette() if self.state.is_dark_mode else self._build_light_palette()
-        QApplication.setPalette(cast(QPaletteT, pal))
+        QApplication.setPalette(pal)
         # ToolTip styling (Qt ignores palette for a tooltip background sometimes)
         if self.state.is_dark_mode:
             # Base dark stylesheet applied to all platforms
@@ -302,7 +308,7 @@ class ThemeManager:
             return
         pal = self._build_dark_palette() if self.state.is_dark_mode else self._build_light_palette()
         try:
-            cast(Any, widget).setPalette(cast(QPaletteT, pal))
+            cast(Any, widget).setPalette(pal)
         except (AttributeError, RuntimeError, TypeError, ValueError):
             # Be tolerant of the Qt object lifecycle and type issues but avoid swallowing all exceptions
             pass

@@ -1,3 +1,9 @@
+# Abib
+# Copyright (C) 2003–2026 <Contributors>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# -*- coding: utf-8 -*-
+
 """Utilities for parsing and resolving scripture references.
 
 Indexing contract (prominent):
@@ -45,7 +51,7 @@ def _norm_str(x) -> Optional[str]:
 
     - None -> None
     - int/float -> str(value)
-    - str -> stripped string or None if empty after strip
+    - str -> stripped string or None if empty after the strip
     - other types -> None
     """
     if x is None:
@@ -85,7 +91,7 @@ def _parse_verse_component(val: object) -> Optional[int]:
     - "29-30" -> 29 (start of range)
     - "29-" or "29--" -> 29 (open-ended range)
     - "29-31,33-35" -> 29 (first unit in a list)
-    - Roman numerals are also accepted for the first token (e.g., "xv--" -> 15).
+    - Roman numerals are also accepted for the first token (e.g. "xv--" -> 15).
 
     Returns an int on success, or None if invalid/unset.
     """
@@ -210,7 +216,7 @@ def calculate_book_line(book: int, chapter: int, verse: int, _current_line_num: 
     - The index (int) into ``sh.Info`` corresponding to the (book, chapter, verse).
 
     Raises
-    - ValueError: if any of the inputs are invalid (non-integer or < 1), or if the
+    - ValueError: if any of the inputs are invalid (noninteger or < 1), or if the
       triplet does not exist in ``sh.Info``.
 
     Notes

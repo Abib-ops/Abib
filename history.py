@@ -1,4 +1,9 @@
+# Abib
+# Copyright (C) 2003–2026 <Contributors>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # -*- coding: utf-8 -*-
+
 from __future__ import annotations
 
 from typing import Any, List, Tuple
@@ -67,7 +72,7 @@ class History:
         return current_position
 
     def _push(self, stack: List[Tuple[Any, ...]], win, current_position: int) -> None:
-        """Generic push with de-duplication on (position, y)."""
+        """Generic push with deduplication on (position, y)."""
         saving = self._build_saving(win, current_position)
         if not stack:
             stack.append(saving)

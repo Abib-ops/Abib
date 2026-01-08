@@ -1,10 +1,25 @@
 #!/usr/bin/env python
-"""
-Abib — Copyright © 2003–2025 The Abib Contributors
-Licensed under the GNU General Public License v3.0 or later (GPL-3.0-or-later).
-See LICENSE for the full text.
-SPDX-License-Identifier: GPL-3.0-or-later
 
+# Abib — Copyright © 2003–2026 The Abib Contributors
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# -*- coding: utf-8 -*-
+
+"""
 Third-party materials and attributions:
 - Pure Cambridge Edition of the KJV — see source and terms at bibleprotector.com
 - Spurgeon resources — see spurgeon.org and Eternal Life Ministries for terms
@@ -13,7 +28,7 @@ Third-party materials and attributions:
                .               .
             .                      .                      .
           .                            .             .
-        .      o                           .     .
+        .      O                           .     .
        .                                      .
         .                                  .     .
           .                            .             .
@@ -24,9 +39,9 @@ Third-party materials and attributions:
 
 Abib Bible Reader אביב
 
-Using PySide6-6.10.1 and python3.13.11 (64-bit).
+Using PySide6-6.10.1 and python3.12.10 (64-bit).
 
-27/12/2025
+08/01/2026
 
 python -m pip install --upgrade pip wheel
 python -m pip install -r requirements.txt
@@ -83,7 +98,6 @@ from pathlib import Path
 from itertools import islice
 
 from typing import Any, Dict, Set, List
-from typing import cast
 from history import History
 history = History()
 back = history.back
@@ -107,9 +121,20 @@ import fcs
 import sqlite3
 import shared as sh
 
+# try:
+#     import torch
+#     HAS_TORCH = True
+#     CUDA_AVAILABLE = torch.cuda.is_available()
+#     device_name = torch.cuda.get_device_name(0) if CUDA_AVAILABLE else "CPU"
+#     print(f"Junie Status: PyTorch Loaded | Device: {device_name} | CUDA: {CUDA_AVAILABLE}")
+# except ImportError:
+#     torch = None
+#     HAS_TORCH = False
+#     CUDA_AVAILABLE = False
+#     print("Junie Status: PyTorch not found. AI features disabled.")
+
 from ui_helpers import NoZoomPlainTextEdit, SimpleScripturePopup
 from services.settings import SettingsService
-from services.search_service import findf3_ww_ac, findf3_ww_all, findf3_ww_any
 ## Step 5: Reduce import and initialisation cost
 # Defer heavy/optional imports to first use instead of module import time.
 # - windows.* (secondary/about windows)
@@ -123,7 +148,7 @@ from services.search_service import findf3_ww_ac, findf3_ww_all, findf3_ww_any
 # Lazy wrappers for scripture reference helpers to avoid importing the module at startup
 _scripture_refs_cache: dict[str, Any] | None = None
 
-def parse_ref(bits):
+def parse_ref(bits: Any) -> Any:
     """Lazy wrapper for domain.scripture_refs.resolve_reference."""
     global _scripture_refs_cache
     if _scripture_refs_cache is None:
@@ -135,7 +160,7 @@ def parse_ref(bits):
     return _scripture_refs_cache["resolve_reference"](bits)
 
 
-def calc_line(book_num, chapter, verse, current_line):
+def calc_line(book_num: int, chapter: int, verse: int, current_line: int) -> int:
     """Lazy wrapper for domain.scripture_refs.calculate_book_line."""
     global _scripture_refs_cache
     if _scripture_refs_cache is None:
@@ -318,7 +343,7 @@ def reset_attributes() -> None:
     w.key = ' '
     w.message = ''
     if w.dlg is not None:
-        w.dlg.checks = [1, 0, 5]  # Is this necessary?
+        w.dlg.checks = [1, 0, 5]  # Is this really necessary?
     w.occurs = []
     w.occur = []
 
@@ -1203,7 +1228,7 @@ class GillCommentaryWindow(QWidget):
                         pass
                 # Use the original normalised versespec for display
                 versespec_display = ",".join(display_segments) if display_segments else '1'
-                if (int(b) - 1) in getattr(sh, 'onechapterbooks', ()):  # one-chapter books, e.g., Jude
+                if (int(b) - 1) in getattr(sh, 'onechapterbooks', ()):  # one-chapter books, e.g. Jude
                     canonical = f"{book_name} {versespec_display}"
                 else:
                     canonical = f"{book_name} {int(c)}:{versespec_display}"
@@ -1402,30 +1427,29 @@ class MainWindow(QMainWindow):
         self.history_index = None
         self.command_history = None
         self.about_window = None
-        self.is_dark_mode: None = None
         # Use SettingsService-managed settings dict
         self.settings = self.settings_service.settings
         # self.textEditor: None = None
-        self.path1: None = None
-        self.display_verse_input: None = None
-        self.comboBox_1: None = None
-        self.comboBox_2: None = None
-        self.comboBox_3: None = None
-        self.hiLita: None = None
+        self.path1: Any = None
+        self.display_verse_input: Any = None
+        self.comboBox_1: Any = None
+        self.comboBox_2: Any = None
+        self.comboBox_3: Any = None
+        self.hiLita: Any = None
         # Theme toggle button (replaces the old Quit button in the UI)
-        self.buttonTheme: None = None
-        self.buttonf3: None = None
-        self.buttonf4: None = None
-        self.buttonf5: None = None
-        self.buttonf6: None = None
-        self.buttonf7: None = None
-        self.buttonf8: None = None
-        self.buttonf9: None = None
-        self.buttonf10: None = None
-        self.buttonf11: None = None
-        self.buttonf12: None = None
-        self.buttonf13: None = None
-        self.buttonf14: None = None
+        self.buttonTheme: Any = None
+        self.buttonf3: Any = None
+        self.buttonf4: Any = None
+        self.buttonf5: Any = None
+        self.buttonf6: Any = None
+        self.buttonf7: Any = None
+        self.buttonf8: Any = None
+        self.buttonf9: Any = None
+        self.buttonf10: Any = None
+        self.buttonf11: Any = None
+        self.buttonf12: Any = None
+        self.buttonf13: Any = None
+        self.buttonf14: Any = None
         self.other_works_combo: QComboBox | None = None
         # Predeclare UI elements that are instantiated in initui to satisfy linters
         self.last_work_btn: QPushButton | None = None
@@ -1436,10 +1460,9 @@ class MainWindow(QMainWindow):
         # Placeholder for the 4th-column vertical button layout added in initui
         self.side_buttons_col: QVBoxLayout | None = None
         self.other_works_map: Dict[str, str] = {}
-        self.statusBar: None = None
-        self.okButton: None = None
-        self.dlg: None = None  # No external window yet.
-        self.gent: None = None
+        self.statusBar: Any = None
+        self.okButton: Any = None
+        self.dlg: Any = None  # No external window yet.
         # self.textEditor: QPlainTextEdit = QPlainTextEdit()
         self.textEditor = NoZoomPlainTextEdit()
         # Predeclare actions bundle to satisfy linters (assigned in initui)
@@ -1459,15 +1482,15 @@ class MainWindow(QMainWindow):
         # Track the last general context position used by features like Commentary
         self._last_context_position: int = 0
         # Track whether we've already captured the origin geometry before switching to
-        # auxiliary files (HELP/README/LICENSE).
+        # auxiliary files (HELP/README/COPYING).
         # Initialise here to satisfy linters and avoid defining the instance attribute outside __init__.
         self._aux_origin_saved: bool = False
         # Store the main window geometry before switching to auxiliary files so it can
         # be restored when returning to the Bible view.
-        # Initialise to None to avoid defining this attribute outside __init__.
+        # Initialise to None and avoid defining this attribute outside __init__.
         self._saved_geometry_before_aux: QRect | None = None
         # Flag used to inform Back-handler logic that we've just returned from
-        # an auxiliary file (README/HELP/LICENSE) to the Bible view; the very
+        # an auxiliary file (README/HELP/COPYING) to the Bible view; the very
         # next Back press should be ignored to preserve the restored position.
         # Initialise here to avoid defining the attribute outside __init__.
         self._just_restored_from_aux: bool = False
@@ -1795,13 +1818,13 @@ class MainWindow(QMainWindow):
         self.last_work_btn.setStyleSheet("QPushButton { text-align: left; }")
         self.last_work_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.last_work_btn.setToolTip("Open the last read book (Ctrl+L)")
-        self.last_work_btn.clicked.connect(self._select_last_other_work)
+        self.last_work_btn.clicked.connect(self._select_last_other_work)  # type: ignore[attr-defined]
 
         self.search_work_btn = QPushButton("Search")
         self.search_work_btn.setStyleSheet("QPushButton { text-align: left; }")
         self.search_work_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.search_work_btn.setToolTip("Search in the opened Other Works text (Ctrl+F)")
-        self.search_work_btn.clicked.connect(self._open_reader_search)
+        self.search_work_btn.clicked.connect(self._open_reader_search)  # type: ignore[attr-defined]
         self.search_work_btn.setEnabled(False)
 
         grid.addWidget(self.other_works_combo, 5, 0, 1, 2)
@@ -1833,15 +1856,15 @@ class MainWindow(QMainWindow):
             elif "Pilgrims-Progress" in self.other_works_map:
                 self.other_works_combo.setCurrentText("Pilgrims-Progress")
 
-        self.other_works_combo.currentTextChanged.connect(self._open_other_work)
-        self.other_works_combo.activated.connect(
+        self.other_works_combo.currentTextChanged.connect(self._open_other_work)  # type: ignore[attr-defined]
+        self.other_works_combo.activated.connect(  # type: ignore[attr-defined]
             lambda index: self._open_other_work(self.other_works_combo.itemText(index))
         )
 
         try:
             self.shortcut_last_work = QShortcut(QKeySequence("Ctrl+L"), self)
             self.shortcut_last_work.setContext(Qt.ShortcutContext.WindowShortcut)
-            self.shortcut_last_work.activated.connect(self._select_last_other_work)
+            self.shortcut_last_work.activated.connect(self._select_last_other_work)  # type: ignore[attr-defined]
         except (RuntimeError, AttributeError, TypeError):
             pass
 
@@ -2523,7 +2546,7 @@ class MainWindow(QMainWindow):
         self.file_open(str(Path(sh.current_directory / 'HELP.txt')))
         # Save current Bible window geometry so we can restore it on Back but
         # only capture it once when leaving the Bible (do not overwrite while
-        # switching between auxiliary files like LICENSE/README/HELP).
+        # switching between auxiliary files like COPYING/README/HELP).
         try:
             if not getattr(self, "_aux_origin_saved", False):
                 # Capture geometry once when first switching to an auxiliary file
@@ -2544,10 +2567,10 @@ class MainWindow(QMainWindow):
     def copyright(self) -> None:
         """Licence."""
 
-        self.file_open(str(Path(sh.current_directory / 'LICENSE')))
+        self.file_open(str(Path(sh.current_directory / 'COPYING')))
         # Save current Bible window geometry so we can restore it on Back but
         # only capture it once when leaving the Bible (do not overwrite while
-        # switching between auxiliary files like LICENSE/README/HELP).
+        # switching between auxiliary files like COPYING/README/HELP).
         try:
             if not getattr(self, "_aux_origin_saved", False):
                 # Capture geometry once when first switching to an auxiliary file
@@ -2587,7 +2610,7 @@ class MainWindow(QMainWindow):
         self.file_open(str(Path(sh.current_directory / 'README.txt')))
         # Save current Bible window geometry so we can restore it on Back but
         # only capture it once when leaving the Bible (do not overwrite while
-        # switching between auxiliary files like LICENSE/README/HELP).
+        # switching between auxiliary files like COPYING/README/HELP).
         try:
             if not getattr(self, "_aux_origin_saved", False):
                 # Capture geometry once when first switching to an auxiliary file
@@ -2613,7 +2636,7 @@ class MainWindow(QMainWindow):
             w.otherFileFlag = False
             self.file_open(str(Path(sh.current_directory / 'KJB_PCE.txt')))
             # Do NOT re-centre or reset attributes here.
-            # When returning from README/LICENSE/HELP via Back, preserve window
+            # When returning from README/COPYING/HELP via Back, preserve window
             # geometry and Bible state so history restoration works correctly.
             try:
                 if getattr(self, "_saved_geometry_before_aux", None):
@@ -2900,6 +2923,7 @@ class MainWindow(QMainWindow):
                 self.statusBar.showMessage(w.message)
                 self.statusBar.repaint()
         elif numwords > 1:
+            from services.search_service import findf3_ww_ac, findf3_ww_all
             if self.dlg.checks[0] == 2:
                 findf3_ww_ac(x1, x2, numwords, set_, r_list, self)
             elif self.dlg.checks[0] == 3:
@@ -3339,12 +3363,11 @@ class MainWindow(QMainWindow):
         try:
             # Use (book, chapter, fromverse) lookups per current DB access strategy
             if isinstance(self._gill_win, GillCommentaryWindow):
-                win = cast(GillCommentaryWindow, self._gill_win)
-                win.set_reference(b, c, v)
+                self._gill_win.set_reference(b, c, v)
                 # Apply the current theme
                 try:
-                    win.apply_theme(self.theme.state.is_dark_mode)
-                    self.theme.apply_widget(win)
+                    self._gill_win.apply_theme(self.theme.state.is_dark_mode)
+                    self.theme.apply_widget(self._gill_win)
                 except (RuntimeError, AttributeError):
                     pass
         except (AttributeError, TypeError, ValueError):
@@ -3576,7 +3599,7 @@ class MainWindow(QMainWindow):
             # print(f"2458 position: {position}")
             return position  # If it is outside the current chapter, it stays in the same place.
 
-        # Handle floating point-style references (e.g., "23.7")
+        # Handle floating point-style references (e.g. "23.7")
         reference_text = reference_text.replace(":", ".")
         if fcs.is_float_re(reference_text):
             reference_text = fcs.attach_book_name(reference_text, current_line)
@@ -3770,7 +3793,7 @@ class MainWindow(QMainWindow):
         """Back key."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        # If we have just returned from an auxiliary file (README/LICENSE/HELP),
+        # If we have just returned from an auxiliary file (README/COPYING/HELP),
         # skip one Back action to keep the restored verse position, rather than
         # popping history to an unrelated location (often Genesis 1:1).
         if getattr(self, "_just_restored_from_aux", False):
@@ -3955,7 +3978,7 @@ class MainWindow(QMainWindow):
                     try:
                         src = Path(path1)
                         cache = src.with_name("KJB_PCE_stripped.txt")
-                        # If the cache exists, and it is up to date, read it; else build and refresh it
+                        # If the cache exists, and up to date, read it; else build and refresh it
                         if cache.is_file() and cache.stat().st_mtime >= src.stat().st_mtime:
                             with cache.open("r", encoding="utf-8", buffering=(1 << 20)) as f_cache:
                                 text_data = f_cache.read()
@@ -4078,8 +4101,8 @@ class MainWindow(QMainWindow):
 
     def open_settings_dialog(self):
         """Open the settings dialog.
-          Option B behavior:
-        - Clicking 'Reset to defaults' applies defaults immediately (persist + theme + splash).
+          Option B behaviour:
+        - Clicking 'Reset to defaults' applies defaults immediately (persist + theme and splash).
         - OK/Cancel then simply close the dialog; OK still saves any manual changes made after.
         """
         # Defer import to reduce startup/import-time cost
@@ -4524,7 +4547,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
 
         # Ensure _highlight_lines is populated
         if not self._highlight_lines:
-            # print("Skipping highlight: _highlight_lines not populated yet.")
+            # print ("Skipping highlight: _highlight_lines not populated yet.")
             return
 
         blockNumber = self.currentBlock().blockNumber()

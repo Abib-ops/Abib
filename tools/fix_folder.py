@@ -1,3 +1,9 @@
+# Abib
+# Copyright (C) 2003–2026 <Contributors>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# -*- coding: utf-8 -*-
+
 """
 This is to correct encoding errors in the downloaded UTF-8 Unicode files.
 
