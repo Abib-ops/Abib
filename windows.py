@@ -254,7 +254,7 @@ class AboutWindow(QMainWindow):
 
         # Default size
         winwidth: int = 480
-        winheight: int = 810
+        winheight: int = 500
 
         # Load window geometry from settings
         try:
@@ -262,39 +262,52 @@ class AboutWindow(QMainWindow):
                 gx, gy, gw, gh = self.settings_service.get_window_geometry("about_window")
             else:
                 gx, gy, gw, gh = fcs.get_window_geometry("about_window")
+            # If the stored geometry is too large, use the new defaults
+            if gh == 810 or gw > 600:
+                gh = winheight
+                gw = winwidth
             self.setGeometry(gx, gy, gw, gh)
         except (RuntimeError, TypeError, ValueError):
             self.resize(winwidth, winheight)
 
-        self.content = None
+        # Load About.txt and License content
+        main_content, license_notice = AboutWindow.about()
 
-        # Create a QLabel widget
-        label = QLabel(self)
-        self.label = label
+        # Create the main content label
+        label_main = QLabel(self)
+        label_main.setWordWrap(True)
+        label_main.setText(main_content)
+        label_main.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        fontsize_main = 14
+        font_main = QFont("Cascadia Mono", fontsize_main, QFont.Weight.Bold)
+        label_main.setFont(font_main)
 
-        # Load About.txt content
-        self.content = AboutWindow.about()
-
-        # Set the contents of the QLabel
-        label.setText(self.content)
-
-        # Center align content
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        fontsize = 14
-        fixedfont: QFont = QFont("Cascadia Mono", fontsize, QFont.Weight.Bold)
-        label.setFont(fixedfont)
+        # Create the license notice label
+        label_license = QLabel(self)
+        label_license.setWordWrap(True)
+        label_license.setText(license_notice)
+        label_license.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        fontsize_license = 9
+        font_license = QFont("Segoe UI", fontsize_license) # Using a standard UI font for the smaller notice
+        label_license.setFont(font_license)
 
         # Set the QLabel as the central widget
         from PySide6.QtWidgets import QWidget
         container = QWidget(self)
         layout = QVBoxLayout(container)
-        layout.addWidget(label)
+        layout.addWidget(label_main)
+        
+        # Add a separator line or space if desired? 
+        # The current code has \n\n---\n\n in license_notice.
+        
+        layout.addWidget(label_license)
         self.setCentralWidget(container)
 
     @staticmethod
-    def about() -> str:
-        """Load the 'About' content from ABOUT.txt."""
+    def about() -> tuple[str, str]:
+        """Load the 'About' content from ABOUT.txt and return it along with the license notice."""
         content: str = ""
         try:
             with open("ABOUT.txt", "r", encoding="utf-8") as file_about:
@@ -305,9 +318,9 @@ class AboutWindow(QMainWindow):
             content = "Error: Unable to decode ABOUT.txt. Please make sure the file encoding is UTF-8."
         
         license_notice = (
-            "\n\n---\n\n"
+            "---\n\n"
             "Abib Bible Reader\n"
-            "Copyright © 2003–2025 The Abib Contributors\n\n"
+            "Copyright © 2003–2026 The Abib Contributors\n\n"
             "This program is free software: you can redistribute it and/or modify "
             "it under the terms of the GNU General Public License as published by "
             "the Free Software Foundation, either version 3 of the License, or "
@@ -319,7 +332,7 @@ class AboutWindow(QMainWindow):
             "You should have received a copy of the GNU General Public License "
             "along with this program.  If not, see <https://www.gnu.org/licenses/>."
         )
-        return content + license_notice
+        return content.strip(), license_notice
 
     def _save_current_geometry(self):
         """Persist current geometry to settings"""

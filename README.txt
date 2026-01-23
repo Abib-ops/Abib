@@ -8,11 +8,20 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.15
+Abib v415.18
 ------------
 
 Changelog.
 ------------
+Abib v415.18
+Security update, done right.
+
+Abib v415.17
+Security update.
+
+Abib v415.16
+Another dependabot security issue, this time with 'wheel', now at 0.46.3.
+
 Abib v415.15
 Security update.
 urllib3 updated to 2.6.3

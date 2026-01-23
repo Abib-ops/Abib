@@ -66,7 +66,7 @@ def get_default_settings() -> Any:
             "x": 100,
             "y": 100,
             "width": 480,
-            "height": 810
+            "height": 500
         },
         "find_window": {
             "x": 100,
