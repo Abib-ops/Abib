@@ -8,15 +8,11 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.20
+Abib v415.19
 ------------
 
 Changelog.
 ------------
-Abib v415.20
-This version should update programmatically with the new updater.py code in v415.19.
-Python is now 3.14.3, and some requirements.txt files were changed.
-
 Abib v415.19
 Manual Installation of v415.19: You must manually install v415.19
 (the version containing the new updater.py code). If you try to update

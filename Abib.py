@@ -4113,11 +4113,6 @@ class MainWindow(QMainWindow):
         # Populate the settings dialog with current settings
         prev_show_splash = bool(self.settings.get("show_splash", False))
         dialog.splash_checkbox.setChecked(prev_show_splash)
-        # Populate update-on-startup (default False if missing)
-        try:
-            dialog.update_checkbox.setChecked(bool(self.settings.get("check_updates_on_startup", False)))
-        except (AttributeError, RuntimeError):
-            pass
         try:
             dialog.unified_font_size_checkbox.setChecked(bool(self.settings.get("unified_font_size", False)))
         except (AttributeError, RuntimeError):
@@ -4233,8 +4228,6 @@ class MainWindow(QMainWindow):
                 defaults = fcs.get_default_settings()
                 new_theme = defaults.get("theme", "Light")
                 new_show_splash = bool(defaults.get("show_splash", False))
-                # Also set update-on-startup from defaults to avoid uninitialised variable use
-                new_update_on_start = bool(defaults.get("check_updates_on_startup", False))
                 new_unified_font_size = bool(defaults.get("unified_font_size", False))
                 new_gill_show_popups = bool(defaults.get("gill_show_popups", True))
                 new_gill_hover = int(defaults.get("gill_hover_delay_ms", 120))
@@ -4242,10 +4235,6 @@ class MainWindow(QMainWindow):
             else:
                 new_theme = dialog.theme_combobox.currentText()
                 new_show_splash = dialog.splash_checkbox.isChecked()
-                try:
-                    new_update_on_start = bool(dialog.update_checkbox.isChecked())
-                except (AttributeError, RuntimeError):
-                    new_update_on_start = bool(self.settings.get("check_updates_on_startup", False))
                 try:
                     new_unified_font_size = bool(dialog.unified_font_size_checkbox.isChecked())
                 except (AttributeError, RuntimeError):
@@ -4266,7 +4255,6 @@ class MainWindow(QMainWindow):
             # Update in-memory settings
             self.settings["theme"] = new_theme
             self.settings["show_splash"] = new_show_splash
-            self.settings["check_updates_on_startup"] = new_update_on_start
             self.settings["unified_font_size"] = new_unified_font_size
 
             # If unified font size was just enabled, sync all font sizes to bible_font_size

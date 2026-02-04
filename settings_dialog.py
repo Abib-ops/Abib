@@ -46,11 +46,6 @@ class SettingsDialog(QDialog):
         self.splash_checkbox = QCheckBox("Show Splash Screen")
         self.layout.addWidget(self.splash_checkbox)
 
-        # Check for updates on startup (runs asynchronously)
-        self.update_checkbox = QCheckBox("Check for updates on startup (runs in background)")
-        self.update_checkbox.setToolTip("If enabled, Abib will check for updates in the background when it starts.")
-        self.layout.addWidget(self.update_checkbox)
-
         # Unified font size option
         self.unified_font_size_checkbox = QCheckBox("Use the same font size for all windows")
         self.unified_font_size_checkbox.setToolTip("If enabled, changing the font size in one window will change it in all windows.")
@@ -115,7 +110,6 @@ class SettingsDialog(QDialog):
             defaults = fcs.get_default_settings()
             # Apply defaults to controls based on the central defaults
             self.splash_checkbox.setChecked(bool(defaults.get("show_splash", False)))
-            self.update_checkbox.setChecked(bool(defaults.get("check_updates_on_startup", False)))
             self.unified_font_size_checkbox.setChecked(bool(defaults.get("unified_font_size", False)))
             self.theme_combobox.setCurrentText(defaults.get("theme", "Light"))
             self.gill_show_popups_checkbox.setChecked(bool(defaults.get("gill_show_popups", True)))

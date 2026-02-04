@@ -31,11 +31,10 @@ def get_default_settings() -> Any:
     """
     return {
         "theme": "Light",
-        # Default to not showing splash and not checking updates on startup
+        # Default to not showing the splash screen
         # (older machines benefit from faster startup).
-        # These are booleans.
+        # This is a boolean.
         "show_splash": False,
-        "check_updates_on_startup": False,
         "unified_font_size": False,
         "devotional_font_size": 12,
         "bible_font_size": 12,

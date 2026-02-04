@@ -16,7 +16,7 @@ import shared as sh
 
 from services.settings import SettingsService
 from services.data_loader import DataLoader
-from updater import update_abib
+
 
 # We purposefully import the Abib module so we can assign globals
 # that its functions expect (e.g. KJV, Amap, EOTNOC, etc.).
@@ -85,14 +85,6 @@ class _LoadSearchTask(QRunnable):
                 pass
 
 
-class _UpdateCheckTask(QRunnable):
-    """Run update_abib() in the background to avoid blocking startup."""
-    def run(self) -> None:  # pragma: no cover - background task
-        try:
-            update_abib()
-        except (OSError, RuntimeError, ValueError):
-            # Keep silent for minimal change; could log if a logger is available
-            pass
 
 
 def _load_bible_text_and_maps(loader: DataLoader) -> None:
@@ -193,15 +185,6 @@ def run() -> None:
 
     # Expose the window instance at module level for helpers
     AbibModule.w = w
-
-    # Update and load data files
-    # Step 3: Gate and async the update check so it never blocks startup
-    if settings.get("check_updates_on_startup", False):
-        try:
-            QThreadPool.globalInstance().start(_UpdateCheckTask())
-        except (RuntimeError, TypeError):
-            # As a fallback (and to keep behaviour safe), skip update if the threadpool fails
-            pass
 
     # Use centralized DataLoader
     loader = DataLoader()
