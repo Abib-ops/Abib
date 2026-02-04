@@ -8,11 +8,35 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.18
+Abib v415.19
 ------------
 
 Changelog.
 ------------
+Abib v415.19
+Manual Installation of v415.19: You must manually install v415.19
+(the version containing the new updater.py code). If you try to update
+from v415.18 to v415.19 using the built-in update tool, you will still
+be executing the old update logic (from v415.18), which is what was failing.
+
+I know this is a pain, but it is the only way to fix the problem.
+
+So, please use "Add or remove programs" to uninstall v415.18, or your actual
+earlier version, then download and install v415.19 manually.
+
+Later versions of Abib will include the new updater.py code which should
+fix the problem.
+
+HOWEVER, if you are using the built-in update tool, you will still be
+executing the old update logic (from v415.18 and earlier versions), and it
+will fail. So, once you have manually uninstalled v415.18 or earlier and
+downloaded and installed v415.19 (or later) manually, the next new version
+will hopefully update programmatically with the new updater.py code in v415.19+.
+
+IMPORTANT: If you find that the Abib.exe file is still running after you
+manually uninstall v415.18 or earlier, you will need to start Task Manager
+and kill the Abib.exe process manually.
+
 Abib v415.18
 Security update, done right.
 

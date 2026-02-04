@@ -89,26 +89,65 @@ def check_for_updates(parent=None):
 
 
 def perform_update(version: str, exe_url: str) -> None:
-    """Perform the update steps without UI interaction.
+    """Perform the update steps.
 
-    Intended to be called from a background thread after the user has
-    already confirmed they want to update. This function logs to stdout
-    and returns None; it will exit the app via sys.exit(0) once the
-    installer is launched successfully.
+    Downloads the installer, then creates a temporary batch script to handle
+    the uninstallation and installation after the current process exits.
     """
-    path_to_setup_exe = str(Path.home() / "Downloads" / f"Abib_setup_{version}_win.exe")
+    path_to_setup_exe = Path.home() / "Downloads" / f"Abib_setup_{version}_win.exe"
     print("Update process started...")
+    
     if not download_upgrade(version, exe_url):
         print("Update aborted: Could not download upgrade.")
         return
-    if not run_uninstaller():
-        print("Update aborted: Could not uninstall current version.")
+
+    # Create a batch script to perform the update after we exit.
+    # This avoids file locking issues with Abib.exe.
+    updater_bat = Path.home() / "Downloads" / "abib_updater.bat"
+    
+    # We want the uninstaller to run, then the installer.
+    # We use a loop to wait for Abib.exe to close.
+    # 'tasklist' is used to check if Abib.exe is still running.
+    
+    bat_content = f"""@echo off
+setlocal
+echo Waiting for Abib to close...
+:loop
+tasklist /FI "IMAGENAME eq Abib.exe" 2>NUL | find /I /N "Abib.exe">NUL
+if "%ERRORLEVEL%"=="0" (
+    timeout /t 1 /nobreak >nul
+    goto loop
+)
+
+echo Running uninstaller...
+if exist "{uninstaller_path}" (
+    "{uninstaller_path}" /SILENT /NORESTART /SUPPRESSMSGBOXES
+)
+
+echo Running installer...
+"{path_to_setup_exe}" /SILENT /NORESTART /SUPPRESSMSGBOXES
+
+echo Update complete.
+del "%~f0"
+"""
+
+    try:
+        updater_bat.write_text(bat_content)
+    except OSError as e:
+        print(f"Failed to create update script: {e}")
         return
-    if not run_installer(path_to_setup_exe):
-        print("Update aborted: Could not run the installer.")
+
+    print("Launching update script and closing Abib...")
+    try:
+        # Start the batch file in a new process group/console so it survives our exit
+        subprocess.Popen(
+            ["cmd.exe", "/c", str(updater_bat)],
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+        )
+    except OSError as e:
+        print(f"Failed to launch update script: {e}")
         return
-    print("Update completing. Installing New Version of Abib.")
-    print("Closing down the old version of Abib...")
+
     from sys import exit as sys_exit
     sys_exit(0)
 
@@ -175,7 +214,7 @@ def run_uninstaller() -> bool:
         shell32 = cast(Any, ctypes.windll).shell32
         kernel32 = cast(Any, ctypes.windll).kernel32
 
-        params = "/SILENT /VERYSILENT /NORESTART /SUPPRESSMSGBOXES"
+        params = "/SILENT /NORESTART /SUPPRESSMSGBOXES"
         sei = SHELLEXECUTEINFOW()
         sei.cbSize = ctypes.sizeof(SHELLEXECUTEINFOW)
         sei.fMask = SEE_MASK_NOCLOSEPROCESS
@@ -184,7 +223,7 @@ def run_uninstaller() -> bool:
         sei.lpFile = uninstaller_path
         sei.lpParameters = params
         sei.lpDirectory = None
-        sei.nShow = SW_HIDE
+        sei.nShow = 1  # SW_SHOWNORMAL
         sei.hInstApp = None
         sei.lpIDList = None
         sei.lpClass = None
@@ -243,14 +282,14 @@ def run_installer(installer_path: str) -> bool:
         # Help static analysis: cast windll to Any so ShellExecuteW is recognised on Windows
         shell32 = cast(Any, ctypes.windll).shell32
         # Use standard Inno Setup switches separated by spaces (commas are not required)
-        params = "/SILENT /VERYSILENT /NORESTART /SUPPRESSMSGBOXES"
+        params = "/SILENT /NORESTART /SUPPRESSMSGBOXES"
         result = shell32.ShellExecuteW(
             None,
             "runas",
             installer_path,
             params,
             None,
-            0,
+            1,  # SW_SHOWNORMAL
         )
         if result <= 32:
             print(f"Failed to run the installer. Error code: {result}")
