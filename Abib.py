@@ -39,7 +39,7 @@ Third-party materials and attributions:
 
 Abib Bible Reader אביב
 
-Using PySide6-6.10.1 and python3.12.10 (64-bit).
+Using PySide6-6.10.2 and python3.14.3 (64-bit).
 
 04/02/2026
 

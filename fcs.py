@@ -169,7 +169,7 @@ def punctuation_counter(text: str) -> int:
 def repeat_find(rx: str, start: int, end: int) -> int:
     """Repeat find of lengthening text.
 
-    rx is the verse from the PCE-find.txt file
+    The rx variable is the verse from the PCE-find.txt file
     or a similar file without italics.
     """
 
@@ -192,7 +192,7 @@ def repeat_find(rx: str, start: int, end: int) -> int:
 def repeat_find_keyinc(rx: str, start: int, end: int) -> int:
     """Repeat find of lengthening text.
 
-    rx is the verse from the PCE-find.txt file
+    The rx variable is the verse from the PCE-find.txt file
     or a similar file without italics."""
 
     numb: int

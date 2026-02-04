@@ -270,7 +270,7 @@ class AboutWindow(QMainWindow):
         except (RuntimeError, TypeError, ValueError):
             self.resize(winwidth, winheight)
 
-        # Load About.txt and License content
+        # Load About.txt and Licence content
         main_content, license_notice = AboutWindow.about()
 
         # Create the main content label
@@ -283,7 +283,7 @@ class AboutWindow(QMainWindow):
         font_main = QFont("Cascadia Mono", fontsize_main, QFont.Weight.Bold)
         label_main.setFont(font_main)
 
-        # Create the license notice label
+        # Create the licence notice label
         label_license = QLabel(self)
         label_license.setWordWrap(True)
         label_license.setText(license_notice)
@@ -307,7 +307,7 @@ class AboutWindow(QMainWindow):
 
     @staticmethod
     def about() -> tuple[str, str]:
-        """Load the 'About' content from ABOUT.txt and return it along with the license notice."""
+        """Load the 'About' content from ABOUT.txt and return it along with the licence notice."""
         content: str = ""
         try:
             with open("ABOUT.txt", "r", encoding="utf-8") as file_about:

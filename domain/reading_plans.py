@@ -69,7 +69,7 @@ class ReadingPlans:
     def get_sme(self, adjustment: int = 0) -> Tuple[str, str]:
         """Return (sme_text, scripture_ref) for the given adjustment.
 
-        adjustment: increments of 12 expected by existing UI (-12 previous, +12 next).
+        adjustment: the existing UI expects increments of 12 (-12 previous, +12 next).
         Returns a pair where first is the display text and second is the scripture ref
         extracted from the first line of the reading.
         """

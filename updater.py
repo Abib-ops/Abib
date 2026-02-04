@@ -102,7 +102,7 @@ def perform_update(version: str, exe_url: str) -> None:
         return
 
     # Create a batch script to perform the update after we exit.
-    # This avoids file locking issues with Abib.exe.
+    # This avoids file-locking issues with Abib.exe.
     updater_bat = Path.home() / "Downloads" / "abib_updater.bat"
     
     # We want the uninstaller to run, then the installer.
@@ -190,7 +190,6 @@ def run_uninstaller() -> bool:
 
         # Constants and structures for ShellExecuteExW
         SEE_MASK_NOCLOSEPROCESS = 0x00000040
-        SW_HIDE = 0
 
         class SHELLEXECUTEINFOW(ctypes.Structure):
             _fields_ = [

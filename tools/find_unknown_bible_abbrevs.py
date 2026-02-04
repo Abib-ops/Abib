@@ -14,7 +14,7 @@ Purpose:
     book abbreviations not present in shared.py's `bibledict`.
 
 What's new:
-    - Supports older dotted/roman formats such as "Book. iii. 16." or
+    - Supports older dotted/roman formats such as "Book. iii. 16.", or
       "1 Cor. xiii. 4–7." in addition to modern forms like "Jn 3:16".
     - Normalises the captured book token (lowercase, remove spaces/periods,
       convert leading roman I/II/III → 1/2/3) before checking against
