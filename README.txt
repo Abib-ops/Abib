@@ -8,11 +8,17 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.19
+Abib v415.20
 ------------
 
 Changelog.
 ------------
+Abib v415.20
+This version should update programmatically with the new updater.py code in v415.19.
+Python is now 3.14.3, and some requirements.txt files were changed.
+
+Update with a click of the "Check for updates now" button in Settings.
+
 Abib v415.19
 Manual Installation of v415.19: You must manually install v415.19
 (the version containing the new updater.py code). If you try to update
@@ -36,6 +42,9 @@ will hopefully update programmatically with the new updater.py code in v415.19+.
 IMPORTANT: If you find that the Abib.exe file is still running after you
 manually uninstall v415.18 or earlier, you will need to start Task Manager
 and kill the Abib.exe process manually.
+
+The check for updates on start-up has been removed - to update, click the
+"Check for updates now" button in Settings.
 
 Abib v415.18
 Security update, done right.
