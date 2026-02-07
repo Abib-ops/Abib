@@ -15,7 +15,7 @@ from os import getenv
 from json import loads
 from platform import system
 
-CURRENT_VERSION = "415.20"
+CURRENT_VERSION = "415.21"
 current_directory: Path = Path.cwd()
 str_cwd: str = str(current_directory)
 # settings_file: Path = current_directory / 'settings.json'
@@ -151,7 +151,7 @@ def readfile(input_path: str, input_filename: str, file_length: int) -> list:
     err = "Abib is not in the same directory as its files and folders.\n"
     output_listname = []
     try:
-        with open(f'{input_path}{input_filename}', 'r') as f_read:
+        with open(f'{input_path}{input_filename}', 'r', encoding="utf-8") as f_read:
             for _ in range(file_length):
                 x5 = f_read.readline()
                 try:

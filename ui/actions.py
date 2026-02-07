@@ -67,6 +67,14 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
     window.addToolBar(file_toolbar)
     file_menu = mb.addMenu("&File")
 
+    # GitHub Releases
+    github_icon_path = Path('images') / 'github.png'
+    github_action = QAction(QIcon(str(github_icon_path)), "GitHub Releases", window)
+    github_action.setStatusTip("Open GitHub releases page")
+    github_action.triggered.connect(window.open_github_releases)
+    file_menu.addAction(github_action)
+    file_menu.addSeparator()
+
     # Open file
     icon1_path = Path('images') / 'blue-folder-open-document.png'
     open_file_action = QAction(QIcon(str(icon1_path)), "Open file...", window)
@@ -167,7 +175,7 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
     # Note: Gill auto-follow setting has been moved to the main Settings dialog.
 
     actions = [
-        open_file_action, print_action, exit_action,
+        github_action, open_file_action, print_action, exit_action,
         copy_action, select_action,
         copyright_action, help_action, readme_action, about_action, settings_action,
     ]

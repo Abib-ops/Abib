@@ -213,12 +213,12 @@ def readio(input_path: str, input_filename: str, file_length: int) -> list:
 
     # print('readio ', input_filename)
     output_listname: list = []
-    f_readio = open(f'{input_path}{input_filename}', 'r', encoding="utf-8")
-    for _ in range(file_length):
-        x5: str = f_readio.readline()
-        i = f'{x5.splitlines()[0]}\n'
-        output_listname.append(i)
-    f_readio.close()
+    with open(f'{input_path}{input_filename}', 'r', encoding="utf-8") as f:
+        for _ in range(file_length):
+            line = f.readline()
+            if not line:
+                break
+            output_listname.append(f'{line.splitlines()[0]}\n')
 
     return output_listname
 
@@ -410,7 +410,7 @@ def load_settings_from_file(filename: str | Path = "settings.json") -> Any:
 
     # Attempt to read the file
     try:
-        with open(filename, "r") as file1:
+        with open(filename, "r", encoding="utf-8") as file1:
             # Read and parse the JSON
             content = file1.read().strip()  # Handle an empty file gracefully
             if not content:  # File is empty
@@ -542,7 +542,7 @@ def save_settings_to_file(the_settings: dict[str, Any], filename: str | Path = "
 
     try:
         # Explicitly annotate the file object
-        with open(filename, "w") as file1:
+        with open(filename, "w", encoding="utf-8") as file1:
             # Dump the settings dictionary to JSON format
             dump(the_settings, file1, indent=4)  # Save as JSON with pretty formatting
     except IOError as e1:
@@ -560,7 +560,7 @@ def setup_Abib_settings(abib_directory: Path) -> None:
 
     # Create an empty settings.json if it doesn't exist
     if not settings_file.exists():
-        with open(settings_file, "w") as f:
+        with open(settings_file, "w", encoding="utf-8") as f:
             f.write("{}")
         print(f"Created empty settings.json in {abib_directory}")
     else:

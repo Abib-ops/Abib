@@ -8,11 +8,16 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.20
+Abib v415.21
 ------------
 
 Changelog.
 ------------
+Abib v415.21
+NOTES: Change "Screenshot.jpg" to something new.
+Added a File menu shortcut to GitHub Releases.
+
+
 Abib v415.20
 This version should update programmatically with the new updater.py code in v415.19.
 Python is now 3.14.3, and some requirements.txt files were changed.

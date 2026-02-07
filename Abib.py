@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.10.2 and python3.14.3 (64-bit).
 
-05/02/2026
+07/02/2026
 
 1) python -m pip install --upgrade pip wheel
 2) python -m pip install -r requirements.txt
@@ -90,6 +90,7 @@ Test with QT_QPA_PLATFORM=xcb (X11) or ensure Wayland plugins are present.
 
 import re
 import time
+import webbrowser
 from sys import exit, setrecursionlimit
 setrecursionlimit(200)
 
@@ -2303,6 +2304,11 @@ class MainWindow(QMainWindow):
             path = str(pp) if pp.exists() else None
             if path:
                 self._open_text_file_in_window(path)
+
+    @staticmethod
+    def open_github_releases() -> None:
+        """Open the GitHub releases page in the default web browser."""
+        webbrowser.open("https://github.com/Abib-ops/Abib/releases")
 
     def open_text_file_in_window(self, path: str) -> None:
         """Public wrapper to open or update the external text reader window."""
