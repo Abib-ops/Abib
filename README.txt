@@ -8,11 +8,13 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.22
+Abib v415.23
 ------------
 
 Changelog.
 ------------
+Abib v415.23
+
 Abib v415.22
 Minor correction to SME devotional.
 Bumped requests from 2.32.5 to 2.33.0.
