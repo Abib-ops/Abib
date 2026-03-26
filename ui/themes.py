@@ -167,6 +167,9 @@ class ThemeManager:
             dark_base_styles = (
             """
             QToolTip { color: #f0f0f0; background-color: #282828; border: 1px solid #3a3a3a; }
+            QMenuBar { background-color: #222222; color: #f0f0f0; border-bottom: 1px solid #3a3a3a; }
+            QMenuBar::item { background-color: transparent; }
+            QMenuBar::item:selected { background-color: #3a3a3a; color: #ffffff; }
             QMenu { background-color: #222222; color: #f0f0f0; border: 1px solid #3a3a3a; }
             QMenu::item:selected { background-color: #2a2a2a; color: #ffffff; }
             QMenu::separator { height: 1px; background: #3a3a3a; margin: 4px 8px; }
@@ -258,6 +261,12 @@ class ThemeManager:
             light_base_styles = (
                 """
                 /* Unify control shade in light mode */
+                QMenuBar { background-color: #f0f0f0; color: #000000; border-bottom: 1px solid #d6d6d6; }
+                QMenuBar::item { background-color: transparent; }
+                QMenuBar::item:selected { background-color: #e6f0ff; color: #000000; }
+                QMenu { background-color: #ffffff; color: #000000; border: 1px solid #d6d6d6; }
+                QMenu::item:selected { background-color: #e6f0ff; color: #000000; }
+                QMenu::separator { height: 1px; background: #d6d6d6; margin: 4px 8px; }
                 QPushButton, QDialogButtonBox QPushButton, QToolButton {
                     /* Darker neutral to improve readability in light mode */
                     background: #e9e9e9;

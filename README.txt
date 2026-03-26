@@ -8,12 +8,17 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.23
+Abib v415.24
 ------------
 
 Changelog.
 ------------
+Abib v415.24
+Fixed Menu Titles Visibility in Dark Mode.
+
 Abib v415.23
+Minor bugfix in requirements.txt.
+pypiwin32==223; platform_system == "Windows"
 
 Abib v415.22
 Minor correction to SME devotional.
