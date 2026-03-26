@@ -282,7 +282,7 @@ class FindDialog(QDialog):
             if item is not None:
                 try:
                     item.setEnabled(bool(enabled))
-                    # Also affect selection to reflect disabled state in popup
+                    # Also affect selection to reflect the disabled state in the popup
                     item.setSelectable(bool(enabled))
                 except (AttributeError, RuntimeError, TypeError, ValueError):
                     # If anything goes wrong, silently ignore; snapping logic below enforces validity

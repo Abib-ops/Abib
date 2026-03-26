@@ -302,7 +302,7 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
             # Require at least one separator (space or similar whitespace)
             # between the book token and a Roman chapter-only.
             if m.group("chap_only_r"):
-                # Compute the gap between the end of the book token and start of roman chapter
+                # Compute the gap between the end of the book token and the start of the roman chapter
                 gap_start = m.end("book")
                 gap_end = m.start("chap_only_r")
                 if gap_end <= gap_start:

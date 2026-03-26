@@ -56,7 +56,7 @@ def _init_screen_metrics(app: QApplication) -> None:
 
 
 def _assign_attrs(module, source, names) -> None:
-    """Assign a list of attribute names from source onto module."""
+    """Assign a list of attribute names from the source onto the module."""
     for name in names:
         setattr(module, name, getattr(source, name))
 

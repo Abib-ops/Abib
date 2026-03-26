@@ -8,13 +8,46 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.21
+Abib v415.22
 ------------
 
 Changelog.
 ------------
+Abib v415.22
+Minor correction to SME devotional.
+Bumped requests from 2.32.5 to 2.33.0.
+requirements.txt updated.
+altgraph==0.17.5
+certifi==2026.2.25
+charset-normalizer==3.4.6
+colorama==0.4.6
+comtypes==1.4.16
+idna==3.11
+iniconfig==2.3.0
+packaging==26.0
+pefile==2024.8.26
+pluggy==1.6.0
+Pygments==2.19.2
+pyinstaller==6.19.0
+pyinstaller-hooks-contrib==2026.3
+pypiwin32==223
+PySide6==6.11.0
+PySide6_Addons==6.11.0
+PySide6_Essentials==6.11.0
+pytest==9.0.2
+pyttsx3==2.99
+requests==2.33.0
+roman==5.2
+setuptools==82.0.1
+shiboken6==6.11.0
+urllib3==2.6.3
+wheel==0.46.3
+# Windows-only dependencies
+pywin32 ; sys_platform == 'win32'
+pywin32-ctypes==0.2.3 ; sys_platform == 'win32'
+
 Abib v415.21
-NOTES: Change "Screenshot.jpg" to something new.
+Changed "Screenshot.jpg" to something new.
 Added a File menu shortcut to GitHub Releases.
 
 

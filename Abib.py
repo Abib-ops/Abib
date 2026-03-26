@@ -39,9 +39,9 @@ Third-party materials and attributions:
 
 Abib Bible Reader אביב
 
-Using PySide6-6.10.2 and python3.14.3 (64-bit).
+Using PySide6-6.11.0 and python3.14.3 (64-bit).
 
-07/02/2026
+26/03/2026
 
 1) python -m pip install --upgrade pip wheel
 2) python -m pip install -r requirements.txt
@@ -52,7 +52,7 @@ We appreciate your patience, and we welcome improvements from Linux contributors
 
 Quick start on Linux (unofficial)
 •
-Ensure the version of Python is between 3.10 and 3.12.
+Ensure the version of Python is between 3.10 and 3.12 (Not sure).
 •
 Copy the Abib folder to your home directory.
 •
@@ -2268,7 +2268,7 @@ class MainWindow(QMainWindow):
             gill = getattr(self, "_gill_win", None)
             if gill:
                 try:
-                    # Check current font size from viewer
+                    # Check the current font size from the viewer
                     current_gill_font = gill.viewer.font()
                     if current_gill_font.pointSize() != self.fontsize:
                         gill.apply_font_size(self.fontsize)
@@ -2354,7 +2354,7 @@ class MainWindow(QMainWindow):
                 current_stem = getattr(reader, "current_file_stem", None)
                 req_stem = Path(req_path).stem
                 if is_loading_file and current_stem and str(current_stem) == str(req_stem):
-                    # Already loading this work; just bring it to front and apply theme
+                    # Already loading this work; just bring it to the front and apply the theme
                     try:
                         reader.apply_theme(self.theme.state.is_dark_mode)
                     except (RuntimeError, AttributeError):
@@ -2462,7 +2462,7 @@ class MainWindow(QMainWindow):
         try:
             reader = getattr(self, "text_edit_window", None)
             if reader is not None and getattr(reader, "current_file_stem", None) == stem:
-                # Just bring the window to front and ensure theme is applied
+                # Just bring the window to the front and ensure the theme is applied
                 try:
                     reader.apply_theme(self.theme.state.is_dark_mode)
                 except (RuntimeError, AttributeError):
@@ -2672,7 +2672,7 @@ class MainWindow(QMainWindow):
         if self.dlg is None:
             from find_dialog import FindDialog  # deferred import
             self.dlg = FindDialog(self, settings_service=self.settings_service)
-            # Apply theme palette to Find dialog (apply_widget is internally safe)
+            # Apply the theme palette to the Find dialog (apply_widget is internally safe)
             self.theme.apply_widget(self.dlg)
             self.dlg.exec()
         else:
@@ -2684,7 +2684,7 @@ class MainWindow(QMainWindow):
         if self.dlg is None:
             from find_dialog import FindDialog  # deferred import
             self.dlg = FindDialog(self, settings_service=self.settings_service)
-            # Apply theme palette to Find dialog (apply_widget is internally safe)
+            # Apply the theme palette to the Find dialog (apply_widget is internally safe)
             self.theme.apply_widget(self.dlg)
             self.dlg.show()
         else:
@@ -3389,7 +3389,7 @@ class MainWindow(QMainWindow):
 
     # ENTRY POINT FOR F2 DISPLAY VERSE.
     def goto_line(self, ref: str = '') -> None:
-        """Move display to line requested."""
+        """Move the display to the line requested."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         reset_attributes()
@@ -3416,7 +3416,7 @@ class MainWindow(QMainWindow):
             self.display_verse(current_position)
 
     def  goto_book(self, _index: int) -> None:
-        """Move display to line requested by comboBox_1."""
+        """Move the display to the line requested by comboBox_1."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         reset_attributes()
@@ -3450,7 +3450,7 @@ class MainWindow(QMainWindow):
         self.goto_chapter(_index)
 
     def goto_chapter(self, _index: int) -> None:
-        """Move display to line requested by comboBox_2."""
+        """Move the display to the line requested by comboBox_2."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         reset_attributes()
@@ -3488,7 +3488,7 @@ class MainWindow(QMainWindow):
         self.display_verse(current_position)
 
     def goto_verse(self, _index: int) -> None:
-        """Move display to line requested by comboBox_3."""
+        """Move the display to the line requested by comboBox_3."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         reset_attributes()
@@ -4139,7 +4139,7 @@ class MainWindow(QMainWindow):
         except (RuntimeError, AttributeError, TypeError, ValueError):
             dialog.gill_hide_spin.setValue(160)
 
-        # Ensure dialog follows current theme palette
+        # Ensure the dialog follows the current theme palette
         self.theme.apply_widget(dialog)
 
         # Option B: apply defaults immediately when the reset button is clicked

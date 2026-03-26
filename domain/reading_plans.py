@@ -83,7 +83,7 @@ class ReadingPlans:
             # Missing year/time_of_day keys or malformed data structure
             return f"No entry for {self._date.year} in {self._date.time_of_day}.", ""
 
-        # Extract scripture reference between the closing quote and newline of first line
+        # Extract scripture reference between the closing quote and the newline of the first line
         try:
             # Should be the 2nd '"' at the end of the first line, before the reference
             i: int = a[1:].index('"') + 2
