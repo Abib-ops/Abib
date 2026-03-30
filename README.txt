@@ -8,11 +8,16 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.24
+Abib v415.25
 ------------
 
 Changelog.
 ------------
+Abib v415.25
+Bumped pygments from 2.19.2 to 2.20.0,
+and requests from 2.33.0 to 2.33.1.
+requirements.txt updated.
+
 Abib v415.24
 Fixed Menu Titles Visibility in Dark Mode.
 
