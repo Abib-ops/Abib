@@ -313,19 +313,16 @@ def remove_junk(text: str) -> str:
         return text  # Return the number as-is if it's valid
     else:
         #  Remove any junk from the beginning of a reference.
-        try:
-            m: int = re.search("[a-zA-Z0-9]+", rex).start()
-            rex: str = rex[m:]
-        except AttributeError:
-            pass
+        res = re.search("[a-zA-Z0-9]+", rex)
+        if res:
+            rex = rex[res.start():]
 
         #  Remove any junk from the end of a reference.
-        try:
-            k: int = re.search("[a-zA-Z0-9]+", rex[::-1]).start()
+        res_end = re.search("[a-zA-Z0-9]+", rex[::-1])
+        if res_end:
+            k: int = res_end.start()
             if k > 0:
                 rex = rex[:-k]
-        except AttributeError:
-            pass
 
         #  Remove possible duplicate '.' or ':' chapter verse seperator.
         rex = squeeze('.', rex)
@@ -677,7 +674,7 @@ def clean_chap_prefix(reference_text: str) -> str:
         ref = reference_text.replace('chap', '')
         return ref.strip('.')
 
-    # Remove spaces from '2 Corinthians' etc..
+    # Remove spaces from '2 Corinthians' etc.
     reference_text = reference_text[:3].replace(' ', '') + reference_text[3:]
 
     # Remove spaces enclosed by a-z

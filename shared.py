@@ -15,14 +15,16 @@ from os import getenv
 from json import loads
 from platform import system
 
-CURRENT_VERSION = "415.25"
+CURRENT_VERSION = "415.26"
 current_directory: Path = Path.cwd()
 str_cwd: str = str(current_directory)
 # settings_file: Path = current_directory / 'settings.json'
 user_settings_dir: Path = Path.cwd()  # Initialise with the current working directory as a placeholder value.
 
 if system() == 'Windows':
-    user_settings_dir = Path(getenv("APPDATA")) / "Abib"  # User's directory.
+    app_data = getenv("APPDATA")
+    assert app_data is not None
+    user_settings_dir = Path(app_data) / "Abib"  # User's directory.
 elif system() == 'Darwin':
     user_settings_dir = Path.home() / "Library" / "Application Support" / "Abib"
 elif system() == 'Linux':

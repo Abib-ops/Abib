@@ -48,7 +48,8 @@ class SecondaryWindow(NoZoomDialog):
         self.settings_service = settings_service
         # Load window geometry from settings
         if self.settings_service:
-            x7, y7, width7, height7 = self.settings_service.get_window_geometry("devotional_window")
+            ss: Any = self.settings_service
+            x7, y7, width7, height7 = ss.get_window_geometry("devotional_window")
         else:
             x7, y7, width7, height7 = fcs.get_window_geometry("devotional_window")
 
@@ -155,7 +156,8 @@ class SecondaryWindow(NoZoomDialog):
         # Save font size to settings
         try:
             if self.settings_service:
-                self.settings_service.update_devotional_font_size(self.fontsize)
+                ss: Any = self.settings_service
+                ss.update_devotional_font_size(self.fontsize)
             else:
                 fcs.update_devotional_font_size(self.fontsize)
 
@@ -167,11 +169,13 @@ class SecondaryWindow(NoZoomDialog):
                     try:
                         if bool(getattr(widget, "settings", {}).get("unified_font_size", False)):
                             ws = getattr(widget, "settings_service", None)
-                            if ws and ws.get_bible_font_size() != self.fontsize:
-                                ws.update_bible_font_size(self.fontsize)
-                                af = getattr(widget, "apply_font_size", None)
-                                if af:
-                                    af()
+                            if ws:
+                                win_service: Any = ws
+                                if win_service.get_bible_font_size() != self.fontsize:
+                                    win_service.update_bible_font_size(self.fontsize)
+                                    af = getattr(widget, "apply_font_size", None)
+                                    if af:
+                                        af()
                     except (AttributeError, RuntimeError):
                         pass
                     break
@@ -183,7 +187,8 @@ class SecondaryWindow(NoZoomDialog):
         try:
             geometry = self.geometry()
             if self.settings_service:
-                self.settings_service.save_window_geometry(
+                ss: Any = self.settings_service
+                ss.save_window_geometry(
                     "devotional_window",
                     geometry.x(),
                     geometry.y(),
@@ -259,7 +264,8 @@ class AboutWindow(QMainWindow):
         # Load window geometry from settings
         try:
             if self.settings_service:
-                gx, gy, gw, gh = self.settings_service.get_window_geometry("about_window")
+                ss: Any = self.settings_service
+                gx, gy, gw, gh = ss.get_window_geometry("about_window")
             else:
                 gx, gy, gw, gh = fcs.get_window_geometry("about_window")
             # If the stored geometry is too large, use the new defaults
@@ -339,7 +345,8 @@ class AboutWindow(QMainWindow):
         try:
             geometry = self.geometry()
             if self.settings_service:
-                self.settings_service.save_window_geometry(
+                ss: Any = self.settings_service
+                ss.save_window_geometry(
                     "about_window",
                     geometry.x(),
                     geometry.y(),

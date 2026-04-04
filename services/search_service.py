@@ -20,7 +20,9 @@ def iterate_list(keywords: list[str], r_list: list, win: MainWindow) -> None:
         coordinates = []
         for key in keywords:
             pattern = fcs.create_pattern(key)
-            for m in re.finditer(pattern, r_list[i]):
+            from typing import cast
+            text = cast(str, r_list[i])
+            for m in re.finditer(pattern, text):
                 win.occurring += 1
                 coordinates.append((m.start(), m.end()))
         if coordinates:
@@ -40,7 +42,9 @@ def findf3_ww_ac(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list: 
     pattern = re.compile(rf"\b{re.escape(win.key)}\b")
 
     for i in win.occur:
-        if x1 <= i <= x2 and pattern.search(r_list[i]):
+        from typing import cast
+        text = cast(str, r_list[i])
+        if x1 <= i <= x2 and pattern.search(text):
             win.occurs.append(i)
 
     liszt = [win.key]

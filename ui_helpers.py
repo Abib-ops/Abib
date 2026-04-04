@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+from typing import cast
 from PySide6.QtCore import Qt, QEvent, QPoint
 from PySide6.QtWidgets import (
     QPlainTextEdit,
@@ -22,7 +23,7 @@ import fcs
 class NoZoomPlainTextEdit(QPlainTextEdit):
     def wheelEvent(self, event):
         # Block zoom when Ctrl is pressed
-        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+        if int(event.modifiers()) & Qt.KeyboardModifier.ControlModifier.value:
             event.ignore()
             return
         # Allow normal scrolling
@@ -51,7 +52,7 @@ class NoZoomDialog(QDialog):
     def eventFilter(self, obj, event):
         # Block Ctrl+Wheel events on any child widget
         if event.type() == QEvent.Type.Wheel:
-            if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            if int(event.modifiers()) & Qt.KeyboardModifier.ControlModifier.value:
                 event.ignore()
                 return True
         return super().eventFilter(obj, event)
@@ -67,7 +68,7 @@ class SimpleScripturePopup:
     """Lightweight scrollable tooltip popup used by both Other Works and Gill windows.
 
     Provides identical look and behaviour:
-    - ToolTip window with blue border
+    - ToolTip window with a blue border
     - QScrollArea to handle long content without screen overflow
     - QLabel with word wrap, width matched to the host editor's width
     - Positioning near the text cursor for a given mouse position
@@ -84,6 +85,7 @@ class SimpleScripturePopup:
         if self._widget is None:
             # Use ToolTip + Frameless to avoid native frame double-borders
             self._widget = QWidget(None, Qt.WindowType.ToolTip | Qt.WindowType.FramelessWindowHint)
+            assert self._widget is not None
             self._widget.setObjectName("ScripturePopup")
             # Default stylesheet (will be updated by apply_theme)
             self._widget.setStyleSheet("#ScripturePopup { background-color: #ffffff; border: 2px solid #2160FF; }")
@@ -96,6 +98,7 @@ class SimpleScripturePopup:
 
             # Scroll area for long references
             self._scroll = QScrollArea(self._widget)
+            assert self._scroll is not None
             self._scroll.setWidgetResizable(True)
             self._scroll.setFrameShape(QScrollArea.Shape.NoFrame)
             # Ensure the scroll area doesn't have its own background/border
@@ -103,6 +106,7 @@ class SimpleScripturePopup:
 
             # Use a QLabel (non-interactive) for the text
             self._text = QLabel()
+            assert self._text is not None
             try:
                 self._text.setWordWrap(True)
                 self._text.setContentsMargins(6, 4, 6, 4)
@@ -163,7 +167,7 @@ class SimpleScripturePopup:
             except (RuntimeError, AttributeError):
                 is_dark = False
         
-        self.apply_theme(is_dark)
+        self.apply_theme(cast(bool, is_dark))
 
         # Only update text if it changed to avoid layout churn
         try:
@@ -251,7 +255,7 @@ class SimpleScripturePopup:
                 max_y = min_y
             popup_y = max(min_y, min(popup_y, max_y))
 
-            return popup_x, popup_y
+            return int(popup_x), int(popup_y)
         except (RuntimeError, AttributeError, TypeError, ValueError):
             # Fallback
             try:

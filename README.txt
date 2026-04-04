@@ -8,11 +8,17 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.25
+Abib v415.26
 ------------
 
 Changelog.
 ------------
+Abib v415.26
+Bumped charset-normalizer to 3.4.7
+and
+pyinstaller-hooks-contrib to 2026.4
+requirements.txt updated.
+
 Abib v415.25
 Bumped pygments from 2.19.2 to 2.20.0,
 and requests from 2.33.0 to 2.33.1.
@@ -55,8 +61,8 @@ shiboken6==6.11.0
 urllib3==2.6.3
 wheel==0.46.3
 # Windows-only dependencies
-pywin32 ; sys_platform == 'win32'
-pywin32-ctypes==0.2.3 ; sys_platform == 'win32'
+pywin32; sys_platform == 'win32'
+pywin32-ctypes==0.2.3; sys_platform == 'win32'
 
 Abib v415.21
 Changed "Screenshot.jpg" to something new.
@@ -181,7 +187,7 @@ altgraph==0.17.5
 certifi==2025.11.12
 charset-normalizer==3.4.4
 colorama==0.4.6
-comtypes==1.4.13 ; sys_platform == 'win32'
+comtypes==1.4.13; sys_platform == 'win32'
 idna==3.11
 iniconfig==2.3.0
 packaging==25.0
@@ -190,15 +196,15 @@ pluggy==1.6.0
 Pygments==2.19.2
 pyinstaller==6.17.0
 pyinstaller-hooks-contrib==2025.10
-PySide6==6.10.1 ; python_version < '3.14'
-PySide6_Addons==6.10.1 ; python_version < '3.14'
-PySide6_Essentials==6.10.1 ; python_version < '3.14'
+PySide6==6.10.1; python_version < '3.14'
+PySide6_Addons==6.10.1; python_version < '3.14'
+PySide6_Essentials==6.10.1; python_version < '3.14'
 pytest==9.0.2
 pyttsx3==2.99
 requests==2.32.5
 roman==5.2
 setuptools==80.9.0
-shiboken6==6.10.1 ; python_version < '3.14'
+shiboken6==6.10.1; python_version < '3.14'
 urllib3==2.6.1
 wheel==0.45.1
 
@@ -391,7 +397,7 @@ Many improvements made to the code.
 
 The way that the "last_read_positions" values are updated and looked up before and
 after loading a new text was not robust (In settings.json).
-The problem was fixed now works; the last read positions are now stored in a dictionary
+The problem was fixed now works; the last-read positions are now stored in a dictionary
 keyed by the book name.
 The "Reset to defaults" button now resets all settings to canonical defaults immediately.
 The in-memory settings object identity is preserved to update all open components without
@@ -460,7 +466,7 @@ Same as v413.03 but correctly gpg signed.
 Abib v413.03
 Release version, bugs fixed, Main Devotional and Pilgrim's Progress windows now preserve their position and size.
 The font size is adjustable and persists for the Main and Devotional windows.
-Package                   Version
+Package - - - - - - - - - Version
 ------------------------- ---------
 python                    3.13.9
 pip                       25.2
@@ -589,7 +595,7 @@ The Commentary button is for future use.
 Buttons rearranged to accommodate new ones.
 Spurgeon's Morning and Evening Readings added.
 Some improvements to the F2 reference entry section
-(allows "--Eph. 5.12....... ").
+(allows "--Eph. 5.12... ").
 
 Abib407
 Text highlighting colour bug fixed.
@@ -790,7 +796,7 @@ Do:
 $ sudo pacman -S ttf-cascadia-code
 
 For other distributions, you can find the Cascadia Code font as a
-standard .ttf at:
+standard '.ttf' at:
 
 https://github.com/microsoft/cascadia-code/releases
 

@@ -6,13 +6,13 @@
 
 from __future__ import annotations
 
-from typing import Tuple, Any, cast
+from typing import Tuple, Any
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QLabel, QStyle
 from PySide6.QtGui import QFontMetrics
 
-from ui_find import Ui_Dialog as UiDialog
+from ui_find import UiDialog as UiDialog
 
 
 class FindDialog(QDialog):
@@ -32,6 +32,35 @@ class FindDialog(QDialog):
         # Run the .setupUi() method to show the GUI
         self.ui.setupUi(self)
 
+        # Assertions for UI components defined as Optional in UiDialog
+        assert self.ui.radiobutton_1 is not None
+        assert self.ui.radiobutton_2 is not None
+        assert self.ui.radiobutton_3 is not None
+        assert self.ui.radiobutton_4 is not None
+        assert self.ui.radiobutton_5 is not None
+        assert self.ui.radiobutton_6 is not None
+        assert self.ui.comboBox_1 is not None
+        assert self.ui.comboBox_2 is not None
+        assert self.ui.lineEdit_1 is not None
+        assert self.ui.label is not None
+        assert self.ui.checkBox is not None
+        assert self.ui.pushButton_1 is not None
+        assert self.ui.buttonBox is not None
+        # Create local references with type hints to satisfy the static analyser.
+        rb1: Any = self.ui.radiobutton_1
+        rb2: Any = self.ui.radiobutton_2
+        rb3: Any = self.ui.radiobutton_3
+        rb4: Any = self.ui.radiobutton_4
+        rb5: Any = self.ui.radiobutton_5
+        rb6: Any = self.ui.radiobutton_6
+        cb1: Any = self.ui.comboBox_1
+        cb2: Any = self.ui.comboBox_2
+        le1: Any = self.ui.lineEdit_1
+        lab_buddy: Any = self.ui.label
+        chk: Any = self.ui.checkBox
+        pb1: Any = self.ui.pushButton_1
+        bb: Any = self.ui.buttonBox
+
         # Robust alignment: split each radio button into a left label (on the radio)
         # and a separate right-hand QLabel for the bracketed description.
         # This guarantees perfect alignment in proportional fonts and across DPI.
@@ -44,12 +73,7 @@ class FindDialog(QDialog):
                 ("Any of the words", "(With results sorted)"),
             ]
 
-            radios = (
-                self.ui.radiobutton_1,
-                self.ui.radiobutton_2,
-                self.ui.radiobutton_3,
-                self.ui.radiobutton_4,
-            )
+            radios = (rb1, rb2, rb3, rb4)
 
             # Apply only the left text to the radio buttons
             for rb, (left, _right) in zip(radios, pairs):
@@ -101,8 +125,15 @@ class FindDialog(QDialog):
 
             # Connect mode toggles to also hide/show the right labels
             # Avoid shadowing the outer-scope variable name "lbl" used above
-            cast(Any, self.ui.radiobutton_5.clicked).connect(lambda _b: [lab.show() for lab in self._right_labels])
-            cast(Any, self.ui.radiobutton_6.clicked).connect(lambda _b: [lab.hide() for lab in self._right_labels])
+            def _show_right_labels(_b: Any) -> None:
+                for l in self._right_labels:
+                    l.show()
+            def _hide_right_labels(_b: Any) -> None:
+                for l in self._right_labels:
+                    l.hide()
+
+            rb5.clicked.connect(_show_right_labels)
+            rb6.clicked.connect(_hide_right_labels)
         except (RuntimeError, AttributeError, TypeError, ValueError, IndexError):
             # If anything goes wrong, leave the default texts in place.
             self._right_labels = []
@@ -124,7 +155,8 @@ class FindDialog(QDialog):
         # Load window geometry from settings
         try:
             if self.settings_service:
-                gx, gy, gw, gh = self.settings_service.get_window_geometry("find_window")
+                ss: Any = self.settings_service
+                gx, gy, gw, gh = ss.get_window_geometry("find_window")
             else:
                 import fcs
                 gx, gy, gw, gh = fcs.get_window_geometry("find_window")
@@ -132,73 +164,73 @@ class FindDialog(QDialog):
         except (RuntimeError, TypeError, ValueError):
             self.setGeometry(700, 300, 400, 378)
 
-        self.ui.lineEdit_1.setToolTip("press RETURN to find")
-        cast(Any, self.ui.lineEdit_1.returnPressed).connect(self.getter)
-        self.ui.lineEdit_1.setClearButtonEnabled(False)
-        self.ui.lineEdit_1.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        le1.setToolTip("press RETURN to find")
+        le1.returnPressed.connect(self.getter)
+        le1.setClearButtonEnabled(False)
+        le1.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         # Associate label mnemonic with the line edit (moved from ui_find.py)
-        self.ui.label.setBuddy(self.ui.lineEdit_1)
+        lab_buddy.setBuddy(le1)
 
-        cast(Any, self.ui.pushButton_1.clicked).connect(lambda _b: self.ui.lineEdit_1.clear())
+        pb1.clicked.connect(lambda _b: le1.clear())
         # Mirror Designer-time connections previously in ui_find.py
-        cast(Any, self.ui.radiobutton_5.clicked).connect(lambda _b: self.ui.radiobutton_4.show())
-        cast(Any, self.ui.radiobutton_5.clicked).connect(lambda _b: self.ui.radiobutton_3.show())
-        cast(Any, self.ui.radiobutton_5.clicked).connect(lambda _b: self.ui.radiobutton_2.show())
-        cast(Any, self.ui.radiobutton_5.clicked).connect(lambda _b: self.ui.radiobutton_1.show())
-        cast(Any, self.ui.radiobutton_6.clicked).connect(lambda _b: self.ui.radiobutton_1.hide())
-        cast(Any, self.ui.radiobutton_6.clicked).connect(lambda _b: self.ui.radiobutton_2.hide())
-        cast(Any, self.ui.radiobutton_6.clicked).connect(lambda _b: self.ui.radiobutton_3.hide())
-        cast(Any, self.ui.radiobutton_6.clicked).connect(lambda _b: self.ui.radiobutton_4.hide())
+        rb5.clicked.connect(lambda _b: rb4.show())
+        rb5.clicked.connect(lambda _b: rb3.show())
+        rb5.clicked.connect(lambda _b: rb2.show())
+        rb5.clicked.connect(lambda _b: rb1.show())
+        rb6.clicked.connect(lambda _b: rb1.hide())
+        rb6.clicked.connect(lambda _b: rb2.hide())
+        rb6.clicked.connect(lambda _b: rb3.hide())
+        rb6.clicked.connect(lambda _b: rb4.hide())
 
         # Populate book range comboboxes from the parent window state
         if hasattr(self._main, "nwin") and isinstance(self._main.nwin, list):
-            self.ui.comboBox_1.addItems(self._main.nwin)
-            self.ui.comboBox_2.addItems(self._main.nwin)
-        self.ui.comboBox_1.setCurrentIndex(0)
+            cb1.addItems(self._main.nwin)
+            cb2.addItems(self._main.nwin)
+        cb1.setCurrentIndex(0)
         # Expect BOOKS_IN_THE_BIBLE - 1 as the last index
         try:
             from shared import BOOKS_IN_THE_BIBLE  # local import to avoid heavy module import at the top
-            self.ui.comboBox_2.setCurrentIndex(BOOKS_IN_THE_BIBLE - 1)
+            cb2.setCurrentIndex(BOOKS_IN_THE_BIBLE - 1)
         except (ImportError, TypeError, ValueError):
             # Fallback if constant not available for any reason
-            if self.ui.comboBox_2.count() > 0:
-                self.ui.comboBox_2.setCurrentIndex(self.ui.comboBox_2.count() - 1)
+            if cb2.count() > 0:
+                cb2.setCurrentIndex(cb2.count() - 1)
 
         # Enforce range rules dynamically: start (comboBox_1) must be <= end (comboBox_2), 
         # and the end dropdown must reflect this by disabling invalid items.
         # Connect handlers and initialise once.
-        cast(Any, self.ui.comboBox_1.currentIndexChanged).connect(self._on_start_changed)
-        cast(Any, self.ui.comboBox_2.currentIndexChanged).connect(self._on_end_changed)
+        cb1.currentIndexChanged.connect(self._on_start_changed)
+        cb2.currentIndexChanged.connect(self._on_end_changed)
         self._apply_end_constraints()
 
         QOk = QDialogButtonBox.StandardButton.Ok
-        self.ui.buttonBox.button(QOk).setEnabled(True)
-        self.ui.buttonBox.button(QOk).setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        cast(Any, self.ui.buttonBox.button(QOk).clicked).connect(lambda _b: self.getter())
+        bb.button(QOk).setEnabled(True)
+        bb.button(QOk).setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        bb.button(QOk).clicked.connect(lambda _b: self.getter())
         QCancel = QDialogButtonBox.StandardButton.Cancel
-        self.ui.buttonBox.button(QCancel).setEnabled(True)
-        self.ui.buttonBox.button(QCancel).setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        bb.button(QCancel).setEnabled(True)
+        bb.button(QCancel).setFocusPolicy(Qt.FocusPolicy.NoFocus)
         # Use parent's close handler
         if hasattr(self._main, "close_find_window"):
-            cast(Any, self.ui.buttonBox.button(QCancel).clicked).connect(lambda _b: self._main.close_find_window())
+            bb.button(QCancel).clicked.connect(lambda _b: self._main.close_find_window())
 
-        self.ui.lineEdit_1.setFocus()
+        le1.setFocus()
 
-        self.ui.comboBox_1.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.comboBox_2.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_1.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_2.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_3.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_4.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_5.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.radiobutton_6.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.ui.checkBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        cb1.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        cb2.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        rb1.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        rb2.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        rb3.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        rb4.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        rb5.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        rb6.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        chk.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        cast(Any, self.ui.lineEdit_1.textChanged).connect(lambda _t: self.ui.lineEdit_1.setFocus())
-        self.ui.pushButton_1.hide()
+        le1.textChanged.connect(lambda _t: le1.setFocus())
+        pb1.hide()
 
         # Dynamically show/hide the clear button based on text presence
-        cast(Any, self.ui.lineEdit_1.textChanged).connect(lambda _t: self.toggle_clear_button())
+        le1.textChanged.connect(lambda _t: self.toggle_clear_button())
 
     # --- Layout maintenance for aligned right-hand labels ---
     def _reposition_right_labels(self) -> None:
@@ -221,11 +253,15 @@ class FindDialog(QDialog):
             column_x = int(text_start_x + max_left_px + gutter_px + extra_pad_px)
             # Move labels
             for rb, lbl in zip(radios, self._right_labels):
-                g = rb.geometry()
-                lbl.setGeometry(column_x, g.y(), max(10, self.width() - column_x - 10), g.height())
-                lbl.setFont(prop_font)
+                # Use local references with type hints to satisfy strict static analysis
+                # and avoid 'Never' type narrowing in the loop.
+                r_obj: Any = rb
+                l_obj: Any = lbl
+                g = r_obj.geometry()
+                l_obj.setGeometry(column_x, g.y(), max(10, self.width() - column_x - 10), g.height())
+                l_obj.setFont(prop_font)
                 # Keep visibility consistent with radio
-                lbl.setVisible(rb.isVisible())
+                l_obj.setVisible(r_obj.isVisible())
         except (RuntimeError, AttributeError, TypeError, ValueError):
             pass
 
@@ -234,16 +270,22 @@ class FindDialog(QDialog):
         self._reposition_right_labels()
 
     def toggle_clear_button(self) -> None:
-        if self.ui.lineEdit_1.text():
-            self.ui.pushButton_1.show()
-            self.ui.lineEdit_1.setFocus()
+        assert self.ui.lineEdit_1 is not None
+        assert self.ui.pushButton_1 is not None
+        le1: Any = self.ui.lineEdit_1
+        pb1: Any = self.ui.pushButton_1
+        if le1.text():
+            pb1.show()
+            le1.setFocus()
         else:
-            self.ui.pushButton_1.hide()
-            self.ui.lineEdit_1.setFocus()
+            pb1.hide()
+            le1.setFocus()
 
     def getter(self) -> None:
         """Get values from the find window and transfer to findf3 on the parent."""
-        key = self.ui.lineEdit_1.text()
+        assert self.ui.lineEdit_1 is not None
+        le1: Any = self.ui.lineEdit_1
+        key = le1.text()
         i, j = self.get_scope()
         self.get_checks()
         if hasattr(self._main, "findf3"):
@@ -255,12 +297,16 @@ class FindDialog(QDialog):
 
     def get_scope(self) -> Tuple[int, int]:
         """Get the scope from the comboboxes."""
-        i: int = self.ui.comboBox_1.currentIndex()
-        j: int = self.ui.comboBox_2.currentIndex()
+        assert self.ui.comboBox_1 is not None
+        assert self.ui.comboBox_2 is not None
+        cb1: Any = self.ui.comboBox_1
+        cb2: Any = self.ui.comboBox_2
+        i: int = cb1.currentIndex()
+        j: int = cb2.currentIndex()
         if i > j:
             i, j = j, i
-            self.ui.comboBox_1.setCurrentIndex(i)
-            self.ui.comboBox_2.setCurrentIndex(j)
+            cb1.setCurrentIndex(i)
+            cb2.setCurrentIndex(j)
         return i, j
 
     # ---- Range constraints helpers ----
@@ -269,9 +315,14 @@ class FindDialog(QDialog):
 
         This makes the rule (start <= end) visible in the dropdown list.
         """
-        start_idx = max(0, self.ui.comboBox_1.currentIndex())
-        count = self.ui.comboBox_2.count()
-        model = self.ui.comboBox_2.model()
+        assert self.ui.comboBox_1 is not None
+        assert self.ui.comboBox_2 is not None
+        cb1: Any = self.ui.comboBox_1
+        cb2: Any = self.ui.comboBox_2
+
+        start_idx = max(0, cb1.currentIndex())
+        count = cb2.count()
+        model = cb2.model()
         for k in range(count):
             enabled = k >= start_idx
             # Prefer QStandardItemModel-style enable/disable if available
@@ -280,10 +331,11 @@ class FindDialog(QDialog):
             except (AttributeError, TypeError):
                 item = None
             if item is not None:
+                item_obj: Any = item
                 try:
-                    item.setEnabled(bool(enabled))
+                    item_obj.setEnabled(bool(enabled))
                     # Also affect selection to reflect the disabled state in the popup
-                    item.setSelectable(bool(enabled))
+                    item_obj.setSelectable(bool(enabled))
                 except (AttributeError, RuntimeError, TypeError, ValueError):
                     # If anything goes wrong, silently ignore; snapping logic below enforces validity
                     pass
@@ -293,14 +345,14 @@ class FindDialog(QDialog):
                 # (Generic QAbstractItemModel does not provide a way to change flags directly.)
                 pass
         # If the current end is now invalid, snap it to start
-        end_idx = self.ui.comboBox_2.currentIndex()
+        end_idx = cb2.currentIndex()
         if 0 <= end_idx < start_idx:
             # Prevent signal loops while adjusting
-            bs = self.ui.comboBox_2.blockSignals(True)
+            bs = cb2.blockSignals(True)
             try:
-                self.ui.comboBox_2.setCurrentIndex(start_idx)
+                cb2.setCurrentIndex(start_idx)
             finally:
-                self.ui.comboBox_2.blockSignals(bs)
+                cb2.blockSignals(bs)
 
     def _on_start_changed(self, _index: int) -> None:
         """When the start changes, update the end combo list and selection."""
@@ -309,34 +361,55 @@ class FindDialog(QDialog):
 
     def _on_end_changed(self, index: int) -> None:
         """When the end changes, ensure it is not less than the start."""
-        start_idx = self.ui.comboBox_1.currentIndex()
+        assert self.ui.comboBox_1 is not None
+        assert self.ui.comboBox_2 is not None
+        cb1: Any = self.ui.comboBox_1
+        cb2: Any = self.ui.comboBox_2
+
+        start_idx = cb1.currentIndex()
         if index < start_idx:
-            bs = self.ui.comboBox_2.blockSignals(True)
+            bs = cb2.blockSignals(True)
             try:
-                self.ui.comboBox_2.setCurrentIndex(start_idx)
+                cb2.setCurrentIndex(start_idx)
             finally:
-                self.ui.comboBox_2.blockSignals(bs)
+                cb2.blockSignals(bs)
 
     def check_changed(self) -> None:
         """Ensure that the checkBox is correct."""
-        self.checks[1] = 1 if self.ui.checkBox.isChecked() else 0
+        assert self.ui.checkBox is not None
+        chk: Any = self.ui.checkBox
+        self.checks[1] = 1 if chk.isChecked() else 0
 
     def radiobutton1_4_changed(self) -> None:
         """Ensure that radiobuttons 1 to 4 are correct."""
-        if self.ui.radiobutton_1.isChecked():
+        assert self.ui.radiobutton_1 is not None
+        assert self.ui.radiobutton_2 is not None
+        assert self.ui.radiobutton_3 is not None
+        assert self.ui.radiobutton_4 is not None
+        rb1: Any = self.ui.radiobutton_1
+        rb2: Any = self.ui.radiobutton_2
+        rb3: Any = self.ui.radiobutton_3
+        rb4: Any = self.ui.radiobutton_4
+
+        if rb1.isChecked():
             self.checks[0] = 1
-        elif self.ui.radiobutton_2.isChecked():
+        elif rb2.isChecked():
             self.checks[0] = 2
-        elif self.ui.radiobutton_3.isChecked():
+        elif rb3.isChecked():
             self.checks[0] = 3
-        elif self.ui.radiobutton_4.isChecked():
+        elif rb4.isChecked():
             self.checks[0] = 4
 
     def radiobutton5_6_changed(self) -> None:
         """Ensure that radiobuttons 5 & 6 are correct."""
-        if self.ui.radiobutton_6.isChecked():
+        assert self.ui.radiobutton_1 is not None
+        assert self.ui.radiobutton_6 is not None
+        rb1: Any = self.ui.radiobutton_1
+        rb6: Any = self.ui.radiobutton_6
+
+        if rb6.isChecked():
             self.checks[2] = 6
-            self.ui.radiobutton_1.setChecked(True)
+            rb1.setChecked(True)
             self.checks[0] = 1
         else:
             self.checks[2] = 5
@@ -353,7 +426,8 @@ class FindDialog(QDialog):
         try:
             geometry = self.geometry()
             if self.settings_service:
-                self.settings_service.save_window_geometry(
+                ss: Any = self.settings_service
+                ss.save_window_geometry(
                     "find_window",
                     geometry.x(),
                     geometry.y(),

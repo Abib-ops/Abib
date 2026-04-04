@@ -16,12 +16,13 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
+from typing import Any
 from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect)
 from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QComboBox, QDialogButtonBox, QFrame,
                                QLabel, QLineEdit, QPushButton, QRadioButton, QWidget)
 
 
-class Ui_Dialog(object):
+class UiDialog(object):
     def __init__(self):
         # Define instance variables inside the constructor (__init__)
         self.frame: QFrame | None = None
@@ -54,58 +55,73 @@ class Ui_Dialog(object):
 
         # Assign the instance attributes here
         self.frame = QFrame(Dialog)
+        assert self.frame is not None
         self.frame.setObjectName(u"frame")
         self.frame.setGeometry(QRect(10, 240, 191, 91))
         self.frame.setMouseTracking(True)
         self.frame.setFrameShape(QFrame.Shape.StyledPanel)
         self.frame.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.radiobutton_5: QRadioButton = QRadioButton(self.frame)
+        self.radiobutton_5 = QRadioButton(self.frame)
+        assert self.radiobutton_5 is not None
         self.radiobutton_5.setObjectName(u"radiobutton_5")
         self.radiobutton_5.setGeometry(QRect(10, 10, 171, 17))
         self.radiobutton_5.setChecked(True)
         self.buttonGroup_2 = QButtonGroup(Dialog)
+        assert self.buttonGroup_2 is not None
         self.buttonGroup_2.setObjectName(u"buttonGroup_2")
         self.buttonGroup_2.addButton(self.radiobutton_5)
-        self.radiobutton_6: QRadioButton = QRadioButton(self.frame)
+        self.radiobutton_6 = QRadioButton(self.frame)
+        assert self.radiobutton_6 is not None
         self.radiobutton_6.setObjectName(u"radiobutton_6")
         self.radiobutton_6.setGeometry(QRect(10, 50, 171, 17))
         self.buttonGroup_2.addButton(self.radiobutton_6)
         self.label_1 = QLabel(Dialog)
+        assert self.label_1 is not None
         self.label_1.setObjectName(u"label_1")
         self.label_1.setGeometry(QRect(20, 220, 181, 16))
         self.checkBox = QCheckBox(Dialog)
+        assert self.checkBox is not None
         self.checkBox.setObjectName(u"checkBox")
         self.checkBox.setGeometry(QRect(20, 180, 361, 31))
         self.lineEdit_1 = QLineEdit(Dialog)
+        assert self.lineEdit_1 is not None
         self.lineEdit_1.setObjectName(u"lineEdit_1")
         self.lineEdit_1.setGeometry(QRect(70, 10, 321, 21))
 
         self.label = QLabel(Dialog)
+        assert self.label is not None
         self.label.setObjectName(u"label")
         self.label.setGeometry(QRect(10, 10, 71, 21))
 
-        self.pushButton_1: QPushButton = QPushButton(Dialog)
+        self.pushButton_1 = QPushButton(Dialog)
+        assert self.pushButton_1 is not None
         self.pushButton_1.setObjectName(u"pushButton_1")
         self.pushButton_1.setGeometry(QRect(370, 10, 21, 21))
         self.frame_2 = QFrame(Dialog)
+        assert self.frame_2 is not None
         self.frame_2.setObjectName(u"frame_2")
         self.frame_2.setGeometry(QRect(220, 240, 171, 91))
         self.frame_2.setFrameShape(QFrame.Shape.StyledPanel)
         self.frame_2.setFrameShadow(QFrame.Shadow.Sunken)
         self.comboBox_1 = QComboBox(self.frame_2)
+        assert self.comboBox_1 is not None
         self.comboBox_1.setObjectName(u"comboBox_1")
         self.comboBox_1.setGeometry(QRect(10, 10, 151, 22))
         self.comboBox_1.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         self.comboBox_2 = QComboBox(self.frame_2)
+        assert self.comboBox_2 is not None
         self.comboBox_2.setObjectName(u"comboBox_2")
         self.comboBox_2.setGeometry(QRect(10, 50, 151, 22))
         self.comboBox_2.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         self.label_2 = QLabel(Dialog)
+        assert self.label_2 is not None
         self.label_2.setObjectName(u"label_2")
         self.label_2.setGeometry(QRect(230, 220, 161, 20))
         self.radiobutton_1 = QRadioButton(Dialog)
+        assert self.radiobutton_1 is not None
         self.buttonGroup = QButtonGroup(Dialog)
+        assert self.buttonGroup is not None
         self.buttonGroup.setObjectName(u"buttonGroup")
         self.buttonGroup.addButton(self.radiobutton_1)
         self.radiobutton_1.setObjectName(u"radiobutton_1")
@@ -113,29 +129,35 @@ class Ui_Dialog(object):
         self.radiobutton_1.setTabletTracking(True)
         self.radiobutton_1.setChecked(True)
         self.radiobutton_2 = QRadioButton(Dialog)
+        assert self.radiobutton_2 is not None
         self.buttonGroup.addButton(self.radiobutton_2)
         self.radiobutton_2.setObjectName(u"radiobutton_2")
         self.radiobutton_2.setGeometry(QRect(20, 80, 361, 31))
         self.radiobutton_3 = QRadioButton(Dialog)
+        assert self.radiobutton_3 is not None
         self.buttonGroup.addButton(self.radiobutton_3)
         self.radiobutton_3.setObjectName(u"radiobutton_3")
         self.radiobutton_3.setGeometry(QRect(20, 110, 361, 31))
         self.radiobutton_4 = QRadioButton(Dialog)
+        assert self.radiobutton_4 is not None
         self.buttonGroup.addButton(self.radiobutton_4)
         self.radiobutton_4.setObjectName(u"radiobutton_4")
         self.radiobutton_4.setGeometry(QRect(20, 140, 361, 31))
         self.frame_3 = QFrame(Dialog)
+        assert self.frame_3 is not None
         self.frame_3.setObjectName(u"frame_3")
         self.frame_3.setGeometry(QRect(10, 49, 381, 121))
         self.frame_3.setMouseTracking(True)
         self.frame_3.setFrameShape(QFrame.Shape.StyledPanel)
         self.frame_3.setFrameShadow(QFrame.Shadow.Sunken)
         self.buttonBox = QDialogButtonBox(Dialog)
+        assert self.buttonBox is not None
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setGeometry(QRect(230, 340, 156, 23))
         self.buttonBox.setMouseTracking(True)
         # self.buttonBox.setFocusPolicy(Qt.StrongFocus)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Ok)
+        btn_ok: Any = QDialogButtonBox.StandardButton.Ok
+        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel | btn_ok)
         self.frame_2.raise_()
         self.frame_3.raise_()
         self.frame.raise_()
@@ -153,6 +175,8 @@ class Ui_Dialog(object):
 
         # Behaviour moved to FindDialog; keep this file UI-only
 
+        assert self.lineEdit_1 is not None
+        assert self.pushButton_1 is not None
         QWidget.setTabOrder(self.lineEdit_1, self.pushButton_1)
         # QWidget.setTabOrder(self.pushButton_1, self.radiobutton_1)
         # QWidget.setTabOrder(self.radiobutton_1, self.radiobutton_2)
@@ -170,6 +194,19 @@ class Ui_Dialog(object):
     # setupUi
 
     def retranslateUi(self, Dialog):
+        assert self.radiobutton_1 is not None
+        assert self.radiobutton_2 is not None
+        assert self.radiobutton_3 is not None
+        assert self.radiobutton_4 is not None
+        assert self.radiobutton_5 is not None
+        assert self.radiobutton_6 is not None
+        assert self.label is not None
+        assert self.label_1 is not None
+        assert self.label_2 is not None
+        assert self.checkBox is not None
+        assert self.pushButton_1 is not None
+        assert self.buttonBox is not None
+
         Dialog.setWindowTitle(QCoreApplication.translate("dialog", u"Find Options", None))
         self.radiobutton_5.setText(QCoreApplication.translate("dialog", u"Normal", None))
         self.radiobutton_6.setText(QCoreApplication.translate("dialog", u"Regular expression", None))

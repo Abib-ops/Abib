@@ -174,10 +174,8 @@ class ThemeManager:
             QMenu::item:selected { background-color: #2a2a2a; color: #ffffff; }
             QMenu::separator { height: 1px; background: #3a3a3a; margin: 4px 8px; }
             /* Unify control shade in dark mode */
-            QComboBox { background-color: #2a2a2a; color: #f0f0f0; border: 1px solid #3a3a3a; }
+            QComboBox, QSpinBox, QLineEdit { background-color: #2a2a2a; color: #f0f0f0; border: 1px solid #3a3a3a; }
             QComboBox QAbstractItemView { background-color: #222222; color: #f0f0f0; selection-background-color: #2a2a2a; selection-color: #ffffff; }
-            /* Per user request: text entry boxes should have a white background in all themes */
-            QLineEdit { background-color: #ffffff; color: #000000; border: 1px solid #3a3a3a; }
             /* Ensure visibility of radio buttons and checkboxes in dark mode */
             QRadioButton, QCheckBox { color: #f0f0f0; }
             QRadioButton:disabled, QCheckBox:disabled { color: #8a8a8a; }
@@ -280,10 +278,8 @@ class ThemeManager:
                 QPushButton:pressed, QDialogButtonBox QPushButton:pressed, QToolButton:pressed { background-color: #d9d9d9; }
                 QPushButton:disabled, QDialogButtonBox QPushButton:disabled, QToolButton:disabled { background-color: #ececec; color: #8a8a8a; border-color: #d6d6d6; }
 
-                QComboBox { background-color: #e9e9e9; color: #000000; border: 1px solid #b5b5b5; }
+                QComboBox, QSpinBox, QLineEdit { background-color: #e9e9e9; color: #000000; border: 1px solid #b5b5b5; }
                 QComboBox QAbstractItemView { background-color: #ffffff; color: #000000; selection-background-color: #e6f0ff; selection-color: #000000; }
-                /* Per user request: text entry boxes should have a white background in all themes */
-                QLineEdit { background-color: #ffffff; color: #000000; border: 1px solid #b5b5b5; }
                 """
             )
             cast(Any, app).setStyleSheet(light_base_styles)

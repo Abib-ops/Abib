@@ -125,7 +125,7 @@ def normalize_book_token(token: str) -> str:
     """
     # Work with a version that still preserves spaces for roman handling
     t0 = token.strip().lower()
-    # Remove the trailing dot that sometimes goes with abbreviations (e.g., "Jn.")
+    # Remove the trailing dot that sometimes goes with abbreviations (e.g. "Jn.")
     if t0.endswith('.'):
         t0 = t0[:-1]
     # Prefer converting leading roman numerals only when separated by a space

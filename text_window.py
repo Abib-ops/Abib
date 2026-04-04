@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import re
-from typing import Any, Dict, List, Set, Optional
+from typing import Any, Dict, List, Set, Optional, cast
 
 from PySide6.QtCore import Qt, QEvent, QTimer, QPoint, Signal, QCoreApplication
 from PySide6.QtGui import (
@@ -57,11 +57,17 @@ def _qdoc_find_flag(name: str) -> int:
         if val is None:
             return 0
         try:
-            return int(val)  # PySide enum/QFlags are int-convertible
+            # Force the analyzer to see 'val' as SupportsInt
+            # PySide enum/QFlags are int-convertible
+            v: Any = val
+            return int(v)
         except (ValueError, TypeError):
             # Fallback: try a common attribute
             v2 = getattr(val, "value", None)
-            return int(v2) if v2 is not None else 0
+            if v2 is not None:
+                v3: Any = v2
+                return int(v3)
+            return 0
     except (AttributeError, TypeError):
         return 0
 
@@ -86,13 +92,15 @@ class TextDocumentWindow(QDialog):
         # If a service is provided, prefer its managed settings and path
         if self.settings_service is not None:
             try:
-                self.settings = self.settings_service.settings
-                self.settings_path = str(self.settings_service.user_settings_path)
+                ss: Any = self.settings_service
+                self.settings = ss.settings
+                self.settings_path = str(ss.user_settings_path)
             except (AttributeError, RuntimeError, TypeError):
                 pass
 
         self.current_reference = None
         self.current_file_stem = None
+        self._find_dlg: Optional[QDialog] = None
         self.setWindowTitle("Text Reader")
 
         # Load initial window geometry from legacy/global reader_window.
@@ -197,19 +205,21 @@ class TextDocumentWindow(QDialog):
             # Animated pulse for the message (cycles dots …)
             # Optional because the fail-safe path below may set it to None
             self._progress_pulse: Optional[QTimer] = QTimer(self)
-            try:
-                self._progress_pulse.setInterval(250)
-            except (AttributeError, TypeError, RuntimeError):
-                pass
-            # Guarded connect to satisfy static analysers that type QTimer.timeout (Signal)
-            # may not expose .connect in stubs, while at runtime it does.
-            try:
-                sig = getattr(self._progress_pulse, "timeout", None)
-                cn = getattr(sig, "connect", None)
-                if callable(cn):
-                    cn(self._tick_progress_pulse)
-            except (AttributeError, TypeError, RuntimeError):
-                pass
+            if self._progress_pulse is not None:
+                pulse: Any = self._progress_pulse
+                try:
+                    pulse.setInterval(250)
+                except (AttributeError, TypeError, RuntimeError):
+                    pass
+                # Guarded connect to satisfy static analysers that type QTimer.timeout (Signal)
+                # may not expose .connect in stubs, while at runtime it does.
+                try:
+                    sig = getattr(pulse, "timeout", None)
+                    cn = getattr(sig, "connect", None)
+                    if callable(cn):
+                        cn(self._tick_progress_pulse)
+                except (AttributeError, TypeError, RuntimeError):
+                    pass
             self._progress_indeterminate: bool = False
             self._progress_msg_base: str = ""
             self._progress_msg_static: str = ""
@@ -369,7 +379,8 @@ class TextDocumentWindow(QDialog):
         try:
             val = int(getattr(self, "reader_fontsize", 12))
             if self.settings_service:
-                self.settings_service.update_reader_font_size(val)
+                ss: Any = self.settings_service
+                ss.update_reader_font_size(val)
             else:
                 path = str(self.settings_path) if self.settings_path else "settings.json"
                 fcs.update_reader_font_size(val, path)
@@ -404,11 +415,14 @@ class TextDocumentWindow(QDialog):
                 if widget.__class__.__name__ == "MainWindow":
                     if bool(getattr(widget, "settings", {}).get("unified_font_size", False)):
                         ws = getattr(widget, "settings_service", None)
-                        if ws and ws.get_bible_font_size() != size_int:
-                            ws.update_bible_font_size(size_int)
-                            af = getattr(widget, "apply_font_size", None)
-                            if af:
-                                af()
+                        if ws:
+                            win_service: Any = ws
+                            if win_service.get_bible_font_size() != size_int:
+                                win_service.update_bible_font_size(size_int)
+                                af = getattr(widget, "apply_font_size", None)
+                                if af:
+                                    af_func: Any = af
+                                    af_func()
                     break
         except (AttributeError, RuntimeError):
             pass
@@ -445,7 +459,7 @@ class TextDocumentWindow(QDialog):
             # Use relaxed multi-monitor aware clamping similar to fcs.get_window_geometry
             VIRTUAL_LIMIT = 10000
 
-            gx, gy, gw, gh = int(x), int(y), int(w), int(h)
+            gx, gy, gw, gh = int(cast(Any, x)), int(cast(Any, y)), int(cast(Any, w)), int(cast(Any, h))
 
             if not (-VIRTUAL_LIMIT < gx < VIRTUAL_LIMIT):
                 gx = 100
@@ -528,7 +542,8 @@ class TextDocumentWindow(QDialog):
             # Persist
             if self.settings_service:
                 try:
-                    self.settings_service.save(self.settings)
+                    ss: Any = self.settings_service
+                    ss.save(self.settings)
                 except (RuntimeError, AttributeError, TypeError, ValueError, OSError):
                     pass
             elif self.settings_path:
@@ -636,6 +651,15 @@ class TextDocumentWindow(QDialog):
                 self._popup_helper.apply_theme(is_dark)
             except (RuntimeError, AttributeError):
                 pass
+        
+        # Ensure the find dialog matches the new theme if it exists
+        if hasattr(self, '_find_dlg') and self._find_dlg is not None:
+            try:
+                # Use a local reference with a type hint to satisfy the linter
+                win_dlg: Any = self._find_dlg
+                win_dlg.apply_theme(is_dark)
+            except (RuntimeError, AttributeError):
+                pass
 
     def _save_scroll_for(self, stem: Any, value: Any) -> None:
         """Persist the reading position for a given file stem.
@@ -694,8 +718,8 @@ class TextDocumentWindow(QDialog):
         on_done: Any | None = None,
     ) -> None:
         """Content-anchored restore of the reading position.
-        If ``saved`` is negative, it encodes the absolute character offset of the
-        desired top-of-viewport block: ``target_char = -saved - 1`` (backward compatibility).
+        If `saved` is negative, it encodes the absolute character offset of the
+        desired top-of-viewport block: `target_char = -saved - 1` (backward compatibility).
         Positive values are treated as pixel scrollbar positions and approximated
         as pixel scrollbar positions and restored using a stabilised scrollbar-maximum
         strategy to avoid early-partial maxima causing incorrect placement.
@@ -704,7 +728,7 @@ class TextDocumentWindow(QDialog):
         large negative numbers.
 
         Keeps _is_loading True until finalising; uses a cancellation token.
-        Calls ``on_done()`` after successful or terminal finalising (once).
+        Calls `on_done()` after successful or terminal finalising (once).
         """
         # New restore cycle
         self._restore_token += 1
@@ -1065,7 +1089,7 @@ class TextDocumentWindow(QDialog):
             value = getattr(self, "_pending_save_value", None)
             if stem is None or value is None:
                 return
-            self._save_scroll_for(stem, int(value))
+            self._save_scroll_for(cast(Any, stem), int(cast(Any, value)))
         except (ValueError, TypeError, AttributeError):
             pass
         finally:
@@ -1084,7 +1108,8 @@ class TextDocumentWindow(QDialog):
             return
         try:
             # Set scroll to 0, preserve geometry
-            self._write_entry(stem, scroll=0, geometry=None)
+            s: str = cast(str, stem)
+            self._write_entry(s, scroll=0, geometry=None)
         except (ValueError, TypeError, OSError):
             # Non-fatal: if persisting fails, still attempt to scroll to the top
             pass
@@ -1112,7 +1137,7 @@ class TextDocumentWindow(QDialog):
                     self._is_loading = False
             else:
                 # Use the async restorer to apply 0 once the layout is ready
-                self._restore_scroll_position_async(stem, 0)
+                self._restore_scroll_position_async(cast(str, stem), 0)
         except (AttributeError, RuntimeError):
             self._is_loading = False
 
@@ -1135,11 +1160,12 @@ class TextDocumentWindow(QDialog):
             stem = getattr(self, "current_file_stem", None)
             if stem:
                 # _write_entry also persists in the whole settings dict, including our "reader_window" update
-                self._write_entry(stem, geometry=(int(g.x()), int(g.y()), int(g.width()), int(g.height())))
+                self._write_entry(cast(str, stem), geometry=(int(g.x()), int(g.y()), int(g.width()), int(g.height())))
             else:
                 # No work loaded, just persist global settings (theme, reader_window, etc.)
                 if self.settings_service:
-                    self.settings_service.save(self.settings)
+                    ss: Any = self.settings_service
+                    ss.save(self.settings)
                 elif self.settings_path:
                     fcs.save_settings_to_file(self.settings, self.settings_path)
                 else:
@@ -1165,9 +1191,12 @@ class TextDocumentWindow(QDialog):
         self._save_current_geometry()
 
         # Explicitly close the modeless find dialog if it exists
-        if getattr(self, "_find_dlg", None):
+        dlg = getattr(self, "_find_dlg", None)
+        if dlg:
             try:
-                self._find_dlg.close()
+                # Use a local reference with a type hint to satisfy the linter
+                dlg_obj: Any = dlg
+                dlg_obj.close()
             except (RuntimeError, AttributeError):
                 pass
 
@@ -1196,22 +1225,27 @@ class TextDocumentWindow(QDialog):
         try:
             if self._progress_container is None:
                 return
+            if self._progress_bar is None:
+                return
+            pb: Any = self._progress_bar
             # Show determinate progress if the total size is known; otherwise fallback to indeterminate marquee
             try:
                 known_total = (total_bytes is not None) and (int(total_bytes) > 0)
             except (TypeError, ValueError):
                 known_total = False
             if known_total:
-                self._progress_bar.setRange(0, 100)
-                self._progress_bar.setValue(0)
+                pb.setRange(0, 100)
+                pb.setValue(0)
                 self._progress_indeterminate = False
             else:
-                self._progress_bar.setRange(0, 0)
+                pb.setRange(0, 0)
                 self._progress_indeterminate = True
             self._progress_msg_base = message
             self._progress_msg_static = message
             self._progress_dots = 0
-            self._progress_label.setText(message)
+            if self._progress_label is not None:
+                lbl: Any = self._progress_label
+                lbl.setText(message)
             self._progress_container.setVisible(True)
             # Start a subtle pulse on the label to reinforce activity even on styles
             # that don’t animate the marquee conspicuously
@@ -1227,6 +1261,7 @@ class TextDocumentWindow(QDialog):
         try:
             if self._progress_bar is None:
                 return
+            pb: Any = self._progress_bar
             # Keep the progress bar in indeterminate mode for visible animation
             if getattr(self, "_progress_indeterminate", False):
                 return
@@ -1244,15 +1279,16 @@ class TextDocumentWindow(QDialog):
             except (AttributeError, TypeError, ValueError):
                 pass
             # Ensure determinate mode
-            self._progress_bar.setRange(0, 100)
-            self._progress_bar.setValue(pct)
+            pb.setRange(0, 100)
+            pb.setValue(pct)
             # Update the message to include percentage while retaining pulsing dots
             try:
                 base_static = getattr(self, "_progress_msg_static", "") or getattr(self, "_progress_msg_base", "")
                 self._progress_msg_base = f"{base_static} {pct}%"
                 if self._progress_label is not None:
+                    lbl: Any = self._progress_label
                     # Show immediate text; pulse timer will append dots on the next tick
-                    self._progress_label.setText(f"{self._progress_msg_base}{'.' * getattr(self, '_progress_dots', 0)}")
+                    lbl.setText(f"{self._progress_msg_base}{'.' * getattr(self, '_progress_dots', 0)}")
             except (AttributeError, TypeError, ValueError):
                 pass
         except (RuntimeError, AttributeError, TypeError, ValueError):
@@ -1266,19 +1302,21 @@ class TextDocumentWindow(QDialog):
         try:
             if self._progress_bar is None:
                 return
+            pb: Any = self._progress_bar
             if pct < 0:
                 pct = 0
             if pct > 100:
                 pct = 100
             # Ensure determinate mode
-            self._progress_bar.setRange(0, 100)
-            self._progress_bar.setValue(int(pct))
+            pb.setRange(0, 100)
+            pb.setValue(int(pct))
             # Update the message to include percentage while retaining pulsing dots
             try:
                 base_static = getattr(self, "_progress_msg_static", "") or getattr(self, "_progress_msg_base", "")
                 self._progress_msg_base = f"{base_static} {int(pct)}%"
                 if self._progress_label is not None:
-                    self._progress_label.setText(f"{self._progress_msg_base}{'.' * getattr(self, '_progress_dots', 0)}")
+                    lbl: Any = self._progress_label
+                    lbl.setText(f"{self._progress_msg_base}{'.' * getattr(self, '_progress_dots', 0)}")
             except (AttributeError, TypeError, ValueError):
                 pass
         except (RuntimeError, AttributeError, TypeError, ValueError):
@@ -1308,7 +1346,8 @@ class TextDocumentWindow(QDialog):
             base = getattr(self, "_progress_msg_base", "")
             self._progress_dots = (getattr(self, "_progress_dots", 0) + 1) % 4
             dots = "." * self._progress_dots
-            self._progress_label.setText(f"{base}{dots}")
+            lbl: Any = self._progress_label
+            lbl.setText(f"{base}{dots}")
         except (RuntimeError, AttributeError, TypeError, ValueError):
             pass
 
@@ -1402,6 +1441,7 @@ class TextDocumentWindow(QDialog):
             try:
                 prev_stem = getattr(self, "current_file_stem", None)
                 if prev_stem:
+                    p_stem: str = cast(str, prev_stem)
                     sb_prev = self.text_edit.verticalScrollBar()
                     try:
                         prev_value = int(sb_prev.value())
@@ -1410,13 +1450,13 @@ class TextDocumentWindow(QDialog):
                         prev_value, prev_max = 0, 0
                     if prev_max > 0:
                         # Avoid overwriting a good non-zero with an early zero
-                        existing = self._get_saved_position(prev_stem)
+                        existing = self._get_saved_position(p_stem)
                         if (prev_value != 0) or (existing == 0):
-                            self._save_scroll_for(prev_stem, prev_value)
+                            self._save_scroll_for(p_stem, prev_value)
                     # Always capture the current geometry for the previous stem
                     try:
                         gprev = self.geometry()
-                        self._write_entry(prev_stem, geometry=(int(gprev.x()), int(gprev.y()), int(gprev.width()), int(gprev.height())))
+                        self._write_entry(p_stem, geometry=(int(gprev.x()), int(gprev.y()), int(gprev.width()), int(gprev.height())))
                     except (ValueError, TypeError, AttributeError, RuntimeError, OSError):
                         pass
             except (ValueError, TypeError, OSError, AttributeError, RuntimeError):
@@ -1441,7 +1481,8 @@ class TextDocumentWindow(QDialog):
             try:
                 if isinstance(last_position, int) and last_position >= 0:
                     sb_now = self.text_edit.verticalScrollBar()
-                    sb_now.setValue(int(last_position))
+                    v_now: Any = last_position
+                    sb_now.setValue(int(v_now))
             except (AttributeError, RuntimeError, TypeError, ValueError):
                 pass
 
@@ -1477,19 +1518,23 @@ class TextDocumentWindow(QDialog):
             def _step():
                 # If a new load started, abort this one
                 if token != self._load_token:
-                    try:
-                        self._load_timer.stop()
-                    except (RuntimeError, AttributeError):
-                        pass
+                    if self._load_timer is not None:
+                        lt_abort: Any = self._load_timer
+                        try:
+                            lt_abort.stop()
+                        except (RuntimeError, AttributeError):
+                            pass
                     return
                 try:
                     chunk = fp.read(chunk_size)
                 except (OSError, ValueError) as _e:
                     # On read error, abort and show a message
-                    try:
-                        self._load_timer.stop()
-                    except (RuntimeError, AttributeError):
-                        pass
+                    if self._load_timer is not None:
+                        lt_err: Any = self._load_timer
+                        try:
+                            lt_err.stop()
+                        except (RuntimeError, AttributeError):
+                            pass
                     # Invalidate this load to prevent further reads on a handle that
                     # may already be closed and clear our reference.
                     try:
@@ -1610,10 +1655,12 @@ class TextDocumentWindow(QDialog):
                         except (RuntimeError, AttributeError, TypeError, ValueError):
                             pass
                         self._hide_progress()
-                        try:
-                            self._load_timer.stop()
-                        except (RuntimeError, AttributeError):
-                            pass
+                        if self._load_timer is not None:
+                            lt_done: Any = self._load_timer
+                            try:
+                                lt_done.stop()
+                            except (RuntimeError, AttributeError):
+                                pass
                         # Ensure the loading state is cleared after successful restore/finalise
                         self._is_loading_file = False
 
@@ -1631,19 +1678,22 @@ class TextDocumentWindow(QDialog):
             try:
                 prev_slot = getattr(self, "_load_timeout_slot", None)
                 if prev_slot is not None and self._load_timer is not None:
+                    lt_prev: Any = self._load_timer
                     # Cast to Any to satisfy static analysis if it doesn't recognise SignalInstance
-                    timeout_signal: Any = self._load_timer.timeout
+                    timeout_signal: Any = lt_prev.timeout
                     timeout_signal.disconnect(prev_slot)
             except (RuntimeError, TypeError):
                 pass
             self._load_timeout_slot = None
-            self._load_timer.setInterval(10)
-            # Cast to Any to satisfy static analysis if it doesn't recognise SignalInstance
-            timeout_signal_connect: Any = self._load_timer.timeout
-            timeout_signal_connect.connect(_step)
-            # Remember the connected slot so we can disconnect it explicitly next time
-            self._load_timeout_slot = _step
-            self._load_timer.start()
+            if self._load_timer is not None:
+                lt_start: Any = self._load_timer
+                lt_start.setInterval(10)
+                # Cast to Any to satisfy static analysis if it doesn't recognise SignalInstance
+                timeout_signal_connect: Any = lt_start.timeout
+                timeout_signal_connect.connect(_step)
+                # Remember the connected slot so we can disconnect it explicitly next time
+                self._load_timeout_slot = _step
+                lt_start.start()
 
             if hasattr(self, 'file_selector'):
                 idx = self.file_selector.findText(stem)
@@ -1971,21 +2021,47 @@ class TextDocumentWindow(QDialog):
             # Load window geometry from settings
             try:
                 ss = getattr(parent, "settings_service", None)
-                if ss:
-                    gx, gy, gw, gh = ss.get_window_geometry("reader_find_window")
+                if ss is not None:
+                    ss_obj: Any = ss
+                    gx, gy, gw, gh = ss_obj.get_window_geometry("reader_find_window")
                 else:
                     gx, gy, gw, gh = fcs.get_window_geometry("reader_find_window")
                 self.setGeometry(gx, gy, gw, gh)
             except (RuntimeError, TypeError, ValueError):
                 pass
+            
+            # Apply initial theme
+            try:
+                self.apply_theme(parent.settings.get("dark_mode", False) if isinstance(parent.settings, dict) else False)
+            except (AttributeError, RuntimeError, TypeError):
+                pass
+
+        def apply_theme(self, is_dark: bool) -> None:
+            """Update the find dialog UI to match the theme."""
+            if is_dark:
+                self.setStyleSheet("QDialog { background-color: #121212; color: #ffffff; }")
+                # User preference: search box in dark mode should remain white with black text to stand out.
+                self.edit.setStyleSheet("QLineEdit { background-color: #ffffff; color: #000000; border: 1px solid #3a3a3a; }")
+                self.case_box.setStyleSheet("")
+                self.whole_box.setStyleSheet("")
+                self.prev_btn.setStyleSheet("")
+                self.next_btn.setStyleSheet("")
+            else:
+                self.setStyleSheet("QDialog { background-color: #f0f0f0; color: #000000; }")
+                self.edit.setStyleSheet("QLineEdit { background-color: #ffffff; color: #000000; border: 1px solid #b5b5b5; }")
+                self.case_box.setStyleSheet("")
+                self.whole_box.setStyleSheet("")
+                self.prev_btn.setStyleSheet("")
+                self.next_btn.setStyleSheet("")
 
         def closeEvent(self, event):
             """Handle window close event - save geometry"""
             try:
                 geometry = self.geometry()
                 ss = getattr(self._parent, "settings_service", None)
-                if ss:
-                    ss.save_window_geometry(
+                if ss is not None:
+                    ss_obj: Any = ss
+                    ss_obj.save_window_geometry(
                         "reader_find_window",
                         geometry.x(),
                         geometry.y(),
@@ -2041,35 +2117,40 @@ class TextDocumentWindow(QDialog):
         if not dlg:
             return
         try:
-            dlg.show()
-            dlg.raise_()
-            dlg.activateWindow()
-            dlg.edit.setFocus()
-            dlg.edit.selectAll()
+            win_dlg: Any = dlg
+            win_dlg.show()
+            win_dlg.raise_()
+            win_dlg.activateWindow()
+            win_dlg.edit.setFocus()
+            win_dlg.edit.selectAll()
         except (RuntimeError, AttributeError):
             pass
 
     def _maybe_close_find_dialog(self) -> None:
         dlg = getattr(self, "_find_dlg", None)
-        if dlg and dlg.isVisible():
-            try:
-                dlg.hide()
-                self.text_edit.setFocus()
-            except (RuntimeError, AttributeError):
-                pass
+        if dlg:
+            win_dlg: Any = dlg
+            if win_dlg.isVisible():
+                try:
+                    win_dlg.hide()
+                    self.text_edit.setFocus()
+                except (RuntimeError, AttributeError):
+                    pass
 
     def _do_find(self, forward: bool = True) -> None:
         dlg = self._find_dlg
         if not dlg:
             return
         try:
-            term = dlg.edit.text()
+            win_dlg: Any = dlg
+            term = win_dlg.edit.text()
         except (RuntimeError, AttributeError):
             term = ""
         if not term:
             return
 
-        flags = dlg.build_flags()
+        win_dlg_f: Any = dlg
+        flags = win_dlg_f.build_flags()
         if not forward:
             try:
                 flags |= getattr(QTextDocument.FindFlag, "FindBackward", _qdoc_find_flag("FindBackward"))
@@ -2095,7 +2176,9 @@ class TextDocumentWindow(QDialog):
         # Try to find; if not found (or an error occurs), wrap once and try again
         try:
             # Pass proper flags to find(); avoid casting to Any to keep types compatible
-            if not self.text_edit.find(term, flags):
+            # but use cast(Any, flags) if the analyzer is still unhappy with the int/FindFlag mismatch
+            f_flags: Any = flags
+            if not self.text_edit.find(term, f_flags):
                 cursor = self.text_edit.textCursor()
                 if forward:
                     cursor.setPosition(0)
@@ -2103,7 +2186,7 @@ class TextDocumentWindow(QDialog):
                     doc = self.text_edit.document()
                     cursor.setPosition(doc.characterCount() - 1)
                 self.text_edit.setTextCursor(cursor)
-                self.text_edit.find(term, flags)
+                self.text_edit.find(term, f_flags)
         except (RuntimeError, AttributeError, TypeError):
             # Silently ignore lifecycle/type errors from Qt objects
             pass
@@ -2181,7 +2264,12 @@ class TextDocumentWindow(QDialog):
         self._refs_scanned = True
         # No per-line batch processing in whole-document mode
         self._highlight_timer.stop()
-        QTimer.singleShot(0, lambda t=token: self._highlight_visible_now() if t == self._cancel_token else None)
+
+        def _highlight_lazy(t=token):
+            if t == self._cancel_token:
+                self._highlight_visible_now()
+
+        QTimer.singleShot(0, _highlight_lazy)
 
     def _apply_highlights_for_refs(self, base: int, refs: List[Dict[str, Any]], *, allow_existing: bool = False) -> None:
         """Collect highlighting ranges for a set of references on a line.
@@ -2191,9 +2279,10 @@ class TextDocumentWindow(QDialog):
         selections: List[Any] = []
         for r in refs:
             # Support either relative ('start') or absolute ('abs_start') inputs
-            r_start = r.get('start', r.get('abs_start', 0))
-            start = base + int(r_start)
-            length = int(r.get('length', 0))
+            r_val: Any = r.get('start', r.get('abs_start', 0))
+            l_val: Any = r.get('length', 0)
+            start = base + int(r_val)
+            length = int(l_val)
             key = (start, length)
             is_new = key not in self._ref_index
             if is_new:
@@ -2457,7 +2546,9 @@ class TextDocumentWindow(QDialog):
             from ui_helpers import SimpleScripturePopup
             self._popup_helper = SimpleScripturePopup()
             
-        px, py, pw, ph = self._popup_helper.predict_geometry(
+        # Use a local reference with a type hint to satisfy the linter
+        helper: Any = self._popup_helper
+        px, py, pw, ph = helper.predict_geometry(
             self.text_edit, text, pos, self.text_edit.font()
         )
         ref_top, ref_bottom = self._get_ref_vertical_range(ref)
@@ -2506,10 +2597,11 @@ class TextDocumentWindow(QDialog):
                 m = re.search(r"\d+", verse_str or "")
                 first_verse = m.group(0) if m else verse_str
                 # Normalise to canonical book name
-                normalized_book = self.normalize_book_input(book) if isinstance(book, str) else book
+                book_v: Any = book
+                normalized_book: Any = self.normalize_book_input(book_v) if isinstance(book_v, str) else book_v
                 book_id = sh.bibledict.get(normalized_book)
-                full_book = self.canonical_books.get(book_id, book)
-                if book_id and (book_id - 1) in sh.onechapterbooks:
+                full_book = self.canonical_books.get(int(cast(Any, book_id)), cast(str, book))
+                if book_id and (int(cast(Any, book_id)) - 1) in sh.onechapterbooks:
                     nav_ref = f"{full_book} {first_verse}"
                 else:
                     nav_ref = f"{full_book} {chapter}:{first_verse}"
@@ -2617,7 +2709,9 @@ class TextDocumentWindow(QDialog):
 
         try:
             is_dark = self.settings.get("theme", "Light") == "Dark"
-            self._popup_helper.show(self.text_edit, scriptur, pos, self.text_edit.font(), is_dark=is_dark)
+            assert self._popup_helper is not None
+            helper_win: Any = self._popup_helper
+            helper_win.show(self.text_edit, scriptur, pos, self.text_edit.font(), is_dark=is_dark)
         except (RuntimeError, AttributeError, TypeError, ValueError):
             # Fallback to the legacy widget path if helper fails
             is_dark = self.settings.get("theme", "Light") == "Dark"

@@ -58,7 +58,7 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
     Mirrors the previous inline setup in Abib.MainWindow.initui, wiring the same
     icons, labels, status tips, and signal handlers.
     """
-    # Obtain the menu bar; QMainWindow.menuBar() ensures one exists
+    # Get the menu bar; QMainWindow.menuBar() ensures one exists
     mb = window.menuBar()
 
     # File toolbar/menu

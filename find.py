@@ -121,50 +121,36 @@ class UiDialog(object):
         self.buttonBox.setGeometry(QtCore.QRect(230, 340, 156, 23))
         self.buttonBox.setMouseTracking(True)
         self.buttonBox.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
-        buttons = (
-            QtWidgets.QDialogButtonBox.StandardButton.Cancel
-            | QtWidgets.QDialogButtonBox.StandardButton.Ok
-        )
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.StandardButtons(buttons))
+        from typing import Any
+        cancel_btn: Any = QtWidgets.QDialogButtonBox.StandardButton.Cancel
+        ok_btn: Any = QtWidgets.QDialogButtonBox.StandardButton.Ok
+        buttons: Any = cancel_btn | ok_btn
+        self.buttonBox.setStandardButtons(buttons)
         self.buttonBox.setProperty(".standardButtons", "")
         self.buttonBox.setObjectName("buttonBox")
-        self.frame_2.raise_()
-        self.frame_3.raise_()
-        self.frame.raise_()
-        self.label_1.raise_()
-        self.checkBox.raise_()
-        self.lineEdit_1.raise_()
-        self.label.raise_()
-        self.pushButton_1.raise_()
-        self.label_2.raise_()
-        self.radiobutton_1.raise_()
-        self.radiobutton_2.raise_()
-        self.radiobutton_3.raise_()
-        self.radiobutton_4.raise_()
-        self.buttonBox.raise_()
+        for wdg in [
+            self.frame_2, self.frame_3, self.frame, self.label_1,
+            self.checkBox, self.lineEdit_1, self.label, self.pushButton_1,
+            self.label_2, self.radiobutton_1, self.radiobutton_2,
+            self.radiobutton_3, self.radiobutton_4, self.buttonBox
+        ]:
+            wdg.raise_()
         self.label.setBuddy(self.lineEdit_1)
 
         self.retranslateUi(dialog)
         self.pushButton_1.clicked.connect(self.lineEdit_1.clear)
-        self.radiobutton_5.clicked.connect(self.radiobutton_4.show)
-        self.radiobutton_5.clicked.connect(self.radiobutton_3.show)
-        self.radiobutton_5.clicked.connect(self.radiobutton_2.show)
-        self.radiobutton_5.clicked.connect(self.radiobutton_1.show)
-        self.radiobutton_6.clicked.connect(self.radiobutton_1.hide)
-        self.radiobutton_6.clicked.connect(self.radiobutton_2.hide)
-        self.radiobutton_6.clicked.connect(self.radiobutton_3.hide)
-        self.radiobutton_6.clicked.connect(self.radiobutton_4.hide)
+        for rb in [self.radiobutton_1, self.radiobutton_2, self.radiobutton_3, self.radiobutton_4]:
+            self.radiobutton_5.clicked.connect(rb.show)
+            self.radiobutton_6.clicked.connect(rb.hide)
         QtCore.QMetaObject.connectSlotsByName(dialog)
-        dialog.setTabOrder(self.lineEdit_1, self.pushButton_1)
-        dialog.setTabOrder(self.pushButton_1, self.radiobutton_1)
-        dialog.setTabOrder(self.radiobutton_1, self.radiobutton_2)
-        dialog.setTabOrder(self.radiobutton_2, self.radiobutton_3)
-        dialog.setTabOrder(self.radiobutton_3, self.radiobutton_4)
-        dialog.setTabOrder(self.radiobutton_4, self.checkBox)
-        dialog.setTabOrder(self.checkBox, self.radiobutton_5)
-        dialog.setTabOrder(self.radiobutton_5, self.radiobutton_6)
-        dialog.setTabOrder(self.radiobutton_6, self.comboBox_1)
-        dialog.setTabOrder(self.comboBox_1, self.comboBox_2)
+        tab_widgets = [
+            self.lineEdit_1, self.pushButton_1, self.radiobutton_1,
+            self.radiobutton_2, self.radiobutton_3, self.radiobutton_4,
+            self.checkBox, self.radiobutton_5, self.radiobutton_6,
+            self.comboBox_1, self.comboBox_2
+        ]
+        for i in range(len(tab_widgets) - 1):
+            dialog.setTabOrder(tab_widgets[i], tab_widgets[i+1])
 
     def retranslateUi(self, dialog):
         _translate = QtCore.QCoreApplication.translate
@@ -186,6 +172,6 @@ class UiDialog(object):
             "dialog", "Any of the words       (With results sorted)"))
 
 
-# Compatibility alias: some generators name the class Ui_Dialog
+# Compatibility alias: some generators name the class UiDialog
 # Keep both names available to avoid import mismatches between modules.
 Ui_Dialog = UiDialog

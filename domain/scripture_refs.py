@@ -10,15 +10,15 @@ Indexing contract (prominent):
 - All public inputs and outputs in this module are 1-based for (book, chapter, verse).
   - resolve_reference(...) returns (book, chapter, verse) as 1-based integers when available.
   - calculate_book_line(book, chapter, verse, ...) expects 1-based integers.
-- Internally, these values are converted to 0-based indices only for looking up into ``shared.Info``,
+- Internally, these values are converted to 0-based indices only for looking up into `shared.Info`,
   which stores triples as [book_id, chapter_idx, verse_idx] with 0-based indexing.
 
 Examples
 - resolve_reference(["Genesis", "1", "1"]) -> (1, 1, 1)
-- calculate_book_line(1, 1, 1, _) -> index of [0, 0, 0] in ``shared.Info``
+- calculate_book_line(1, 1, 1, _) -> index of [0, 0, 0] in `shared.Info`
 
 Notes
-- Book-name matching relies on ``shared.bibledict``; see that mapping for accepted names.
+- Book-name matching relies on `shared.bibledict`; see that mapping for accepted names.
 - Chapter/verse text may be Arabic numerals or valid Roman numerals (e.g. "iv", "XII").
 """
 from __future__ import annotations
@@ -166,7 +166,7 @@ def resolve_reference(bits: Bits) -> RefParts:
     # Step 3: Resolve verse (bits[2])
     verse: Optional[int] = 1
     if len(bits) > 2:
-        # Verses can be lists/ranges (e.g., "29--", "29-31,33");
+        # Verses can be lists/ranges (e.g. "29--", "29-31,33");
         # for navigation we use the first verse number present.
         parsed_vs = _parse_verse_component(bits[2])
         if parsed_vs is None:
@@ -197,12 +197,12 @@ def _build_info_map() -> Dict[tuple[int, int, int], int]:
 
 @lru_cache(maxsize=10_000)
 def _lookup_line(book_id: int, chapter_idx: int, verse_idx: int) -> int:
-    """Return absolute line index for a zero-based (book_id, chapter_idx, verse_idx)."""
+    """Return absolute line index for a 'zero-based' (book_id, chapter_idx, verse_idx)."""
     return _build_info_map()[(book_id, chapter_idx, verse_idx)]
 
 
 def calculate_book_line(book: int, chapter: int, verse: int, _current_line_num: int) -> int:
-    """Return the absolute 0-based line index in ``sh.Info`` for a reference.
+    """Return the absolute 0-based line index in `sh.Info` for a reference.
 
     Parameters
     - book: 1-based book number (int)
@@ -213,15 +213,15 @@ def calculate_book_line(book: int, chapter: int, verse: int, _current_line_num: 
       This parameter may be removed in a future clean-up.
 
     Returns
-    - The index (int) into ``sh.Info`` corresponding to the (book, chapter, verse).
+    - The index (int) into `sh.Info` corresponding to the (book, chapter, verse).
 
     Raises
     - ValueError: if any of the inputs are invalid (noninteger or < 1), or if the
-      triplet does not exist in ``sh.Info``.
+      triplet does not exist in `sh.Info`.
 
     Notes
     - Inputs are 1-based and are converted internally to 0-based before lookup.
-    - The function intentionally does not use ``_current_line_num``.
+    - The function intentionally does not use `_current_line_num`.
     It is present
       only to preserve the public signature during migration.
     """

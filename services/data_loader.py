@@ -56,6 +56,7 @@ class DataLoader:
 
     def __init__(self, base_dir: Path | None = None) -> None:
         self.base_dir = base_dir or sh.base_dir
+        assert self.base_dir is not None
         self._bible: BibleData | None = None
         self._search: SearchData | None = None
         self._sme: SmeData | None = None
@@ -65,9 +66,12 @@ class DataLoader:
         if self._bible is not None:
             return self._bible
 
+        assert self.base_dir is not None
+        base: Path = self.base_dir
+
         # KJV text and copyright trimming
         KJB_PCE_LASTLINE = 36199
-        file_path = str(self.base_dir / "KJB_PCE.txt")
+        file_path = str(base / "KJB_PCE.txt")
         KJV = fcs.readio('', file_path, KJB_PCE_LASTLINE)
 
         EOTNOC = '****END OF THE NOTICE OF COPYRIGHT****\n'
@@ -78,7 +82,7 @@ class DataLoader:
         KJV = tuple(KJV[i_ + 1:])
 
         # Amap
-        amap_path = str(self.base_dir / "Amap.txt")
+        amap_path = str(base / "Amap.txt")
         Amap_raw = sh.readfile('', amap_path, sh.EOF_AMAP)
         Amap = Amap_raw[17:]
 
@@ -125,6 +129,7 @@ class DataLoader:
             book_bounds=book_bounds,
             starts_with_italics=starts_with_italics,
         )
+        assert self._bible is not None
         return self._bible
 
     # ---- Search ----
@@ -132,22 +137,25 @@ class DataLoader:
         if self._search is not None:
             return self._search
 
-        Rnew = tuple(fcs.readio('', str(self.base_dir / "PCE-find.txt"), sh.EOF_BIBLE_TEXT))
+        assert self.base_dir is not None
+        base: Path = self.base_dir
+
+        Rnew = tuple(fcs.readio('', str(base / "PCE-find.txt"), sh.EOF_BIBLE_TEXT))
         Rdic = dict(enumerate(Rnew))
 
-        Rlow = tuple(fcs.readio('', str(self.base_dir / "PCE-lower.txt"), sh.EOF_BIBLE_TEXT))
+        Rlow = tuple(fcs.readio('', str(base / "PCE-lower.txt"), sh.EOF_BIBLE_TEXT))
         Ldic = dict(enumerate(Rlow))
 
-        Rstp = tuple(fcs.readio('', str(self.base_dir / "PCE-stripped.txt"), sh.EOF_BIBLE_TEXT))
-        Rlsp = tuple(fcs.readio('', str(self.base_dir / "PCE-stripped_lower.txt"), sh.EOF_BIBLE_TEXT))
+        Rstp = tuple(fcs.readio('', str(base / "PCE-stripped.txt"), sh.EOF_BIBLE_TEXT))
+        Rlsp = tuple(fcs.readio('', str(base / "PCE-stripped_lower.txt"), sh.EOF_BIBLE_TEXT))
 
-        with open(self.base_dir / "stripped_dict.txt", encoding="utf-8") as f:
+        with open(base / "stripped_dict.txt", encoding="utf-8") as f:
             stripped_dict: Dict[str, Any] = load(f)
-        with open(self.base_dir / "strpd_low_dict.txt", encoding="utf-8") as f:
+        with open(base / "strpd_low_dict.txt", encoding="utf-8") as f:
             strpd_low_dict: Dict[str, Any] = load(f)
 
-        set_dict = fcs.load_list_set_dict(str(self.base_dir / "list_dict.json"), stripped_dict)
-        set_lowdict = fcs.load_list_set_dict(str(self.base_dir / "list_lowdict.json"), strpd_low_dict)
+        set_dict = fcs.load_list_set_dict(str(base / "list_dict.json"), stripped_dict)
+        set_lowdict = fcs.load_list_set_dict(str(base / "list_lowdict.json"), strpd_low_dict)
 
         self._search = SearchData(
             Rnew=Rnew,
@@ -161,14 +169,17 @@ class DataLoader:
             set_dict=set_dict,
             set_lowdict=set_lowdict,
         )
+        assert self._search is not None
         return self._search
 
     # ---- SME (legacy compatibility) ----
     def load_sme(self) -> SmeData:
         if self._sme is not None:
             return self._sme
+        assert self.base_dir is not None
+        base: Path = self.base_dir
         data: Dict[str, Dict[str, str]] = {}
-        sme_path = self.base_dir / "morning_evening.json"
+        sme_path = base / "morning_evening.json"
         try:
             with open(sme_path, "r", encoding="utf-8") as fh:
                 data = load(fh)
@@ -178,6 +189,7 @@ class DataLoader:
             data = {}
         date_file = fcs.get_date_file()
         self._sme = SmeData(data=data, date_file=date_file)
+        assert self._sme is not None
         return self._sme
 
     # Convenience to load everything eagerly (optional)

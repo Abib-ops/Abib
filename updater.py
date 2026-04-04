@@ -301,7 +301,7 @@ def run_installer(installer_path: str) -> bool:
 
 
 def update_abib():
-    # print("Checking for updates...")
+    # print ("Checking for updates...")
     try:
         result = check_for_updates()
         if result is None:

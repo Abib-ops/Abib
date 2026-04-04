@@ -213,7 +213,7 @@ _VERSE_UNIT = rf"\d{{1,3}}(?:{_NO_NL_WS}*[-–]{{1,2}}(?:{_NO_NL_WS}*\d{{1,3}})?
 _VERSE_LIST = rf"{_VERSE_UNIT}(?:{_NO_NL_WS}*,{_NO_NL_WS}*{_VERSE_UNIT})*"
 
 _arabic_re = rf"(?P<chap_a>\d{{1,3}}){_NO_NL_WS}*[:.]{_NO_NL_WS}*(?P<vers_a>{_VERSE_LIST})"
-# Allow optional dot or colon after Roman chapter, e.g., xxii. 17 or xxii:17 or xxii 17
+# Allow optional dot or colon after a Roman chapter, e.g. xxii. 17 or xxii:17 or xxii 17
 _roman_re = rf"(?P<chap_r>[ivxlcdm]+){_NO_NL_WS}*[:.]?{_NO_NL_WS}*(?:v(?:er\.)?{_NO_NL_WS}*)?(?P<vers_r>{_VERSE_LIST})"
 _nochap_re = rf"(?P<vers_only>{_VERSE_LIST})"
 # Chapter-only (no verses) after a book, used to carry forward book context in lists like

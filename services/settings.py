@@ -36,7 +36,9 @@ class SettingsService:
         )
         # Ensure settings exist on disk
         if not self.paths.settings_file.exists():
-            fcs.setup_Abib_settings(self.paths.user_dir)
+            assert self.paths.user_dir is not None
+            u_dir: Path = self.paths.user_dir
+            fcs.setup_Abib_settings(u_dir)
         # Cached settings dict
         self._settings: Dict[str, Any] = {}
 
@@ -159,7 +161,12 @@ class SettingsService:
 
     # ---- Gill Commentary font helpers ----
     def get_commentary_font_size(self) -> int:
-        return int(self.settings.get("gill_font_size", self.settings.get("gill_commentary_font_size", 12)))
+        val = self.settings.get("gill_font_size")
+        if val is None:
+            val = self.settings.get("gill_commentary_font_size", 12)
+        # Type narrowing for static analysis using local reference pattern
+        v: Any = val
+        return int(v)
 
     def update_commentary_font_size(self, new_size: int) -> None:
         self.settings["gill_font_size"] = int(new_size)

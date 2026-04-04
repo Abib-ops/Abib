@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from typing import Optional, Protocol
+from typing import Optional, Protocol, Any
 
 try:
     # Import minimal Qt types; allow this module to import without Qt
@@ -36,15 +36,19 @@ class PrintingService:
         if editor is None:
             return False
         try:
-            dlg = QPrintDialog(parent)
+            # Use a local reference with a type hint to satisfy the linter,
+            # especially when QWidget is potentially aliased to object
+            p: Any = parent
+            dlg = QPrintDialog(p)
             # Support both exec() (PySide6) and exec_() (compat)
             accepted = False
             if hasattr(dlg, "exec"):
                 accepted = bool(dlg.exec())
             elif hasattr(dlg, "exec_"):
                 accepted = bool(dlg.exec_())
+            d: Any = dlg
             if accepted:
-                editor.print_(dlg.printer())
+                editor.print_(d.printer())
                 return True
             return False
         except (RuntimeError, AttributeError, TypeError):

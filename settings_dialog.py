@@ -32,7 +32,8 @@ class SettingsDialog(QDialog):
         # Load window geometry from settings
         try:
             if self.settings_service:
-                gx, gy, gw, gh = self.settings_service.get_window_geometry("settings_window")
+                ss: Any = self.settings_service
+                gx, gy, gw, gh = ss.get_window_geometry("settings_window")
             else:
                 gx, gy, gw, gh = fcs.get_window_geometry("settings_window")
             self.setGeometry(gx, gy, gw, gh)
@@ -127,7 +128,8 @@ class SettingsDialog(QDialog):
         try:
             geometry = self.geometry()
             if self.settings_service:
-                self.settings_service.save_window_geometry(
+                ss: Any = self.settings_service
+                ss.save_window_geometry(
                     "settings_window",
                     geometry.x(),
                     geometry.y(),
