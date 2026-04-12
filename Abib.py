@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.0 and python3.14.3 (64-bit).
 
-04/04/2026
+12/04/2026
 
 1) python -m pip install --upgrade pip wheel
 2) python -m pip install -r requirements.txt
@@ -51,8 +51,6 @@ We’re sorry: Abib is currently Windows‑centric, and our small team hasn’t 
 We appreciate your patience, and we welcome improvements from Linux contributors.
 
 Quick start on Linux (unofficial)
-•
-Ensure the version of Python is between 3.10 and 3.12 (Not sure).
 •
 Copy the Abib folder to your home directory.
 •

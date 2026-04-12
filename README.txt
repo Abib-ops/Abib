@@ -8,11 +8,24 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.26
+Abib v415.27
 ------------
 
 Changelog.
 ------------
+Abib v415.27
+Summary
+•
+Updated pytest version from 9.0.2 to 9.0.3.
+Changes
+•
+Modified requirements.txt to bump pytest version to 9.0.3.
+Verification
+•
+Ran pip install pytest==9.0.3 which succeeded.
+•
+Verified version with pytest --version (output: pytest 9.0.3).
+
 Abib v415.26
 Bumped charset-normalizer to 3.4.7
 and
