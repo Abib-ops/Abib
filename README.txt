@@ -8,15 +8,21 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.27
+Abib v415.28
 ------------
 
 Changelog.
 ------------
+Abib v415.28
+Minor maintenance update.
+packaging updated to 26.1 (26.0)
+python updated to 3.14.4 (3.14.3)
+requirements.txt updated.
+
 Abib v415.27
 Summary
 •
-Updated pytest version from 9.0.2 to 9.0.3.
+Updated pytest from 9.0.2 to 9.0.3.
 Changes
 •
 Modified requirements.txt to bump pytest version to 9.0.3.
