@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.0 and python3.14.4 (64-bit).
 
-19/04/2026
+20/04/2026
 
 1) python -m pip install --upgrade pip wheel
 2) python -m pip install -r requirements.txt

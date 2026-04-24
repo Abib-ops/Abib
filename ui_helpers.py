@@ -23,7 +23,7 @@ import fcs
 class NoZoomPlainTextEdit(QPlainTextEdit):
     def wheelEvent(self, event):
         # Block zoom when Ctrl is pressed
-        if int(event.modifiers()) & Qt.KeyboardModifier.ControlModifier.value:
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             event.ignore()
             return
         # Allow normal scrolling
@@ -52,7 +52,7 @@ class NoZoomDialog(QDialog):
     def eventFilter(self, obj, event):
         # Block Ctrl+Wheel events on any child widget
         if event.type() == QEvent.Type.Wheel:
-            if int(event.modifiers()) & Qt.KeyboardModifier.ControlModifier.value:
+            if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
                 event.ignore()
                 return True
         return super().eventFilter(obj, event)

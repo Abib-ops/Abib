@@ -8,11 +8,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.28
+Abib v415.29
 ------------
 
 Changelog.
 ------------
+Abib v415.29
+Fixed "Wheel Event" error.
+
 Abib v415.28
 Minor maintenance update.
 packaging updated to 26.1 (26.0)
