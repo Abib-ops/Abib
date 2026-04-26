@@ -8,11 +8,23 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.29
+Abib v415.30
 ------------
 
 Changelog.
 ------------
+Abib v415.30
+Key Details of the Upgrades:
+
+Wheel & PyInstaller: Both received significant updates on April 22, 2026.
+These are critical for the project's build and packaging process.
+
+Security & Connectivity: certifi and idna were updated to their latest April 2026 releases,
+ensuring up-to-date SSL certificates and domain name handling.
+
+Standards: packaging was bumped to version 26.2 to maintain compatibility
+with the latest Python packaging standards.
+
 Abib v415.29
 Fixed "Wheel Event" error.
 
