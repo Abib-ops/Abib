@@ -8,11 +8,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.30
+Abib v415.31
 ------------
 
 Changelog.
 ------------
+Abib v415.31
+Minor linting fixes.
+
 Abib v415.30
 Key Details of the Upgrades:
 

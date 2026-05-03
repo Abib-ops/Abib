@@ -5,8 +5,6 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-
-from typing import cast
 from PySide6.QtCore import Qt, QEvent, QPoint
 from PySide6.QtWidgets import (
     QPlainTextEdit,
@@ -23,7 +21,7 @@ import fcs
 class NoZoomPlainTextEdit(QPlainTextEdit):
     def wheelEvent(self, event):
         # Block zoom when Ctrl is pressed
-        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+        if Qt.KeyboardModifier.ControlModifier in event.modifiers():
             event.ignore()
             return
         # Allow normal scrolling
@@ -52,7 +50,7 @@ class NoZoomDialog(QDialog):
     def eventFilter(self, obj, event):
         # Block Ctrl+Wheel events on any child widget
         if event.type() == QEvent.Type.Wheel:
-            if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            if Qt.KeyboardModifier.ControlModifier in event.modifiers():
                 event.ignore()
                 return True
         return super().eventFilter(obj, event)
@@ -167,7 +165,7 @@ class SimpleScripturePopup:
             except (RuntimeError, AttributeError):
                 is_dark = False
         
-        self.apply_theme(cast(bool, is_dark))
+        self.apply_theme(is_dark)
 
         # Only update text if it changed to avoid layout churn
         try:

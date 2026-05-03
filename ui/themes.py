@@ -11,24 +11,23 @@ from typing import Optional, Protocol, cast, Any, TYPE_CHECKING
 import sys
 import platform
 
-try:
-    # Import only the minimal Qt classes we need to type the editor and widgets
-    from PySide6.QtWidgets import QPlainTextEdit, QApplication, QWidget
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QApplication, QWidget
     from PySide6.QtGui import QPalette, QColor
-except ImportError:  # pragma: no cover - allows importing this module without Qt
-    QPlainTextEdit = object  # type: ignore
-    QApplication = object  # type: ignore
-    QWidget = object  # type: ignore
-    QPalette = object  # type: ignore
-    QColor = object  # type: ignore
-
-# Typing-only aliases to satisfy static analysers even when Qt is absent at runtime
-# Use real Qt types during static typing; fall back to Any at runtime without Qt.
-if TYPE_CHECKING:  # pragma: no cover - typing aid only
-    from PySide6.QtGui import QPalette as QPaletteT, QColor as QColorT  # type: ignore
+    QPaletteT = QPalette
+    QColorT = QColor
 else:
-    from typing import Any as QPaletteT  # type: ignore
-    from typing import Any as QColorT  # type: ignore
+    try:
+        from PySide6.QtWidgets import QPlainTextEdit, QApplication, QWidget
+        from PySide6.QtGui import QPalette, QColor
+    except ImportError:
+        QPlainTextEdit = object  # type: ignore
+        QApplication = object  # type: ignore
+        QWidget = object  # type: ignore
+        QPalette = object  # type: ignore
+        QColor = object  # type: ignore
+    QPaletteT = Any
+    QColorT = Any
 
 
 @dataclass
