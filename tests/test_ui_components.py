@@ -26,6 +26,103 @@ sys.modules['PySide6.QtWidgets'].QPlainTextEdit = MockQPlainTextEdit
 
 from ui.themes import ThemeManager, ThemeState
 from ui_helpers import NoZoomPlainTextEdit, NoZoomDialog, center_on_screen, fit_to_screen
+from services.settings import SettingsService
+
+class TestSettingsService(unittest.TestCase):
+    def setUp(self):
+        # Mock fcs.get_default_settings to avoid actual file I/O or dependencies
+        self.patcher = patch('fcs.get_default_settings')
+        self.mock_defaults = self.patcher.start()
+        self.mock_defaults.return_value = {
+            "bible_font_size": 12,
+            "last_bible_position": 0,
+            "main_window": {"x": 10, "y": 20, "width": 100, "height": 200},
+            "reader_font_size": 12,
+            "gill_hover_delay_ms": 120
+        }
+        # Mock sh.user_settings_dir
+        self.sh_patcher = patch('shared.user_settings_dir', '/tmp/abib_test')
+        self.sh_patcher.start()
+        
+        self.service = SettingsService("test_settings.json")
+        # Mock load/save to avoid disk I/O
+        self.service.load = MagicMock(return_value=self.mock_defaults.return_value.copy())
+        self.service.save = MagicMock()
+
+    def tearDown(self):
+        self.patcher.stop()
+        self.sh_patcher.stop()
+
+    def test_get_bible_font_size_default(self):
+        self.assertEqual(self.service.get_bible_font_size(), 12)
+
+    def test_update_bible_font_size(self):
+        self.service.update_bible_font_size(16)
+        self.service.save.assert_called_once()
+        saved_data = self.service.save.call_args[0][0]
+        self.assertEqual(saved_data["bible_font_size"], 16)
+
+    def test_get_last_bible_position(self):
+        self.assertEqual(self.service.get_last_bible_position(), 0)
+
+    def test_save_last_bible_position(self):
+        self.service.update_last_bible_position(100)
+        saved_data = self.service.save.call_args[0][0]
+        self.assertEqual(saved_data["last_bible_position"], 100)
+
+    def test_save_window_geometry(self):
+        self.service.save_window_geometry("main_window", 50, 60, 800, 600)
+        self.service.save.assert_called()
+        saved_data = self.service.save.call_args[0][0]
+        self.assertEqual(saved_data["main_window"], {"x": 50, "y": 60, "width": 800, "height": 600})
+
+    def test_get_devotional_font_size(self):
+        self.assertEqual(self.service.get_devotional_font_size(), 12)
+
+    def test_update_devotional_font_size(self):
+        self.service.update_devotional_font_size(20)
+        saved_data = self.service.save.call_args[0][0]
+        self.assertEqual(saved_data["devotional_font_size"], 20)
+
+    def test_get_commentary_font_size(self):
+        self.assertEqual(self.service.get_commentary_font_size(), 12)
+
+    def test_update_commentary_font_size(self):
+        self.service.update_commentary_font_size(18)
+        saved_data = self.service.save.call_args[0][0]
+        self.assertEqual(saved_data["gill_font_size"], 18)
+
+    def test_get_reader_font_size(self):
+        self.assertEqual(self.service.get_reader_font_size(), 12)
+
+    def test_update_reader_font_size(self):
+        self.service.update_reader_font_size(14)
+        saved_data = self.service.save.call_args[0][0]
+        self.assertEqual(saved_data["reader_font_size"], 14)
+
+    def test_get_gill_hover_delay_ms(self):
+        self.assertEqual(self.service.get_gill_hover_delay_ms(), 120)
+
+    def test_set_gill_hover_delay_ms(self):
+        self.service.set_gill_hover_delay_ms(500)
+        saved_data = self.service.save.call_args[0][0]
+        self.assertEqual(saved_data["gill_hover_delay_ms"], 500)
+
+    def test_get_gill_hide_delay_ms(self):
+        self.assertEqual(self.service.get_gill_hide_delay_ms(), 160)
+
+    def test_set_gill_hide_delay_ms(self):
+        self.service.set_gill_hide_delay_ms(300)
+        saved_data = self.service.save.call_args[0][0]
+        self.assertEqual(saved_data["gill_hide_delay_ms"], 300)
+
+    def test_get_gill_show_popups(self):
+        self.assertTrue(self.service.get_gill_show_popups())
+
+    def test_set_gill_show_popups(self):
+        self.service.set_gill_show_popups(False)
+        saved_data = self.service.save.call_args[0][0]
+        self.assertFalse(saved_data["gill_show_popups"])
 
 class TestThemes(unittest.TestCase):
     def test_theme_manager_toggle(self):

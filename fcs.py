@@ -10,13 +10,12 @@
 ## Used by Abib.py (sh.CURRENT_VERSION) =>
 ################################################################################
 
-from json import load, loads, JSONDecodeError, dump
+from json import load
 from typing import Any
 from string import ascii_letters, digits
 from roman import fromRoman, InvalidRomanNumeralError
 import shared as sh
 from datetime import datetime, timedelta
-from os import path
 from pathlib import Path
 from PySide6.QtWidgets import QApplication
 from typing import cast
@@ -86,6 +85,9 @@ def get_default_settings() -> Any:
             "height": 100
         },
         "last_bible_position": 0,
+        "gill_hover_delay_ms": 120,
+        "gill_hide_delay_ms": 160,
+        "gill_show_popups": True,
         # Map of the 'Other Works' file stems to string booleans "true"/"false" indicating
         # whether they should be shown in the reader window combo box.
         # This map is generated and kept in sync at the application startup based on
@@ -388,72 +390,9 @@ def load_settings_from_file(filename: str | Path = "settings.json") -> Any:
     Load the settings dictionary from a JSON file.
     If the file is missing, empty, malformed, or has partial settings, return defaults.
     """
-    # Default settings
-    default_settings = get_default_settings()
-
-    # Resolve the full path
-    settings_dir = Path(sh.user_settings_dir)
-    full_path = Path(filename)
-    if not full_path.is_absolute():
-        full_path = settings_dir / filename
-    
-    # Ensure directory exists
-    full_path.parent.mkdir(parents=True, exist_ok=True)
-    filename = full_path
-
-    if not path.exists(filename):
-        print("Settings file does not exist. Using default settings.")
-        return default_settings
-
-    # Attempt to read the file
-    try:
-        with open(filename, "r", encoding="utf-8") as file1:
-            # Read and parse the JSON
-            content = file1.read().strip()  # Handle an empty file gracefully
-            if not content:  # File is empty
-                print("Settings file is empty. Falling back to default settings.")
-                return default_settings
-
-            settings_here = loads(content)  # Try to parse JSON
-
-            # Add missing keys with their default values
-            for key, value in default_settings.items():
-                if isinstance(value, dict):
-                    # Handle nested dictionaries (like window settings)
-                    if key not in settings_here:
-                        settings_here[key] = value
-                    else:
-                        # Ensure all subkeys exist
-                        for sub_key, sub_value in value.items():
-                            settings_here[key].setdefault(sub_key, sub_value)
-                else:
-                    settings_here.setdefault(key, value)
-
-            # Clean up deprecated/unused keys to keep settings lean and avoid confusion
-            changed = False
-            if "pilgrims_progress_window" in settings_here:
-                del settings_here["pilgrims_progress_window"]
-                changed = True
-
-            if "gill_commentary_font_size" in settings_here:
-                # Migrate to the new key if it's missing
-                if "gill_font_size" not in settings_here:
-                    settings_here["gill_font_size"] = settings_here["gill_commentary_font_size"]
-                del settings_here["gill_commentary_font_size"]
-                changed = True
-
-            # Persist clean-up if anything was removed
-            if changed:
-                save_settings_to_file(settings_here, str(filename))
-
-            return settings_here
-
-    except JSONDecodeError:
-        print("Settings file is malformed. Overwriting with default settings.")
-        return default_settings
-    except (OSError, UnicodeDecodeError, PermissionError) as err:
-        print(f"Error loading settings: {err}. Using default settings.")
-        return default_settings
+    from services.settings import SettingsService
+    service = SettingsService(str(filename))
+    return service.load()
 
 
 def save_window_geometry(window_name: str, x: int, y: int, width: int, height: int, filename: str | Path = "settings.json"):
@@ -527,23 +466,9 @@ def save_settings_to_file(the_settings: dict[str, Any], filename: str | Path = "
     """
     Save the given settings dictionary to a JSON file.
     """
-    # print(f"DEBUG: Saving settings to file: {filename}")
-    # print(f"DEBUG: Settings: {the_settings}")
-    settings_dir = Path(sh.user_settings_dir)
-    full_path = Path(filename)
-    if not full_path.is_absolute():
-        full_path = settings_dir / filename
-    
-    full_path.parent.mkdir(parents=True, exist_ok=True)
-    filename = full_path
-
-    try:
-        # Explicitly annotate the file object
-        with open(filename, "w", encoding="utf-8") as file1:
-            # Dump the settings dictionary to JSON format
-            dump(the_settings, file1, indent=4)  # Save as JSON with pretty formatting
-    except IOError as e1:
-        print(f"Error saving settings to file: {e1}")
+    from services.settings import SettingsService
+    service = SettingsService(str(filename))
+    service.save(the_settings)
 
 
 def setup_Abib_settings(abib_directory: Path) -> None:

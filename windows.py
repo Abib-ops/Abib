@@ -63,8 +63,12 @@ class SecondaryWindow(NoZoomDialog):
 
         # Load font size from settings
         try:
-            self.fontsize = fcs.get_devotional_font_size()
-        except (TypeError, ValueError, OSError) as e7:
+            if self.settings_service:
+                ss: Any = self.settings_service
+                self.fontsize = ss.get_devotional_font_size()
+            else:
+                self.fontsize = fcs.get_devotional_font_size()
+        except (TypeError, ValueError, OSError, AttributeError) as e7:
             print(f"Failed to load font size: {e7}")
             self.fontsize = 14  # fallback default
 

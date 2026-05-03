@@ -8,15 +8,21 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v416.01
+Abib v416.02
 ------------
 
 Changelog.
 ------------
+Abib v416.02
+Implemented missing methods in SettingsService to fix AttributeErrors.
+Added unit tests and updated SecondaryWindow to use these methods.
+Devotional and Commentary windows now open correctly.
+
 Abib v416.01
 The project was refactored to a modular structure with core logic and services separated
 into dedicated modules. A new pyproject.toml replaced requirements.txt for dependency management.
 All tests passed successfully, confirming correct functionality after refactoring.
+This was not working correctly as published on GitHub.
 
 Abib v415.30
 Key Details of the Upgrades:
