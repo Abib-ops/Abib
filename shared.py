@@ -15,7 +15,7 @@ from os import getenv
 from json import loads
 from platform import system
 
-CURRENT_VERSION = "416.02"
+CURRENT_VERSION = "416.03"
 current_directory: Path = Path.cwd()
 str_cwd: str = str(current_directory)
 # settings_file: Path = current_directory / 'settings.json'

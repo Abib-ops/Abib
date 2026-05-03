@@ -8,6 +8,7 @@ from __future__ import annotations
 import unittest
 from unittest.mock import MagicMock, patch
 import sys
+from typing import cast
 
 # Mock PySide6 BEFORE importing anything that uses it
 mock_qt = MagicMock()
@@ -25,7 +26,7 @@ class MockQPlainTextEdit:
 sys.modules['PySide6.QtWidgets'].QPlainTextEdit = MockQPlainTextEdit
 
 from ui.themes import ThemeManager, ThemeState
-from ui_helpers import NoZoomPlainTextEdit, NoZoomDialog, center_on_screen, fit_to_screen
+from ui_helpers import NoZoomPlainTextEdit, center_on_screen, fit_to_screen
 from services.settings import SettingsService
 
 class TestSettingsService(unittest.TestCase):
@@ -58,8 +59,8 @@ class TestSettingsService(unittest.TestCase):
 
     def test_update_bible_font_size(self):
         self.service.update_bible_font_size(16)
-        self.service.save.assert_called_once()
-        saved_data = self.service.save.call_args[0][0]
+        cast(MagicMock, self.service.save).assert_called_once()
+        saved_data = cast(MagicMock, self.service.save).call_args[0][0]
         self.assertEqual(saved_data["bible_font_size"], 16)
 
     def test_get_last_bible_position(self):
@@ -67,13 +68,13 @@ class TestSettingsService(unittest.TestCase):
 
     def test_save_last_bible_position(self):
         self.service.update_last_bible_position(100)
-        saved_data = self.service.save.call_args[0][0]
+        saved_data = cast(MagicMock, self.service.save).call_args[0][0]
         self.assertEqual(saved_data["last_bible_position"], 100)
 
     def test_save_window_geometry(self):
         self.service.save_window_geometry("main_window", 50, 60, 800, 600)
-        self.service.save.assert_called()
-        saved_data = self.service.save.call_args[0][0]
+        cast(MagicMock, self.service.save).assert_called()
+        saved_data = cast(MagicMock, self.service.save).call_args[0][0]
         self.assertEqual(saved_data["main_window"], {"x": 50, "y": 60, "width": 800, "height": 600})
 
     def test_get_devotional_font_size(self):
@@ -81,7 +82,7 @@ class TestSettingsService(unittest.TestCase):
 
     def test_update_devotional_font_size(self):
         self.service.update_devotional_font_size(20)
-        saved_data = self.service.save.call_args[0][0]
+        saved_data = cast(MagicMock, self.service.save).call_args[0][0]
         self.assertEqual(saved_data["devotional_font_size"], 20)
 
     def test_get_commentary_font_size(self):
@@ -89,7 +90,7 @@ class TestSettingsService(unittest.TestCase):
 
     def test_update_commentary_font_size(self):
         self.service.update_commentary_font_size(18)
-        saved_data = self.service.save.call_args[0][0]
+        saved_data = cast(MagicMock, self.service.save).call_args[0][0]
         self.assertEqual(saved_data["gill_font_size"], 18)
 
     def test_get_reader_font_size(self):
@@ -97,7 +98,7 @@ class TestSettingsService(unittest.TestCase):
 
     def test_update_reader_font_size(self):
         self.service.update_reader_font_size(14)
-        saved_data = self.service.save.call_args[0][0]
+        saved_data = cast(MagicMock, self.service.save).call_args[0][0]
         self.assertEqual(saved_data["reader_font_size"], 14)
 
     def test_get_gill_hover_delay_ms(self):
@@ -105,7 +106,7 @@ class TestSettingsService(unittest.TestCase):
 
     def test_set_gill_hover_delay_ms(self):
         self.service.set_gill_hover_delay_ms(500)
-        saved_data = self.service.save.call_args[0][0]
+        saved_data = cast(MagicMock, self.service.save).call_args[0][0]
         self.assertEqual(saved_data["gill_hover_delay_ms"], 500)
 
     def test_get_gill_hide_delay_ms(self):
@@ -113,7 +114,7 @@ class TestSettingsService(unittest.TestCase):
 
     def test_set_gill_hide_delay_ms(self):
         self.service.set_gill_hide_delay_ms(300)
-        saved_data = self.service.save.call_args[0][0]
+        saved_data = cast(MagicMock, self.service.save).call_args[0][0]
         self.assertEqual(saved_data["gill_hide_delay_ms"], 300)
 
     def test_get_gill_show_popups(self):
@@ -121,7 +122,7 @@ class TestSettingsService(unittest.TestCase):
 
     def test_set_gill_show_popups(self):
         self.service.set_gill_show_popups(False)
-        saved_data = self.service.save.call_args[0][0]
+        saved_data = cast(MagicMock, self.service.save).call_args[0][0]
         self.assertFalse(saved_data["gill_show_popups"])
 
 class TestThemes(unittest.TestCase):
@@ -138,15 +139,15 @@ class TestThemes(unittest.TestCase):
 
     def test_theme_manager_build_palettes(self):
         tm = ThemeManager()
-        # These should return objects (which are mocks in this test)
+        # These should return objects (which are "mocks" in this test)
         dark_pal = tm._build_dark_palette()
         light_pal = tm._build_light_palette()
         self.assertIsNotNone(dark_pal)
         self.assertIsNotNone(light_pal)
         
         # Verify setColor was called (even if on mocks)
-        self.assertTrue(dark_pal.setColor.called)
-        self.assertTrue(light_pal.setColor.called)
+        self.assertTrue(cast(MagicMock, dark_pal).setColor.called)
+        self.assertTrue(cast(MagicMock, light_pal).setColor.called)
 
     def test_apply_to_editor_light(self):
         tm = ThemeManager(ThemeState(is_dark_mode=False))
@@ -198,10 +199,10 @@ class TestUIHelpers(unittest.TestCase):
         event = MagicMock()
         # Mock modifiers to contain ControlModifier
         # In PySide6, modifiers() returns a Flag object. 
-        # Since we mocked Qt, we need to make sure the 'in' check works or we mock it appropriately.
+        # Since we mocked Qt, we need to make sure the 'in' check works, or we "mock" it appropriately.
         # The code uses: Qt.KeyboardModifier.ControlModifier in event.modifiers()
         
-        # Setup the mock for event.modifiers()
+        # Set up the mock for event.modifiers()
         modifiers = MagicMock()
         # Make 'ControlModifier in modifiers' return True
         # Since Qt is mocked, Qt.KeyboardModifier.ControlModifier is a mock.
@@ -238,12 +239,12 @@ class TestUIHelpers(unittest.TestCase):
         popup._text = MagicMock()
         
         popup.apply_theme(is_dark=True)
-        popup._widget.setStyleSheet.assert_called()
-        args, _ = popup._widget.setStyleSheet.call_args
+        cast(MagicMock, popup._widget).setStyleSheet.assert_called()
+        args, _ = cast(MagicMock, popup._widget).setStyleSheet.call_args
         self.assertIn("background-color: #121212", args[0])
         
         popup.apply_theme(is_dark=False)
-        args, _ = popup._widget.setStyleSheet.call_args
+        args, _ = cast(MagicMock, popup._widget).setStyleSheet.call_args
         self.assertIn("background-color: #ffffff", args[0])
 
 class TestScriptureLogic(unittest.TestCase):

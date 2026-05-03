@@ -1605,6 +1605,11 @@ class MainWindow(QMainWindow):
 
         self.initui()
 
+    @property
+    def last_context_position(self) -> int:
+        """The last general context position used by features like Commentary."""
+        return self._last_context_position
+
     # --- Lazy services ---
     @property
     def audio(self):

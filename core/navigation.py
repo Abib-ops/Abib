@@ -5,7 +5,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Any
+from typing import TYPE_CHECKING
 import shared as sh
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ class NavigationCore:
     def get_current_bcv(self) -> tuple[int, int, int]:
         """Return (book, chapter, verse) 1-based from the current context position."""
         try:
-            pos = int(self.w._last_context_position) if getattr(self.w, "_last_context_position", 0) else int(self.w.get_line_number())
+            pos = int(self.w.last_context_position) if hasattr(self.w, "last_context_position") else int(self.w.get_line_number())
         except (TypeError, ValueError, AttributeError):
             pos = 0
         try:
@@ -56,7 +56,8 @@ class NavigationCore:
         else:
             return f'{occ_msg}{book_name} {chapter}:{verse} KJV{end_msg}'
 
-    def calculate_line(self, book: int, chapter: int, verse: int, current_line: int = 0) -> int:
+    @staticmethod
+    def calculate_line(book: int, chapter: int, verse: int, current_line: int = 0) -> int:
         """Resolves (B, C, V) to a global 0-based verse index."""
         from domain.scripture_refs import calculate_book_line
         return calculate_book_line(book, chapter, verse, current_line)

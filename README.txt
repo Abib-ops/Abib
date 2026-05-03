@@ -8,12 +8,20 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v416.02
+Abib v416.03
 ------------
 
 Changelog.
 ------------
+Abib v416.03
+Some minor adjustments made to the code.
+
 Abib v416.02
+Since version 415.30, Abib has undergone significant modernisation and stabilisation.
+The most notable changes include a major structural refactoring, the transition to a
+service-oriented architecture for settings management and the resolution of several
+critical UI-related bugs.
+
 Implemented missing methods in SettingsService to fix AttributeErrors.
 Added unit tests and updated SecondaryWindow to use these methods.
 Devotional and Commentary windows now open correctly.

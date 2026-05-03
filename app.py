@@ -186,7 +186,7 @@ def run() -> None:
     # Expose the window instance at module level for helpers
     AbibModule.w = w
 
-    # Use centralized DataLoader
+    # Use centralised DataLoader
     loader = DataLoader()
     _load_bible_text_and_maps(loader)
     # Defer loading of heavy search indexes to a background thread (Step 1)
