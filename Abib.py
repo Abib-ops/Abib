@@ -137,6 +137,9 @@ import shared as sh
 
 from ui_helpers import NoZoomPlainTextEdit, SimpleScripturePopup
 from services.settings import SettingsService
+from core.navigation import NavigationCore
+
+
 ## Step 5: Reduce import and initialisation cost
 # Defer heavy/optional imports to first use instead of module import time.
 # - windows.* (secondary/about windows)
@@ -1526,6 +1529,9 @@ class MainWindow(QMainWindow):
 
         # Gill commentary window (lazy-created on first use)
         self._gill_win: GillCommentaryWindow | None = None
+
+        # Navigation core
+        self.nav = NavigationCore(self)
 
         # Services (lazy-initialised on first use to improve startup time)
         self._audio = None
@@ -3486,20 +3492,8 @@ class MainWindow(QMainWindow):
 
     # ---- Gill Commentary integration ----
     def _get_current_bcv(self) -> tuple[int, int, int]:
-        """Return (book, chapter, verse) 1-based from the current context position."""
-        try:
-            pos = int(self._last_context_position) if getattr(self, "_last_context_position", 0) else int(self.get_line_number())
-        except (TypeError, ValueError, AttributeError):
-            pos = 0
-        try:
-            entry = sh.Info[pos]
-            # Info stores [book(0..65), chapter(0..), verse(0..)]
-            b = int(entry[0]) + 1
-            c = int(entry[1]) + 1
-            v = int(entry[2]) + 1
-            return b, c, v
-        except (IndexError, TypeError, ValueError):
-            return 1, 1, 1
+        """Wrapper for NavigationCore.get_current_bcv."""
+        return self.nav.get_current_bcv()
 
     def open_commentary_window(self) -> None:
         """Open or focus the Gill commentary window centered on the current verse."""

@@ -8,13 +8,15 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v415.31
+Abib v416.01
 ------------
 
 Changelog.
 ------------
-Abib v415.31
-Minor linting fixes.
+Abib v416.01
+The project was refactored to a modular structure with core logic and services separated
+into dedicated modules. A new pyproject.toml replaced requirements.txt for dependency management.
+All tests passed successfully, confirming correct functionality after refactoring.
 
 Abib v415.30
 Key Details of the Upgrades:
