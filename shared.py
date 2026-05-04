@@ -14,8 +14,19 @@ from pathlib import Path
 from os import getenv
 from json import loads
 from platform import system
+import tomllib
 
-CURRENT_VERSION = "416.05"
+
+# Load version from pyproject.toml
+def _get_version() -> str:
+    try:
+        pyproject_path = Path(__file__).parent / "pyproject.toml"
+        with open(pyproject_path, "rb") as f:
+            return tomllib.load(f).get("project", {}).get("version", "unknown")
+    except (FileNotFoundError, tomllib.TOMLDecodeError, OSError, KeyError):
+        return "unknown"
+
+CURRENT_VERSION = _get_version()
 current_directory: Path = Path.cwd()
 str_cwd: str = str(current_directory)
 # settings_file: Path = current_directory / 'settings.json'

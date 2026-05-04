@@ -8,11 +8,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v416.05
+Abib v416.06
 ------------
 
 Changelog.
 ------------
+Abib v416.06
+New build process using uv.
+
 Abib v416.05
 Updated pyproject.toml to include Windows-specific dependencies (pywin32, pywin32-ctypes).
 Removed pyttsx3 dependency as it is unused in the project.

@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.0 and python3.14.4 (64-bit).
 
-03/05/2026
+04/05/2026
 
 # Install the upgrade utility
 python -m pip install pip-review
@@ -1618,7 +1618,7 @@ class MainWindow(QMainWindow):
             try:
                 from services.audio import AudioService
                 self._audio = AudioService()
-            except Exception:
+            except (ImportError, RuntimeError, OSError):
                 # Keep this attribute as None on failure and re-raise to surface the issue
                 self._audio = None
                 raise
@@ -1631,7 +1631,7 @@ class MainWindow(QMainWindow):
             try:
                 from services.printing import PrintingService
                 self._printing = PrintingService()
-            except Exception:
+            except (ImportError, RuntimeError):
                 self._printing = None
                 raise
         return self._printing
@@ -1643,7 +1643,7 @@ class MainWindow(QMainWindow):
             try:
                 from domain.reading_plans import ReadingPlans
                 self._reading_plans = ReadingPlans()
-            except Exception:
+            except (ImportError, FileNotFoundError, KeyError, OSError):
                 self._reading_plans = None
                 raise
         return self._reading_plans
