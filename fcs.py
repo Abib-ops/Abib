@@ -577,11 +577,14 @@ def compare_versions(version1, version2):
             v = v[1:]
         parts = []
         for p in v.split("."):
-            try:
-                parts.append(int(p))
-            except ValueError:
-                # If a part is not an integer, we could treat it as 0 or stop.
-                # For safety in this app, let's treat it as 0.
+            # Extract only digits from the start of the part
+            match = re.match(r"(\d+)", p)
+            if match:
+                try:
+                    parts.append(int(match.group(1)))
+                except ValueError:
+                    parts.append(0)
+            else:
                 parts.append(0)
         return parts
 

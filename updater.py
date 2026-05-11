@@ -34,21 +34,38 @@ def check_for_updates(parent=None):
     try:
         response = requests.get(GITHUB_API_URL, timeout=4)
         response.raise_for_status()
-        data = response.json()
+        try:
+            data = response.json()
+        except ValueError:
+            # If the server doesn't return valid JSON, it's an unexpected response
+            raise ValueError("Invalid JSON response from server")
 
-        latest_version = data.get("tag_name", "").strip()
+        latest_version = data.get("tag_name", "")
+        if latest_version is None:
+            latest_version = ""
+        latest_version = latest_version.strip()
+        
         if latest_version.startswith("v"):
             latest_version = latest_version[1:]
 
         assets = data.get("assets", [])
+        if not isinstance(assets, list):
+            assets = []
+        
         exe_url = None
         for asset in assets:
+            if not isinstance(asset, dict):
+                continue
             if asset.get("name", "").endswith(".exe"):
                 exe_url = asset.get("browser_download_url")
                 break
 
         if latest_version and exe_url:
-            output: int = fcs.compare_versions(CURRENT_VERSION, latest_version)
+            try:
+                output: int = fcs.compare_versions(CURRENT_VERSION, latest_version)
+            except Exception:
+                raise ValueError("Comparison failed")
+
             if output == -1:
                 reply = QMessageBox.question(
                     parent,
