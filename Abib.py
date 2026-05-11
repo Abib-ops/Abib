@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.0 and python3.14.4 (64-bit).
 
-04/05/2026
+11/05/2026
 
 # Install the upgrade utility
 python -m pip install pip-review
@@ -1832,10 +1832,10 @@ class MainWindow(QMainWindow):
         self.buttonf12.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         grid.addWidget(self.buttonf12, 2, 4)
 
-        self.buttonf13 = QPushButton("Commentary")
+        self.buttonf13 = QPushButton("Gill's Commentary")
         self.buttonf13.setStyleSheet("QPushButton { text-align: left; }")
         self.buttonf13.clicked.connect(commentary)
-        self.buttonf13.setToolTip("Open Commentaries (Ctrl+Shift+C)")
+        self.buttonf13.setToolTip("Open Gill's Commentaries (Ctrl+Shift+C)")
         self.buttonf13.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         grid.addWidget(self.buttonf13, 3, 4)
 
