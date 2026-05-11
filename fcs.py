@@ -572,6 +572,8 @@ def compare_versions(version1, version2):
     """
     # Helper to clean and split version string
     def clean_and_split(v):
+        if not v or not isinstance(v, str):
+            return [0]
         v = v.strip()
         if v.startswith("v"):
             v = v[1:]

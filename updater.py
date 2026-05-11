@@ -19,7 +19,7 @@ import fcs
 import shared as sh
 
 # Use version from shared
-CURRENT_VERSION = sh.CURRENT_VERSION
+# CURRENT_VERSION is accessed via sh.CURRENT_VERSION directly in functions
 
 # Paths and URLs
 uninstaller_path = r"C:\Program Files\Abib\unins000.exe"
@@ -34,16 +34,19 @@ def check_for_updates(parent=None):
     try:
         response = requests.get(GITHUB_API_URL, timeout=4)
         response.raise_for_status()
+        
         try:
             data = response.json()
-        except ValueError:
-            # If the server doesn't return valid JSON, it's an unexpected response
-            raise ValueError("Invalid JSON response from server")
+        except Exception as e:
+            raise ValueError(f"Failed to parse JSON: {e}")
+
+        if not isinstance(data, dict):
+            raise ValueError("Response data is not a dictionary")
 
         latest_version = data.get("tag_name", "")
         if latest_version is None:
             latest_version = ""
-        latest_version = latest_version.strip()
+        latest_version = str(latest_version).strip()
         
         if latest_version.startswith("v"):
             latest_version = latest_version[1:]
@@ -56,21 +59,22 @@ def check_for_updates(parent=None):
         for asset in assets:
             if not isinstance(asset, dict):
                 continue
-            if asset.get("name", "").endswith(".exe"):
+            if str(asset.get("name", "")).endswith(".exe"):
                 exe_url = asset.get("browser_download_url")
                 break
 
         if latest_version and exe_url:
             try:
-                output: int = fcs.compare_versions(CURRENT_VERSION, latest_version)
-            except Exception:
-                raise ValueError("Comparison failed")
+                # Use sh.CURRENT_VERSION directly to ensure we have the latest value
+                output: int = fcs.compare_versions(sh.CURRENT_VERSION, latest_version)
+            except Exception as e:
+                raise ValueError(f"Version comparison failed: {e}")
 
             if output == -1:
                 reply = QMessageBox.question(
                     parent,
                     "Update Available",
-                    f"A new version ({latest_version}) is available. Do you want to download and install it?",
+                    f"A new version ({latest_version}) is available. Do you want to download and install it?\n\n(Current version: {sh.CURRENT_VERSION})",
                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                     QMessageBox.StandardButton.No,
                 )
@@ -84,7 +88,7 @@ def check_for_updates(parent=None):
                     QMessageBox.information(
                         parent,
                         "Up to date",
-                        f"You are already on the latest version (current: {CURRENT_VERSION}).",
+                        f"You are already on the latest version (current: {sh.CURRENT_VERSION}).",
                     )
                 except (RuntimeError, AttributeError, TypeError):
                     # Keep silent if the UI is unavailable or the widget state is invalid
@@ -92,17 +96,18 @@ def check_for_updates(parent=None):
                 return False, "", ""
             return None
         else:
-            QMessageBox.warning(parent, "Error", "Failed to fetch the latest version details.")
+            QMessageBox.warning(parent, "Update check failed", "Failed to fetch the latest version details or installer link from GitHub.")
             return None
-    except requests.exceptions.RequestException:
+    except requests.exceptions.RequestException as e:
         try:
-            QMessageBox.warning(parent, "Update check failed", "Could not reach the update server. Please try again later.")
+            QMessageBox.warning(parent, "Update check failed", f"Could not reach the update server: {e}\n\nPlease check your internet connection and try again later.")
         except (RuntimeError, AttributeError, TypeError):
             pass
         return None
-    except ValueError:
+    except Exception as e:
+        # Catch all other errors (ValueErrors, etc.)
         try:
-            QMessageBox.warning(parent, "Update check failed", "Received an unexpected response from the update server.")
+            QMessageBox.warning(parent, "Update check failed", f"Received an unexpected response from the update server.\n\nDetails: {e}")
         except (RuntimeError, AttributeError, TypeError):
             pass
         return None

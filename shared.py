@@ -19,12 +19,31 @@ import tomllib
 
 # Load version from pyproject.toml
 def _get_version() -> str:
-    try:
-        pyproject_path = Path(__file__).parent / "pyproject.toml"
-        with open(pyproject_path, "rb") as f:
-            return tomllib.load(f).get("project", {}).get("version", "unknown")
-    except (FileNotFoundError, tomllib.TOMLDecodeError, OSError, KeyError):
-        return "unknown"
+    # 1. Try to find pyproject.toml in the current or parent directory
+    # (Works for development and some build layouts)
+    search_paths = [
+        Path(__file__).parent / "pyproject.toml",
+        Path.cwd() / "pyproject.toml",
+    ]
+    
+    import sys
+    if getattr(sys, 'frozen', False):
+        # If running as a PyInstaller bundle, check the bundle directory
+        if hasattr(sys, '_MEIPASS'):
+            search_paths.insert(0, Path(sys._MEIPASS) / "pyproject.toml")
+    
+    for pyproject_path in search_paths:
+        try:
+            if pyproject_path.exists():
+                with open(pyproject_path, "rb") as f:
+                    v = tomllib.load(f).get("project", {}).get("version")
+                    if v:
+                        return str(v)
+        except Exception:
+            continue
+            
+    # 2. Hardcoded fallback (should be updated per release)
+    return "416.08"
 
 CURRENT_VERSION = _get_version()
 current_directory: Path = Path.cwd()

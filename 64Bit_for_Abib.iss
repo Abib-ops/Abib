@@ -1,4 +1,4 @@
-; Inno Setup Compiler for Abib distribution.
+ ; Inno Setup Compiler for Abib distribution.
 ; ------------------------------------------
 
 [Setup]
