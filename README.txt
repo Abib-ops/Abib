@@ -8,11 +8,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v416.07
+Abib v416.08
 ------------
 
 Changelog.
 ------------
+Abib v416.08
+Change to the message sent if there is no update available.
+
 Abib v416.07
 Security vulerability discovered in the urllib3 package.
 urllib3 updated to 2.7.0.

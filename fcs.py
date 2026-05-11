@@ -570,9 +570,23 @@ def compare_versions(version1, version2):
          0 if version1 == version2,
          1 if version1 > version2.
     """
-    # Split the version strings into lists of integers
-    v1_parts = list(map(int, version1.split(".")))
-    v2_parts = list(map(int, version2.split(".")))
+    # Helper to clean and split version string
+    def clean_and_split(v):
+        v = v.strip()
+        if v.startswith("v"):
+            v = v[1:]
+        parts = []
+        for p in v.split("."):
+            try:
+                parts.append(int(p))
+            except ValueError:
+                # If a part is not an integer, we could treat it as 0 or stop.
+                # For safety in this app, let's treat it as 0.
+                parts.append(0)
+        return parts
+
+    v1_parts = clean_and_split(version1)
+    v2_parts = clean_and_split(version2)
 
     # Compare each part (major, minor, patch) in sequence
     for v1, v2 in zip(v1_parts, v2_parts):

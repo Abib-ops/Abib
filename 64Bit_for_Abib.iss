@@ -28,9 +28,6 @@ ArchitecturesInstallIn64BitMode=x64compatible
 ; App binary
 Source: "dist\Abib.exe"; DestDir: "{app}"; DestName: "Abib.exe"; Flags: ignoreversion
 
-; John Gill commentary
-Source: "dist\source\gill.cmt.sqlite"; DestDir: "{app}"; Flags: ignoreversion
-
 ; Curated Other Works you ship (user-added files in this folder remain untouched)
 Source: "dist\source\Other Works\*.txt"; DestDir: "{app}\Other Works"; Flags: ignoreversion
 
@@ -90,22 +87,25 @@ Source: "dist\source\ui\themes.py"; DestDir: "{app}\ui"; Flags: ignoreversion
 ; Abib folder
 Source: "dist\source\.gitattributes"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\.gitignore"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\source\64Bit_for_Abib.iss"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\Abib.py"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\source\Abib.spec"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\ABOUT.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\Amap.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\app.py"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\bible_data.json"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\source\COPYING"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\fcs.py"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\find.py"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\find.ui"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\find_dialog.py"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\find_dict.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\source\gill.cmt.sqlite"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\HELP.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\history.py"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\Info.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\KJB_PCE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\KJB_PCE_stripped.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dist\source\COPYING"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\list_dict.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\list_lowdict.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\lower_dict.txt"; DestDir: "{app}"; Flags: ignoreversion
@@ -128,6 +128,7 @@ Source: "dist\source\text_window.py"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\ui_find.py"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\ui_helpers.py"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\updater.py"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\source\uv.lock"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\source\windows.py"; DestDir: "{app}"; Flags: ignoreversion
 
 [InstallDelete]

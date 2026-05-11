@@ -37,6 +37,9 @@ def check_for_updates(parent=None):
         data = response.json()
 
         latest_version = data.get("tag_name", "").strip()
+        if latest_version.startswith("v"):
+            latest_version = latest_version[1:]
+
         assets = data.get("assets", [])
         exe_url = None
         for asset in assets:
