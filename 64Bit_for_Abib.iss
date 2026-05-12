@@ -4,13 +4,13 @@
 [Setup]
 AppId={{9CBC6105-153E-49F5-912C-2F08A72A774B}} 
 AppName=Abib
-AppVersion=416.09
+AppVersion=416.10
 WizardStyle=modern dynamic
 WizardImageBackColor=clWhite
 WizardImageBackColorDynamicDark=#2b2b2b
 DefaultDirName={autopf}\Abib
 DefaultGroupName=Abib
-OutputBaseFilename=Abib_setup_416.09_win
+OutputBaseFilename=Abib_setup_416.10_win
 UninstallDisplayIcon={app}\images\abib_icon0.ico
 Compression=lzma2
 SolidCompression=yes
