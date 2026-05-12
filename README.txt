@@ -8,11 +8,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v416.09
+Abib v416.10
 ------------
 
 Changelog.
 ------------
+Abib v416.10
+Help file changes.
+
 Abib v416.09
 Fix for the "Check for updates now" button.
 

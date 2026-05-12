@@ -37,7 +37,7 @@ def check_for_updates(parent=None):
         
         try:
             data = response.json()
-        except Exception as e:
+        except ValueError as e:
             raise ValueError(f"Failed to parse JSON: {e}")
 
         if not isinstance(data, dict):

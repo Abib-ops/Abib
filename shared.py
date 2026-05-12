@@ -30,16 +30,18 @@ def _get_version() -> str:
     if getattr(sys, 'frozen', False):
         # If running as a PyInstaller bundle, check the bundle directory
         if hasattr(sys, '_MEIPASS'):
-            search_paths.insert(0, Path(sys._MEIPASS) / "pyproject.toml")
+            # Accessing sys._MEIPASS is standard for PyInstaller bundles
+            meipass = getattr(sys, '_MEIPASS')
+            search_paths.insert(0, Path(meipass) / "pyproject.toml")
     
-    for pyproject_path in search_paths:
+    for path in search_paths:
         try:
-            if pyproject_path.exists():
-                with open(pyproject_path, "rb") as f:
+            if path.exists():
+                with open(path, "rb") as f:
                     v = tomllib.load(f).get("project", {}).get("version")
                     if v:
                         return str(v)
-        except Exception:
+        except (OSError, tomllib.TOMLDecodeError):
             continue
             
     # 2. Hardcoded fallback (should be updated per release)
