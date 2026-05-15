@@ -4,8 +4,8 @@
 
 # -*- coding: utf-8 -*-
 
-import shared as sh
-from scripture import normalize_book_input, find_scripture_references
+from abib.core import shared as sh
+from abib.core.scripture import normalize_book_input, find_scripture_references
 
 
 def test_normalize_book_input_suffix_ordinals():

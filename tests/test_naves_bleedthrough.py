@@ -6,8 +6,8 @@
 
 from __future__ import annotations
 
-import shared as sh
-from scripture import find_scripture_references, normalize_book_input
+from abib.core import shared as sh
+from abib.core.scripture import find_scripture_references, normalize_book_input
 
 
 def _book_id(ref):

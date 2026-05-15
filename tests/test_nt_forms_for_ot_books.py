@@ -4,8 +4,8 @@
 
 # -*- coding: utf-8 -*-
 
-from scripture import normalize_book_input
-import shared as sh
+from abib.core.scripture import normalize_book_input
+from abib.core import shared as sh
 
 
 CASES = {

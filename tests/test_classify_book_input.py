@@ -4,7 +4,7 @@
 
 # -*- coding: utf-8 -*-
 
-from scripture import classify_book_input
+from abib.core.scripture import classify_book_input
 
 
 def test_classify_exact_match_full_name():

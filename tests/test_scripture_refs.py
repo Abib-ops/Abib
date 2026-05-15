@@ -8,9 +8,9 @@ from __future__ import annotations
 
 import unittest
 
-import shared as sh
-from domain.scripture_refs import resolve_reference, calculate_book_line
-import scripture
+from abib.core import shared as sh
+from abib.domain.scripture_refs import resolve_reference, calculate_book_line
+from abib.core import scripture
 
 
 class TestScriptureRefs(unittest.TestCase):

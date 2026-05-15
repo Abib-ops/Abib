@@ -1,0 +1,737 @@
+Abib
+Copyright (C) 2003–2026 <Contributors>
+SPDX-License-Identifier: GPL-3.0-or-later
+
+-*- coding: utf-8 -*-
+
+**********
+ABIB HELP:
+**********
+
+Abib Bible Reader v416.12
+
+Follow Scripture on your PC while listening to a sermon or message.
+
+Note:
+-----
+The display font size can no longer be zoomed up and down by holding down
+Ctrl and using the mouse wheel. From version 413.05 use Ctrl+- and Ctrl++.
+
+Installing Abib on Windows.
+---------------------------
+
+You can start from the beginning and follow the instructions below.
+
+First, uninstall any previous version of the program.
+
+Get the "Abib_setup_416.12_win.exe" file from 'Abib-ops' on GitHub,
+find it in the 'Abib' repository.
+
+**************************************************
+* See: https://github.com/Abib-ops/Abib/releases *
+**************************************************
+
+Next, double-click the "Abib_setup_416.12_win.exe" installer and follow
+the instructions, mostly click Next a few times, agree to the
+licence, and Abib will install. Please ignore any negative windows that
+claim that Abib is from an unknown author.
+
+To check for Abib application upgrades:
+
+1. Open Abib.
+2. Go to Help -> Settings -> Open Settings.
+3. Click the "Check for updates now" button to check for new releases of
+   the Abib executable.
+
+I recommend that you use the latest version because of security bugfixes
+that are regularly published, and that I try to promptly provide.
+
+Please read the README file at C:\Program Files\Abib\README.txt for the
+latest information and for some things that are not mentioned in this
+Help.txt.
+
+I hope that this Bible program will encourage you to read from God's
+Word daily; it has me, so please, delight in His word.
+Remember, “The Bible will keep you from sin, or sin will keep you from
+the Bible.” ― Dwight L. Moody.
+(More at www.goodreads.com/author/quotes/5083573.Dwight_L_Moody)
+
+"For the flesh lusteth against the Spirit, and the Spirit against the
+flesh: and these are contrary the one to the other: so that ye cannot
+do the things that ye would." Galatians 5:17 KJV.
+
+Introduction.
+-------------
+
+The name Abib is the old name for the Jewish month Nisan.  Please
+watch the short video from YouTube, "Abib (Nisan) - The Jewish Month of
+Abib (Nisan)" - www.youtube.com/watch?v=v0nR2XgaG4k.
+
+Abib is still under development at the time of writing, and when you
+read this, an update could be available.  It is recommended to update
+to the latest version, please check with the author, by email, as
+there is no website now.  You can uninstall any earlier version of
+Abib after installing the new one, just in case there is a problem
+with the new one on your system.  You can keep the older versions if
+you like as they are totally independent.
+
+Before you read any more of this help-file, you could open another
+instance of Abib and drag it to one side, so you can try out the
+instructions as you read.  If you have opened this Help file with
+Abib, you can get back to the Bible by clicking 'Back'.
+
+Abib is a simple Bible reading tool with the ability to rapidly find
+passages of scripture. This can be useful while listening to a sermon,
+especially online Zoom, YouTube, and Facebook sessions, and the small
+adjustable Abib window takes up little room.
+
+Navigating to passages of scripture.
+------------------------------------
+
+There are three dropdown boxes for entry of passage references,
+which makes Abib easy to use and are self-explanatory.
+
+What follows is a description of the older and faster,
+keyboard method which you can learn if you are so disposed.
+Otherwise, skip to "Moving backwards and forwards in the Bible".
+
+First, find the text entry box in the row below the three dropdown
+boxes.  It has an "F2, Enter or OK to search for a verse." tooltip.
+The 'F2' key is used to move the focus to the text entry box if it
+has been moved away.
+
+Enter 'ps' into the box and press Enter.  Psalm 1 will be displayed.
+Enter 'ru' into the box and press Enter.  Ruth Chapter 1 shows.
+Enter 'jos' into the box and press Enter. Joshua Chapter 1 shows.
+
+There are 66 books in the Bible and only 26 letters in the alphabet,
+so we can use more than one letter to identify a book title.
+
+Examples "na" when entered will take you to Nahum 1:1
+
+"ge" will go to Genesis 1:1
+
+"php" will be Philippians 1:1
+
+"phm" Philemon 1:1
+
+Now to get to the exact verse desired: type your reference in the form
+[Book][Chapter].[Verse]
+
+For example, ge50.7 will bring up Genesis 50:7
+
+John Gill Bible Commentary window.
+----------------------------------
+
+Abib includes John Gill’s Exposition of the whole Bible. You can open a
+separate commentary window that follows the current verse and shows Gill’s
+notes formatted as HTML.
+
+How to open
+- Click the Commentary button on the main window. The Gill window opens as
+  an independent (top‑level) window, so you can place it anywhere.
+- A keyboard shortcut may also be available on your system to open it.
+
+What you’ll see
+- The window title shows the current reference (e.g. “Gill Commentary —
+  Genesis 1:1”). For one‑chapter books (e.g. Jude) the chapter number is
+  omitted.
+- The commentary text is rendered as HTML. It uses the same font family as
+  the main window and is left‑aligned for readability.
+
+Zooming the font
+- Use Ctrl++ (or Ctrl+=) to increase and Ctrl+- to decrease the font size.
+- The chosen size is remembered between runs.
+
+Scripture popups and navigation
+- Scripture references inside the commentary are highlighted. Hovering a
+  reference shows a small popup with the verse text and a canonical line
+  (e.g. “Psalms 33:6 KJV”).
+- Clicking a reference navigates the main Bible window to that verse.
+- Popups match the look and behaviour of the “Other Works” reader.
+
+Auto‑follow
+- In Help → Settings there is an option “Gill: Auto‑follow main window”.
+  When enabled, the Gill window automatically follows the verse you move
+  to in the Bible window. When disabled, it stays where it is until you
+  navigate with its Prev/Next buttons or click a link.
+
+Missing entries
+- If the commentary does not contain an entry for a specific verse, the
+  window shows “No commentary for this verse”.
+
+Where the commentary is stored
+- File: gill.cmt.sqlite in the Abib application folder.
+- Table: commentary, with columns: id, book, chapter, fromverse, toverse,
+  data (HTML).
+- Lookups use book, chapter and fromverse (or a within ‑ range match when
+  toverse spans multiple verses). No precompute step is required.
+
+Saved settings
+- Abib stores the Gill window position/size and its font size in
+  settings.json under keys like “gill_commentary_window” and
+  “gill_commentary_font_size”.
+
+Notes
+- The Gill commentary window is independent; you can keep it open while
+  navigating elsewhere. At the very start of the Bible (Genesis 1:1),
+  Prev has no effect; Next moves to Genesis 1:2 as expected.
+
+(There is no need to type a colon in the text entry box used to display a
+particular verse, as the full stop is recognised, and it is easier than
+typing the colon, e.g. with a numeric keypad.)
+
+And notice there is no space between the ge and the 5 as it is
+unnecessary, but if you put one in, it will still work.
+
+There is a quick way to move within the same chapter by just entering
+the verse number.
+
+So, let's say you have entered P119.5, and you want to move to verse 22
+in the same Psalm, just enter 22 and press return.
+
+There is another similar feature if you are in a particular book,
+and you enter a floating-point number like, '3.16' It must be a full
+stop here, a colon won't do; then wherever you are in the book you
+will move to chapter 3 verse 16, if there is a 3:16 in the book -
+otherwise it will beep and give an error message in the status bar.
+Try it out. Type 'jo' and this will take you to 'The Gospel of John'.
+Next '3.16' and you will be at John 3:16.  Note: '3.16' and 3.16 have
+the same effect, but the quotes are not needed.
+
+
+THE NAMES AND ORDER OF ALL THE
+BOOKS OF THE OLD AND NEW TESTAMENT,
+WITH THE NUMBER OF THEIR CHAPTERS.
+——————————————————————————————— 
+𝑇𝒽𝑒 𝐵𝑜𝑜𝑘𝑠 𝑜𝑓 𝑡𝒽𝑒 𝑂𝑙𝑑 𝑇𝑒𝑠𝑡𝑎𝑚𝑒𝑛𝑡.
+
+                  Abbr.   Chaps.    Alt.
+
+GENESIS           ge      50        gn
+Exodus            ex      40        exo
+Leviticus         le      27        lv
+Numbers           nu      36        nm
+Deuteronomy       de      34        dt
+Joshua            jos     24        josh    josue
+Judges            jg      21        jdg
+Ruth              ru      4         rut
+1 Samuel          1s      31        Isam    isam
+2 Samuel          2s      24        IIs     iis
+1 Kings           1k      22        Ik      kgs
+2 Kings           2k      25        IIk     iik
+1 Chronicles      1ch     29        Ic      ic
+2 Chronicles      2ch     36        IIc     iic
+Ezra              ez      10        ezr
+Nehemiah          ne      13        neh
+Esther            es      10        est
+Job               jb      42        job
+Psalms            ps      150       psa
+Proverbs          pr      31        pro
+Ecclesiastes      ec      12        ecc
+Song of Solomon   so      8         sos     ca
+Isaiah            is      66        isa
+Jeremiah          je      52        jer
+Lamentations      la      5         lam
+Ezekiel           eze     48        ezk     ezek
+Daniel            da      12        dan     dn
+Hosea             ho      14        hos
+Joel              jl      3         jol     joe
+Amos              am      9         am      amo
+Obadiah           ob      1         oba
+Jonah             jon     4         jonas
+Micah             mi      7         mic
+Nahum             na      3         nah
+Habakkuk          ha      3         hb      hab
+Zephaniah         ze      3         zp      zep
+Haggai            hag     2         hg
+Zechariah         zec     14        zc      zacharias
+Malachi           ma      4         mal
+
+——————————————————————————————
+𝑇𝒽𝑒 𝐵𝑜𝑜𝑘𝑠 𝑜𝑓 𝑡𝒽𝑒 𝑁𝑒𝑤 𝑇𝑒𝑠𝑡𝑎𝑚𝑒𝑛𝑡.
+
+                  Abbr.   Chaps.    Alt.
+
+MATTHEW           mt      28        mat
+Mark              mk      16        mr
+Luke              lu      24        lk
+John              jn      21        joh     jn      jh
+The Acts          ac      28        act
+Romans            ro      16        rom     rm
+1 Corinthians     1co     16        Ico     ico     1cor
+2 Corinthians     2co     13        IIco    iicor
+Galatians         ga      6         gal     gl
+Ephesians         ep      6         eph
+Philippians       php     4         ph      phil
+Colossians        co      4         col
+1 Thessalonians   1th     5         It      it
+2 Thessalonians   2th     3         IIt     iit
+1 Timothy         1ti     6         Iti     iti     itim
+2 Timothy         2ti     4         IIti    iiti
+Titus             ti      3         tit
+Philemon          phm     1         pm      phl
+Hebrews           he      13        heb
+James             ja      5         jam     jas
+1 Peter           1p      5         Ip      ip
+2 Peter           2p      3         IIp     iip
+1 John            1j      5         Ij      ij
+2 John            2j      1         IIj     iij
+3 John            3j      1         IIIj    iiij
+Jude              jd      1         jud     jde
+Revelation        re      22        rv      rev     ap
+
+Many other abbreviations will work, but these are the most common.
+
+
+Moving backwards and forwards in the Bible.
+-------------------------------------------
+
+1) One book at a time.
+
+   Use F7 or the 'Book-' pushbutton to go to the previous book.
+
+   Use F8 or the 'Book+' pushbutton to go forward to the next book.
+
+2) One chapter at a time.
+
+   Use F10 or the 'Chapter-' pushbutton to go to the previous chapter.
+
+   Use F11 or the 'Chapter+' pushbutton to go forward to the next one.
+
+3) The mouse scroll wheel.
+
+Methods 4 to 7 require the focus to be moved to the Bible text window
+by clicking on it.
+
+4) The up and down arrow keys.
+
+5) Page Up and Page Down keys.
+
+6) By using the scrollbar.
+
+7) You can move to the start of the Bible by pressing the Home key or
+   to the end by pressing the End key, there are some blank lines at
+   the end.
+
+After you move in the Bible to a new place, by any of the last five
+methods, the cursor will remain where it was, and you will notice that
+the passage reference in the status-bar did not change.
+
+After selecting a verse, clicking the window frame or status bar will
+display that verse's reference in the status bar.
+
+This behaviour is uncorrected because it helps to facilitate the
+ability to copy from the text.
+
+8) Using the text entry box to enter an abbreviated passage reference.
+For best results, it will be necessary to learn the abbreviations for
+the names of the books. You can look them up in the index just before
+Genesis.  Type 'ge' for Genesis and then scroll back.  Many of the
+abbreviations can be shortened to two letters; generally the book that
+appears first in the Bible will have the twin letter shortcut i.e.
+but 'jo' is for John, not Joshua, Job, or Jonah.
+In fact, as there are so many books beginning with 'j', it is
+best to learn their abbreviations.
+
+There is an improved copy of the index above. Notice that Roman
+numerals can be used in the abbreviations and that there are many
+others that are not listed.  You may find that the abbreviation
+you try does not work, and you are taken to the wrong book at first,
+there is a learning curve, but it is well worth climbing the 'Hill of
+Difficulty'.
+
+
+The Find or Search feature.
+---------------------------
+
+Abib also has an easy-to-use basic search facility.
+
+To search for a word or phrase in the Bible.
+
+First, click on the 'Find' button or press the F3 keyboard key.
+
+The Find Options window will open.
+
+There is a text entry box next to 'Find ?' here you can enter what
+it is that you would like to search for.  Confirm your entry by
+pressing Enter or clicking the 'OK' button.
+
+
+There are four basic types of searches available to you. 
+
+i)   "Raw search": Literal match unrestrained by word boundaries.
+
+ii)  "Match whole words": Each word in your search key must be whole.
+     The word, or phrase, is then matched with word(s) in the Bible
+     text, on a verse-by-verse basis.
+
+iii) "All the words": Another whole word search, but the words can
+     be anywhere in the verse, word order does not matter, but they
+     must all be in the verse.
+
+iv)  "Any of the words": Similar to iii), but any of the words in your
+     search key will be matched, and the results sorted.  Try using
+     this to find rare words spelt differently like Melchisedec and
+     Melchizedek i.e. "Find ?  Melchisedec Melchizedek" should find 11
+     occurrences.  But watch out, it will not find 'Melchizedec' or
+     'Melchisedek', these are misspellings.  The former of these gave
+     me some trouble; I thought there was an error in the code.
+
+     If you use the "Any of the words" search, the results will be
+     sorted; the verses with the most matches are shown first, and in
+     biblical book order for those results that have equal matches.
+     Searching for common words will produce a high number of results,
+     the sorted results will show the verses containing the most
+     occurrences of these words, first.
+
+All these search types can be either case matched or not.
+
+These search types are selected by the four radio-buttons on the left
+of the Find options window.
+
+You can select only one of these.
+This selects either a search type (i), (ii), (iii) or (iv).
+
+
+Search Scope:
+-------------
+
+You can limit the search scope with the two dropdown boxes in the
+bottom right corner.
+
+
+Regular Expression searches.
+----------------------------
+
+Firstly, if you have not used Regular Expressions before, please see
+www.rexegg.com/regex-quickstart.html.
+
+Searching with regular expressions with Abib is just a matter of
+selecting the Regular Expression radio button, choosing to match the
+case or not with the checkbox, and then entering your regex in the
+textbox.
+
+There are many flavours of regular expressions, but the one used here
+is that used in the Python programming language, and let me say that
+I am a beginner here and have not tested beyond my rudimentary
+knowledge.
+
+For very basic use, you can replace letters in your search term with
+the "." full stop/period character, this stands for any character.  So,
+for example, "trial." will find "trial " and "trials" also "trial," and
+"trial:" and actually "trial.".
+
+Then there is the OR character "|" or pipe, this will find either of
+the words on either side of it.  For example, "Melchisedec|Melchizedek"
+should find all of those references, with either spelling, Note: No
+spaces in the middle or the search will include them.
+
+Of course, you could just have put "Melchi.ede." and that will also
+work and find all 11 cases.
+
+Just one more thing: If you surround your search word with "\b" at
+either end, these are word boundaries, and you will get whole word
+matches.  Say you want to search for "and" and you don't want "land"
+and "sand" to appear in the results, type "\band\b" and you will get
+just the "and" whole word results.  Try it.  Also, if you understand
+using Regex better than me, please let me know if your searches don't
+work as expected.
+
+
+Installing the Bible font.
+--------------------------
+
+IMPORTANT
+---------
+
+Please read the README file to receive instructions on how to install
+the Cascadia Mono font onto your system, which is highly recommended.
+Cascadia Mono is an open-source Microsoft .ttf font that is part of
+Cascadia Code.
+
+
+Function Keys
+-------------
+
+Apart from the GUI controls, which are self-evident and should need no
+explanation, there are other keyboard controls that I will explain.
+
+Some of these function key controls were originally derived from and
+are compatible with their usage on the Online Bible project by Larry
+Pierce.
+
+This program (Abib), in earlier form and unpublished, has been used by
+myself since 2004, and until 2021 it was not developed into a graphical
+user interface, and so the keyboard was the only way to interact with
+it.  It was, however, still fast and compact, and so, for at least my
+own benefit, I have retained this, old school, method.
+
+The Function keys:
+------------------
+
+F2       Passage entry
+F3       Find
+F4       Find Next
+F5       Back (to last passage)
+F6       Forward (...after Back)
+F7       Go back one book
+F8       Go forward one book
+F9       Toggle Fullscreen
+F10      Go back one chapter
+F11      Go forward one chapter
+
+Other keys:
+-----------
+
+PageUp   Go to screen before
+PageDn   Go to screen after
+Up       Go up one verse
+Down     Go down one verse
+Tab      Move the focus
+Home     Move to the start
+End      Move to the end
+Q        Quit
+
+Mouse wheel click is the same as F4
+-----------------------------------------------------------------
+
+The 'æ' & 'Æ' characters appear in the Bible text in a few names,
+listed below:
+
+Alphæus, Arimathæa, Bartimæus, Cæsar, Cæsarea, Chaldæans, Epænetus,
+Galilæan, Hymenæus, Idumæa, Ituræa, Judæa, Lebbæus, Prætorium,
+Thaddæus, Timæus & Zacchæus.
+
+plus in capitals
+
+Æneas & Ænon.
+
+These characters can be entered into the Find ?: text entry box
+either by copy and paste, or they can be replaced by the two characters
+'a' and 'e' or 'A' and 'E'.
+
+Alternatively, they can be entered with special key sequences.
+
+On Windows these are as follows:
+--------------------------------
+
+Hold down Alt type 0230 on the numeric keypad for 'æ'
+
+Hold down Alt type 0198 on the numeric keypad for 'Æ'
+
+On Linux: (This is academic, the program is really windows only now.)
+---------
+
+According to https://fsymbols.com/keyboard/linux/compose/, where you can find
+more information than is provided here.
+
+Compose key on GNOME
+
+I hope it goes like this:
+
+    1. Get into System ➣ Preferences ➣
+
+       Keyboard ➣ Layouts.
+
+    2. Open Layout Options.
+
+    3. Expand the Compose key position menu. Here you can choose
+       the preferred button that will turn on the composition mode.
+
+Once you have a Compose key:
+
+Compose Key ➣ a ➣ e for 'æ'.
+
+Compose Key ➣ A ➣ E for 'Æ'.
+
+However, for the most part, you can type 'ae' for 'æ' and 'AE' for 'Æ',
+and Abib will interpret and convert it.
+
+
+Another character that is different is the apostrophe.  Most modern
+keyboards and text use the ['] character.  This was not used in the
+PCE KJV Bible, but the character used is the [’].
+
+So, to enter it in Windows:
+
+Hold down Alt type 0146 on the numeric keypad giving '’'.
+
+Abib also takes care of this, so you can use the ['].
+
+It also takes care of the italic words, so you can enter plain
+text in the "Find ?:" box.
+
+
+Installing Abib on Linux.
+-------------------------
+(You can try, but it will need quite a bit of modification to make it work.)
+
+Get the "Abib_linux_416.12.tar.bz2" file from the author.
+
+    If you can get it, then it may be an earlier version because of
+    recent changes that work on Windows only, and the direction of
+    the project has moved away from cross-platform to Windows 11.
+    But with some modifications, it could be made to work on Linux.
+
+Move it to your home folder or desired location and navigate there.
+Expand the compressed archive with: tar -jxvf Abib_linux_416.12.tar.bz2
+
+$ chmod +x Abib will make sure that the executable flag is set.
+
+The command "./Abib" will now start the program; however, it
+needs to be in the same folder as all of its dependencies.
+
+Alternatively, if you have the Windows version installed, go to
+C:\Program Files\ and copy the Abib folder onto a USB pen drive.
+
+Copy the Abib folder from the USB drive to your home directory.
+Now run Abib.py the Python script within the folder, with:
+
+$ python Abib.py
+
+You can also get the Python source from GitHub, user Abib-ops.
+
+# Copyright 2025 Andrew Kingston
+#
+# This file is part of Abib Bible Reader.
+#
+# Abib is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# Abib is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Abib.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+======================================================================= 
+Concerning the Bible text:
+
+IN THE UK,
+RIGHTS IN THE AUTHORIZED (KING JAMES)
+VERSION OF THE BIBLE
+ARE VESTED IN THE CROWN.
+
+This is the Pure Cambridge Edition (PCE).
+By Matthew Verschuur, copyright 26 January 2007 (Australia Day).
+
+Please see www.bibleprotector.com
+The statement that follows is by Matthew Verschuur.
+
+=======================================================================
+Statement to all King James Bible (KJB) supporters concerning the Pure
+Cambridge Edition (PCE).
+
+By Matthew Verschuur, copyright 26 January 2007 (Australia Day).
+
+Since the year 2000 I have contacted various King James Bible people
+and organisations in regard to seeking out a certain text of the King
+James Bible, namely, a standard text of the Cambridge Edition.
+
+For a long time the question, “Which King James Bible edition is
+correct?” has not been properly answered by true Bible defenders.
+
+We must acknowledge that there are indeed variations in various
+historical and present editions of the King James Bible. Furthermore,
+there has been a rising awareness in recent years concerning
+“counterfeit” King James Bibles with “subtle changes”.
+
+The Scripture promises that the Word of God should be preserved by God,
+and this is undergirding a sound King James Bible only doctrine. It is
+consistent with this that there should be one correct received standard
+edition of the King James Bible, where every word is pure (Proverbs 30:5)
+to the jot and tittle (Matthew 5:18).
+
+(Editors note: While you may not agree with the KJV only doctrine but
+believe that the Bible is preserved in the original Hebrew, Greek, and
+Aramaic texts, the PCE is used in Abib, and I am not able to judge if
+there is a better option.)
+
+I do not agree with the claim that there is no standard or that any
+edition of the King James Bible is enough. On the other side, those
+who have said, “The 1769 Edition”, or “The Cambridge Edition” have been
+too vague. Plainly, there have been changes in all editions since 1769,
+and there are variations in Cambridge Bibles, such as the Victorian
+text (circa 1830 to circa 1900). The Pure Cambridge Edition (circa 1900
+to circa the 1970s) which is also printed in many Collins editions, and
+the Concord text (circa the 1970s to circa 2000). Besides these, other
+modernised variations appear in Bibles printed in America under the
+name of Cambridge.
+
+And then there is Scrivener’s Edition, which is clearly deficient on
+many grounds, including that it has never been used by ordinary
+Protestants every Sunday morning. Even worse is the New Cambridge
+Paragraph Bible by David Norton, 2005, which makes many unacceptable
+changes departing from all traditional King James Bibles.
+
+Those who are knowledgeable about the King James Bible agree that the
+Cambridge Edition is superior to the Oxford, Nelson, or any other
+edition. However, the particular variations in Cambridge Editions have
+not been closely studied until now. That is, identifying which
+Cambridge Edition is correct.
+
+Sadly, many King James Bibles that follow the Cambridge Edition as are
+now being produced or provided by King James Bible people are not the
+correct Cambridge Edition. These follow the Concord Cambridge Edition,
+which has departed from the pure text. The correct text has, among
+other things, “rasor”, “inquire”, “counseller”, “expences”, “ancle”,
+“Geba” at Ezra 2:26, and lower case “spirit” at Acts 11:12, 28 and
+1 John 5:8.
+
+There has been a great ignorance of the fact that the final purification
+took place in the history of the King James Bible. Those who have
+studied the history of the King James Bible in depth would have been
+aware of the major purification(s) that took place, such as the
+editions of 1629, 1638, and 1769. There was also a proper purification
+that took place circa 1900. This has resulted in the final text of the
+King James Bible, which is in all ways the definitive presentation of
+the King James Bible and should not be altered.
+
+I have now launched a website which details this area and have also
+freely made available an exactly correct electronic text of the King
+James Bible (without typographical or edition variation errors). The
+Pure Cambridge Edition is the historically received true text of the
+Authorized Version.
+
+Go to: www.bibleprotector.com
+
+HOW TO KNOW THE PURE CAMBRIDGE EDITION OF THE KING JAMES BIBLE
+
+It is important to have the correct, perfect, and final text of the King
+James Bible, since there are correctors (e.g. publishers) who have
+changed some aspects of King James Bible texts. The final form of the
+King James Bible is the Pure Cambridge Edition (circa 1900), which
+conforms to the following:
+
+1. “or Sheba” not “and Sheba” in Joshua 19:2
+
+2. “sin” not “sins” in 2 Chronicles 33:19
+
+3. “Spirit of God” not “spirit of God” in Job 33:4
+
+4. “whom ye” not “whom he” in Jeremiah 34:16
+
+5. “Spirit of God” not “spirit of God” in Ezekiel 11:24
+
+6. “flieth” not “fleeth” in Nahum 3:16
+
+7. “Spirit” not “spirit” in Matthew 4:1
+
+8. “further” not “farther” in Matthew 26:39
+
+9. “bewrayeth” not “betrayeth” in Matthew 26:73
+
+10. “Spirit” not “spirit” in Mark 1:12
+
+11. “spirit” not “Spirit” in Acts 11:28
+
+12. “spirit” not “Spirit” in 1 John 5:8
+
+
+****END OF THE NOTICE OF COPYRIGHT****

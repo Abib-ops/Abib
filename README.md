@@ -8,14 +8,14 @@ It takes little room and has separate windows for the various parts.
 
 Not this crowded normally.
 
-![Abib screenshot](Screenshot.jpg)
+![Abib screenshot](src/abib/images/Screenshot.jpg)
 
 ## What's to like in Abib
 - Quick: jump to any verse quickly with abbreviated book names and chapter verse like jo3.16
 - which is John 3:16 or 1th5.28 for 1 Thessalonians 5:28.
 - Compact: a tidy window that sits neatly beside video or notes
 - Simple 'Find': find words and phrases fast in the Bible.
-- Search the Books, Commentaries and Dictionaries, with the 'Search' button.  
+- Search the Books, Commentaries, and Dictionaries, with the 'Search' button.  
 - Built‑in daily readings: Spurgeon’s Morning & Evening
 - John Gill Exposition of the Entire Bible — click the Commentary button.
 - Extras: Pilgrim’s Progress and other classic works included
@@ -110,6 +110,46 @@ These Public Domain PDFs are distributed separately and can be downloaded from h
 - [The Works of Thomas Brooks—Thomas Brooks](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Works.of.Thomas.Brooks.-.Thomas.Brooks.pdf)
 - [Torrey's New Topical Textbook—R. A. Torrey](https://github.com/Abib-ops/Abib/releases/download/414.15/Torrey.s.New.Topical.Textbook.pdf)
 
+## Development
+
+Abib uses [uv](https://docs.astral.sh/uv/) for dependency management and build workflows.
+
+### Prerequisites
+- Python 3.10 or later
+- [uv](https://docs.astral.sh/uv/)
+
+### Getting Started
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Abib-ops/Abib.git
+   cd Abib
+   ```
+2. Sync dependencies:
+   ```bash
+   uv sync
+   ```
+3. Run the application:
+   ```bash
+   uv run src/abib/app.py
+   ```
+
+### Project Structure
+The project follows a modular package structure:
+- `src/abib/`: Core application package
+  - `core/`: Constants and foundational logic
+  - `data/`: Bible texts, dictionaries, and devotions
+  - `domain/`: Business logic (search, scripture references, reading plans)
+  - `services/`: Infrastructure services (data loading, audio, settings)
+  - `ui/`: User interface components and dialogs
+  - `utils/`: General-purpose utility functions (text, files, UI)
+- `tests/`: Automated test suite
+- `tools/`: Development and maintenance scripts
+
+### Linux Support (Experimental)
+While Abib is primarily focused on Windows, it can be run on Linux from source:
+1. Ensure you have the required dependencies for PySide6 (e.g., `libxcb-cursor0`).
+2. Follow the "Getting Started" steps above.
+
 ## Credits (Most are in the "Other Works" section of the application and not listed above.)
 - Bible text: King James Version (Pure Cambridge Edition, from Matthew Verschuur)
 - Other Works (public-domain texts) include authors such as:
@@ -127,7 +167,7 @@ These Public Domain PDFs are distributed separately and can be downloaded from h
 - John Flavel — A Saint Indeed			
 - John Owen — A Display of Arminianism; Catechisms, Of Communion with God the Father, 
 -  Pneumatologia, The Doctrine of the Saints' Perseverance, 
--  The Death of Death in the Death of Christ, Son and Holy Ghost,			
+-  The Death of Death in the Death of Christ, Son, and Holy Ghost,			
 -  The Doctrine of Justification by Faith, The Mystery of the Gospel Vindicated and Socinianism Examined,
 -  The Sermons of John Owen	
 - Jonathan Edwards — The Works of Jonathan Edwards Volumes 1 & 2			
@@ -137,7 +177,7 @@ These Public Domain PDFs are distributed separately and can be downloaded from h
 - Reuben Archer Torrey — Torrey's New Topical Textbook			
 - Rev. Dr. Horatius Bonar, D.D. — God's Way of Peace			
 - Richard Baxter — A Call to the Unconverted to Turn and Live			
-- Robert Jamieson, A. R. Fausset and David Brown — Commentary Critical and Explanatory on the Whole Bible			
+- Robert Jamieson, A. R. Fausset, and David Brown — Commentary Critical and Explanatory on the Whole Bible			
 - Sadhu Sundar Singh — At The Master's Feet			
 		
 - Many public-domain texts were sourced via the Christian Classics Ethereal Library (CCEL, ccel.org).
@@ -145,4 +185,4 @@ These Public Domain PDFs are distributed separately and can be downloaded from h
 - The Library of Christian Classics
 - archive.org
 
-© 2025 Andrew Kingston
+© 2003–2026 The Abib Contributors

@@ -25,14 +25,14 @@ class MockQPlainTextEdit:
 
 sys.modules['PySide6.QtWidgets'].QPlainTextEdit = MockQPlainTextEdit
 
-from ui.themes import ThemeManager, ThemeState
-from ui_helpers import NoZoomPlainTextEdit, center_on_screen, fit_to_screen
-from services.settings import SettingsService
+from abib.ui.themes import ThemeManager, ThemeState
+from abib.ui.ui_helpers import NoZoomPlainTextEdit, center_on_screen, fit_to_screen
+from abib.services.settings import SettingsService
 
 class TestSettingsService(unittest.TestCase):
     def setUp(self):
-        # Mock fcs.get_default_settings to avoid actual file I/O or dependencies
-        self.patcher = patch('fcs.get_default_settings')
+        # Mock core.config.get_default_settings to avoid actual file I/O or dependencies
+        self.patcher = patch('abib.core.config.get_default_settings')
         self.mock_defaults = self.patcher.start()
         self.mock_defaults.return_value = {
             "bible_font_size": 12,
@@ -42,7 +42,7 @@ class TestSettingsService(unittest.TestCase):
             "gill_hover_delay_ms": 120
         }
         # Mock sh.user_settings_dir
-        self.sh_patcher = patch('shared.user_settings_dir', '/tmp/abib_test')
+        self.sh_patcher = patch('abib.core.shared.user_settings_dir', '/tmp/abib_test')
         self.sh_patcher.start()
         
         self.service = SettingsService("test_settings.json")
@@ -167,32 +167,32 @@ class TestThemes(unittest.TestCase):
 
 class TestUIHelpers(unittest.TestCase):
     def test_center_on_screen(self):
-        import fcs
-        orig_get_screen_size = fcs.get_screen_size
-        fcs.get_screen_size = lambda: (1920, 1080)
+        from abib import utils
+        orig_get_screen_size = utils.get_screen_size
+        utils.get_screen_size = lambda: (1920, 1080)
         try:
             x, y = center_on_screen(1000, 500)
             self.assertEqual(x, (1920 - 1000) // 2)
             self.assertEqual(y, (1080 - 500) // 2)
         finally:
-            fcs.get_screen_size = orig_get_screen_size
+            utils.get_screen_size = orig_get_screen_size
 
     def test_fit_to_screen(self):
-        import fcs
-        orig_get_screen_size = fcs.get_screen_size
-        fcs.get_screen_size = lambda: (800, 600)
+        from abib import utils
+        orig_get_screen_size = utils.get_screen_size
+        utils.get_screen_size = lambda: (800, 600)
         try:
             # Too big
-            h, w = fit_to_screen(1000, 1000)
-            self.assertEqual(h, int(600 * 0.95))
+            w, h = fit_to_screen(1000, 1000)
             self.assertEqual(w, int(800 * 0.95))
+            self.assertEqual(h, int(600 * 0.95))
             
             # Fits
-            h, w = fit_to_screen(400, 400)
-            self.assertEqual(h, 400)
+            w, h = fit_to_screen(400, 400)
             self.assertEqual(w, 400)
+            self.assertEqual(h, 400)
         finally:
-            fcs.get_screen_size = orig_get_screen_size
+            utils.get_screen_size = orig_get_screen_size
 
     def test_no_zoom_plain_text_edit_ignores_ctrl_wheel(self):
         # We need to mock the event
@@ -231,7 +231,7 @@ class TestUIHelpers(unittest.TestCase):
         self.assertFalse(event.ignore.called)
 
     def test_simple_scripture_popup_theme(self):
-        from ui_helpers import SimpleScripturePopup
+        from abib.ui.ui_helpers import SimpleScripturePopup
         popup = SimpleScripturePopup()
         
         # Mock the widgets
@@ -249,7 +249,7 @@ class TestUIHelpers(unittest.TestCase):
 
 class TestScriptureLogic(unittest.TestCase):
     def test_lookup_scripture_dangling_hyphen(self):
-        from scripture import lookup_scripture
+        from abib.core.scripture import lookup_scripture
         bible_data = {
             "Genesis": {
                 "1": {
@@ -263,7 +263,7 @@ class TestScriptureLogic(unittest.TestCase):
         self.assertEqual(res, "1 In the beginning...")
 
     def test_lookup_scripture_range(self):
-        from scripture import lookup_scripture
+        from abib.core.scripture import lookup_scripture
         bible_data = {
             "Genesis": {
                 "1": {
@@ -277,7 +277,7 @@ class TestScriptureLogic(unittest.TestCase):
         self.assertEqual(res, "1 v1\n2 v2")
 
     def test_lookup_scripture_list(self):
-        from scripture import lookup_scripture
+        from abib.core.scripture import lookup_scripture
         bible_data = {
             "Genesis": {
                 "1": {
