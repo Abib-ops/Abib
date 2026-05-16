@@ -8,12 +8,12 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v416.12
+Abib v417.02
 ------------
 
 Changelog.
 ------------
-Abib v416.12
+Abib v417.02
 
 Summary of Changes (Session 2026-05-15)
 
@@ -83,42 +83,6 @@ Maintained a passing test suite throughout the refactor. All 39 tests
 •
 Verified that the application correctly locates its data files in both
 development and "frozen" (compiled) modes.
-
-(abib) PS C:\Projects\Abib> uv tree
-Resolved 28 packages in 1ms
-abib v416.12
-├── pyside6 v6.11.1
-│   ├── pyside6-addons v6.11.1
-│   │   ├── pyside6-essentials v6.11.1
-│   │   │   └── shiboken6 v6.11.1
-│   │   └── shiboken6 v6.11.1
-│   ├── pyside6-essentials v6.11.1 (*)
-│   └── shiboken6 v6.11.1
-├── pywin32 v311
-├── pywin32-ctypes v0.2.3
-├── requests v2.34.2
-│   ├── certifi v2026.4.22
-│   ├── charset-normalizer v3.4.7
-│   ├── idna v3.15
-│   └── urllib3 v2.7.0
-├── roman v5.2
-├── pyinstaller v6.20.0 (extra: dev)
-│   ├── altgraph v0.17.5
-│   ├── packaging v26.2
-│   ├── pefile v2024.8.26
-│   ├── pyinstaller-hooks-contrib v2026.5
-│   │   ├── packaging v26.2
-│   │   └── setuptools v82.0.1
-│   ├── pywin32-ctypes v0.2.3
-│   └── setuptools v82.0.1
-├── pytest v9.0.3 (extra: dev)
-│   ├── colorama v0.4.6
-│   ├── iniconfig v2.3.0
-│   ├── packaging v26.2
-│   ├── pluggy v1.6.0
-│   └── pygments v2.20.0
-└── pyinstaller v6.20.0 (group: dev) (*)
-(*) Package tree already displayed
 
 Abib v416.11
 Upgraded to python 3.14.5.

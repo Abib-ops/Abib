@@ -39,9 +39,9 @@ Third-party materials and attributions:
 
 Abib Bible Reader אביב
 
-Using PySide6-6.11.1 and python3.14.4 (64-bit).
+Using PySide6-6.11.1 and python3.14.5 (64-bit).
 
-15/05/2026
+16/05/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --upgrade
@@ -3381,5 +3381,8 @@ class MainWindow(QMainWindow):
 
 if __name__ == '__main__':
     # Bootstrap moved to app.run() for cleaner modularisation (PR10)
-    from app import run
+    try:
+        from abib.app import run
+    except ImportError:
+        from app import run
     run()
