@@ -16,6 +16,7 @@ eggs/
 .eggs/
 lib/
 lib64/
+output/
 parts/
 sdist/
 var/
@@ -25,8 +26,11 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
 .junie/
 .junie/memory
+/*.txt
+/*.json
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
