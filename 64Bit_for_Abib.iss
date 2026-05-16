@@ -4,14 +4,14 @@
 [Setup]
 AppId={{9CBC6105-153E-49F5-912C-2F08A72A774B}} 
 AppName=Abib
-AppVersion=417.06
+AppVersion=417.07
 WizardStyle=modern dynamic
 WizardImageBackColor=clWhite
 WizardImageBackColorDynamicDark=#2b2b2b
 DefaultDirName={autopf}\Abib
 DefaultGroupName=Abib
-OutputBaseFilename=Abib_setup_417.06_win
-UninstallDisplayIcon={app}\abib\images\abib_icon0.ico
+OutputBaseFilename=Abib_setup_417.07_win
+UninstallDisplayIcon={app}\Abib.exe
 Compression=lzma2
 SolidCompression=yes
 UsePreviousAppDir=yes
@@ -74,5 +74,5 @@ Type: filesandordirs; Name: "{app}\abib\ui"
 Type: filesandordirs; Name: "{app}\abib\utils"
 
 [Icons]
-Name: "{group}\Abib"; Filename: "{app}\Abib.exe"; WorkingDir: "{app}"; IconFilename: "{app}\abib\images\abib_icon0.ico"; Comment: "Abib"
-Name: "{commondesktop}\Abib"; Filename: "{app}\Abib.exe"; WorkingDir: "{app}"; IconFilename: "{app}\abib\images\abib_icon0.ico"; Comment: "Abib"
+Name: "{group}\Abib"; Filename: "{app}\Abib.exe"; WorkingDir: "{app}"; Comment: "Abib"
+Name: "{commondesktop}\Abib"; Filename: "{app}\Abib.exe"; WorkingDir: "{app}"; Comment: "Abib"
