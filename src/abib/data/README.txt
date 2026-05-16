@@ -8,11 +8,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.05
+Abib v417.06
 ------------
 
 Changelog.
 ------------
+Abib v417.06
+Removed more unnecessary files from the installer.
+
 Abib v417.05
 Removed unneeded files from the installer.
 

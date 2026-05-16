@@ -4,13 +4,13 @@
 [Setup]
 AppId={{9CBC6105-153E-49F5-912C-2F08A72A774B}} 
 AppName=Abib
-AppVersion=417.05
+AppVersion=417.06
 WizardStyle=modern dynamic
 WizardImageBackColor=clWhite
 WizardImageBackColorDynamicDark=#2b2b2b
 DefaultDirName={autopf}\Abib
 DefaultGroupName=Abib
-OutputBaseFilename=Abib_setup_417.05_win
+OutputBaseFilename=Abib_setup_417.06_win
 UninstallDisplayIcon={app}\abib\images\abib_icon0.ico
 Compression=lzma2
 SolidCompression=yes
@@ -29,18 +29,9 @@ ArchitecturesInstallIn64BitMode=x64compatible
 Source: "dist\Abib.exe"; DestDir: "{app}"; DestName: "Abib.exe"; Flags: ignoreversion
 
 ; Assets and Data
-Source: "src\abib\data\*"; DestDir: "{app}\abib\data"; Flags: ignoreversion recursesubdirs
-Source: "src\abib\images\*"; DestDir: "{app}\abib\images"; Flags: ignoreversion recursesubdirs
-Source: "src\abib\font\*"; DestDir: "{app}\abib\font"; Flags: ignoreversion recursesubdirs
-
-; Source code - package structure
-Source: "src\abib\*.py"; DestDir: "{app}\abib"; Flags: ignoreversion
-Source: "src\abib\core\*.py"; DestDir: "{app}\abib\core"; Flags: ignoreversion
-Source: "src\abib\domain\*.py"; DestDir: "{app}\abib\domain"; Flags: ignoreversion
-Source: "src\abib\services\*.py"; DestDir: "{app}\abib\services"; Flags: ignoreversion
-Source: "src\abib\ui\*.py"; DestDir: "{app}\abib\ui"; Flags: ignoreversion
-Source: "src\abib\ui\*.ui"; DestDir: "{app}\abib\ui"; Flags: ignoreversion
-Source: "src\abib\utils\*.py"; DestDir: "{app}\abib\utils"; Flags: ignoreversion
+; Source: "src\abib\data\*"; DestDir: "{app}\abib\data"; Flags: ignoreversion recursesubdirs
+; Source: "src\abib\images\*"; DestDir: "{app}\abib\images"; Flags: ignoreversion recursesubdirs
+; Source: "src\abib\font\*"; DestDir: "{app}\abib\font"; Flags: ignoreversion recursesubdirs
 
 [InstallDelete]
 Type: filesandordirs; Name: "{app}\tests"
@@ -53,6 +44,14 @@ Type: files; Name: "{app}\.gitignore"
 Type: files; Name: "{app}\.gitattributes"
 Type: files; Name: "{app}\README.md"
 Type: files; Name: "{app}\pyproject.toml"
+Type: filesandordirs; Name: "{app}\abib\data"
+Type: filesandordirs; Name: "{app}\abib\images"
+Type: filesandordirs; Name: "{app}\abib\font"
+Type: filesandordirs; Name: "{app}\abib\core"
+Type: filesandordirs; Name: "{app}\abib\domain"
+Type: filesandordirs; Name: "{app}\abib\services"
+Type: filesandordirs; Name: "{app}\abib\ui"
+Type: filesandordirs; Name: "{app}\abib\utils"
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\tests"
@@ -65,6 +64,14 @@ Type: files; Name: "{app}\.gitignore"
 Type: files; Name: "{app}\.gitattributes"
 Type: files; Name: "{app}\README.md"
 Type: files; Name: "{app}\pyproject.toml"
+Type: filesandordirs; Name: "{app}\abib\data"
+Type: filesandordirs; Name: "{app}\abib\images"
+Type: filesandordirs; Name: "{app}\abib\font"
+Type: filesandordirs; Name: "{app}\abib\core"
+Type: filesandordirs; Name: "{app}\abib\domain"
+Type: filesandordirs; Name: "{app}\abib\services"
+Type: filesandordirs; Name: "{app}\abib\ui"
+Type: filesandordirs; Name: "{app}\abib\utils"
 
 [Icons]
 Name: "{group}\Abib"; Filename: "{app}\Abib.exe"; WorkingDir: "{app}"; IconFilename: "{app}\abib\images\abib_icon0.ico"; Comment: "Abib"
