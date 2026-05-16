@@ -4,13 +4,13 @@
 [Setup]
 AppId={{9CBC6105-153E-49F5-912C-2F08A72A774B}} 
 AppName=Abib
-AppVersion=417.04
+AppVersion=417.05
 WizardStyle=modern dynamic
 WizardImageBackColor=clWhite
 WizardImageBackColorDynamicDark=#2b2b2b
 DefaultDirName={autopf}\Abib
 DefaultGroupName=Abib
-OutputBaseFilename=Abib_setup_417.04_win
+OutputBaseFilename=Abib_setup_417.05_win
 UninstallDisplayIcon={app}\abib\images\abib_icon0.ico
 Compression=lzma2
 SolidCompression=yes
@@ -42,25 +42,29 @@ Source: "src\abib\ui\*.py"; DestDir: "{app}\abib\ui"; Flags: ignoreversion
 Source: "src\abib\ui\*.ui"; DestDir: "{app}\abib\ui"; Flags: ignoreversion
 Source: "src\abib\utils\*.py"; DestDir: "{app}\abib\utils"; Flags: ignoreversion
 
-; Tools
-Source: "tools\*.py"; DestDir: "{app}\tools"; Flags: ignoreversion
-
-; Project metadata and configuration
-Source: "pyproject.toml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "uv.lock"; DestDir: "{app}"; Flags: ignoreversion
-Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "Abib.spec"; DestDir: "{app}"; Flags: ignoreversion
-Source: "64Bit_for_Abib.iss"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".gitattributes"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".gitignore"; DestDir: "{app}"; Flags: ignoreversion
-
 [InstallDelete]
 Type: filesandordirs; Name: "{app}\tests"
+Type: filesandordirs; Name: "{app}\tools"
 Type: filesandordirs; Name: "{app}\Calvin"
+Type: files; Name: "{app}\uv.lock"
+Type: files; Name: "{app}\Abib.spec"
+Type: files; Name: "{app}\64Bit_for_Abib.iss"
+Type: files; Name: "{app}\.gitignore"
+Type: files; Name: "{app}\.gitattributes"
+Type: files; Name: "{app}\README.md"
+Type: files; Name: "{app}\pyproject.toml"
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\tests"
+Type: filesandordirs; Name: "{app}\tools"
 Type: filesandordirs; Name: "{app}\Calvin"
+Type: files; Name: "{app}\uv.lock"
+Type: files; Name: "{app}\Abib.spec"
+Type: files; Name: "{app}\64Bit_for_Abib.iss"
+Type: files; Name: "{app}\.gitignore"
+Type: files; Name: "{app}\.gitattributes"
+Type: files; Name: "{app}\README.md"
+Type: files; Name: "{app}\pyproject.toml"
 
 [Icons]
 Name: "{group}\Abib"; Filename: "{app}\Abib.exe"; WorkingDir: "{app}"; IconFilename: "{app}\abib\images\abib_icon0.ico"; Comment: "Abib"
