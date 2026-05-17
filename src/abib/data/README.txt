@@ -8,11 +8,15 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.07
+Abib v417.08
 ------------
 
 Changelog.
 ------------
+Abib v417.08
+
+The Help, Readme, and Licence file now open in a new window.
+
 Abib v417.07
 Address issue of icon files not being found in the installer.
 

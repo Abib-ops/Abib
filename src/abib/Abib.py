@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.1 and python3.14.5 (64-bit).
 
-16/05/2026
+17/05/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --upgrade
@@ -1591,107 +1591,19 @@ class MainWindow(QMainWindow):
         self.about_window.activateWindow()  # Give the "About" window focus
 
     def helper(self) -> None:
-        """Help section."""
-
-        self.file_open(str(Path(sh.current_directory / 'HELP.txt')))
-
-        # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
-
-        # Save current Bible window geometry so we can restore it on Back but
-        # only capture it once when leaving the Bible (do not overwrite while
-        # switching between auxiliary files like COPYING/README/HELP).
-        try:
-            if not getattr(self, "_aux_origin_saved", False):
-                # Capture geometry once when first switching to an auxiliary file
-                self._saved_geometry_before_aux = self.geometry()
-                self._aux_origin_saved = True
-        except (RuntimeError, AttributeError, TypeError):
-            self._saved_geometry_before_aux = None
-        winwidth: int = 830
-        winheight: int = 1343
-
-        # Allow for small screen sizes
-        winheight, winwidth = sizer(winheight, winwidth)
-
-        w_origin, h_origin = centerer(winwidth, winheight)
-        self.setGeometry(w_origin, h_origin, winwidth, winheight)
-        win.otherFileFlag = True
+        """Open the Help section in a separate window."""
+        help_path = str(Path(sh.current_directory / 'HELP.txt'))
+        self._open_text_file_in_window(help_path)
 
     def copyright(self) -> None:
-        """Licence."""
-
-        self.file_open(str(Path(sh.current_directory / 'COPYING')))
-
-        # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
-
-        # Save current Bible window geometry so we can restore it on Back but
-        # only capture it once when leaving the Bible (do not overwrite while
-        # switching between auxiliary files like COPYING/README/HELP).
-        try:
-            if not getattr(self, "_aux_origin_saved", False):
-                # Capture geometry once when first switching to an auxiliary file
-                self._saved_geometry_before_aux = self.geometry()
-                self._aux_origin_saved = True
-        except (RuntimeError, AttributeError, TypeError):
-            self._saved_geometry_before_aux = None
-        # Set window width to fit 80 characters of the current editor font
-        try:
-            fm = self.textEditor.fontMetrics()
-            # Use a wide glyph for conservative per-character width
-            char_w = fm.horizontalAdvance('M') if fm else 10
-            text_w = int(char_w * 80)
-            # Add padding for frame, margins, and vertical scrollbar
-            frame_pad = getattr(self.textEditor, 'frameWidth', lambda: 2)()
-            try:
-                scroll_w = self.textEditor.verticalScrollBar().sizeHint().width()
-            except (RuntimeError, AttributeError):
-                scroll_w = 16
-            extra_pad = 12  # small extra to avoid wrapping due to rounding
-            winwidth: int = text_w + (frame_pad * 2) + scroll_w + extra_pad
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            # Fallback if metrics fail
-            winwidth = 760
-        winheight: int = 1343
-
-        # Allow for small screen sizes
-        winheight, winwidth = sizer(winheight, winwidth)
-
-        w_origin, h_origin = centerer(winwidth, winheight)
-        self.setGeometry(w_origin, h_origin, winwidth, winheight)
-        win.otherFileFlag = True
+        """Open the Licence in a separate window."""
+        copying_path = str(Path(sh.current_directory / 'COPYING'))
+        self._open_text_file_in_window(copying_path)
 
     def readme(self) -> None:
-        """Readme file."""
-
-        self.file_open(str(Path(sh.current_directory / 'README.txt')))
-
-        # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
-
-        # Save current Bible window geometry so we can restore it on Back but
-        # only capture it once when leaving the Bible (do not overwrite while
-        # switching between auxiliary files like COPYING/README/HELP).
-        try:
-            if not getattr(self, "_aux_origin_saved", False):
-                # Capture geometry once when first switching to an auxiliary file
-                self._saved_geometry_before_aux = self.geometry()
-                self._aux_origin_saved = True
-        except (RuntimeError, AttributeError, TypeError):
-            self._saved_geometry_before_aux = None
-        winwidth: int = 830
-        winheight: int = 1343
-
-        # Allow for small screen sizes
-        winheight, winwidth =  sizer(winheight, winwidth)
-
-        w_origin, h_origin = centerer(winwidth, winheight)
-        self.setGeometry(w_origin, h_origin, winwidth, winheight)
-        win.otherFileFlag = True
+        """Open the Readme file in a separate window."""
+        readme_path = str(Path(sh.current_directory / 'README.txt'))
+        self._open_text_file_in_window(readme_path)
 
     def reload(self) -> None:
         """Reload KJB_PCE.txt"""
