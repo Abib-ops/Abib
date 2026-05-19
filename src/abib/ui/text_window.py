@@ -44,6 +44,10 @@ from abib.ui.ui_helpers import SimpleScripturePopup
 from abib.services.settings import SettingsService
 
 
+# List of files to ignore for scripture highlighting
+IGNORE_HIGHLIGHTS = {"HELP.txt", "README.txt", "COPYING"}
+
+
 # Helper: Safely resolve QTextDocument find flags in a way that keeps static analysers happy
 # Some PySide6 versions expose flags as QTextDocument.FindCaseSensitively while others
 # only expose them under QTextDocument.FindFlag.FindCaseSensitively.
@@ -1614,11 +1618,16 @@ class TextDocumentWindow(QDialog):
                             if isinstance(pending_char, int) and pending_char >= 0:
                                 self._jump_to_char_now(int(pending_char))
                                 self._pending_jump_char = None
-                        
-                            # Then attempt to load precomputed refs or fall back to live scan
-                            if not self._try_load_precomputed_refs(p, content):
-                                # Use the editor's text to guarantee offsets exactly match Qt's document
-                                self._start_lazy_highlighting(self.text_edit.toPlainText())
+
+                            # Skip highlighting for documentation files
+                            if p.name in IGNORE_HIGHLIGHTS:
+                                self._refs_scanned = True  # Mark as scanned so it doesn't try again
+                                self._all_references = []  # Ensure no references are stored
+                            else:
+                                # Then attempt to load precomputed refs or fall back to live scan
+                                if not self._try_load_precomputed_refs(p, content):
+                                    # Use the editor's text to guarantee offsets exactly match Qt's document
+                                    self._start_lazy_highlighting(self.text_edit.toPlainText())
                         except (RuntimeError, AttributeError, TypeError, ValueError):
                             pass
                         # If a jump to anchors was requested during a load, apply it now

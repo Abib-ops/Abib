@@ -8,13 +8,19 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.08
+Abib v417.09
 ------------
 
 Changelog.
 ------------
-Abib v417.08
+Abib v417.09
+Disabled highlighting for three documentation files by adding them to an
+ignore list. That is the HELP.txt, README.txt, and COPYING files.
+Verified code changes and file deletions successfully.
+Adjusted bible_data.json to match that of KJV_PCE.txt so that the text is
+consistent with the KJV_PCE text.
 
+Abib v417.08
 The Help, Readme, and Licence file now open in a new window.
 
 Abib v417.07

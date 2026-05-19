@@ -38,29 +38,26 @@ import csv
 from pathlib import Path
 
 # Ensure the project root is on sys.path when run from tools/
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+from project_setup import PROJECT_ROOT
 
 # Try to import bibledict from shared.py in the same project
 try:
-    from shared import bibledict
+    from abib.core.shared import bibledict
 except Exception as e:
-    print(f"Error importing bibledict from shared.py: {e}")
-    print("Ensure this script is placed next to shared.py or adjust sys.path accordingly.")
+    print(f"Error importing bibledict from abib.core.shared: {e}")
     sys.exit(1)
 
 
 # ----- Configuration -----
-BASE_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = PROJECT_ROOT / "src" / "abib" / "data"
 # Default folder to scan
-OTHER_WORKS_DIR = BASE_DIR / "Other Works"
+OTHER_WORKS_DIR = DATA_DIR / "Other Works"
 
 # File extensions to include
 INCLUDE_EXTS = {".txt", ".md", ".rst", ".markdown", ".csv", ".htm", ".html"}
 
 # Output report path
-OUTPUT_CSV = BASE_DIR / "unknown_bible_abbreviations.csv"
+OUTPUT_CSV = PROJECT_ROOT / "unknown_bible_abbreviations.csv"
 
 
 # Build a normalised key set from bibledict for fast membership testing

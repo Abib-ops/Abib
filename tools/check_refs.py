@@ -10,22 +10,26 @@
 import json
 from pathlib import Path
 
-import scripture  # uses the project’s scripture.py
+# Ensure we can import local project modules when run from anywhere
+from project_setup import PROJECT_ROOT
+
+from abib.core import scripture
 
 # Path to the target file
+data_dir = PROJECT_ROOT / "src" / "abib" / "data"
 NAME = "Call to the Unconverted.txt"
-TARGET = Path(rf"Other Works\{NAME}")
+TARGET = data_dir / "Other Works" / NAME
 print(f"Target file: {TARGET}")
 if not TARGET.is_file():
     raise FileNotFoundError(
         f"Target file not found: {TARGET}. "
-        "Place the target file in the 'Other Works' folder or use Option A below."
+        "Place the target file in the 'Other Works' folder."
     )
 
 # Load bible_data.json (canonical book -> chapter(str) -> verse(str) -> text)
-BIBLE_JSON = Path("bible_data.json")
+BIBLE_JSON = data_dir / "bible_data.json"
 if not BIBLE_JSON.is_file():
-    raise FileNotFoundError("bible_data.json not found. Place a Bible JSON here or use Option B below.")
+    raise FileNotFoundError(f"bible_data.json not found at {BIBLE_JSON}.")
 
 with BIBLE_JSON.open("r", encoding="utf-8") as f:
     bible_data = json.load(f)

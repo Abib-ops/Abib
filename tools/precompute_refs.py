@@ -64,17 +64,13 @@ import argparse
 import gzip
 import hashlib
 import json
-import sys
 from pathlib import Path
 from typing import Any, Dict, List
 
 # Ensure we can import local project modules when run from anywhere
-THIS_FILE = Path(__file__).resolve()
-PROJECT_ROOT = THIS_FILE.parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+from project_setup import PROJECT_ROOT
 
-import scripture  # type: ignore
+from abib.core import scripture
 
 
 PARSER_VERSION = "2025-12-27-fix-numbered-book-continuations"
@@ -154,11 +150,11 @@ def _build_bible_data() -> Dict[str, Any]:
     Shape: { CanonicalBookName: { chapter_str: { verse_str: text }}}
     """
     # Lazy imports to avoid hard dependency when the module is imported elsewhere
-    from services.data_loader import DataLoader  # type: ignore
-    import shared as sh  # type: ignore
-    import scripture as _scripture  # type: ignore
+    from abib.services.data_loader import DataLoader
+    from abib.core import shared as sh
+    from abib.core import scripture as _scripture
 
-    loader = DataLoader(PROJECT_ROOT)
+    loader = DataLoader()
     bible = loader.load_bible()
     KJV = bible.KJV
     can = _scripture.CANONICAL_BOOKS
@@ -229,8 +225,8 @@ def process_one(
             chapter = r.get("chapter")
             verses = r.get("verse")
             # Normalisation/lookup check
-            from scripture import normalize_book_input  # local import for clarity
-            import shared as sh  # type: ignore
+            from abib.core.scripture import normalize_book_input  # local import for clarity
+            from abib.core import shared as sh
 
             key = normalize_book_input(str(book)) if isinstance(book, str) else None
             book_id = sh.bibledict.get(key) if key else None
@@ -311,7 +307,7 @@ def process_one(
 
             # Lookup using bible_data if provided
             if bible_data is not None:
-                from scripture import lookup_scripture  # type: ignore
+                from abib.core.scripture import lookup_scripture
                 out = lookup_scripture(bible_data, str(book), int(chapter), str(verses))
                 out_str = (out or "").strip()
                 if out_str == "Scripture not found.":
@@ -397,19 +393,20 @@ def process_one(
 
 def main(argv: List[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Generate companion files for Other Works texts")
+    data_dir = PROJECT_ROOT / "src" / "abib" / "data"
     parser.add_argument(
         "--input",
         "-i",
         type=str,
-        default=str(PROJECT_ROOT / "Other Works"),
-        help="Input directory containing .txt files (default: project_root/Other Works)",
+        default=str(data_dir / "Other Works"),
+        help="Input directory containing .txt files (default: src/abib/data/Other Works)",
     )
     parser.add_argument(
         "--output",
         "-o",
         type=str,
-        default=str(PROJECT_ROOT / "Other Works companions"),
-        help="Output directory for companions (default: project_root/Other Works companions)",
+        default=str(data_dir / "Other Works companions"),
+        help="Output directory for companions (default: src/abib/data/Other Works companions)",
     )
     parser.add_argument(
         "--force",
