@@ -10,12 +10,13 @@
 ## Used by Abib.py (CURRENT_VERSION) =>
 ################################################################################
 
-from pathlib import Path
-from os import getenv
-from json import loads
-from platform import system
-import tomllib
+from abib.utils.files import readfile
 import sys
+import tomllib
+from json import loads
+from os import getenv
+from pathlib import Path
+from platform import system
 
 
 # Load version from pyproject.toml
@@ -185,9 +186,6 @@ bibledict: dict[str, int] = {
     }
 
 onechapterbooks: tuple[int, int, int, int, int] = (30, 56, 62, 63, 64)
-
-
-from abib.utils.files import readfile
 
 
 # Read Info.txt

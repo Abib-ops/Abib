@@ -44,7 +44,8 @@ def parse_pce_text(txt_path):
 
     def is_book_match(book_name, line_text):
         upper_line = line_text.upper()
-        if len(upper_line) > 100: return False
+        if len(upper_line) > 100:
+            return False
         
         # Book headers are usually not verses.
         # If it starts with a verse number followed by lowercase, it's definitely a verse.
@@ -87,9 +88,12 @@ def parse_pce_text(txt_path):
 
         # Standard books
         if b in upper_line:
-            if b == "JOB": return "BOOK OF JOB" in upper_line or upper_line.strip('.') == "JOB"
-            if b == "ACTS": return "ACTS" in upper_line and ("APOSTLES" in upper_line or upper_line.strip('.') == "ACTS")
-            if b == "PSALMS": return "PSALMS" in upper_line or "PSALM" in upper_line
+            if b == "JOB":
+                return "BOOK OF JOB" in upper_line or upper_line.strip('.') == "JOB"
+            if b == "ACTS":
+                return "ACTS" in upper_line and ("APOSTLES" in upper_line or upper_line.strip('.') == "ACTS")
+            if b == "PSALMS":
+                return "PSALMS" in upper_line or "PSALM" in upper_line
             # For other books, keep it strict
             if len(upper_line) > 40 and "BOOK" not in upper_line and "EPISTLE" not in upper_line:
                 return False
@@ -110,12 +114,13 @@ def parse_pce_text(txt_path):
                 header_buffer = [] # Reset buffer on empty line
                 continue
             
-            # Check for Book Transition
+            # Check for Book Transition or Noise Headers
             is_cap = is_mostly_caps(stripped)
             if is_cap:
                 header_buffer.append(stripped)
                 combined_header = " ".join(header_buffer)
                 
+                # 1. Try transition to NEXT book
                 if current_book_idx + 1 < len(CANONICAL_BOOKS):
                     next_book = CANONICAL_BOOKS[current_book_idx + 1]
                     if is_book_match(next_book, combined_header):
@@ -131,6 +136,18 @@ def parse_pce_text(txt_path):
                             current_chapter = "1"
                             current_verse = "1"
                         continue
+
+                # 2. Check if it matches ANY book (repeating header or out-of-order)
+                # If it matches any book name, we discard it as a header.
+                is_any_book = False
+                for b_name in CANONICAL_BOOKS:
+                    if is_book_match(b_name, combined_header):
+                        is_any_book = True
+                        break
+                
+                if is_any_book:
+                    header_buffer = []
+                    continue
             else:
                 header_buffer = []
 
@@ -158,6 +175,11 @@ def parse_pce_text(txt_path):
                 current_text = [v_text]
                 continue
             
+            # If it's a caps line that didn't match anything above,
+            # we ignore it (likely noise or multi-line header fragment).
+            if is_cap:
+                continue
+
             if current_verse:
                 current_text.append(stripped)
                 

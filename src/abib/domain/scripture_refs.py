@@ -24,6 +24,7 @@ Notes
 from __future__ import annotations
 
 import re
+from functools import lru_cache
 from typing import Optional, Sequence, Union, Dict, NamedTuple, Any
 
 from roman import fromRoman, InvalidRomanNumeralError
@@ -121,7 +122,7 @@ def _parse_verse_component(val: object) -> Optional[int]:
 
 
 def normalize_reference(reference_text: str, current_book: int = 0, current_chapter: int = 0) -> str:
-    """Normalize a user-supplied reference text to 'book.chapter.verse' format.
+    """Normalise a user-supplied reference text to 'book.chapter.verse' format.
     
     This function handles Roman numerals, book-name cleaning, and 
     shorthand logic (e.g. numeric-only).
@@ -233,8 +234,6 @@ def resolve_reference(bits: Bits) -> RefParts:
 
 
 # --- Fast lookup helpers for calculate_book_line ---
-from functools import lru_cache
-
 @lru_cache(maxsize=1)
 def _build_info_map() -> Dict[tuple[int, int, int], int]:
     """Build a map from (book_id, chapter_idx, verse_idx) to absolute line.

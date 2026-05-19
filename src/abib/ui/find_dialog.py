@@ -127,11 +127,11 @@ class FindDialog(QDialog):
             # Connect mode toggles to also hide/show the right labels
             # Avoid shadowing the outer-scope variable name "lbl" used above
             def _show_right_labels(_b: Any) -> None:
-                for l in self._right_labels:
-                    l.show()
+                for label in self._right_labels:
+                    label.show()
             def _hide_right_labels(_b: Any) -> None:
-                for l in self._right_labels:
-                    l.hide()
+                for label in self._right_labels:
+                    label.hide()
 
             rb5.clicked.connect(_show_right_labels)
             rb6.clicked.connect(_hide_right_labels)

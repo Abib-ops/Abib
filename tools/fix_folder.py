@@ -336,12 +336,12 @@ def process_folder(folder_path):
                 corrected_name = filename.replace(".txt", "-corrected.txt")
                 print(f"  ✓ Saved as: {corrected_name}")
             else:
-                print(f"  ✓ No corruptions found - file processed successfully")
+                print("  ✓ No corruptions found - file processed successfully")
                 corrected_name = filename.replace(".txt", "-corrected.txt")
                 print(f"  ✓ Clean copy saved as: {corrected_name}")
         else:
             failed_files.append(filename)
-            print(f"  ✗ Failed to process")
+            print("  ✗ Failed to process")
     
     # Summary
     print("\n" + "=" * 50)

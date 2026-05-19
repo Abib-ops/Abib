@@ -8,7 +8,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 ABIB HELP:
 **********
 
-Abib Bible Reader v417.09
+Abib Bible Reader v417.10
 
 *************************
 ATTRIBUTION & LICENSE:
@@ -42,14 +42,14 @@ You can start from the beginning and follow the instructions below.
 
 First, uninstall any previous version of the program.
 
-Get the "Abib_setup_417.09_win.exe" file from 'Abib-ops' on GitHub,
+Get the "Abib_setup_417.10_win.exe" file from 'Abib-ops' on GitHub,
 find it in the 'Abib' repository.
 
 **************************************************
 * See: https://github.com/Abib-ops/Abib/releases *
 **************************************************
 
-Next, double-click the "Abib_setup_417.09_win.exe" installer and follow
+Next, double-click the "Abib_setup_417.10_win.exe" installer and follow
 the instructions, mostly click Next a few times, agree to the
 licence, and Abib will install. Please ignore any negative windows that
 claim that Abib is from an unknown author.
@@ -585,7 +585,7 @@ Installing Abib on Linux.
 -------------------------
 (You can try, but it will need quite a bit of modification to make it work.)
 
-Get the "Abib_linux_417.09.tar.bz2" file from the author.
+Get the "Abib_linux_417.10.tar.bz2" file from the author.
 
     If you can get it, then it may be an earlier version because of
     recent changes that work on Windows only, and the direction of
@@ -593,7 +593,7 @@ Get the "Abib_linux_417.09.tar.bz2" file from the author.
     But with some modifications, it could be made to work on Linux.
 
 Move it to your home folder or desired location and navigate there.
-Expand the compressed archive with: tar -jxvf Abib_linux_417.09.tar.bz2
+Expand the compressed archive with: tar -jxvf Abib_linux_417.10.tar.bz2
 
 $ chmod +x Abib will make sure that the executable flag is set.
 

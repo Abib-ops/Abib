@@ -7,7 +7,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 from typing import List, Optional
 
 from PySide6.QtGui import QAction, QIcon, QKeySequence, QShortcut

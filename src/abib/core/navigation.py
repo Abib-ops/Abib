@@ -5,7 +5,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from abib.core import shared as sh
 
 if TYPE_CHECKING:
@@ -33,6 +33,11 @@ class NavigationCore:
         except (IndexError, TypeError, ValueError):
             return 1, 1, 1
 
+    def resolve_reference(self, bits: Any) -> Any:
+        """Resolves a scripture reference into (book_num, chapter, verse)."""
+        from abib.domain.scripture_refs import resolve_reference
+        return resolve_reference(bits)
+
     def get_status_message(self, index: int) -> str:
         """Constructs a status bar message for a given Bible index."""
         if index < 0 or index > sh.LAST_VERSE_IN_BIBLE:
@@ -51,6 +56,9 @@ class NavigationCore:
 
         end_msg = "..." if getattr(self.w, 'occurrence', 0) != getattr(self.w, 'occurring', 0) else "."
         
+        if getattr(self.w, 'occurrence', 0) == getattr(self.w, 'occurring', 0):
+             setattr(self.w, 'no_f3_yet', 0)
+
         if book_id in sh.onechapterbooks:
             return f'{occ_msg}{book_name} {verse} KJV{end_msg}'
         else:
@@ -60,4 +68,7 @@ class NavigationCore:
     def calculate_line(book: int, chapter: int, verse: int, current_line: int = 0) -> int:
         """Resolves (B, C, V) to a global 0-based verse index."""
         from abib.domain.scripture_refs import calculate_book_line
-        return calculate_book_line(book, chapter, verse, current_line)
+        result = calculate_book_line(book, chapter, verse, current_line)
+        if result is None:
+             raise ValueError("Invalid scripture reference")
+        return result

@@ -25,9 +25,9 @@ class MockQPlainTextEdit:
 
 sys.modules['PySide6.QtWidgets'].QPlainTextEdit = MockQPlainTextEdit
 
-from abib.ui.themes import ThemeManager, ThemeState
-from abib.ui.ui_helpers import NoZoomPlainTextEdit, center_on_screen, fit_to_screen
-from abib.services.settings import SettingsService
+from abib.ui.themes import ThemeManager, ThemeState  # noqa: E402
+from abib.ui.ui_helpers import NoZoomPlainTextEdit, center_on_screen, fit_to_screen  # noqa: E402
+from abib.services.settings import SettingsService  # noqa: E402
 
 class TestSettingsService(unittest.TestCase):
     def setUp(self):

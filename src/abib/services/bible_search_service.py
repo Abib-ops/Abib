@@ -5,7 +5,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-from typing import List, Tuple, Any, Sequence, Dict, Set
+from typing import List, Tuple, Sequence, Dict, Set
 from abib.domain import search as search_domain
 
 class BibleSearchService:

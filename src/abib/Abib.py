@@ -88,17 +88,29 @@ Test with QT_QPA_PLATFORM=xcb (X11) or ensure Wayland plugins are present.
 """
 
 import re
+import sqlite3
 import time
 import webbrowser
-from sys import exit, setrecursionlimit
-setrecursionlimit(200)
-
 from copy import deepcopy
-from pathlib import Path
 from itertools import islice
-
+from pathlib import Path
+from sys import exit
 from typing import Any, Dict, Set, List, Iterator
+
+from PySide6.QtCore import Qt, QRect, QEvent, QObject, QPoint
+from PySide6.QtGui import (QMouseEvent, QKeyEvent, QColor, QFont,
+                           QTextCursor, QTextCharFormat, QKeySequence, QShortcut)
+from PySide6.QtWidgets import (QMainWindow, QWidget,
+                               QPlainTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
+                               QPushButton, QVBoxLayout, QStatusBar, QFileDialog, QSizePolicy)
+
+from abib.core import fcs
+from abib.core import shared as sh
 from abib.core.history import History
+from abib.core.navigation import NavigationCore
+from abib.services.settings import SettingsService
+from abib.ui.ui_helpers import NoZoomPlainTextEdit
+
 history = History()
 back = history.back
 forward = history.forward
@@ -107,19 +119,6 @@ forward = history.forward
 w: Any | None = None
 # Global splash screen reference (kept alive until the user disables it in settings)
 splash: Any | None = None
-
-from PySide6.QtWidgets import (QMainWindow, QWidget,
-                               QPlainTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
-                               QPushButton, QVBoxLayout, QStatusBar, QFileDialog, QSizePolicy)
-
-from PySide6.QtGui import (QMouseEvent, QKeyEvent, QColor, QFont,
-                           QTextCursor, QTextCharFormat, QKeySequence, QShortcut)
-
-from PySide6.QtCore import Qt, QRect, QEvent, QObject, QPoint
-
-from abib.core import fcs
-import sqlite3
-from abib.core import shared as sh
 
 # try:
 #     import torch
@@ -133,10 +132,6 @@ from abib.core import shared as sh
 #     CUDA_AVAILABLE = False
 #     print ("Junie Status: PyTorch not found. AI features disabled.")
 
-from abib.ui.ui_helpers import NoZoomPlainTextEdit
-from abib.services.settings import SettingsService
-from abib.core.navigation import NavigationCore
-
 
 ## Step 5: Reduce import and initialisation cost
 # Defer heavy/optional imports to first use instead of module import time.
@@ -147,34 +142,6 @@ from abib.core.navigation import NavigationCore
 # - ui.actions (setup_shortcuts, setup_menus_and_toolbars)
 # - text_window.ExternalTextDocumentWindow
 # - domain.scripture_refs (resolve_reference, calculate_book_line)
-
-# Lazy wrappers for scripture reference helpers to avoid importing the module at startup
-_scripture_refs_cache: dict[str, Any] | None = None
-
-def parse_ref(bits: Any) -> Any:
-    """Lazy wrapper for domain.scripture_refs.resolve_reference."""
-    global _scripture_refs_cache
-    if _scripture_refs_cache is None:
-        from abib.domain import scripture_refs as _sr  # local import
-        _scripture_refs_cache = {
-            "resolve_reference": _sr.resolve_reference,
-            "calculate_book_line": _sr.calculate_book_line,
-        }
-    assert _scripture_refs_cache is not None
-    return _scripture_refs_cache["resolve_reference"](bits)
-
-
-def calc_line(book_num: int, chapter: int, verse: int, current_line: int) -> int:
-    """Lazy wrapper for domain.scripture_refs.calculate_book_line."""
-    global _scripture_refs_cache
-    if _scripture_refs_cache is None:
-        from abib.domain import scripture_refs as _sr  # local import
-        _scripture_refs_cache = {
-            "resolve_reference": _sr.resolve_reference,
-            "calculate_book_line": _sr.calculate_book_line,
-        }
-    assert _scripture_refs_cache is not None
-    return _scripture_refs_cache["calculate_book_line"](book_num, chapter, verse, current_line)
 
 # ---- Module-level placeholders (populated at runtime by app.run) ----
 # These keep static analysis quiet and preserve runtime assignment from app.py
@@ -223,31 +190,6 @@ except (AttributeError, OSError) as e:
     print(f"Error setting APP ID: {e}")
 
 
-def prep_statusbar_message(index: int) -> None:
-    """Prepare the statusbar message."""
-
-    assert sh is not None
-    assert w is not None
-    win: Any = w
-    book = sh.Info[index][0]
-    chapter = sh.Info[index][1] + 1
-    occurrence = sh.Info[index][2] + 1
-    book_name = win.nwin[book]
-
-    if win.occurrence == win.occurring:
-        end_message = "."
-        w.no_f3_yet = 0
-    else:
-        end_message = '...'
-
-    ye = f'Occurrence {win.occurrence}/{win.occurring} of "{win.keym}"'
-
-    if book in sh.onechapterbooks:
-        w.message = f'{ye}  -  {book_name} {occurrence} KJV{end_message}'
-    else:
-        w.message = f'{ye}  -  {book_name} {chapter}:{occurrence} KJV{end_message}'
-
-
 def get_next_occurrence() -> int:
     """Count occurrence(s) of w.key and give current_position and w.y values.
 
@@ -274,7 +216,7 @@ def get_next_occurrence() -> int:
             win.y = win.occur[win.verse][win.finding][0]
             win.yend = win.occur[win.verse][win.finding][1]
             win.occurrence += 1
-            prep_statusbar_message(current_position)
+            win.statusBar.showMessage(win.nav.get_status_message(current_position))
         elif win.verse + 1 < len(win.occurs):
             win.verse += 1
             win.finding = 0
@@ -282,7 +224,7 @@ def get_next_occurrence() -> int:
             win.yend = win.occur[win.verse][win.finding][1]
             win.occurrence += 1
             current_position = win.occurs[win.verse]
-            prep_statusbar_message(current_position)
+            win.statusBar.showMessage(win.nav.get_status_message(current_position))
     elif win.verse >= len(win.occurs):
         current_position = win.occurs[-1]
 
@@ -364,41 +306,6 @@ def reset_attributes() -> None:
         win.dlg.checks = [1, 0, 5]  # Is this really necessary?
     win.occurs = []
     win.occur = []
-
-
-def centerer(widt: int, heigh: int) -> tuple[int, int]:
-    """Provide central screen origin points for windows"""
-
-    w_origin = int(half_width - (widt / 2))
-    h_origin = int(half_height - (heigh / 2))
-
-    return w_origin, h_origin
-
-
-def format_status_message(q1: Any, q2: Any, q3: Any) -> str:
-    """Helper to format a message based on conditions."""
-
-    assert w is not None
-    win: Any = w
-    q4 = win.nwin[q1]
-    if q1 in sh.onechapterbooks:
-        return f"{q4} {q3} KJV"
-    return f"{q4} {q2}:{q3} KJV"
-
-
-def sizer(window_height: int, window_width: int) -> tuple[int, int]:
-    """Adjust window size to fit the screen."""
-
-    if window_height > height:
-        window_height = int(height * 0.95)
-    if window_width > width:
-        window_width = int(width * 0.95)
-
-    return window_height, window_width
-
-
-
-
 
 
 class MainWindow(QMainWindow):
@@ -1359,7 +1266,6 @@ class MainWindow(QMainWindow):
             from abib.ui.text_window import TextDocumentWindow as ExternalTextDocumentWindow
             new_reader = ExternalTextDocumentWindow(
                 initial_file_path=req_path,
-                settings=self.settings,
                 settings_path=getattr(self, "user_settings_path", None),
                 settings_service=self.settings_service
             )
@@ -1394,7 +1300,9 @@ class MainWindow(QMainWindow):
                     except (RuntimeError, AttributeError):
                         pass
                     self.theme.apply_widget(win)
-                    win.show(); win.raise_(); win.activateWindow()
+                    win.show()
+                    win.raise_()
+                    win.activateWindow()
                     return
             except (AttributeError, RuntimeError, TypeError, ValueError, OSError):
                 pass
@@ -1511,7 +1419,9 @@ class MainWindow(QMainWindow):
                 except (RuntimeError, AttributeError):
                     pass
                 self.theme.apply_widget(win)
-                win.show(); win.raise_(); win.activateWindow()
+                win.show()
+                win.raise_()
+                win.activateWindow()
                 # Persist last selected work as usual
                 try:
                     if isinstance(self.settings, dict):
@@ -1941,7 +1851,7 @@ class MainWindow(QMainWindow):
                 if self.dlg.checks[0] != 2:     # Not whole words
                     current_position = win.occurs[0]
                     win.occurrence = 1
-                    prep_statusbar_message(current_position)
+                    win.statusBar.showMessage(win.nav.get_status_message(current_position))
                 elif self.dlg.checks[0] == 2:   # Whole words
                     win.occurrence = 0
                     win.verse = 0
@@ -2006,7 +1916,7 @@ class MainWindow(QMainWindow):
             self.gent = self.gen(win.key, x1, x2)
         assert self.gent is not None
         current_position, win.y, win.occurrence = next(self.gent)
-        prep_statusbar_message(current_position)
+        win.statusBar.showMessage(win.nav.get_status_message(current_position))
 
         return current_position
 
@@ -2042,7 +1952,7 @@ class MainWindow(QMainWindow):
                 return
 
             # Set the status bar message and other UI updates.
-            prep_statusbar_message(current_position)
+            win.statusBar.showMessage(win.nav.get_status_message(current_position))
             self.statusBar.showMessage(win.message)
             self.statusBar.repaint()
             self.goto_line_find(current_position)
@@ -2073,7 +1983,7 @@ class MainWindow(QMainWindow):
                     win.verse += 1
                     current_position = win.occurs[win.verse]
                     win.occurrence += 1
-                    prep_statusbar_message(current_position)
+                    win.statusBar.showMessage(win.nav.get_status_message(current_position))
 
             self.statusBar.showMessage(win.message)
             self.statusBar.repaint()
@@ -2370,16 +2280,10 @@ class MainWindow(QMainWindow):
         assert w is not None
         win: Any = w
 
-        q1, q2, q3 = sh.Info[current_position][0], sh.Info[current_position][1] + 1, sh.Info[current_position][2] + 1
-        message = win.message if win.message else format_status_message(q1, q2, q3)
+        message = win.message if win.message else self.nav.get_status_message(current_position)
 
         self.statusBar.showMessage(message)
         self.statusBar.repaint()
-
-    # ---- Gill Commentary integration ----
-    def _get_current_bcv(self) -> tuple[int, int, int]:
-        """Wrapper for NavigationCore.get_current_bcv."""
-        return self.nav.get_current_bcv()
 
     def open_commentary_window(self) -> None:
         """Open or focus the Gill commentary window centered on the current verse."""
@@ -2393,7 +2297,7 @@ class MainWindow(QMainWindow):
                 pass
             return
 
-        b, c, v = self._get_current_bcv()
+        b, c, v = self.nav.get_current_bcv()
         # Note: previous usage of a local 'pos' (global verse index) was removed to satisfy linters
         # since we look up commentary by (book, chapter, verse) only.
 
@@ -2588,7 +2492,7 @@ class MainWindow(QMainWindow):
              normalized = fcs.attach_book_name(normalized, current_line)
 
         bits = fcs.split_reference(normalized)
-        book_num, chapter, verse = parse_ref(bits)
+        book_num, chapter, verse = self.nav.resolve_reference(bits)
 
         if not book_num:
             self.error_invalid_book()
@@ -2597,7 +2501,7 @@ class MainWindow(QMainWindow):
             return -1
 
         try:
-            position = calc_line(book_num, chapter, verse, current_line)
+            position = self.nav.calculate_line(book_num, chapter, verse, current_line)
             if position is not None:
                 return position
         except ValueError:
@@ -2665,14 +2569,14 @@ class MainWindow(QMainWindow):
     def error_invalid_book(self):
         """Handle book not found."""
 
-        message: str = f"Not a book name."
+        message: str = "Not a book name."
         self.on_error(message, 750, True)
         # print(message)
 
     def error_invalid_verse_or_position(self):
         """Handle invalid chapter/verse errors."""
 
-        message: str = f"Invalid chapter or verse."
+        message: str = "Invalid chapter or verse."
         self.on_error(message, 750, True)
         # print(message)
 
@@ -3096,7 +3000,7 @@ class MainWindow(QMainWindow):
         """Title update routine."""
 
         if Path(self.path1).stem == 'KJB_PCE':
-            self.setWindowTitle(f"  THE HOLY BIBLE      Authorized King James Version")
+            self.setWindowTitle("  THE HOLY BIBLE      Authorized King James Version")
         else:
             title: str = f"{Path(self.path1).stem if self.path1 else ''}"
             title = title.replace("Pilgrims-Progress", "The Pilgrim's Progress by John Bunyan.")

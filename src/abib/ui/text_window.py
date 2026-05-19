@@ -84,7 +84,6 @@ class TextDocumentWindow(QDialog):
     # Emitted when this window becomes shown/hidden, so the main window can toggle buttons
     displayedChanged = Signal(bool)
     def __init__(self, initial_file_path: str | None = None,
-                 settings: Dict[str, Any] | None = None,
                  settings_path: str | None = None,
                  settings_service: SettingsService | None = None) -> None:
         super().__init__()
@@ -1911,21 +1910,21 @@ class TextDocumentWindow(QDialog):
 
         for r in refs:
             try:
-                s = int(r.get("abs_start", 0))
-                l = int(r.get("length", 0))
+                start_pos = int(r.get("abs_start", 0))
+                length = int(r.get("length", 0))
             except (ValueError, TypeError, AttributeError):
                 continue
             self._all_references.append(
                 {
-                    "abs_start": s,
-                    "length": l,
+                    "abs_start": start_pos,
+                    "length": length,
                     "book": r.get("book"),
                     "chapter": r.get("chapter"),
                     "verse": r.get("verse"),
                     "text": r.get("text", ""),
                 }
             )
-            self._ref_index.add((s, l))
+            self._ref_index.add((start_pos, length))
 
         # Sort once for fast binary searches on hover/visible-range rebuild
         try:
@@ -2448,11 +2447,11 @@ class TextDocumentWindow(QDialog):
         batch: List[Dict[str, Any]] = []
         for i in range(start_idx, len(refs)):
             r = refs[i]
-            s = int(r.get('abs_start', 0))
-            l = int(r.get('length', 0))
-            if s > visible_end:
+            start_pos = int(r.get('abs_start', 0))
+            length = int(r.get('length', 0))
+            if start_pos > visible_end:
                 break
-            e = s + l
+            e = start_pos + length
             if e < visible_start:
                 continue
             batch.append(r)

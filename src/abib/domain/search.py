@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 import re
-from typing import Dict, Set, List, Tuple, Any, Sequence
+from typing import Dict, Set, List, Tuple, Sequence
 
 def iterate_regex(r: tuple, x1: int, x2: int, kjv: Sequence[str]) -> List[Tuple[int, int, int]]:
     """Iterate through the KJV list using a list of regex patterns and line range.

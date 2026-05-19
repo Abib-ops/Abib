@@ -67,7 +67,6 @@ class DataLoader:
             return self._bible
 
         assert self.base_dir is not None
-        base: Path = self.base_dir
 
         # KJV text and copyright trimming
         KJB_PCE_LASTLINE = 36199
