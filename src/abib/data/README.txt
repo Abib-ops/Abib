@@ -8,11 +8,22 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.11
+Abib v417.12
 ------------
 
 Changelog.
 ------------
+Abib v417.12
+- Bugfix: The ValueError caused by using list lookups in a tuple of tuples
+  was fixed by changing all `sh.Info.index([...])` calls to use tuples
+  instead of lists. The fix was verified by running all tests successfully
+  and manual inspection. Navigation functions no longer trigger the error.
+
+- The status bar issue showing "Occurrence 0/0 of ..." during direct
+  scripture lookups was fixed. Navigation history was improved to restore
+  search-related status correctly. Verification included a reproduction
+  script and passing all unit tests.
+
 Abib v417.11
 - Optimized application startup performance by replacing sequential file
   I/O with bulk reading methods.

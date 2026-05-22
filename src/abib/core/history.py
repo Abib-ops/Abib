@@ -31,7 +31,9 @@ class History:
             win.hiLita.length,
             win.no_f3_yet,
             win.occurring,
+            win.occurrence,
             win.key,
+            win.keym,
             getattr(win, "dlg", None),
         )
 
@@ -52,7 +54,9 @@ class History:
             win.hiLita.length,
             win.no_f3_yet,
             win.occurring,
+            win.occurrence,
             win.key,
+            win.keym,
             getattr(win, "dlg", None),
         )
 
@@ -67,8 +71,10 @@ class History:
         win.hiLita.length = saving[5]
         win.no_f3_yet = saving[6]
         win.occurring = saving[7]
-        win.key = saving[8]
-        win.dlg = saving[9]
+        win.occurrence = saving[8]
+        win.key = saving[9]
+        win.keym = saving[10]
+        win.dlg = saving[11]
         return current_position
 
     def _push(self, stack: List[Tuple[Any, ...]], win, current_position: int) -> None:

@@ -301,6 +301,7 @@ def reset_attributes() -> None:
     win.occurring = 0
     win.occurrence = 0
     win.key = ' '
+    win.keym = ''
     win.message = ''
     if win.dlg is not None:
         win.dlg.checks = [1, 0, 5]  # Is this really necessary?
@@ -2325,7 +2326,7 @@ class MainWindow(QMainWindow):
         if book == sh.BOOKS_IN_THE_BIBLE - 1:
             b = 22  # Number of chapters in Revelation
         else:
-            a: int = sh.Info.index([book + 1, 0, 0])
+            a: int = sh.Info.index((book + 1, 0, 0))
             b: int = sh.Info[a - 1][1] + 1  # No. of chapters in the book.
         win.nchapters = []
         for _ in range(1, b + 1):
@@ -2362,13 +2363,13 @@ class MainWindow(QMainWindow):
             if book == sh.BOOKS_IN_THE_BIBLE - 1:
                 d = 21
             else:
-                c: int = sh.Info.index([book + 1, 0, 0]) - 1
+                c: int = sh.Info.index((book + 1, 0, 0)) - 1
                 d: int = sh.Info[c][2] + 1
         else:
             try:
-                c = sh.Info.index([book, chapter + 1, 0]) - 1
+                c = sh.Info.index((book, chapter + 1, 0)) - 1
             except ValueError:
-                c = sh.Info.index([book + 1, 0, 0]) - 1
+                c = sh.Info.index((book + 1, 0, 0)) - 1
             d = sh.Info[c][2] + 1
         win.nverses = []
         for _ in range(1, d + 1):
@@ -2685,7 +2686,7 @@ class MainWindow(QMainWindow):
         if newbook < 0:
             self.on_error('No earlier book!', 3000, True)
         else:
-            current_position = sh.Info.index([newbook, 0, 0])
+            current_position = sh.Info.index((newbook, 0, 0))
             forward.clear()
             history.back_push(w, current_position)
             self.display_verse(current_position)
@@ -2701,7 +2702,7 @@ class MainWindow(QMainWindow):
         if newbook > sh.BOOKS_IN_THE_BIBLE - 1:
             self.on_error('No later book!', 3000, True)
         else:
-            current_position = sh.Info.index([newbook, 0, 0])
+            current_position = sh.Info.index((newbook, 0, 0))
             forward.clear()
             history.back_push(w, current_position)
             self.display_verse(current_position)
@@ -2727,7 +2728,7 @@ class MainWindow(QMainWindow):
                     break
             newchapter = sh.Info[current_position][1]
             book = newbook
-        current_position = sh.Info.index([book, newchapter, 0])
+        current_position = sh.Info.index((book, newchapter, 0))
         forward.clear()
         history.back_push(w, current_position)
         self.display_verse(current_position)
@@ -2742,7 +2743,7 @@ class MainWindow(QMainWindow):
         chapter: int = sh.Info[current_position][1]
         newchapter: int = chapter + 1
         try:
-            current_position = sh.Info.index([book, newchapter, 0])
+            current_position = sh.Info.index((book, newchapter, 0))
         except ValueError:
             newbook: int = book + 1
             if newbook > sh.BOOKS_IN_THE_BIBLE - 1:
@@ -2755,7 +2756,7 @@ class MainWindow(QMainWindow):
                     break
             newchapter = sh.Info[current_position][1]
             book = newbook
-        current_position = sh.Info.index([book, newchapter, 0])
+        current_position = sh.Info.index((book, newchapter, 0))
         forward.clear()
         history.back_push(w, current_position)
         self.display_verse(current_position)
