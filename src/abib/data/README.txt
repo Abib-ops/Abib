@@ -8,14 +8,34 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.10
+Abib v417.11
 ------------
 
 Changelog.
 ------------
+Abib v417.11
+- Optimized application startup performance by replacing sequential file
+  I/O with bulk reading methods.
+- Drastically improved search speed and efficiency by using in-memory text
+  buffers and pre-compiled regex patterns.
+- Introduced a reverse-lookup dictionary for O(1) verse-to-line mapping,
+  eliminating UI lag during navigation.
+- Fixed a UI bug where search occurrence details in the status bar were
+  being cleared prematurely.
+- Enhanced text processing utilities, including a significantly faster
+  punctuation counter and optimised string squeezing.
+- Resolved a library shadowing conflict by renaming the internal roman
+  utility to roman_utils.py.
+- Improved UI responsiveness by moving window geometry persistence to the
+  application close event.
+- Streamlined settings management to use cached values instead of
+  repetitive disk reads.
+- Refactored core data structures to use more efficient sets and tuple
+  comprehensions.
+
 Abib v417.10
 Used "uvx ruff check . --fix" to identify and fix linter errors.
-
+Fixed another bug in the scripture reference parser.
 
 Abib v417.09
 Disabled highlighting for three documentation files by adding them to an

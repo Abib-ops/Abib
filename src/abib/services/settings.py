@@ -134,7 +134,7 @@ class SettingsService:
 
     def save_window_geometry(self, window_name: str, x: int, y: int, width: int, height: int) -> None:
         """Save window geometry to settings."""
-        data = self.load()
+        data = self.settings
         data[window_name] = {
             "x": x,
             "y": y,
@@ -149,7 +149,7 @@ class SettingsService:
 
     def update_last_bible_position(self, position: int) -> None:
         """Save the last bible position to settings."""
-        data = self.load() # Use load to get fresh data before updating and saving
+        data = self.settings # Use load to get fresh data before updating and saving
         data["last_bible_position"] = position
         self.save(data)
 
@@ -159,7 +159,7 @@ class SettingsService:
 
     def update_bible_font_size(self, size: int) -> None:
         """Update the bible font size in settings."""
-        data = self.load()
+        data = self.settings
         data["bible_font_size"] = size
         self.save(data)
 
@@ -169,7 +169,7 @@ class SettingsService:
 
     def update_devotional_font_size(self, size: int) -> None:
         """Update the devotional font size in settings."""
-        data = self.load()
+        data = self.settings
         data["devotional_font_size"] = size
         self.save(data)
 
@@ -179,7 +179,7 @@ class SettingsService:
 
     def update_commentary_font_size(self, size: int) -> None:
         """Update the commentary font size in settings."""
-        data = self.load()
+        data = self.settings
         data["gill_font_size"] = size
         self.save(data)
 
@@ -189,7 +189,7 @@ class SettingsService:
 
     def update_reader_font_size(self, size: int) -> None:
         """Update the reader font size in settings."""
-        data = self.load()
+        data = self.settings
         data["reader_font_size"] = size
         self.save(data)
 
@@ -199,7 +199,7 @@ class SettingsService:
 
     def set_gill_hover_delay_ms(self, delay: int) -> None:
         """Set the Gill hover delay in milliseconds."""
-        data = self.load()
+        data = self.settings
         data["gill_hover_delay_ms"] = delay
         self.save(data)
 
@@ -209,7 +209,7 @@ class SettingsService:
 
     def set_gill_hide_delay_ms(self, delay: int) -> None:
         """Set the Gill hide delay in milliseconds."""
-        data = self.load()
+        data = self.settings
         data["gill_hide_delay_ms"] = delay
         self.save(data)
 
@@ -219,6 +219,6 @@ class SettingsService:
 
     def set_gill_show_popups(self, enabled: bool) -> None:
         """Set whether Gill popups should be shown."""
-        data = self.load()
+        data = self.settings
         data["gill_show_popups"] = enabled
         self.save(data)

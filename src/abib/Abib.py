@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.1 and python3.14.5 (64-bit).
 
-19/05/2026
+22/05/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --upgrade
@@ -91,7 +91,6 @@ import re
 import sqlite3
 import time
 import webbrowser
-from copy import deepcopy
 from itertools import islice
 from pathlib import Path
 from sys import exit
@@ -147,6 +146,7 @@ splash: Any | None = None
 # These keep static analysis quiet and preserve runtime assignment from app.py
 KJV: tuple | list = ()
 Amap: list = []
+Amap_rev: dict[int, int] = {}
 Ps119: list[int] = []
 P119: list = []
 book_bounds: list[int] = []
@@ -154,9 +154,9 @@ starts_with_italics: list[int] = []
 KJB_PCE_LASTLINE: int = 0
 EOTNOC: str = ""
 Rnew: tuple = ()
-Rdic: dict = {}
+
 Rlow: tuple = ()
-Ldic: dict = {}
+
 Rstp: tuple = ()
 Rlsp: tuple = ()
 # Search dictionaries and sources
@@ -1034,19 +1034,19 @@ class MainWindow(QMainWindow):
                             current_position = None
                             try:
                                 if line_no in Amap:
-                                    current_position = Amap.index(line_no)
+                                    current_position = Amap_rev[line_no]
                                 else:
                                     # Search backward first for up to 12 lines, then forward
                                     found = False
                                     for delta in range(1, 13):
                                         ln_back = line_no - delta
                                         if ln_back in Amap:
-                                            current_position = Amap.index(ln_back)
+                                            current_position = Amap_rev[ln_back]
                                             found = True
                                             break
                                         ln_fwd = line_no + delta
                                         if ln_fwd in Amap:
-                                            current_position = Amap.index(ln_fwd)
+                                            current_position = Amap_rev[ln_fwd]
                                             found = True
                                             break
                                     if not found:
@@ -1086,27 +1086,11 @@ class MainWindow(QMainWindow):
 
     def moveEvent(self, event):
         try:
-            geometry = self.geometry()
-            self.settings_service.save_window_geometry(
-                "main_window",
-                geometry.x(), geometry.y(), geometry.width(), geometry.height()
-            )
-        except (RuntimeError, TypeError, ValueError):
-            pass
-        try:
             return super().moveEvent(event)
         except (RuntimeError, AttributeError, TypeError):
             return None
 
     def resizeEvent(self, event):
-        try:
-            geometry = self.geometry()
-            self.settings_service.save_window_geometry(
-                "main_window",
-                geometry.x(), geometry.y(), geometry.width(), geometry.height()
-            )
-        except (RuntimeError, TypeError, ValueError):
-            pass
         try:
             return super().resizeEvent(event)
         except (RuntimeError, AttributeError, TypeError):
@@ -1719,7 +1703,8 @@ class MainWindow(QMainWindow):
                     win.verse = 0
                     win.finding = -1
                     current_position = get_next_occurrence()
-                    self.statusBar.showMessage(win.message)
+                    if win.message:
+                        self.statusBar.showMessage(win.message)
                     self.statusBar.repaint()
             else:
                 tv = self.dlg.checks[0] == 1   # Raw
@@ -1787,7 +1772,8 @@ class MainWindow(QMainWindow):
         if win.occurring != 0:
             win.occurrence = 0
             current_position = self.occurrent(x1, x2)
-            self.statusBar.showMessage(win.message)
+            if win.message:
+                self.statusBar.showMessage(win.message)
             self.statusBar.repaint()
 
         return current_position
@@ -1836,7 +1822,8 @@ class MainWindow(QMainWindow):
                 win.verse = 0
                 win.finding = -1
                 current_position = get_next_occurrence()
-                self.statusBar.showMessage(win.message)
+                if win.message:
+                    self.statusBar.showMessage(win.message)
                 self.statusBar.repaint()
         elif numwords > 1:
             from abib.services.search_service import findf3_ww_ac, findf3_ww_all
@@ -1857,7 +1844,8 @@ class MainWindow(QMainWindow):
                     win.verse = 0
                     win.finding = -1
                     current_position = get_next_occurrence()
-                self.statusBar.showMessage(win.message)
+                if win.message:
+                    self.statusBar.showMessage(win.message)
                 self.statusBar.repaint()
         else:
             win.occurring = 0
@@ -1889,19 +1877,6 @@ class MainWindow(QMainWindow):
             else:
                 from abib.services.search_service import iterate_list
                 iterate_list(liszt, r_list, self)
-
-            if self.dlg.checks[0] > 2:
-                w.occur_ww_1 = deepcopy(win.occur)
-                j = -1
-                for i in win.occur_ww_1:
-                    j += 1
-                    li = len(i)
-                    if li > 1:
-                        a = i[0][0]
-                        b = i[li-1][1]
-                        _ = win.occur_ww_1.pop(j)
-                        win.occur_ww_1.insert(j, [(a, b)])
-                win.occurring = len(win.occur_ww_1)   # 16/12/24
         # List of verses containing the searched for item.
         # Number of occurrences of the searchitem within the range x1 to x2.
 
@@ -1953,7 +1928,8 @@ class MainWindow(QMainWindow):
 
             # Set the status bar message and other UI updates.
             win.statusBar.showMessage(win.nav.get_status_message(current_position))
-            self.statusBar.showMessage(win.message)
+            if win.message:
+                self.statusBar.showMessage(win.message)
             self.statusBar.repaint()
             self.goto_line_find(current_position)
 
@@ -1985,57 +1961,35 @@ class MainWindow(QMainWindow):
                     win.occurrence += 1
                     win.statusBar.showMessage(win.nav.get_status_message(current_position))
 
-            self.statusBar.showMessage(win.message)
+            if win.message:
+                self.statusBar.showMessage(win.message)
             self.statusBar.repaint()
             self.goto_line_find(current_position)
 
     def gen(self, key: str, x1: int, x2: int):
-        """Return the next position of the searched for key."""
-
-        # 1. Create a local reference with a type hint to satisfy the linter
+        """Return the next position of the searched for key using in-memory data."""
         assert w is not None
         win: Any = w
-
-        current_position = -1
         d1 = 0
         if self.dlg.checks[1] == 1:
-            files_path = Path(sh.current_directory) / "PCE-find.txt"
+            source = Rnew
         else:
-            assert self.dlg.checks[1] == 0
-            files_path = Path(sh.current_directory) / "PCE-lower.txt"
+            source = Rlow
             key = key.lower()
 
-        # Debugging: Print the file path
-        # print(f"Constructed file path: {files_path}")
-
-        # Check if the file exists before opening it
-        if not files_path.exists():
-            # print(f"Error: File '{files_path}' not found.")
-            raise FileNotFoundError(f"File '{files_path}' does not exist.")
-
-        # Open and read the file line by line
-        try:
-            line = (z for z in files_path.open('r', encoding='utf-8'))
-        except FileNotFoundError as e2:
-            print(f"Error opening file: {e2}")
-            raise
-
-        while True:
-            current_position += 1
-            yt = 0
-            if current_position > x2:
+        for current_position in range(x1, x2 + 1):
+            if current_position >= len(source):
                 break
-            a = next(line)
-            if current_position < x1:
-                continue
-            while key in a:
+            a = source[current_position]
+            start_search = 0
+            while True:
+                y = a.find(key, start_search)
+                if y == -1:
+                    break
                 d1 += 1
-                win.y = int(a.find(key))
-                if win.y != -1:
-                    yt = yt + win.y + 1        #  Expected int got '() -> int' instead
-                    a = a[win.y + 1:]
-                    win.y = yt - 1
-                    yield current_position, win.y, d1
+                win.y = y
+                start_search = y + 1
+                yield current_position, win.y, d1
 
     def goto_line_find(self, current_position: int) -> None:
         """Find function - prepare for output."""
@@ -2062,9 +2016,9 @@ class MainWindow(QMainWindow):
             win.y += 2
             end = win.y
         if self.dlg.checks[1] == 0:
-            add = fcs.repeat_find(Ldic[current_position], start, end)
+            add = fcs.repeat_find(Rlow[current_position], start, end)
         else:
-            add = fcs.repeat_find(Rdic[current_position], start, end)
+            add = fcs.repeat_find(Rnew[current_position], start, end)
         return add
 
     def stripped_punctuation_adjust_ki(self, current_position: int, start: int, end: int) -> int:
@@ -2075,9 +2029,9 @@ class MainWindow(QMainWindow):
 
         add: int
         if self.dlg.checks[1] == 0:
-            add = fcs.repeat_find_keyinc(Ldic[current_position], start, end)
+            add = fcs.repeat_find_keyinc(Rlow[current_position], start, end)
         else:
-            add = fcs.repeat_find_keyinc(Rdic[current_position], start, end)
+            add = fcs.repeat_find_keyinc(Rnew[current_position], start, end)
 
         return add
 
@@ -2110,12 +2064,7 @@ class MainWindow(QMainWindow):
         lineinc = add
 
         ignore = [8217]
-        litz = []
-        lr = len(KJV[ln])
-        for _ in range(lr):
-            unich = ord(KJV[ln][_])
-            if unich not in ignore and unich > 230:
-                litz.append(_)
+        litz = [i for i, c in enumerate(KJV[ln]) if ord(c) > 230 and ord(c) not in ignore]
         j = 0
         for i in litz:
             if i < win.y + add:
@@ -2133,7 +2082,6 @@ class MainWindow(QMainWindow):
         assert w is not None
         win: Any = w
 
-        unich = 32
         num = 0
         ignore = [8217]
         litz = []
@@ -2143,14 +2091,8 @@ class MainWindow(QMainWindow):
             end = start + len(win.key)  # change win.yend
             num = self.stripped_punctuation_adjust_ki(current_position, start, end)
         lav = len(KJV[ln])
-        if not(start > lav or endof > lav):
-            for i in range(start, endof + num):
-                try:
-                    unich = ord(KJV[ln][i])
-                except IndexError:
-                    pass
-                if unich not in ignore and unich > 230:
-                    litz.append(i)
+        if not (start > lav or endof > lav):
+            litz = [i for i in range(start, endof + num) if i < lav and ord(KJV[ln][i]) > 230 and ord(KJV[ln][i]) not in ignore]
         keyinc = len(litz) + num
         win.hiLita.keyinc = keyinc
 
@@ -2223,7 +2165,7 @@ class MainWindow(QMainWindow):
                     win.store = win.key
                     win.hiLita.clear = False
                     keys = sorted(win.occur[win.verse])
-                    current_position = Amap.index(ln)
+                    current_position = Amap_rev[ln]
                     for i in keys:
                         assert isinstance(i, (list, tuple))
                         win.key = '+' * (i[1] - i[0])
@@ -2586,7 +2528,7 @@ class MainWindow(QMainWindow):
         self.textEditor.moveCursor(QTextCursor.MoveOperation.StartOfLine)
         linenumber: int = self.textEditor.textCursor().blockNumber()
         if linenumber in Amap:
-            current_position: int = Amap.index(linenumber)
+            current_position: int = Amap_rev[linenumber]
         else:
             # Safely get the first element of Amap without direct indexing (for linters/type-checkers)
             try:
@@ -2604,7 +2546,7 @@ class MainWindow(QMainWindow):
                         break
                 else:
                     return sh.LAST_VERSE_IN_BIBLE
-                current_position = Amap.index(linenumber)
+                current_position = Amap_rev[linenumber]
 
         return current_position
 
@@ -2932,7 +2874,7 @@ class MainWindow(QMainWindow):
                     # For the Bible file, w.PCE_text is already stripped if loaded via the fast path.
                     # If it wasn't, do a safety strip (covers first-run without cache).
                     assert win.PCE_text is not None
-                    if EOTNOC and EOTNOC in win.PCE_text:
+                    if EOTNOC:
                         pos = win.PCE_text.find(EOTNOC)
                         if pos != -1:
                             win.PCE_text = win.PCE_text[pos + len(EOTNOC) + 1:]

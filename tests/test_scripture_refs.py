@@ -34,8 +34,8 @@ class TestScriptureRefs(unittest.TestCase):
             calculate_book_line(0, 1, 1, 0)
 
     def test_calculate_book_line_genesis_1_1_matches_info_index(self):
-        # Expected: the first entry [0,0,0] in sh.Info
-        expected_index = sh.Info.index([0, 0, 0])
+        # Expected: the first entry (0,0,0) in sh.Info
+        expected_index = sh.Info.index((0, 0, 0))
         idx = calculate_book_line(1, 1, 1, expected_index)
         self.assertEqual(idx, expected_index)
 

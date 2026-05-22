@@ -15,18 +15,12 @@ def create_pattern(key: str) -> str:
 
 def punctuation_counter(text: str) -> int:
     """Count the number of punctuation characters in text."""
-    p = "()[];:!<>,.-?"  # ’ not needed because in the search file.
-    num: int = 0
-    for _ in p:
-        k = text.count(_)
-        num += k
-    return num
+    p = "()[];:!<>,.-?"
+    return len(text) - len(text.translate(str.maketrans('', '', p)))
 
 def squeeze(char: str, s: str) -> str:
     """Remove duplicate characters. For example, '.....' is replaced with '.'."""
-    while char * 2 in s:
-        s = s.replace(char * 2, char)
-    return s
+    return re.sub(rf"{re.escape(char)}+", char, s)
 
 def remove_junk(text: str) -> str:
     """Remove junk characters from 'text'.

@@ -8,7 +8,6 @@ def readfile(input_filename: str, file_length: int, base_dir: Path | None = None
     from abib.core import shared as sh
     _base = base_dir or sh.base_dir
     err = f"File not found: {input_filename}\n"
-    output_listname = []
     
     path_to_open = Path(input_filename)
     if not path_to_open.is_absolute() and _base:
@@ -16,16 +15,15 @@ def readfile(input_filename: str, file_length: int, base_dir: Path | None = None
             
     try:
         with open(path_to_open, 'r', encoding="utf-8") as f_read:
-            for _ in range(file_length):
-                line = f_read.readline()
-                if not line:
-                    break
-                stripped = line.splitlines()[0]
-                try:
-                    i_line = int(stripped)  # Convert to int if possible
-                except ValueError:
-                    i_line = stripped  # Keep as string if conversion fails
-                output_listname.append(i_line)
+            # Bulk read all lines and slice to the required length
+            lines = f_read.read().splitlines()[:file_length]
+            output_listname = []
+            for line in lines:
+                # Faster than try-except for non-numeric strings
+                if line.isdigit() or (line.startswith('-') and line[1:].isdigit()):
+                    output_listname.append(int(line))
+                else:
+                    output_listname.append(line)
     except FileNotFoundError:
         print(err)
         sys.exit(1)
@@ -36,20 +34,16 @@ def readio(input_filename: str, file_length: int, base_dir: Path | None = None) 
     """Read Bible files into a list with trailing newlines."""
     from abib.core import shared as sh
     _base = base_dir or sh.base_dir
-    output_listname: list = []
     
     path_to_open = Path(input_filename)
     if not path_to_open.is_absolute() and _base:
         path_to_open = _base / input_filename
             
     with open(path_to_open, 'r', encoding="utf-8") as f:
-        for _ in range(file_length):
-            line = f.readline()
-            if not line:
-                break
-            output_listname.append(f'{line.splitlines()[0]}\n')
-
-    return output_listname
+        # Bulk read all lines and slice to the required length
+        lines = f.read().splitlines()[:file_length]
+        # Re-add newlines if the rest of the app expects them (as per current code)
+        return [f"{line}\n" for line in lines]
 
 def load_json_dict(file_dict_path: Any, base_dir: Path | None = None) -> Any:
     """Load a dictionary with JSON."""
@@ -64,10 +58,8 @@ def load_json_dict(file_dict_path: Any, base_dir: Path | None = None) -> Any:
 
 def load_list_set_dict(input_filename: str, ref_dict: Any, base_dir: Path | None = None) -> dict[Any, set]:
     """Load a list_dict.txt/json file that is a dictionary of Bible words."""
-    setdict: dict[Any, set] = {}
     listdict: Any = load_json_dict(input_filename, base_dir)
-    sd: list = list(ref_dict)
-    for key in sd:
-        setdict[key] = set(listdict[key])
-
-    return setdict
+    # Use dictionary comprehension for better performance and convert lists to sets
+    if ref_dict is None:
+        return {key: set(val) for key, val in listdict.items()}
+    return {key: set(listdict[key]) for key in ref_dict}

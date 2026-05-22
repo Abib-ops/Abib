@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 import re
-from typing import Dict, Set, TYPE_CHECKING
+from typing import Dict, Set, TYPE_CHECKING, cast
 from abib.core import fcs
 
 if TYPE_CHECKING:
@@ -16,17 +16,18 @@ def iterate_list(keywords: list[str], r_list: list, win: MainWindow) -> None:
     """Iterate over r_list and find all the occurrences of key(s) in keywords."""
     win.occurring = 0
     win.occur = []
+    
+    # Pre-compile patterns to avoid redundant work in the loop
+    patterns = [re.compile(fcs.create_pattern(key)) for key in keywords]
+    
     for i in win.occurs:
         coordinates = []
-        for key in keywords:
-            pattern = fcs.create_pattern(key)
-            from typing import cast
-            text = cast(str, r_list[i])
-            for m in re.finditer(pattern, text):
+        text = cast(str, r_list[i])
+        for pattern in patterns:
+            for m in pattern.finditer(text):
                 win.occurring += 1
                 coordinates.append((m.start(), m.end()))
-        if coordinates:
-            win.occur.append(coordinates)
+        win.occur.append(coordinates)
 
 def findf3_ww_ac(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list: list, win: MainWindow) -> None:
     """Whole words (phrase)."""
@@ -42,18 +43,12 @@ def findf3_ww_ac(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list: 
     pattern = re.compile(rf"\b{re.escape(win.key)}\b")
 
     for i in win.occur:
-        from typing import cast
         text = cast(str, r_list[i])
         if x1 <= i <= x2 and pattern.search(text):
             win.occurs.append(i)
 
     liszt = [win.key]
     iterate_list(liszt, r_list, win)
-    c = 0
-    for i in win.occur:
-        li = len(i)
-        c += li
-    win.occurring = c
 
 def findf3_ww_all(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list: list, win: MainWindow) -> None:
     """Match all the words (phrase)."""
@@ -75,7 +70,6 @@ def findf3_ww_all(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list:
             continue
         win.occurs.append(i)
     iterate_list(liszt, r_list, win)
-    win.occurring = len(win.occurs)
 
 def findf3_ww_any(x1: int, x2: int, _set: Dict[str, Set], r_list: list, win: MainWindow) -> None:
     """Find any of the words."""
@@ -142,4 +136,3 @@ def check_count_sort(liszt: list[str], r_list: list, win: MainWindow) -> None:
 
     win.occur = [item for sublist in newt for item in sublist]
     win.occurs = [item for sublist in newts for item in sublist]
-    win.occurring = len(win.occurs)

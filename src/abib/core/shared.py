@@ -13,7 +13,6 @@
 from abib.utils.files import readfile
 import sys
 import tomllib
-from json import loads
 from os import getenv
 from pathlib import Path
 from platform import system
@@ -185,13 +184,11 @@ bibledict: dict[str, int] = {
         'revelations': 66, 'reve': 66, 'apocalypse': 66, 'apocalypseofjohn': 66, "ap": 66, "apoc": 66,
     }
 
-onechapterbooks: tuple[int, int, int, int, int] = (30, 56, 62, 63, 64)
+onechapterbooks: set[int] = {30, 56, 62, 63, 64}
 
 
 # Read Info.txt
-Info = []
 Inf: list = readfile("Info.txt", EOF_INFO)
-Inf = Inf[17:]  # Skip the first 17 elements
-for _ in range(LAST_VERSE_IN_BIBLE + 1):
-    Info.append(loads(Inf[_]))
-Info = tuple(Info)
+# Skip first 17 lines and parse each verse index [book, chapter, verse].
+# Manual string slicing and splitting is faster than json.loads for this simple format.
+Info = tuple(tuple(int(x) for x in line[1:-1].split(',')) for line in Inf[17:EOF_INFO])

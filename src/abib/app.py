@@ -96,7 +96,7 @@ def _load_bible_text_and_maps(loader: DataLoader) -> None:
             "KJB_PCE_LASTLINE",
             "EOTNOC",
             "KJV",
-            "Amap",
+            "Amap", "Amap_rev",
             "Ps119",
             "P119",
             "book_bounds",
@@ -112,9 +112,9 @@ def _load_search_indexes(loader: DataLoader) -> None:
         s,
         [
             "Rnew",
-            "Rdic",
+            
             "Rlow",
-            "Ldic",
+            
             "Rstp",
             "Rlsp",
             "stripped_dict",
@@ -221,9 +221,9 @@ def run() -> None:
             s,
             [
                 "Rnew",
-                "Rdic",
+                
                 "Rlow",
-                "Ldic",
+                
                 "Rstp",
                 "Rlsp",
                 "stripped_dict",

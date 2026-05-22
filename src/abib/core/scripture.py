@@ -17,6 +17,27 @@ from typing import Any, Dict, List
 from roman import fromRoman, InvalidRomanNumeralError
 from abib.core import shared as sh
 
+# Pre-compiled regexes for normalize_book_input
+_RE_ORD_1ST = re.compile(r"^1\s*st\.?")
+_RE_ORD_2ND = re.compile(r"^2\s*nd\.?")
+_RE_ORD_3RD = re.compile(r"^3\s*rd\.?")
+_RE_WORD_1ST = re.compile(r"^first\b")
+_RE_WORD_2ND = re.compile(r"^second\b")
+_RE_WORD_3RD = re.compile(r"^third\b")
+_RE_ROMAN_3 = re.compile(r"^(iii)(?=\b|\s|\.)")
+_RE_ROMAN_2 = re.compile(r"^(ii)(?=\b|\s|\.)")
+_RE_ROMAN_1 = re.compile(r"^(i)(?=\b|\s|\.)")
+_RE_NON_WORD = re.compile(r"\W+")
+
+# Pre-calculated abbreviation keys for classify_book_input
+_SHORT_ALPHA_KEYS = tuple(k for k in sh.bibledict.keys() if k.isalpha() and len(k) <= 3)
+
+_LEGACY_MAP = {
+    "cant": "canticles",
+    "canticle": "canticles",
+    "canticles": "canticles",
+}
+
 # Canonical book names keyed by 'book' id (1-based), aligning with shared.bibledict
 CANONICAL_BOOKS: Dict[int, str] = {
     1: "Genesis",
@@ -100,27 +121,22 @@ def normalize_book_input(book_input: str) -> str:
     s = book_input.strip().lower()
     # Normalise Arabic ordinals with suffixes at the very start (allow optional space and optional trailing dot)
     # Examples handled: 1st John, 1 st. John, 1stJohn, 2nd-Thess, 3rdJn
-    s = re.sub(r"^1\s*st\.?", "1", s)
-    s = re.sub(r"^2\s*nd\.?", "2", s)
-    s = re.sub(r"^3\s*rd\.?", "3", s)
+    s = _RE_ORD_1ST.sub("1", s)
+    s = _RE_ORD_2ND.sub("2", s)
+    s = _RE_ORD_3RD.sub("3", s)
 
     # Normalise written-out ordinals at the very start
     # Examples: First John, Second Corinthians, Third John
-    s = re.sub(r"^first\b", "1", s)
-    s = re.sub(r"^second\b", "2", s)
-    s = re.sub(r"^third\b", "3", s)
+    s = _RE_WORD_1ST.sub("1", s)
+    s = _RE_WORD_2ND.sub("2", s)
+    s = _RE_WORD_3RD.sub("3", s)
 
-    s = re.sub(r"^(iii)(?=\b|\s|\.)", "3", s)
-    s = re.sub(r"^(ii)(?=\b|\s|\.)", "2", s)
-    s = re.sub(r"^(i)(?=\b|\s|\.)", "1", s)
-    s = re.sub(r"\W+", "", s)
-    legacy_map = {
-        "cant": "canticles",
-        "canticle": "canticles",
-        "canticles": "canticles",
-    }
-    if s in legacy_map:
-        s = legacy_map[s]
+    s = _RE_ROMAN_3.sub("3", s)
+    s = _RE_ROMAN_2.sub("2", s)
+    s = _RE_ROMAN_1.sub("1", s)
+    s = _RE_NON_WORD.sub("", s)
+    if s in _LEGACY_MAP:
+        s = _LEGACY_MAP[s]
     return s
 
 
@@ -157,11 +173,9 @@ def classify_book_input(user_input: str) -> Dict[str, Any]:
     # Acceptable separator characters between a short abbr and the chapter/verse
     sep_chars = set(" .:-\t/\u00A0")
 
-    # Build a list of candidate abbreviation keys (pure alpha, up to 3 chars)
-    short_alpha_keys = [k for k in sh.bibledict.keys() if k.isalpha() and len(k) <= 3]
     # Track the longest matching abbreviation to bias toward more specific keys
     best_match: str | None = None
-    for k in short_alpha_keys:
+    for k in _SHORT_ALPHA_KEYS:
         if s.startswith(k):
             if best_match is None or len(k) > len(best_match):
                 best_match = k
@@ -233,6 +247,12 @@ _PATTERN = rf"""
 # Compile once for performance; allows scanning whole documents efficiently
 _PATTERN_RE = re.compile(_PATTERN, re.IGNORECASE | re.VERBOSE)
 
+# Regexes for cleaning and normalization within find_scripture_references/lookup_scripture
+_RE_STRIP_WS_START = re.compile(rf"^{_WS}+")
+_RE_STRIP_WS_PUNC_END = re.compile(rf"(?:{_WS}|[)\];:.,\"'“”‘’])+$")
+_RE_DOUBLE_HYPHEN = re.compile(r"-{2,}")
+_RE_NUMERIC = re.compile(r"\d{1,3}")
+
 # Precompile the continuation pattern at module scope.
 # Enhancements:
 # - Allow both comma and semicolon separators for continuations that start a new chapter
@@ -266,7 +286,7 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
 
         full = m.group(0)
         # Strip leading whitespace using the broadened whitespace class
-        lstripped = re.sub(rf"^{_WS}+", "", full)
+        lstripped = _RE_STRIP_WS_START.sub("", full)
         lead = len(full) - len(lstripped)
         book_raw = m.group("book")
         normalized = normalize_book_input(book_raw)
@@ -332,7 +352,7 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
             else:
                 # Keep the current regex order but reinterpret a simple number as chapter-only
                 # when it immediately follows the book name (e.g. "Ps 2" sets chapter context).
-                if re.fullmatch(r"\d{1,3}", vo or ""):
+                if _RE_NUMERIC.fullmatch(vo or ""):
                     try:
                         chapter = int(vo)
                     except ValueError:
@@ -349,8 +369,8 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
             continue
 
         # Clean and trim verses using broadened whitespace class
-        verses = re.sub(rf"^{_WS}+", "", verses)
-        verses = re.sub(rf"(?:{_WS}|[)\];:.,\"'“”‘’])+$", "", verses)
+        verses = _RE_STRIP_WS_START.sub("", verses)
+        verses = _RE_STRIP_WS_PUNC_END.sub("", verses)
 
         start = m.start() + lead
         length = len(lstripped)
@@ -370,7 +390,7 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
 
         # Handle continuations inheriting the same book and possibly chapter.
         # Supports:
-        # - Semicolon or comma followed by a new chapter (Arabic or Roman), e.g.,
+        # - Semicolon or comma followed by a new chapter (Arabic or Roman), e.g.
         #   "Ps.
         #   xxxi. 16, lxvii. 1, cxix. 135" or "John 3:16; 4:5".
         # - Semicolon and verse-only for one-chapter continuation within the same book, e.g.
@@ -445,8 +465,8 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
             else:
                 break
 
-            verses2 = re.sub(rf"^{_WS}+", "", verses2)
-            verses2 = re.sub(rf"(?:{_WS}|[)\];:.,\"'“”‘’])+$", "", verses2)
+            verses2 = _RE_STRIP_WS_START.sub("", verses2)
+            verses2 = _RE_STRIP_WS_PUNC_END.sub("", verses2)
 
             if verses2:
                 references.append(
@@ -496,7 +516,7 @@ def lookup_scripture(bible_data: Dict[str, Any], book: str, chapter: int, verses
     for raw_part in verses.split(','):
         part = raw_part.strip().replace("–", "-").replace("—", "-")
         # Collapse multiple hyphens to a single hyphen so "29--" becomes "29-"
-        part = re.sub(r"-{2,}", "-", part)
+        part = _RE_DOUBLE_HYPHEN.sub("-", part)
 
         if '-' in part:
             start_s, end_s = part.split('-', 1)

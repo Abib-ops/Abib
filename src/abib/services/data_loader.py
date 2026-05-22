@@ -21,6 +21,7 @@ class BibleData:
     KJB_PCE_LASTLINE: int
     EOTNOC: str
     Amap: List[Any]
+    Amap_rev: Dict[int, int]
     Ps119: List[int]
     P119: List[Any]
     book_bounds: List[int]
@@ -30,9 +31,7 @@ class BibleData:
 @dataclass
 class SearchData:
     Rnew: Tuple[str, ...]
-    Rdic: Dict[int, str]
     Rlow: Tuple[str, ...]
-    Ldic: Dict[int, str]
     Rstp: Tuple[str, ...]
     Rlsp: Tuple[str, ...]
     stripped_dict: Dict[str, Any]
@@ -82,6 +81,7 @@ class DataLoader:
         # Amap
         Amap_raw = sh.readfile("Amap.txt", sh.EOF_AMAP, self.base_dir)
         Amap = Amap_raw[17:]
+        Amap_rev = {int(ln): cp for cp, ln in enumerate(Amap)}
 
         # Psalm 119 helpers
         Ps119: List[int] = [
@@ -120,7 +120,7 @@ class DataLoader:
             KJV=KJV,
             KJB_PCE_LASTLINE=KJB_PCE_LASTLINE,
             EOTNOC=EOTNOC,
-            Amap=Amap,
+            Amap=Amap, Amap_rev=Amap_rev,
             Ps119=Ps119,
             P119=P119,
             book_bounds=book_bounds,
@@ -138,10 +138,8 @@ class DataLoader:
         base: Path = self.base_dir
 
         Rnew = tuple(fcs.readio("PCE-find.txt", sh.EOF_BIBLE_TEXT))
-        Rdic = dict(enumerate(Rnew))
 
         Rlow = tuple(fcs.readio("PCE-lower.txt", sh.EOF_BIBLE_TEXT))
-        Ldic = dict(enumerate(Rlow))
 
         Rstp = tuple(fcs.readio("PCE-stripped.txt", sh.EOF_BIBLE_TEXT))
         Rlsp = tuple(fcs.readio("PCE-stripped_lower.txt", sh.EOF_BIBLE_TEXT))
@@ -156,9 +154,7 @@ class DataLoader:
 
         self._search = SearchData(
             Rnew=Rnew,
-            Rdic=Rdic,
             Rlow=Rlow,
-            Ldic=Ldic,
             Rstp=Rstp,
             Rlsp=Rlsp,
             stripped_dict=stripped_dict,
