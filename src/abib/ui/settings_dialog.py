@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from PySide6.QtWidgets import (
     QDialog,
@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QLabel,
     QSpinBox,
+    QSplashScreen,
 )
 from PySide6.QtGui import QPixmap
 from PySide6.QtCore import QThreadPool, QRunnable
@@ -40,7 +41,15 @@ class SettingsDialog(QDialog):
         # Load window geometry from settings
         try:
             gx, gy, gw, gh = self.settings_service.get_window_geometry("settings_window")
-            self.setGeometry(gx, gy, gw, gh)
+            # If the coordinates are the default (100, 100), center the window instead
+            if gx == 100 and gy == 100:
+                from abib.utils import ui as ui_utils
+                cx, cy = ui_utils.center_on_screen(gw, gh)
+                self.setGeometry(cx, cy, gw, gh)
+                # Save the centered position immediately so it's remembered as "moveable" from there
+                self.settings_service.save_window_geometry("settings_window", cx, cy, gw, gh)
+            else:
+                self.setGeometry(gx, gy, gw, gh)
         except (RuntimeError, TypeError, ValueError, AttributeError):
             self.resize(400, 500)
 
@@ -185,7 +194,7 @@ class SettingsDialog(QDialog):
             return
 
         try:
-            update_available, version, exe_url = result
+            update_available, new_version, new_exe_url = result
         except (TypeError, ValueError):
             return
 
@@ -193,10 +202,10 @@ class SettingsDialog(QDialog):
             return
 
         try:
-            QThreadPool.globalInstance().start(_RunPerformUpdate(version, exe_url))
+            QThreadPool.globalInstance().start(_RunPerformUpdate(new_version, new_exe_url))
         except (RuntimeError, TypeError):
             try:
-                _perform_update(version, exe_url)
+                _perform_update(new_version, new_exe_url)
             except (OSError, RuntimeError, ValueError):
                 pass
 
@@ -251,6 +260,9 @@ class SettingsDialog(QDialog):
             self.main_window.settings["devotional_font_size"] = bible_size
             self.main_window.settings["gill_font_size"] = bible_size
 
+        # Save current position before final settings save
+        self._save_current_geometry()
+
         # Save settings
         self.settings_service.save(self.main_window.settings)
 
@@ -281,48 +293,71 @@ class SettingsDialog(QDialog):
 
         self.accept()
 
-    def _update_splash_visibility(self, prev_show: bool, new_show: bool) -> None:
+    @staticmethod
+    def _update_splash_visibility(prev_show: bool, new_show: bool) -> None:
         from abib import Abib
+        from PySide6.QtWidgets import QWidget
         # Access module-level globals from Abib
-        
+
         # Turning splash OFF
         if prev_show and not new_show:
             try:
-                if Abib.splash is not None:
+                # Capture and type-hint splash screen instance locally
+                splash_obj: Any = getattr(Abib, 'splash', None)
+                if splash_obj is not None and isinstance(splash_obj, QSplashScreen):
+                    # Local reference is now narrowed to QSplashScreen
                     try:
-                        from PySide6.QtWidgets import QWidget
-                        w = Abib.w
-                        assert w is not None
-                        assert isinstance(w, QWidget)
-                        Abib.splash.finish(w)
+                        # Capture main window instance locally
+                        win_obj: Any = getattr(Abib, 'w', None)
+                        if win_obj is not None and isinstance(win_obj, QWidget):
+                            # Both splash_obj and win_obj are verified non-None and of correct type
+                            splash_obj.finish(win_obj)
+                        else:
+                            # Fallback if window is not available
+                            splash_obj.close()
                     except (RuntimeError, AttributeError, TypeError, AssertionError):
-                        getattr(Abib.splash, 'close', lambda: None)()
+                        try:
+                            splash_obj.close()
+                        except (RuntimeError, AttributeError):
+                            pass
                 Abib.splash = None
             except (RuntimeError, AttributeError, ImportError):
                 pass
-        
+
         # Turning splash ON
         if (not prev_show) and new_show:
             try:
-                if Abib.splash is None:
+                if getattr(Abib, 'splash', None) is None:
                     splash_path = sh.images_dir / "Abib_barley.png"
                     pix = QPixmap(str(splash_path))
-                    from PySide6.QtWidgets import QSplashScreen
-                    Abib.splash = QSplashScreen(pix)
-                    Abib.splash.show()
+                    new_splash = QSplashScreen(pix)
+                    new_splash.show()
+                    Abib.splash = new_splash
             except (RuntimeError, AttributeError):
                 pass
 
-    def closeEvent(self, event):
+    def _save_current_geometry(self):
+        """Helper to capture and persist the current dialog geometry."""
         try:
-            geometry = self.geometry()
+            geom = self.geometry()
             self.settings_service.save_window_geometry(
                 "settings_window",
-                geometry.x(),
-                geometry.y(),
-                geometry.width(),
-                geometry.height(),
+                geom.x(),
+                geom.y(),
+                geom.width(),
+                geom.height(),
             )
         except (RuntimeError, TypeError, ValueError, AttributeError):
             pass
+
+    def moveEvent(self, event):
+        self._save_current_geometry()
+        super().moveEvent(event)
+
+    def resizeEvent(self, event):
+        self._save_current_geometry()
+        super().resizeEvent(event)
+
+    def closeEvent(self, event):
+        self._save_current_geometry()
         super().closeEvent(event)

@@ -8,11 +8,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.12
+Abib v417.13
 ------------
 
 Changelog.
 ------------
+Abib v417.13
+- The positioning of the Settings window was changed.
+
 Abib v417.12
 - Bugfix: The ValueError caused by using list lookups in a tuple of tuples
   was fixed by changing all `sh.Info.index([...])` calls to use tuples
