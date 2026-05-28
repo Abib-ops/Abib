@@ -381,6 +381,7 @@ class MainWindow(QMainWindow):
         self.textEditor: Any = NoZoomPlainTextEdit()
         # Predeclare actions bundle to satisfy linters (assigned in initui)
         self.actions_bundle = None
+        self.search_results_dock: Any = None
         
         # Theme manager (extract dark mode logic)
         # Initialise 'ThemeManager' based on persisted settings
@@ -578,6 +579,7 @@ class MainWindow(QMainWindow):
         container: QWidget = QWidget()
         container.setLayout(grid)
         self.setCentralWidget(container)
+        self._setup_search_results_panel()
         self.display_verse_input.setFocus()
 
         self.statusBar = QStatusBar()
@@ -589,6 +591,81 @@ class MainWindow(QMainWindow):
 
         self.secondary_window = None
         self.set_theme(self.settings)
+
+    def _setup_search_results_panel(self) -> None:
+        """Create the dockable Search Results panel."""
+        from abib.ui.search_results import SearchResultsDock  # deferred import
+
+        self.search_results_dock = SearchResultsDock(self)
+        self.search_results_dock.resultActivated.connect(self._on_search_result_activated)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.search_results_dock)
+        self.search_results_dock.hide()
+
+    def _update_search_results_panel(self) -> None:
+        """Populate the Search Results panel from the current search state."""
+        dock = self.search_results_dock
+        if dock is None:
+            return
+        if self.dlg is None or self.occurring == 0 or not self.occurs:
+            dock.clear_results()
+            dock.hide()
+            return
+
+        from abib.ui.search_results import SearchResult, format_reference, highlight_result_text, result_verse_text
+
+        search_text = self.keym or self.key
+        search_mode = self.dlg.checks[0]
+        case_sensitive = self.dlg.checks[1] == 1
+        results: list[SearchResult] = []
+        for current_position in self.occurs:
+            try:
+                verse_text = result_verse_text(current_position, KJV, Amap)
+                reference = format_reference(current_position, sh.Info, self.nwin, sh.onechapterbooks)
+            except (IndexError, TypeError, ValueError):
+                continue
+            html_text = highlight_result_text(verse_text, search_text, search_mode, case_sensitive)
+            results.append(SearchResult(current_position, reference, verse_text, html_text))
+
+        if results:
+            dock.set_results(results, search_text)
+            dock.show()
+            dock.raise_()
+        else:
+            dock.clear_results()
+            dock.hide()
+
+    def _sync_search_state_for_result(self, current_position: int) -> None:
+        """Make the current search state match a clicked result verse."""
+        try:
+            verse_index = self.occurs.index(current_position)
+        except ValueError:
+            return
+
+        self.verse = verse_index
+        if self.dlg is not None and self.dlg.checks[0] in (3, 4):
+            self.finding = 0
+            self.occurrence = verse_index + 1
+        else:
+            self.finding = 0
+            self.occurrence = 0
+            for prior_spans in self.occur[:verse_index]:
+                self.occurrence += len(prior_spans)
+            if verse_index < len(self.occur) and self.occur[verse_index]:
+                self.occurrence += 1
+
+        if verse_index < len(self.occur) and self.occur[verse_index]:
+            self.occur[verse_index].sort(key=lambda _x: _x[0])
+            self.y = self.occur[verse_index][0][0]
+            self.yend = self.occur[verse_index][0][1]
+
+    def _on_search_result_activated(self, current_position: int) -> None:
+        """Jump to the clicked search result."""
+        current_line = self.get_line_number()
+        if current_line != current_position:
+            forward.clear()
+            history.back_push(w, current_line)
+        self._sync_search_state_for_result(current_position)
+        self.display_verse_from_history(current_position)
 
     def _setup_input_fields(self) -> None:
         self.display_verse_input: QLineEdit = QLineEdit()
@@ -1736,6 +1813,7 @@ class MainWindow(QMainWindow):
             exit()
         if not error_flag:
             self.goto_line_find(current_position)
+        self._update_search_results_panel()
 
     def iterate_regex(self, r: tuple, x1: int, x2: int) -> None:
         """Iterate over R and find all the occurrences of key(s) in liszt."""
@@ -1775,11 +1853,33 @@ class MainWindow(QMainWindow):
         assert w is not None
         win: Any = w
 
+        win.occurs = []
+        win.occur = []
+
         # Count occurrences inclusively within the provided limits [x1, x2]
         if self.dlg.checks[1] == 1:  # Match case
-            win.occurring += sum(Rnew[_].count(win.key) for _ in range(x1, x2 + 1))
+            source = Rnew
+            search_key = win.key
         elif self.dlg.checks[1] == 0:  # Lower case
-            win.occurring += sum(Rlow[_].count(keylow) for _ in range(x1, x2 + 1))
+            source = Rlow
+            search_key = keylow
+        else:
+            source = Rnew
+            search_key = win.key
+
+        for i in range(x1, x2 + 1):
+            coordinate = []
+            start_search = 0
+            while True:
+                y = source[i].find(search_key, start_search)
+                if y == -1:
+                    break
+                coordinate.append((y, y + len(search_key)))
+                win.occurring += 1
+                start_search = y + 1
+            if coordinate:
+                win.occur.append(coordinate)
+                win.occurs.append(i)
 
         if win.occurring != 0:
             win.occurrence = 0
