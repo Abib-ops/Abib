@@ -70,6 +70,7 @@ def findf3_ww_all(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list:
             continue
         win.occurs.append(i)
     iterate_list(liszt, r_list, win)
+    win.occurring = len(win.occurs)
 
 def findf3_ww_any(x1: int, x2: int, _set: Dict[str, Set], r_list: list, win: MainWindow) -> None:
     """Find any of the words."""
@@ -81,6 +82,7 @@ def findf3_ww_any(x1: int, x2: int, _set: Dict[str, Set], r_list: list, win: Mai
     win.occurs = sorted([i for i in s if x1 <= i <= x2])
     win.occur = []
     check_count_sort(liszt, r_list, win)
+    win.occurring = len(win.occurs)
 
 def check_count_sort(liszt: list[str], r_list: list, win: MainWindow) -> None:
     """Check matched words are whole, count and sort win.occurs (Any)."""

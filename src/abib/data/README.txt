@@ -8,11 +8,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.13
+Abib v417.14
 ------------
 
 Changelog.
 ------------
+Abib v417.14
+- Version has corrected 'Find' bugbixes and minor improvements.
+
 Abib v417.13
 - The positioning of the Settings window was changed.
 

@@ -41,10 +41,10 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.1 and python3.14.5 (64-bit).
 
-23/05/2026
+28/05/2026
 
 # Automatically upgrade all packages to their latest versions
-uv sync --upgrade
+uv sync --all-extras --upgrade
 
 ----------------------------------------------------------------------------------------------------------------
 Linux users — a sincere apology and quick guidance
@@ -205,6 +205,17 @@ def get_next_occurrence() -> int:
     assert w is not None
     # 1. Create a local reference with a type hint to satisfy the linter
     win: Any = w
+
+    if win.dlg is not None and win.dlg.checks[0] in (3, 4):
+        current_position = win.occurs[win.verse]
+        win.finding = 0
+        if win.occur[win.verse]:
+            win.occur[win.verse].sort(key=lambda _x: _x[0])
+            win.y = win.occur[win.verse][0][0]
+            win.yend = win.occur[win.verse][0][1]
+        win.occurrence += 1
+        win.statusBar.showMessage(win.nav.get_status_message(current_position))
+        return current_position
 
     # 2. Use the local reference 'win' for all attribute access and assignments
     current_position = win.occurs[-1]
@@ -1818,6 +1829,8 @@ class MainWindow(QMainWindow):
         current_position: int = 0  # Pointer to the first verse with the searched for key.
         if numwords == 1:
             self.find_whole_word_single(x1, x2, set_, r_list)   # Match the whole single word.
+            if self.dlg.checks[0] in (3, 4):
+                win.occurring = len(win.occurs)
             if win.occurring != 0:
                 win.occurrence = 0
                 win.verse = 0
@@ -1836,11 +1849,7 @@ class MainWindow(QMainWindow):
                 _, win.key = fcs.any_of_the_words_lookup(win.key, set_)
                 findf3_ww_any(x1, x2, set_, r_list, self)
             if win.occurring != 0:
-                if self.dlg.checks[0] != 2:     # Not whole words
-                    current_position = win.occurs[0]
-                    win.occurrence = 1
-                    win.statusBar.showMessage(win.nav.get_status_message(current_position))
-                elif self.dlg.checks[0] == 2:   # Whole words
+                if self.dlg.checks[0] in (2, 3, 4):
                     win.occurrence = 0
                     win.verse = 0
                     win.finding = -1
@@ -1953,14 +1962,12 @@ class MainWindow(QMainWindow):
                 forward.clear()
                 history.back_push(w, current_position)
 
-            if self.dlg.checks[0] == 2 or self.dlg.checks[2] == 6:
+            if self.dlg.checks[0] in (3, 4):
+                win.verse += 1
+                current_position = win.occurs[win.verse]
+                win.finding = -1
+            if self.dlg.checks[0] in (2, 3, 4) or self.dlg.checks[2] == 6:
                 current_position = get_next_occurrence()
-            elif self.dlg.checks[0] == 3 or self.dlg.checks[0] == 4:
-                if win.verse < len(win.occurs) - 1:
-                    win.verse += 1
-                    current_position = win.occurs[win.verse]
-                    win.occurrence += 1
-                    win.statusBar.showMessage(win.nav.get_status_message(current_position))
 
             if win.message:
                 self.statusBar.showMessage(win.message)
@@ -2044,14 +2051,9 @@ class MainWindow(QMainWindow):
         win: Any = w
 
         add = 0
-        if self.dlg.checks[0] == 3 or self.dlg.checks[0] == 4:
-            win.occur[win.verse].sort(key=lambda _x: _x[0])
-            win.y = win.occur[win.verse][0][0]
-            lenoccur = len(win.occur[win.verse])
-            win.yend = win.occur[win.verse][lenoccur - 1][1]
-            win.key = Rstp[_x][win.y:win.yend]
-            lkey = len(win.key)
-        elif self.dlg.checks[2] == 6:
+        # In multi-word modes (3 and 4) we highlight individual spans; rely on provided win.key and win.y
+        if self.dlg.checks[2] == 6:
+            # File/other view mode uses explicit y/yend
             lkey = win.yend - win.y
             win.hiLita.length = lkey
         else:
@@ -2164,6 +2166,7 @@ class MainWindow(QMainWindow):
             if self.dlg is not None:
                 if self.dlg.checks[0] == 3 or self.dlg.checks[0] == 4:
                     win.store = win.key
+                    saved_y = win.y
                     win.hiLita.clear = False
                     keys = sorted(win.occur[win.verse])
                     current_position = Amap_rev[ln]
@@ -2172,8 +2175,11 @@ class MainWindow(QMainWindow):
                         win.key = '+' * (i[1] - i[0])
                         win.y = i[0]
                         self.adjust_highlighting(ln, current_position)
+                        pos = win.y + win.hiLita.lineinc
+                        length = len(win.key) + win.hiLita.keyinc
+                        win.hiLita.add_multi_highlight(ln, pos, length)
+                    win.y = saved_y
 
-            win.hiLita.setFormat(win.hiLita.position, win.hiLita.length, fmt)
             win.hiLita.highlight_line(ln, fmt)
         except ValueError:
             pass
@@ -2192,16 +2198,20 @@ class MainWindow(QMainWindow):
         if current_position in starts_with_italics:  # Verses that start with italics.
             win.hiLita.keyinc = 1
 
+        if self.dlg is not None and self.dlg.checks[0] in (3, 4):
+            try:
+                win.verse = win.occurs.index(current_position)
+                win.finding = 0
+                win.occurrence = win.verse + 1
+                if win.occur[win.verse]:
+                    win.occur[win.verse].sort(key=lambda _x: _x[0])
+                    win.y = win.occur[win.verse][0][0]
+                    win.yend = win.occur[win.verse][0][1]
+            except (ValueError, IndexError):
+                pass
+
         self.textEditor.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
-        fmt = QTextCharFormat()
-        assert linehighlightcolor is not None
-        assert linetextcolor is not None
-        fmt.setBackground(QColor(linehighlightcolor))
-        fmt.setForeground(QColor(linetextcolor))
-        win.hiLita.clear = True
-        win.hiLita.clear_highlight()
-        win.hiLita.setFormat(win.hiLita.position, win.hiLita.length, fmt)
-        win.hiLita.highlight_line(ln, fmt)
+        self.on_text_changed(ln)
         ln = make_offset(ln)
         linecursor = QTextCursor(
             self.textEditor.document().findBlockByLineNumber(ln))

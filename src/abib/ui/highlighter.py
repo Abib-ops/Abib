@@ -15,6 +15,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         """Initialise highlighter."""
         super(SyntaxHighlighter, self).__init__(parent)
         self._highlight_lines: dict[int, QTextCharFormat] = {}
+        self._multi_highlights: dict[int, list[tuple[int, int]]] = {}
         self.lineinc = 0
         self.keyinc = 0
         self.position = 0
@@ -31,11 +32,18 @@ class SyntaxHighlighter(QSyntaxHighlighter):
             block = self.document().findBlockByLineNumber(line_num)
             self.rehighlightBlock(block)
 
+    def add_multi_highlight(self, line_num: int, pos: int, length: int) -> None:
+        """Add multiple highlight ranges for a line."""
+        if line_num not in self._multi_highlights:
+            self._multi_highlights[line_num] = []
+        self._multi_highlights[line_num].append((pos, length))
+
     def clear_highlight(self) -> None:
         """Clear highlight."""
 
         if self.clear:
             self._highlight_lines = {}
+            self._multi_highlights = {}
             self.rehighlight()
 
     def highlightBlock(self, text: str) -> None:
@@ -63,14 +71,18 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         blockNumber = self.currentBlock().blockNumber()
         self.fmt = self._highlight_lines.get(blockNumber)
         if self.fmt is not None:
-            # noinspection PyTypeChecker
-            self.position = win.y + self.lineinc
-            if win.dlg is not None:
-                if win.dlg.checks[2] != 6:
-                    self.length = len(win.key) + self.keyinc
-                else:
-                    self.length += self.keyinc
+            if blockNumber in self._multi_highlights:
+                for pos, length in self._multi_highlights[blockNumber]:
+                    self.setFormat(pos, length, self.fmt)
             else:
-                self.length = len(win.key) + self.keyinc
-            self.setFormat(self.position, self.length, self.fmt)
+                # noinspection PyTypeChecker
+                self.position = win.y + self.lineinc
+                if win.dlg is not None:
+                    if win.dlg.checks[2] != 6:
+                        self.length = len(win.key) + self.keyinc
+                    else:
+                        self.length += self.keyinc
+                else:
+                    self.length = len(win.key) + self.keyinc
+                self.setFormat(self.position, self.length, self.fmt)
             # print(f'Block {blockNumber} {KJV[blockNumber]}')

@@ -45,7 +45,7 @@ def _get_version() -> str:
             continue
             
     # 2. Hardcoded fallback (should be updated per release)
-    return "416.12"
+    return "417.14"
 
 CURRENT_VERSION = _get_version()
 
@@ -189,6 +189,6 @@ onechapterbooks: set[int] = {30, 56, 62, 63, 64}
 
 # Read Info.txt
 Inf: list = readfile("Info.txt", EOF_INFO)
-# Skip first 17 lines and parse each verse index [book, chapter, verse].
+# Skip the first 17 lines and parse each verse index [book, chapter, verse].
 # Manual string slicing and splitting is faster than json.loads for this simple format.
 Info = tuple(tuple(int(x) for x in line[1:-1].split(',')) for line in Inf[17:EOF_INFO])
