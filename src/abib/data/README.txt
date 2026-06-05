@@ -8,11 +8,22 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.15
+Abib v417.16
 ------------
 
 Changelog.
-------------
+Abib v417.16
+
+pywin32 upgraded from 311 to 312.
+idna from 3.16 to 3.18.
+
+Some changes to the way that "Find" works with "Any of the words", so that
+some common words may be ignored. Please be aware that complex searches
+with many words may require a waiting period before the results are shown.
+
+This version may still contain bugs that I am not aware of, but I believe it
+to be better than the previous version. More work will continue by His grace.
+
 Abib v417.15
 Search Results panel introduced.
 

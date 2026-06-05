@@ -18,6 +18,14 @@ from abib import utils
 import re
 
 
+ANY_OF_WORDS_IGNORED_WORDS = {
+    "a", "an", "and", "are", "as", "at", "be", "but", "by", "for", "from",
+    "had", "has", "have", "he", "her", "his", "i", "in", "is", "it", "its",
+    "not", "of", "on", "or", "that", "the", "their", "them", "they", "this",
+    "to", "was", "were", "which", "with", "ye", "you",
+}
+
+
 def get_screen_size() -> tuple[int, int]:
     """Get the primary screen dimensions."""
     return utils.get_screen_size()
@@ -109,10 +117,15 @@ def any_of_the_words_lookup(_key: str, _set: dict[str, set]) -> tuple[int, str]:
 
     liszt: list[str] = _key.split(' ')
 
-    # Uses a set to eliminate duplicates, keep words found in '_set'
-    unique_words = set(word for word in liszt if word in _set)
+    # Uses a set to eliminate duplicates, keep words found in '_set', and skip
+    # very common words that can make an "Any of the words" search return almost
+    # every verse.
+    unique_words = {
+        word for word in liszt
+        if word in _set and word.lower() not in ANY_OF_WORDS_IGNORED_WORDS
+    }
 
-    _key = ' '.join(unique_words)  # join the set into a string
+    _key = ' '.join(sorted(unique_words))  # join the set into a string
 
     number_of_occurrences = len(unique_words)  # count the number of unique words
 

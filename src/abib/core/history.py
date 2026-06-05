@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any, List, Tuple
 
 
@@ -25,6 +26,7 @@ class History:
         return (
             win.current_position if hasattr(win, "current_position") else 0,
             win.y,
+            win.yend,
             win.hiLita.lineinc,
             win.hiLita.keyinc,
             win.hiLita.fmt,
@@ -32,8 +34,14 @@ class History:
             win.no_f3_yet,
             win.occurring,
             win.occurrence,
+            win.verse,
+            win.finding,
             win.key,
             win.keym,
+            win.store,
+            deepcopy(win.occurs),
+            deepcopy(win.occur),
+            deepcopy(win.count),
             getattr(win, "dlg", None),
         )
 
@@ -48,6 +56,7 @@ class History:
         return (
             current_position,
             win.y,
+            win.yend,
             win.hiLita.lineinc,
             win.hiLita.keyinc,
             win.hiLita.fmt,
@@ -55,8 +64,14 @@ class History:
             win.no_f3_yet,
             win.occurring,
             win.occurrence,
+            win.verse,
+            win.finding,
             win.key,
             win.keym,
+            win.store,
+            deepcopy(win.occurs),
+            deepcopy(win.occur),
+            deepcopy(win.count),
             getattr(win, "dlg", None),
         )
 
@@ -65,16 +80,35 @@ class History:
         """Restore a window state from a snapshot tuple and return position."""
         current_position = saving[0]
         win.y = saving[1]
-        win.hiLita.lineinc = saving[2]
-        win.hiLita.keyinc = saving[3]
-        win.hiLita.fmt = saving[4]
-        win.hiLita.length = saving[5]
-        win.no_f3_yet = saving[6]
-        win.occurring = saving[7]
-        win.occurrence = saving[8]
-        win.key = saving[9]
-        win.keym = saving[10]
-        win.dlg = saving[11]
+        if len(saving) == 12:
+            win.hiLita.lineinc = saving[2]
+            win.hiLita.keyinc = saving[3]
+            win.hiLita.fmt = saving[4]
+            win.hiLita.length = saving[5]
+            win.no_f3_yet = saving[6]
+            win.occurring = saving[7]
+            win.occurrence = saving[8]
+            win.key = saving[9]
+            win.keym = saving[10]
+            win.dlg = saving[11]
+            return current_position
+        win.yend = saving[2]
+        win.hiLita.lineinc = saving[3]
+        win.hiLita.keyinc = saving[4]
+        win.hiLita.fmt = saving[5]
+        win.hiLita.length = saving[6]
+        win.no_f3_yet = saving[7]
+        win.occurring = saving[8]
+        win.occurrence = saving[9]
+        win.verse = saving[10]
+        win.finding = saving[11]
+        win.key = saving[12]
+        win.keym = saving[13]
+        win.store = saving[14]
+        win.occurs = deepcopy(saving[15])
+        win.occur = deepcopy(saving[16])
+        win.count = deepcopy(saving[17])
+        win.dlg = saving[18]
         return current_position
 
     def _push(self, stack: List[Tuple[Any, ...]], win, current_position: int) -> None:

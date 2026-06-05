@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.1 and python3.14.5 (64-bit).
 
-28/05/2026
+05/06/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --all-extras --upgrade
@@ -2058,7 +2058,6 @@ class MainWindow(QMainWindow):
                     b_ = forward.pop()
                     back.append(b_)
             else:
-                current_position = win.occurs[win.verse]
                 forward.clear()
                 history.back_push(w, current_position)
 
@@ -2261,26 +2260,32 @@ class MainWindow(QMainWindow):
 
         win.hiLita.clear = True
         win.hiLita.clear_highlight()
+        should_highlight = True
 
         try:
             if self.dlg is not None:
                 if self.dlg.checks[0] == 3 or self.dlg.checks[0] == 4:
+                    should_highlight = False
                     win.store = win.key
                     saved_y = win.y
-                    win.hiLita.clear = False
-                    keys = sorted(win.occur[win.verse])
                     current_position = Amap_rev[ln]
-                    for i in keys:
-                        assert isinstance(i, (list, tuple))
-                        win.key = '+' * (i[1] - i[0])
-                        win.y = i[0]
-                        self.adjust_highlighting(ln, current_position)
-                        pos = win.y + win.hiLita.lineinc
-                        length = len(win.key) + win.hiLita.keyinc
-                        win.hiLita.add_multi_highlight(ln, pos, length)
+                    if (0 <= win.verse < len(win.occurs) and win.verse < len(win.occur)
+                            and win.occurs[win.verse] == current_position):
+                        should_highlight = True
+                        win.hiLita.clear = False
+                        keys = sorted(win.occur[win.verse])
+                        for i in keys:
+                            assert isinstance(i, (list, tuple))
+                            win.key = '+' * (i[1] - i[0])
+                            win.y = i[0]
+                            self.adjust_highlighting(ln, current_position)
+                            pos = win.y + win.hiLita.lineinc
+                            length = len(win.key) + win.hiLita.keyinc
+                            win.hiLita.add_multi_highlight(ln, pos, length)
                     win.y = saved_y
 
-            win.hiLita.highlight_line(ln, fmt)
+            if should_highlight:
+                win.hiLita.highlight_line(ln, fmt)
         except ValueError:
             pass
 
@@ -2350,9 +2355,26 @@ class MainWindow(QMainWindow):
                 pass
             return
 
-        b, c, v = self.nav.get_current_bcv()
-        # Note: previous usage of a local 'pos' (global verse index) was removed to satisfy linters
-        # since we look up commentary by (book, chapter, verse) only.
+        try:
+            current_position = int(self.get_line_number())
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            try:
+                current_position = int(self._last_bible_position)
+            except (AttributeError, TypeError, ValueError):
+                current_position = 0
+        if current_position < 0:
+            current_position = 0
+        if current_position > sh.LAST_VERSE_IN_BIBLE:
+            current_position = sh.LAST_VERSE_IN_BIBLE
+        try:
+            entry = sh.Info[current_position]
+            b = int(entry[0]) + 1
+            c = int(entry[1]) + 1
+            v = int(entry[2]) + 1
+            self._last_bible_position = current_position
+            self._last_context_position = current_position
+        except (IndexError, TypeError, ValueError):
+            b, c, v = self.nav.get_current_bcv()
 
         # Lazily create the window
         if self._gill_win is None:
@@ -2396,10 +2418,10 @@ class MainWindow(QMainWindow):
         """Move the display to the line requested."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        reset_attributes()
         current_position: int = self.get_line_number()
         forward.clear()
         history.back_push(w, current_position)
+        reset_attributes()
         if not ref:
             ref = self.display_verse_input.text()
             # print(f"ref: {ref}")
@@ -2427,10 +2449,10 @@ class MainWindow(QMainWindow):
         win: Any = w
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        reset_attributes()
         current_position = self.get_line_number()
         forward.clear()
         history.back_push(w, current_position)
+        reset_attributes()
         book: int = self.comboBox_1.currentIndex()
         # book is an index 0-65
         if book == sh.BOOKS_IN_THE_BIBLE - 1:
@@ -2465,6 +2487,9 @@ class MainWindow(QMainWindow):
         win: Any = w
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
+        current_position: int = self.get_line_number()
+        forward.clear()
+        history.back_push(w, current_position)
         reset_attributes()
         book: int = self.comboBox_1.currentIndex()
         chapter: int = self.comboBox_2.currentIndex()
@@ -2507,6 +2532,9 @@ class MainWindow(QMainWindow):
         win: Any = w
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
+        current_position: int = self.get_line_number()
+        forward.clear()
+        history.back_push(w, current_position)
         reset_attributes()
         book: int = self.comboBox_1.currentIndex()
         chapter: int = self.comboBox_2.currentIndex()
@@ -2789,40 +2817,40 @@ class MainWindow(QMainWindow):
         """Move to the earlier book."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        reset_attributes()
         current_position: int = self.get_line_number()
         book: int = sh.Info[current_position][0]
         newbook: int = book - 1
         if newbook < 0:
             self.on_error('No earlier book!', 3000, True)
         else:
-            current_position = sh.Info.index((newbook, 0, 0))
             forward.clear()
             history.back_push(w, current_position)
+            reset_attributes()
+            current_position = sh.Info.index((newbook, 0, 0))
             self.display_verse(current_position)
 
     def later_book(self) -> None:
         """Move to the later book."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        reset_attributes()
         current_position: int = self.get_line_number()
         book: int = sh.Info[current_position][0]
         newbook: int = book + 1
         if newbook > sh.BOOKS_IN_THE_BIBLE - 1:
             self.on_error('No later book!', 3000, True)
         else:
-            current_position = sh.Info.index((newbook, 0, 0))
             forward.clear()
             history.back_push(w, current_position)
+            reset_attributes()
+            current_position = sh.Info.index((newbook, 0, 0))
             self.display_verse(current_position)
 
     def earlier_chapter(self) -> None:
         """Move to the earlier chapter."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        reset_attributes()
         current_position: int = self.get_line_number()
+        old_position = current_position
         book: int = sh.Info[current_position][0]
         chapter: int = sh.Info[current_position][1]
         newchapter: int = chapter - 1
@@ -2840,15 +2868,16 @@ class MainWindow(QMainWindow):
             book = newbook
         current_position = sh.Info.index((book, newchapter, 0))
         forward.clear()
-        history.back_push(w, current_position)
+        history.back_push(w, old_position)
+        reset_attributes()
         self.display_verse(current_position)
 
     def later_chapter(self) -> None:
         """Move to the later chapter."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        reset_attributes()
         current_position: int = self.get_line_number()
+        old_position = current_position
         book: int = sh.Info[current_position][0]
         chapter: int = sh.Info[current_position][1]
         newchapter: int = chapter + 1
@@ -2868,7 +2897,8 @@ class MainWindow(QMainWindow):
             book = newbook
         current_position = sh.Info.index((book, newchapter, 0))
         forward.clear()
-        history.back_push(w, current_position)
+        history.back_push(w, old_position)
+        reset_attributes()
         self.display_verse(current_position)
 
     def on_error(self, message: str, millisecond_delay: int, clearbool: bool) -> None:

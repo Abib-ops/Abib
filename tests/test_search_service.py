@@ -7,6 +7,7 @@
 from types import SimpleNamespace
 from typing import TYPE_CHECKING, cast
 
+from abib.core.fcs import any_of_the_words_lookup
 from abib.services.search_service import findf3_ww_all, findf3_ww_any
 
 if TYPE_CHECKING:
@@ -54,3 +55,30 @@ def test_any_words_counts_matching_verses_not_individual_words():
     assert win.occurs == [3, 0, 2, 1]
     assert win.occurring == 4
     assert [len(spans) for spans in win.occur] == [4, 3, 2, 1]
+
+
+def test_any_words_lookup_ignores_common_words():
+    lookup = {
+        "the": {0, 1, 2, 3},
+        "and": {0, 2},
+        "covenant": {1},
+        "mercy": {2},
+    }
+
+    count, key = any_of_the_words_lookup("the covenant and mercy", lookup)
+
+    assert count == 2
+    assert key == "covenant mercy"
+
+
+def test_any_words_lookup_rejects_all_common_words():
+    lookup = {
+        "the": {0, 1, 2, 3},
+        "and": {0, 2},
+        "of": {1, 3},
+    }
+
+    count, key = any_of_the_words_lookup("the and of", lookup)
+
+    assert count == 0
+    assert key == ""
