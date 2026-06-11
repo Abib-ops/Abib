@@ -8,10 +8,25 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.16
+Abib v417.17
 ------------
 
 Changelog.
+Abib v417.17
+
+Python upgraded from 3.14.5 to 3.14.6 (64-bit).
+pyinstaller-hooks-contrib upgraded from 2026.5 to 2026.6.
+Dependencies refreshed via uv sync --all-extras --upgrade.
+
+Internal improvements to the automated test suite:
+- Fixed a crash (access violation) that could occur when running the full
+  test suite, caused by tests replacing the real Qt modules with mocks.
+- Tests now run against real PySide6 in headless (offscreen) mode, making
+  the suite more reliable. All 66 tests pass on Python 3.14.6.
+
+No user-facing feature changes in this release; this is a maintenance
+release to keep Abib current with the latest Python and dependencies.
+
 Abib v417.16
 
 pywin32 upgraded from 311 to 312.

@@ -7,27 +7,13 @@
 from __future__ import annotations
 import unittest
 from unittest.mock import MagicMock, patch
-import sys
 from typing import cast
 
-# Mock PySide6 BEFORE importing anything that uses it
-mock_qt = MagicMock()
-sys.modules['PySide6'] = mock_qt
-sys.modules['PySide6.QtCore'] = MagicMock()
-sys.modules['PySide6.QtGui'] = MagicMock()
-sys.modules['PySide6.QtWidgets'] = MagicMock()
+from PySide6.QtGui import QColor, QPalette
 
-# Ensure QPlainTextEdit is a class we can instantiate
-class MockQPlainTextEdit:
-    def __init__(self, *args, **kwargs): pass
-    def wheelEvent(self, event): pass
-    def setStyleSheet(self, style): pass
-
-sys.modules['PySide6.QtWidgets'].QPlainTextEdit = MockQPlainTextEdit
-
-from abib.ui.themes import ThemeManager, ThemeState  # noqa: E402
-from abib.ui.ui_helpers import NoZoomPlainTextEdit, center_on_screen, fit_to_screen  # noqa: E402
-from abib.services.settings import SettingsService  # noqa: E402
+from abib.ui.themes import ThemeManager, ThemeState
+from abib.ui.ui_helpers import NoZoomPlainTextEdit, center_on_screen, fit_to_screen
+from abib.services.settings import SettingsService
 
 class TestSettingsService(unittest.TestCase):
     def setUp(self):
@@ -139,15 +125,16 @@ class TestThemes(unittest.TestCase):
 
     def test_theme_manager_build_palettes(self):
         tm = ThemeManager()
-        # These should return objects (which are "mocks" in this test)
         dark_pal = tm._build_dark_palette()
         light_pal = tm._build_light_palette()
-        self.assertIsNotNone(dark_pal)
-        self.assertIsNotNone(light_pal)
-        
-        # Verify setColor was called (even if on mocks)
-        self.assertTrue(cast(MagicMock, dark_pal).setColor.called)
-        self.assertTrue(cast(MagicMock, light_pal).setColor.called)
+        self.assertIsInstance(dark_pal, QPalette)
+        self.assertIsInstance(light_pal, QPalette)
+
+        # Verify the key colours match the documented theme values
+        self.assertEqual(dark_pal.color(QPalette.ColorRole.Window), QColor(18, 18, 18))
+        self.assertEqual(dark_pal.color(QPalette.ColorRole.WindowText), QColor(240, 240, 240))
+        self.assertEqual(light_pal.color(QPalette.ColorRole.Window), QColor(255, 255, 255))
+        self.assertEqual(light_pal.color(QPalette.ColorRole.Text), QColor(0, 0, 0))
 
     def test_apply_to_editor_light(self):
         tm = ThemeManager(ThemeState(is_dark_mode=False))
@@ -195,39 +182,30 @@ class TestUIHelpers(unittest.TestCase):
             utils.get_screen_size = orig_get_screen_size
 
     def test_no_zoom_plain_text_edit_ignores_ctrl_wheel(self):
-        # We need to mock the event
-        event = MagicMock()
-        # Mock modifiers to contain ControlModifier
-        # In PySide6, modifiers() returns a Flag object. 
-        # Since we mocked Qt, we need to make sure the 'in' check works, or we "mock" it appropriately.
+        from PySide6.QtCore import Qt
+
         # The code uses: Qt.KeyboardModifier.ControlModifier in event.modifiers()
-        
-        # Set up the mock for event.modifiers()
-        modifiers = MagicMock()
-        # Make 'ControlModifier in modifiers' return True
-        # Since Qt is mocked, Qt.KeyboardModifier.ControlModifier is a mock.
-        # modifiers.__contains__ should return True when called with that mock.
-        modifiers.__contains__.return_value = True
-        event.modifiers.return_value = modifiers
-        
+        event = MagicMock()
+        event.modifiers.return_value = Qt.KeyboardModifier.ControlModifier
+
         edit = NoZoomPlainTextEdit()
         edit.wheelEvent(event)
-        
+
         event.ignore.assert_called_once()
-        # Should NOT call super().wheelEvent(event). 
-        # But wait, we can't easily check super() call on a mock subclass without more setup.
-        # At least we know ignore() was called.
 
     def test_no_zoom_plain_text_edit_allows_normal_wheel(self):
+        from PySide6.QtCore import Qt
+        from PySide6.QtWidgets import QPlainTextEdit
+
         event = MagicMock()
-        modifiers = MagicMock()
-        modifiers.__contains__.return_value = False
-        event.modifiers.return_value = modifiers
-        
+        event.modifiers.return_value = Qt.KeyboardModifier.NoModifier
+
         edit = NoZoomPlainTextEdit()
-        # Mocking super().wheelEvent is tricky. 
-        # Let's just ensure ignore() is NOT called.
-        edit.wheelEvent(event)
+        # Without Ctrl, the event must be passed on to the base class handler
+        with patch.object(QPlainTextEdit, 'wheelEvent') as super_wheel:
+            edit.wheelEvent(event)
+
+        super_wheel.assert_called_once_with(event)
         self.assertFalse(event.ignore.called)
 
     def test_simple_scripture_popup_theme(self):
