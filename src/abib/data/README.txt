@@ -8,10 +8,20 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.18
+Abib v417.19
 ------------
 
 Changelog.
+Abib v417.19
+
+certifi upgraded from 2026.5.20 to 2026.6.17.
+pytest upgraded from 9.1.0 to 9.1.1.
+Dependencies refreshed via uv sync --all-extras --upgrade.
+
+No user-facing feature changes in this release; this is a maintenance
+release to keep Abib current with the latest build tooling and
+dependencies. Built with Python 3.14.6 and PySide6 6.11.1 (64-bit).
+
 Abib v417.18
 
 pyinstaller upgraded from 6.20.0 to 6.21.0.

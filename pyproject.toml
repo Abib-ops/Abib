@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "abib"
-version = "417.18"
+version = "417.19"
 description = "A Bible study application"
 readme = "README.md"
 requires-python = ">=3.10"

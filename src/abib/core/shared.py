@@ -45,7 +45,7 @@ def _get_version() -> str:
             continue
             
     # 2. Hardcoded fallback (should be updated per release)
-    return "417.18"
+    return "417.19"
 
 CURRENT_VERSION = _get_version()
 
