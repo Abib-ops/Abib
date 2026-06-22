@@ -80,6 +80,72 @@ def test_active_multi_word_search_result_still_highlights(monkeypatch):
     assert highlighter.lines == [1]
 
 
+def test_raw_result_click_recomputes_highlight_offsets(monkeypatch):
+    """Reaching a Raw-search result verse must recompute lineinc/keyinc.
+
+    Regression for "cedars of Lebanon": the first match (Judges 9:15) sits
+    after several Unicode-italic characters, so the initial find sets a
+    non-zero lineinc. Clicking another result (Isaiah 2:13) previously reused
+    that stale offset and highlighted the wrong character.
+    """
+    window = SimpleNamespace()
+    # Raw search, match case.
+    window.dlg = SimpleNamespace(checks=[1, 1, 5])
+    window.hiLita = FakeHighlighter()
+    # Stale offset left over from highlighting the first match.
+    window.hiLita.lineinc = 7
+    window.hiLita.keyinc = 0
+    window.key = "cedars of Lebanon"
+    window.keym = "cedars of Lebanon"
+    window.store = "cedars of Lebanon"
+    window.occurs = [0, 1]
+    window.occur = [[(184, 201)], [(20, 37)]]
+    window.verse = 0
+    window.occurrence = 0
+    window.finding = 0
+    window.message = ""
+    # win.y already points at the clicked verse's match start (set by _sync).
+    window.y = 20
+
+    monkeypatch.setattr(app, "w", window)
+    monkeypatch.setattr(app, "Amap", [100, 200])
+    monkeypatch.setattr(app, "starts_with_italics", [])
+    monkeypatch.setattr(app, "make_offset", lambda ln: ln)
+
+    class FakeCursor:
+        class MoveOperation:
+            End = 0
+
+        def __init__(self, block=None) -> None:
+            pass
+
+    monkeypatch.setattr(app, "QTextCursor", FakeCursor)
+
+    calls: list[tuple[int, int]] = []
+
+    block = SimpleNamespace()
+    document = SimpleNamespace(findBlockByLineNumber=lambda ln: block)
+    text_editor = SimpleNamespace(
+        setLineWrapMode=lambda mode: None,
+        document=lambda: document,
+        moveCursor=lambda op: None,
+        setTextCursor=lambda cursor: None,
+    )
+
+    fake_self = SimpleNamespace(
+        dlg=window.dlg,
+        textEditor=text_editor,
+        adjust_highlighting=lambda ln, current_position: calls.append((ln, current_position)),
+        on_text_changed=lambda ln: None,
+        ref_to_statusbar=lambda current_position: None,
+    )
+
+    app.MainWindow.display_verse_from_history(cast(app.MainWindow, cast(object, fake_self)), 1)
+
+    # adjust_highlighting must be invoked for the clicked verse (ln=200).
+    assert calls == [(200, 1)]
+
+
 def test_find_next_history_uses_top_verse_shown_in_main_window(monkeypatch):
     window = SimpleNamespace()
     window.dlg = SimpleNamespace(checks=[3, 0, 5])

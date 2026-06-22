@@ -8,10 +8,30 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.19
+Abib v417.20
 ------------
 
 Changelog.
+Abib v417.20
+
+- Bugfix: Fixed Raw and Whole-words search highlighting that started at the
+  wrong character when a verse was reached by clicking it in the Search
+  Results panel (or via history navigation). For example, searching Raw for
+  "cedars of Lebanon" and then clicking the Isaiah 2:13 result highlighted
+  the wrong characters.
+- Root cause: single-highlight search modes store match positions as
+  search-text indices, which must be converted to display-text offsets. This
+  conversion previously ran only on the Find path, so the results-click /
+  history path reused stale offsets left over from the previously highlighted
+  match (the first hit follows several Unicode-italic characters, producing a
+  non-zero offset). The display-text highlight offsets are now recomputed for
+  the clicked verse, mirroring the Find path.
+- Added a regression test (test_raw_result_click_recomputes_highlight_offsets)
+  covering this case. All 67 tests pass.
+
+No dependency changes in this release. Built with Python 3.14.6 and
+PySide6 6.11.1 (64-bit).
+
 Abib v417.19
 
 certifi upgraded from 2026.5.20 to 2026.6.17.

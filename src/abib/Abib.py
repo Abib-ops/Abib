@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.1 and python3.14.6 (64-bit).
 
-20/06/2026
+22/06/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --all-extras --upgrade
@@ -2314,6 +2314,15 @@ class MainWindow(QMainWindow):
                     win.yend = win.occur[win.verse][0][1]
             except (ValueError, IndexError):
                 pass
+        elif (self.dlg is not None and self.dlg.checks[0] in (1, 2)
+              and self.dlg.checks[2] != 6 and current_position in win.occurs):
+            # Single-highlight search modes (Raw / Whole words) store match
+            # positions as search-text indices. When a result is reached via the
+            # results panel or history navigation, recompute the display-text
+            # highlight offsets for the current win.y, mirroring the find path
+            # (goto_line_find -> adjust_highlighting). Without this the highlight
+            # reuses stale lineinc/keyinc and starts at the wrong character.
+            self.adjust_highlighting(ln, current_position)
 
         self.textEditor.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
         self.on_text_changed(ln)
