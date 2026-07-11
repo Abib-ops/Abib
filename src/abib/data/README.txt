@@ -8,10 +8,21 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.20
+Abib v417.21
 ------------
 
 Changelog.
+Abib v417.21
+
+charset-normalizer upgraded from 3.4.7 to 3.4.9.
+setuptools upgraded from 82.0.1 to 83.0.0.
+typing-extensions upgraded from 4.15.0 to 4.16.0.
+Dependencies refreshed via uv sync --all-extras --upgrade.
+
+No user-facing feature changes in this release; this is a maintenance
+release to keep Abib current with the latest build tooling and
+dependencies. Built with Python 3.14.6 and PySide6 6.11.1 (64-bit).
+
 Abib v417.20
 
 - Bugfix: Fixed Raw and Whole-words search highlighting that started at the
