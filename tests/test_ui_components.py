@@ -103,6 +103,23 @@ class TestSettingsService(unittest.TestCase):
         saved_data = cast(MagicMock, self.service.save).call_args[0][0]
         self.assertEqual(saved_data["gill_hide_delay_ms"], 300)
 
+    def test_get_search_results_width_default(self):
+        self.assertEqual(self.service.get_search_results_width(), 400)
+
+    def test_update_search_results_width(self):
+        self.service.update_search_results_width(650)
+        saved_data = cast(MagicMock, self.service.save).call_args[0][0]
+        self.assertEqual(saved_data["search_results_width"], 650)
+
+    def test_update_search_results_width_ignores_invalid(self):
+        self.service.update_search_results_width(0)
+        cast(MagicMock, self.service.save).assert_not_called()
+
+    def test_get_search_results_width_ignores_invalid_stored(self):
+        self.service.load = MagicMock(return_value={"search_results_width": -5})
+        self.service._cached_settings = None
+        self.assertEqual(self.service.get_search_results_width(), 400)
+
     def test_get_gill_show_popups(self):
         self.assertTrue(self.service.get_gill_show_popups())
 

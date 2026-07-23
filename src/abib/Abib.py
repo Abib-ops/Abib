@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.1 and python3.14.6 (64-bit).
 
-11/07/2026
+23/07/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --all-extras --upgrade
@@ -596,10 +596,21 @@ class MainWindow(QMainWindow):
         """Create the dockable Search Results panel."""
         from abib.ui.search_results import SearchResultsDock  # deferred import
 
-        self.search_results_dock = SearchResultsDock(self)
+        self.search_results_dock = SearchResultsDock(self, self.settings_service)
         self.search_results_dock.resultActivated.connect(self._on_search_result_activated)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.search_results_dock)
         self.search_results_dock.hide()
+
+    def _restore_search_results_width(self) -> None:
+        """Restore the persisted width of the Search Results panel."""
+        dock = self.search_results_dock
+        if dock is None or self.settings_service is None:
+            return
+        try:
+            dock_width = self.settings_service.get_search_results_width()
+            self.resizeDocks([dock], [dock_width], Qt.Orientation.Horizontal)
+        except (AttributeError, RuntimeError, TypeError, ValueError):
+            pass
 
     def _update_search_results_panel(self) -> None:
         """Populate the Search Results panel from the current search state."""
@@ -630,6 +641,7 @@ class MainWindow(QMainWindow):
             dock.set_results(results, search_text)
             dock.show()
             dock.raise_()
+            self._restore_search_results_width()
         else:
             dock.clear_results()
             dock.hide()
@@ -859,7 +871,7 @@ class MainWindow(QMainWindow):
 
             last_work = self.settings.get("last_other_work") if isinstance(self.settings, dict) else None
             if last_work and last_work in self.other_works_map:
-                self.other_works_combo.setCurrentText(str(last_work))
+                self.other_works_combo.setCurrentText(str(last_work or ""))
             elif "Pilgrims-Progress" in self.other_works_map:
                 self.other_works_combo.setCurrentText("Pilgrims-Progress")
 
@@ -1200,6 +1212,14 @@ class MainWindow(QMainWindow):
             self.settings_service.update_last_bible_position(int(self._last_bible_position))
         except (AttributeError, TypeError, ValueError):
             pass
+
+        # Persist the Search Results panel width
+        try:
+            dock: Any = getattr(self, "search_results_dock", None)
+            if dock is not None:
+                dock.save_width()
+        except (AttributeError, RuntimeError, TypeError, ValueError):
+            pass
         
         # Explicitly close secondary windows to ensure they trigger their own closeEvent/save logic
         try:
@@ -1366,7 +1386,7 @@ class MainWindow(QMainWindow):
                 is_loading_file = bool(getattr(win, "_is_loading_file", False))
                 current_stem = getattr(win, "current_file_stem", None)
                 req_stem = Path(req_path).stem
-                if is_loading_file and current_stem and str(current_stem) == str(req_stem):
+                if is_loading_file and current_stem and str(current_stem or "") == str(req_stem):
                     # Already loading this work; just bring it to the front and apply the theme
                     try:
                         win.apply_theme(self.theme.state.is_dark_mode)
@@ -1385,7 +1405,7 @@ class MainWindow(QMainWindow):
             except (AttributeError, RuntimeError, TypeError):
                 current_stem = None
             req_stem = Path(req_path).stem
-            if current_stem and str(current_stem) == str(req_stem):
+            if current_stem and str(current_stem or "") == str(req_stem):
                 # Already showing this work; just refresh the theme/palette and focus
                 try:
                     win.apply_theme(self.theme.state.is_dark_mode)
@@ -1536,13 +1556,13 @@ class MainWindow(QMainWindow):
 
             # Find the index in the combo for robustness
             assert self.other_works_combo is not None
-            idx = self.other_works_combo.findText(str(last_work))
+            idx = self.other_works_combo.findText(str(last_work or ""))
             if idx < 0:
                 return
 
             # If it's already selected, Qt won't emit signals; open explicitly
             if self.other_works_combo.currentIndex() == idx:
-                self._open_other_work(str(last_work))
+                self._open_other_work(str(last_work or ""))
                 return
 
             # Otherwise, switch selection without emitting signals twice, then open explicitly
@@ -1555,7 +1575,7 @@ class MainWindow(QMainWindow):
                 except (RuntimeError, AttributeError, TypeError):
                     pass
             # Ensure the reader opens even if a platform doesn't emit currentTextChanged
-            self._open_other_work(str(last_work))
+            self._open_other_work(str(last_work or ""))
         except (RuntimeError, AttributeError, KeyError, TypeError, ValueError):
             # Be silent on any unexpected issue
             pass

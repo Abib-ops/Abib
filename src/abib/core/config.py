@@ -66,6 +66,8 @@ def get_default_settings() -> dict[str, Any]:
             "height": 100
         },
         "last_bible_position": 0,
+        # Width (in pixels) of the dockable Search Results panel.
+        "search_results_width": 400,
         "gill_hover_delay_ms": 120,
         "gill_hide_delay_ms": 160,
         "gill_show_popups": True,

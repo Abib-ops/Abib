@@ -153,6 +153,28 @@ class SettingsService:
         data["last_bible_position"] = position
         self.save(data)
 
+    def get_search_results_width(self) -> int:
+        """Get the stored width (in pixels) of the Search Results panel."""
+        try:
+            width = int(self.settings.get("search_results_width", 400))
+        except (TypeError, ValueError):
+            return 400
+        if width <= 0 or width > 10000:
+            return 400
+        return width
+
+    def update_search_results_width(self, width: int) -> None:
+        """Persist the width (in pixels) of the Search Results panel."""
+        try:
+            width = int(width)
+        except (TypeError, ValueError):
+            return
+        if width <= 0 or width > 10000:
+            return
+        data = self.settings
+        data["search_results_width"] = width
+        self.save(data)
+
     def get_bible_font_size(self) -> int:
         """Get the bible font size from settings."""
         return self.settings.get("bible_font_size", 12)

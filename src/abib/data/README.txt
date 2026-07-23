@@ -8,10 +8,31 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.21
+Abib v417.22
 ------------
 
 Changelog.
+Abib v417.22
+
+- Feature: The Find/Search Results panel width is now persistent. When you
+  drag the dockable Search Results panel wider to read full verses, that
+  width is remembered and reapplied the next time the panel is shown and on
+  the next session.
+- The width is stored in settings.json under the new "search_results_width"
+  key (default 400 pixels), with validation to reject non-positive or
+  excessively large values (clamped to a sane 1–10000 range).
+- Added get_search_results_width / update_search_results_width accessors to
+  SettingsService, and a matching default in core/config.py.
+- SearchResultsDock now saves its width on resize and on application close;
+  the main window restores the saved width via resizeDocks each time the
+  panel is shown.
+- Added 4 unit tests covering the new width accessors (default value,
+  update, invalid-value rejection, and invalid-stored fallback). Full test
+  suite passes.
+
+No dependency changes in this release. Built with Python 3.14.6 and
+PySide6 6.11.1 (64-bit).
+
 Abib v417.21
 
 charset-normalizer upgraded from 3.4.7 to 3.4.9.

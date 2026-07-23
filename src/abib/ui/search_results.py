@@ -105,9 +105,10 @@ class SearchResultsDock(QDockWidget):
 
     resultActivated = Signal(int)
 
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent=None, settings_service=None) -> None:
         super().__init__("Search Results", parent)
         self._results: list[SearchResult] = []
+        self._settings_service = settings_service
 
         container = QWidget(self)
         layout = QVBoxLayout(container)
@@ -167,3 +168,17 @@ class SearchResultsDock(QDockWidget):
         position = item.data(Qt.ItemDataRole.UserRole)
         if isinstance(position, int):
             self.resultActivated.emit(position)
+
+    def save_width(self) -> None:
+        """Persist the current panel width to settings."""
+        if self._settings_service is None:
+            return
+        try:
+            self._settings_service.update_search_results_width(self.width())
+        except (AttributeError, RuntimeError, TypeError, ValueError):
+            pass
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        if self.isVisible():
+            self.save_width()
