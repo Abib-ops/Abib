@@ -8,10 +8,23 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.22
+Abib v417.23
 ------------
 
 Changelog.
+Abib v417.23
+
+- Feature: The Find/Search Results panel is now a separate window that docks
+  to the right-hand side of the main window instead of being embedded inside
+  it. The window follows the main window when it is moved or resized.
+- The main window's width is now capped while the Search Results window is
+  visible so that the results window always fits on screen; a maximised or
+  fullscreen main window is automatically reduced to make room. The cap is
+  released again when the results window is hidden.
+- The remembered Search Results width (search_results_width) is now used to
+  size the separate window and is still saved on resize and on application
+  close.
+
 Abib v417.22
 
 - Feature: The Find/Search Results panel width is now persistent. When you

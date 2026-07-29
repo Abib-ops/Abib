@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.1 and python3.14.6 (64-bit).
 
-23/07/2026
+29/07/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --all-extras --upgrade
@@ -381,7 +381,10 @@ class MainWindow(QMainWindow):
         self.textEditor: Any = NoZoomPlainTextEdit()
         # Predeclare actions bundle to satisfy linters (assigned in initui)
         self.actions_bundle = None
-        self.search_results_dock: Any = None
+        self.search_results_window: Any = None
+        # Guard flag to avoid recursive move/resize while repositioning the
+        # separate Search Results window relative to the main window.
+        self._positioning_search_results: bool = False
         
         # Theme manager (extract dark mode logic)
         # Initialise 'ThemeManager' based on persisted settings
@@ -593,33 +596,82 @@ class MainWindow(QMainWindow):
         self.set_theme(self.settings)
 
     def _setup_search_results_panel(self) -> None:
-        """Create the dockable Search Results panel."""
-        from abib.ui.search_results import SearchResultsDock  # deferred import
+        """Create the separate Search Results window."""
+        from abib.ui.search_results import SearchResultsWindow  # deferred import
 
-        self.search_results_dock = SearchResultsDock(self, self.settings_service)
-        self.search_results_dock.resultActivated.connect(self._on_search_result_activated)
-        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.search_results_dock)
-        self.search_results_dock.hide()
+        self.search_results_window = SearchResultsWindow(self, self.settings_service)
+        self.search_results_window.resultActivated.connect(self._on_search_result_activated)
+        self.search_results_window.hide()
 
-    def _restore_search_results_width(self) -> None:
-        """Restore the persisted width of the Search Results panel."""
-        dock = self.search_results_dock
-        if dock is None or self.settings_service is None:
-            return
+    def _search_results_width(self) -> int:
+        """Return the persisted width (in pixels) for the Search Results window."""
+        if self.settings_service is None:
+            return 400
         try:
-            dock_width = self.settings_service.get_search_results_width()
-            self.resizeDocks([dock], [dock_width], Qt.Orientation.Horizontal)
+            return int(self.settings_service.get_search_results_width())
         except (AttributeError, RuntimeError, TypeError, ValueError):
+            return 400
+
+    def _release_main_width_limit(self) -> None:
+        """Remove the width cap that reserves room for the Search Results window."""
+        try:
+            self.setMaximumWidth(16777215)  # QWIDGETSIZE_MAX
+        except (RuntimeError, AttributeError):
             pass
 
+    def _position_search_results_window(self) -> None:
+        """Glue the Search Results window to the right of the main window.
+
+        The main window's width is capped (and shrunk if necessary) so that the
+        Search Results window always fits on screen; a maximised/fullscreen main
+        window is restored to a normal size to make room.
+        """
+        win: Any = getattr(self, "search_results_window", None)
+        if win is None:
+            return
+        if self._positioning_search_results:
+            return
+        self._positioning_search_results = True
+        try:
+            panel_width = self._search_results_width()
+            try:
+                screen = self.screen().availableGeometry()
+            except (AttributeError, RuntimeError):
+                from PySide6.QtWidgets import QApplication
+                screen = QApplication.primaryScreen().availableGeometry()
+
+            # Un-maximise so the main window can make room on the right.
+            if self.isMaximized() or self.isFullScreen():
+                self.showNormal()
+
+            # Cap the main window width so the results window always fits.
+            max_main_width = max(300, screen.width() - panel_width)
+            self.setMaximumWidth(max_main_width)
+
+            geo = self.geometry()
+            if geo.width() > max_main_width:
+                self.resize(max_main_width, geo.height())
+                geo = self.geometry()
+
+            # Keep the main window far enough left to leave room on the right.
+            max_left = screen.right() - panel_width - geo.width() + 1
+            if geo.left() > max_left:
+                self.move(max(screen.left(), max_left), geo.top())
+                geo = self.geometry()
+
+            win.setGeometry(geo.right() + 1, geo.top(), panel_width, geo.height())
+        finally:
+            self._positioning_search_results = False
+
     def _update_search_results_panel(self) -> None:
-        """Populate the Search Results panel from the current search state."""
-        dock = self.search_results_dock
+        """Populate the Search Results window from the current search state."""
+        dock = self.search_results_window
         if dock is None:
             return
         if self.dlg is None or self.occurring == 0 or not self.occurs:
             dock.clear_results()
             dock.hide()
+            self._release_main_width_limit()
             return
 
         from abib.ui.search_results import SearchResult, format_reference, highlight_result_text, result_verse_text
@@ -640,11 +692,12 @@ class MainWindow(QMainWindow):
         if results:
             dock.set_results(results, search_text)
             dock.show()
+            self._position_search_results_window()
             dock.raise_()
-            self._restore_search_results_width()
         else:
             dock.clear_results()
             dock.hide()
+            self._release_main_width_limit()
 
     def _sync_search_state_for_result(self, current_position: int) -> None:
         """Make the current search state match a clicked result verse."""
@@ -1185,13 +1238,29 @@ class MainWindow(QMainWindow):
         # Pass the event to the parent class
         return super().eventFilter(source, event)  # type: ignore[arg-type]
 
+    def _reposition_search_results_window(self) -> None:
+        """Keep the Search Results window glued to the main window when visible."""
+        if self._positioning_search_results:
+            return
+        win: Any = getattr(self, "search_results_window", None)
+        if win is not None and win.isVisible():
+            self._position_search_results_window()
+
     def moveEvent(self, event):
+        try:
+            self._reposition_search_results_window()
+        except (RuntimeError, AttributeError, TypeError):
+            pass
         try:
             return super().moveEvent(event)
         except (RuntimeError, AttributeError, TypeError):
             return None
 
     def resizeEvent(self, event):
+        try:
+            self._reposition_search_results_window()
+        except (RuntimeError, AttributeError, TypeError):
+            pass
         try:
             return super().resizeEvent(event)
         except (RuntimeError, AttributeError, TypeError):
@@ -1213,11 +1282,12 @@ class MainWindow(QMainWindow):
         except (AttributeError, TypeError, ValueError):
             pass
 
-        # Persist the Search Results panel width
+        # Persist the Search Results window width and close it
         try:
-            dock: Any = getattr(self, "search_results_dock", None)
+            dock: Any = getattr(self, "search_results_window", None)
             if dock is not None:
                 dock.save_width()
+                dock.close()
         except (AttributeError, RuntimeError, TypeError, ValueError):
             pass
         

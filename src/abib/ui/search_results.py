@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import Iterable, Sequence
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QLabel, QDockWidget, QLineEdit, QListWidget, QListWidgetItem, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QLabel, QLineEdit, QListWidget, QListWidgetItem, QVBoxLayout, QWidget
 
 from abib.utils.text import create_pattern, split_strip
 
@@ -100,32 +100,30 @@ def find_highlight_ranges(text: str, search_text: str, search_mode: int, case_se
     return merged
 
 
-class SearchResultsDock(QDockWidget):
-    """Dockable list of clickable search results."""
+class SearchResultsWindow(QWidget):
+    """Separate top-level window listing clickable search results."""
 
     resultActivated = Signal(int)
 
     def __init__(self, parent=None, settings_service=None) -> None:
-        super().__init__("Search Results", parent)
+        super().__init__(parent, Qt.WindowType.Window)
+        self.setWindowTitle("Search Results")
         self._results: list[SearchResult] = []
         self._settings_service = settings_service
 
-        container = QWidget(self)
-        layout = QVBoxLayout(container)
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(4, 4, 4, 4)
 
-        self.filter_edit = QLineEdit(container)
+        self.filter_edit = QLineEdit(self)
         self.filter_edit.setPlaceholderText("Filter results...")
         self.filter_edit.textChanged.connect(self._apply_filter)
         layout.addWidget(self.filter_edit)
 
-        self.list_widget = QListWidget(container)
+        self.list_widget = QListWidget(self)
         self.list_widget.setWordWrap(True)
         self.list_widget.itemClicked.connect(self._activate_item)
         self.list_widget.itemActivated.connect(self._activate_item)
         layout.addWidget(self.list_widget)
-
-        self.setWidget(container)
 
     def set_results(self, results: list[SearchResult], search_text: str) -> None:
         """Replace the displayed results."""
