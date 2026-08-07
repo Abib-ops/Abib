@@ -4,9 +4,8 @@
 
 # -*- coding: utf-8 -*-
 
-from abib.core.scripture import normalize_book_input
 from abib.core import shared as sh
-
+from abib.core.scripture import normalize_book_input
 
 CASES = {
     # NT/KJV forms used in the New Testament text

@@ -65,13 +65,12 @@ import gzip
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 # Ensure we can import local project modules when run from anywhere
 from project_setup import PROJECT_ROOT
 
 from abib.core import scripture
-
 
 PARSER_VERSION = "2025-12-27-fix-numbered-book-continuations"
 FORMAT_VERSION = 1
@@ -87,7 +86,7 @@ def compute_sha256_utf8(text: str) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def load_existing_companion(path: Path) -> Dict[str, Any] | None:
+def load_existing_companion(path: Path) -> dict[str, Any] | None:
     if not path.exists():
         return None
     try:
@@ -97,13 +96,13 @@ def load_existing_companion(path: Path) -> Dict[str, Any] | None:
         return None
 
 
-def build_companion_payload(txt_path: Path, content: str, refs: List[Dict[str, Any]]) -> Dict[str, Any]:
+def build_companion_payload(txt_path: Path, content: str, refs: list[dict[str, Any]]) -> dict[str, Any]:
     content_hash = compute_sha256_utf8(content)
     try:
         byte_length = txt_path.stat().st_size
     except OSError:
         byte_length = 0
-    out_refs: List[Dict[str, Any]] = []
+    out_refs: list[dict[str, Any]] = []
     for r in refs:
         # scripture.find_scripture_references returns 'start' (absolute) and 'length'
         try:
@@ -122,7 +121,7 @@ def build_companion_payload(txt_path: Path, content: str, refs: List[Dict[str, A
             }
         )
 
-    payload: Dict[str, Any] = {
+    payload: dict[str, Any] = {
         "format": FORMAT_VERSION,
         "parser_version": PARSER_VERSION,
         "source_file": txt_path.name,
@@ -134,7 +133,7 @@ def build_companion_payload(txt_path: Path, content: str, refs: List[Dict[str, A
     return payload
 
 
-def write_companion(output_dir: Path, base_name: str, payload: Dict[str, Any]) -> Path:
+def write_companion(output_dir: Path, base_name: str, payload: dict[str, Any]) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     out_path = output_dir / f"{base_name}.refs.json.gz"
     with gzip.open(out_path, "wt", encoding="utf-8") as f:
@@ -144,22 +143,22 @@ def write_companion(output_dir: Path, base_name: str, payload: Dict[str, Any]) -
     return out_path
 
 
-def _build_bible_data() -> Dict[str, Any]:
+def _build_bible_data() -> dict[str, Any]:
     """Build bible_data structure expected by scripture.lookup_scripture.
 
     Shape: { CanonicalBookName: { chapter_str: { verse_str: text }}}
     """
     # Lazy imports to avoid hard dependency when the module is imported elsewhere
-    from abib.services.data_loader import DataLoader
-    from abib.core import shared as sh
     from abib.core import scripture as _scripture
+    from abib.core import shared as sh
+    from abib.services.data_loader import DataLoader
 
     loader = DataLoader()
     bible = loader.load_bible()
     KJV = bible.KJV
     can = _scripture.CANONICAL_BOOKS
 
-    bible_data: Dict[str, Dict[str, Dict[str, str]] ] = {}
+    bible_data: dict[str, dict[str, dict[str, str]] ] = {}
     # sh.Info aligns 1:1 with KJV after copyright trimming in DataLoader
     for idx, triple in enumerate(sh.Info):
         try:
@@ -180,13 +179,13 @@ def process_one(
     txt_path: Path,
     output_dir: Path,
     force: bool = False,
-    bible_data: Dict[str, Any] | None = None,
-    csv_rows: List[Dict[str, Any]] | None = None,
+    bible_data: dict[str, Any] | None = None,
+    csv_rows: list[dict[str, Any]] | None = None,
 ) -> tuple[bool, str]:
     """Process a single .txt file. Returns (changed, message)."""
     try:
         raw = txt_path.read_text(encoding="utf-8", errors="replace")
-    except Exception as e:
+    except (OSError, UnicodeError, ValueError) as e:
         return False, f"ERROR reading {txt_path.name}: {e}"
 
     content = normalize_text(raw)
@@ -198,8 +197,7 @@ def process_one(
             return 0
         if pos <= 0:
             return 1 if content else 0
-        if pos > len(content):
-            pos = len(content)
+        pos = min(pos, len(content))
         # Count newlines up to the offset; lines are 1-based
         return content.count("\n", 0, pos) + 1
     base_name = txt_path.name  # keep extension in base for clarity in the output name
@@ -218,15 +216,17 @@ def process_one(
     refs = scripture.find_scripture_references(content)  # type: ignore
 
     # Validate refs and collect problems for reporting
-    problems: List[Dict[str, Any]] = []
+    problems: list[dict[str, Any]] = []
     for r in refs:
         try:
-            book = r.get("book")
-            chapter = r.get("chapter")
-            verses = r.get("verse")
+            book: Any = r.get("book")
+            chapter: Any = r.get("chapter")
+            verses: Any = r.get("verse")
             # Normalisation/lookup check
-            from abib.core.scripture import normalize_book_input  # local import for clarity
             from abib.core import shared as sh
+            from abib.core.scripture import (
+                normalize_book_input,  # local import for clarity
+            )
 
             key = normalize_book_input(str(book)) if isinstance(book, str) else None
             book_id = sh.bibledict.get(key) if key else None
@@ -293,12 +293,13 @@ def process_one(
                 }
                 problems.append(prob)
                 if csv_rows is not None:
+                    verses_val: Any = verses
                     csv_rows.append({
                         "file": txt_path.name,
                         "type": prob["type"],
                         "book": str(book),
                         "chapter": str(chapter),
-                        "verse": str(verses),
+                        "verse": str(verses_val),
                         "line": str(_line_from_offset(r.get("start"))),
                         "message": "Invalid or missing verse",
                         "text": r.get("text", ""),
@@ -308,7 +309,9 @@ def process_one(
             # Lookup using bible_data if provided
             if bible_data is not None:
                 from abib.core.scripture import lookup_scripture
-                out = lookup_scripture(bible_data, str(book), int(chapter), str(verses))
+                book_arg: Any = book
+                verses_arg: Any = verses
+                out = lookup_scripture(bible_data, str(book_arg), int(chapter), str(verses_arg))
                 out_str = (out or "").strip()
                 if out_str == "Scripture not found.":
                     prob = {
@@ -322,12 +325,15 @@ def process_one(
                     }
                     problems.append(prob)
                     if csv_rows is not None:
+                        chapter_val: Any = chapter
+                        book_not_found: Any = book
+                        verses_not_found: Any = verses
                         csv_rows.append({
                             "file": txt_path.name,
                             "type": prob["type"],
-                            "book": str(book),
-                            "chapter": str(chapter),
-                            "verse": str(verses),
+                            "book": str(book_not_found),
+                            "chapter": str(chapter_val),
+                            "verse": str(verses_not_found),
                             "line": str(_line_from_offset(r.get("start"))),
                             "message": out_str,
                             "text": r.get("text", ""),
@@ -348,17 +354,19 @@ def process_one(
                         }
                         problems.append(prob)
                         if csv_rows is not None:
+                            book_val: Any = book
+                            verses_missing: Any = verses
                             csv_rows.append({
                                 "file": txt_path.name,
                                 "type": prob["type"],
-                                "book": str(book),
+                                "book": str(book_val),
                                 "chapter": str(chapter),
-                                "verse": str(verses),
+                                "verse": str(verses_missing),
                                 "line": str(_line_from_offset(r.get("start"))),
                                 "message": "; ".join(missing_lines),
                                 "text": r.get("text", ""),
                             })
-        except Exception as e:  # extremely defensive to avoid aborting the run
+        except Exception as e:  # noqa: BLE001 - extremely defensive to avoid aborting the run
             prob = {
                 "type": "exception",
                 "error": str(e),
@@ -366,12 +374,15 @@ def process_one(
             }
             problems.append(prob)
             if csv_rows is not None:
+                exc_book: Any = r.get("book")
+                exc_chapter: Any = r.get("chapter")
+                exc_verse: Any = r.get("verse")
                 csv_rows.append({
                     "file": txt_path.name,
                     "type": prob.get("type", "exception"),
-                    "book": str(r.get("book")),
-                    "chapter": str(r.get("chapter")),
-                    "verse": str(r.get("verse")),
+                    "book": str(exc_book),
+                    "chapter": str(exc_chapter),
+                    "verse": str(exc_verse),
                     "line": str(_line_from_offset(r.get("start"))),
                     "message": str(e),
                     "text": r.get("text", ""),
@@ -382,7 +393,7 @@ def process_one(
         payload["problems"] = problems
     try:
         write_companion(output_dir, base_name, payload)
-    except Exception as e:
+    except (OSError, TypeError, ValueError) as e:
         return False, f"ERROR writing companion for {base_name}: {e}"
     summary = f"Wrote: {out_path.name} (refs: {len(payload.get('refs', []))}"
     if problems:
@@ -391,7 +402,7 @@ def process_one(
     return True, summary
 
 
-def main(argv: List[str] | None = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Generate companion files for Other Works texts")
     data_dir = PROJECT_ROOT / "src" / "abib" / "data"
     parser.add_argument(
@@ -443,7 +454,7 @@ def main(argv: List[str] | None = None) -> int:
     bible_data = _build_bible_data()
 
     # Prepare CSV rows collection
-    csv_rows: List[Dict[str, Any]] = []
+    csv_rows: list[dict[str, Any]] = []
 
     changed = 0
     for p in txt_files:
@@ -457,10 +468,10 @@ def main(argv: List[str] | None = None) -> int:
         csv_path = Path(args.csv) if args.csv else (out_dir / "scripture_problems.csv")
         try:
             # Import locally to avoid altering global imports and preserve minimal change
-            from csv_report import write_csv, CSV_FIELDS  # type: ignore
+            from csv_report import CSV_FIELDS, write_csv  # type: ignore
             write_csv(csv_path, csv_rows, fieldnames=CSV_FIELDS)
             print(f"\nProblem report written: {csv_path}")
-        except Exception as e:
+        except (OSError, ImportError, ValueError) as e:
             print(f"\nERROR writing CSV report: {e}")
     else:
         print("\nNo reference problems detected.")

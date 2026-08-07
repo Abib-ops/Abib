@@ -6,25 +6,22 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
+from PySide6.QtCore import QObject, QRunnable, Qt, QThreadPool, Signal
+from PySide6.QtGui import QColor, QIcon, QPixmap
 from PySide6.QtWidgets import QApplication, QSplashScreen
-from PySide6.QtGui import QIcon, QPixmap, QColor
-from PySide6.QtCore import Qt, QThreadPool, QRunnable, QObject, Signal
-
-from abib.core import shared as sh
-
-from abib.services.settings import SettingsService
-from abib.services.data_loader import DataLoader
-
 
 # We purposefully import the Abib module so we can assign globals
 # that its functions expect (e.g. KJV, Amap, EOTNOC, etc.).
 from abib import Abib as AbibModule
 from abib.Abib import MainWindow
+from abib.core import shared as sh
+from abib.services.data_loader import DataLoader
+from abib.services.settings import SettingsService
 
 
-def _show_splash_if_enabled(settings: Dict[str, Any]) -> QSplashScreen | None:
+def _show_splash_if_enabled(settings: dict[str, Any]) -> QSplashScreen | None:
     """Create and show the splash screen if enabled in settings, returning it to keep it alive.
     The caller is responsible for finishing/closing it once the main window is ready.
     """
@@ -69,7 +66,7 @@ class _LoadSearchSignals(QObject):
 
 class _LoadSearchTask(QRunnable):
     """Background task to load search indexes without blocking the UI."""
-    def __init__(self, loader: 'DataLoader') -> None:
+    def __init__(self, loader: DataLoader) -> None:
         super().__init__()
         self.loader = loader
         self.signals = _LoadSearchSignals()
@@ -78,7 +75,7 @@ class _LoadSearchTask(QRunnable):
         try:
             s = self.loader.load_search()
             self.signals.loaded.emit(s)
-        except Exception as e:  # pragma: no cover - background error path
+        except Exception as e:  # noqa: BLE001 - background thread must not crash; report via failed signal
             try:
                 self.signals.failed.emit(str(e))
             except (RuntimeError, TypeError):
@@ -166,7 +163,7 @@ def run() -> None:
 
     # Initialise settings service and load settings
     settings_service = SettingsService()
-    settings: Dict[str, Any] = settings_service.settings
+    settings: dict[str, Any] = settings_service.settings
 
     splash = _show_splash_if_enabled(settings)
     # Expose splash so other modules (e.g. Settings) can control its lifetime
@@ -180,8 +177,11 @@ def run() -> None:
     # Create the main window
     w: MainWindow = MainWindow()
 
-    # Provide the settings path to windows that need to persist user settings
-    w.user_settings_path = str(settings_service.user_settings_path)
+    # Provide the settings path to windows that need to persist user settings.
+    # Alias as Any so static analysers don't flag this dynamically-assigned
+    # attribute (user_settings_path is not declared on MainWindow).
+    w_any: Any = w
+    w_any.user_settings_path = str(settings_service.user_settings_path)
 
     # Expose the window instance at module level for helpers
     AbibModule.w = w

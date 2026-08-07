@@ -5,15 +5,17 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
+
 import unittest
-from unittest.mock import MagicMock, patch
 from typing import cast
+from unittest.mock import MagicMock, patch
 
 from PySide6.QtGui import QColor, QPalette
 
+from abib.services.settings import SettingsService
 from abib.ui.themes import ThemeManager, ThemeState
 from abib.ui.ui_helpers import NoZoomPlainTextEdit, center_on_screen, fit_to_screen
-from abib.services.settings import SettingsService
+
 
 class TestSettingsService(unittest.TestCase):
     def setUp(self):

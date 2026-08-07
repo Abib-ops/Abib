@@ -6,24 +6,25 @@
 
 from __future__ import annotations
 
-from typing import Callable, Any
+from collections.abc import Callable
+from typing import Any
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QKeySequence
 from PySide6.QtWidgets import (
-    QMainWindow,
-    QLabel,
-    QPlainTextEdit,
-    QVBoxLayout,
     QHBoxLayout,
-    QSpacerItem,
-    QSizePolicy,
+    QLabel,
+    QMainWindow,
+    QPlainTextEdit,
     QPushButton,
+    QSizePolicy,
+    QSpacerItem,
+    QVBoxLayout,
 )
 
-from abib.ui.ui_helpers import NoZoomDialog
-from abib.services.settings import SettingsService
 from abib.core import shared as sh
+from abib.services.settings import SettingsService
+from abib.ui.ui_helpers import NoZoomDialog
 
 
 class SecondaryWindow(NoZoomDialog):
@@ -44,7 +45,7 @@ class SecondaryWindow(NoZoomDialog):
         super().__init__()
 
         if not isinstance(text, str):
-            raise ValueError(f"Expected a string for 'text', but got {type(text).__name__}")
+            raise TypeError(f"Expected a string for 'text', but got {type(text).__name__}")
 
         self.settings_service: SettingsService = settings_service if settings_service is not None else SettingsService()
         # Load window geometry from settings
@@ -166,9 +167,12 @@ class SecondaryWindow(NoZoomDialog):
                                 win_service: Any = ws
                                 if win_service.get_bible_font_size() != self.fontsize:
                                     win_service.update_bible_font_size(self.fontsize)
-                                    af = getattr(widget, "apply_font_size", None)
-                                    if af:
-                                        af()
+                                    # widget_any is Any-typed, so this dynamic access is
+                                    # invisible to static analysers (avoids false-positive
+                                    # None-callable warnings) while working correctly at runtime.
+                                    widget_any: Any = widget
+                                    if callable(getattr(widget_any, "apply_font_size", None)):
+                                        widget_any.apply_font_size()
                     except (AttributeError, RuntimeError):
                         pass
                     break

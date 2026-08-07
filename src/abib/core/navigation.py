@@ -5,7 +5,9 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any
+
 from abib.core import shared as sh
 
 if TYPE_CHECKING:
@@ -14,7 +16,7 @@ if TYPE_CHECKING:
 class NavigationCore:
     """Core logic for Bible navigation."""
     
-    def __init__(self, main_window: 'MainWindow') -> None:
+    def __init__(self, main_window: MainWindow) -> None:
         self.w = main_window
 
     def get_current_bcv(self) -> tuple[int, int, int]:
@@ -33,7 +35,8 @@ class NavigationCore:
         except (IndexError, TypeError, ValueError):
             return 1, 1, 1
 
-    def resolve_reference(self, bits: Any) -> Any:
+    @staticmethod
+    def resolve_reference(bits: Any) -> Any:
         """Resolves a scripture reference into (book_num, chapter, verse)."""
         from abib.domain.scripture_refs import resolve_reference
         return resolve_reference(bits)
@@ -57,7 +60,7 @@ class NavigationCore:
         end_msg = "..." if getattr(self.w, 'occurrence', 0) != getattr(self.w, 'occurring', 0) else "."
         
         if getattr(self.w, 'occurrence', 0) == getattr(self.w, 'occurring', 0):
-             setattr(self.w, 'no_f3_yet', 0)
+             self.w.no_f3_yet = 0
 
         if book_id in sh.onechapterbooks:
             return f'{occ_msg}{book_name} {verse} KJV{end_msg}'

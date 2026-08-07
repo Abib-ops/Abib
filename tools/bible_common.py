@@ -81,10 +81,7 @@ def parse_pce_text(txt_path):
             
             # Additional check: numeric books often have "THE ... BOOK" or "THE ... EPISTLE"
             # or just the name. But they should NOT have too many other texts.
-            if len(upper_line) > 40 and "EPISTLE" not in upper_line and "BOOK" not in upper_line:
-                return False
-                
-            return True
+            return not (len(upper_line) > 40 and "EPISTLE" not in upper_line and "BOOK" not in upper_line)
 
         # Standard books
         if b in upper_line:
@@ -95,9 +92,7 @@ def parse_pce_text(txt_path):
             if b == "PSALMS":
                 return "PSALMS" in upper_line or "PSALM" in upper_line
             # For other books, keep it strict
-            if len(upper_line) > 40 and "BOOK" not in upper_line and "EPISTLE" not in upper_line:
-                return False
-            return True
+            return not (len(upper_line) > 40 and "BOOK" not in upper_line and "EPISTLE" not in upper_line)
         
         return False
 

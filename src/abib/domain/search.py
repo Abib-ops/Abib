@@ -5,10 +5,12 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-import re
-from typing import Dict, Set, List, Tuple, Sequence
 
-def iterate_regex(r: tuple, x1: int, x2: int, kjv: Sequence[str]) -> List[Tuple[int, int, int]]:
+import re
+from collections.abc import Sequence
+
+
+def iterate_regex(r: tuple, x1: int, x2: int, kjv: Sequence[str]) -> list[tuple[int, int, int]]:
     """Iterate through the KJV list using a list of regex patterns and line range.
     
     Returns a list of (line_index, start_pos, end_pos).
@@ -21,8 +23,8 @@ def iterate_regex(r: tuple, x1: int, x2: int, kjv: Sequence[str]) -> List[Tuple[
                 results.append((ln, match.start(), match.end()))
     return results
 
-def find_words_any(x1: int, x2: int, set_dict: Dict[str, Set], kjv: Sequence[str]) -> List[int]:
-    """Find lines that contain any of the words in set_dict keys within the range [x1, x2)."""
+def find_words_any(_x1: int, _x2: int, _set_dict: dict[str, set], _kjv: Sequence[str]) -> list[int]:
+    """Find lines that contain any of the words in set_dict keys within the range [_x1, _x2)."""
     # This is a simplified version of findf3_ww_any
     # In practice, it usually intersects sets of line numbers
     # But for a direct port from what was in Abib.py:
@@ -31,7 +33,7 @@ def find_words_any(x1: int, x2: int, set_dict: Dict[str, Set], kjv: Sequence[str
     # Usually it's word -> {set of line indices}
     return results
 
-def count_occurrences(results: List[Tuple[int, int, int]]) -> Tuple[int, List[int], List[Tuple[int, int]]]:
+def count_occurrences(results: list[tuple[int, int, int]]) -> tuple[int, list[int], list[tuple[int, int]]]:
     """Count total occurrences and prepare lists for UI highlighting.
     
     Returns (total_count, positions, starts_ends).

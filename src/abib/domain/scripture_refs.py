@@ -24,16 +24,17 @@ Notes
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from functools import lru_cache
-from typing import Optional, Sequence, Union, Dict, NamedTuple, Any
+from typing import Any, NamedTuple
 
-from roman import fromRoman, InvalidRomanNumeralError
+from roman import InvalidRomanNumeralError, fromRoman
 
 from abib.core import fcs
 from abib.core import shared as sh
 
 # Typing aliases for clearer contracts
-Bits = Sequence[Union[str, int, None]]
+Bits = Sequence[str | int | None]
 
 class RefParts(NamedTuple):
     """Named tuple representing a resolved scripture reference.
@@ -43,12 +44,12 @@ class RefParts(NamedTuple):
     - chapter: Optional chapter number (1-based), or None if unresolved
     - verse: Optional verse number (1-based), or None if unresolved
     """
-    book: Optional[int]
-    chapter: Optional[int]
-    verse: Optional[int]
+    book: int | None
+    chapter: int | None
+    verse: int | None
 
 
-def _norm_str(x: Any) -> Optional[str]:
+def _norm_str(x: Any) -> str | None:
     """Normalise an input to a stripped string or None.
 
     - None -> None
@@ -66,7 +67,7 @@ def _norm_str(x: Any) -> Optional[str]:
     return None
 
 
-def _parse_component(val: object) -> Optional[int]:
+def _parse_component(val: object) -> int | None:
     """Parse a chapter/verse component which may be roman, int-like, or None.
 
     Returns an int on success, or None if invalid/unset.
@@ -85,7 +86,7 @@ def _parse_component(val: object) -> Optional[int]:
         return None
 
 
-def _parse_verse_component(val: object) -> Optional[int]:
+def _parse_verse_component(val: object) -> int | None:
     """Parse a verse component that may include ranges/lists.
 
     Accepts inputs like:
@@ -169,10 +170,9 @@ def normalize_reference(reference_text: str, current_book: int = 0, current_chap
 
     # Handle one-chapter books logic
     book_idx = sh.bibledict.get(book_str.lower()) if not book_str.isdigit() else int(book_str)
-    if book_idx is not None and book_idx - 1 in sh.onechapterbooks:
-        if chapter_val != 1 and not input_verse:
-            verse_val = chapter_val
-            chapter_val = 1
+    if book_idx is not None and book_idx - 1 in sh.onechapterbooks and chapter_val != 1 and not input_verse:
+        verse_val = chapter_val
+        chapter_val = 1
     
     return f"{book_str}.{chapter_val}.{verse_val}"
 
@@ -213,7 +213,7 @@ def resolve_reference(bits: Bits) -> RefParts:
         return RefParts(None, None, None)
 
     # Step 2: Resolve chapter (bits[1])
-    chapter: Optional[int] = 1
+    chapter: int | None = 1
     if len(bits) > 1:
         parsed_ch = _parse_component(bits[1])
         if parsed_ch is None:
@@ -221,7 +221,7 @@ def resolve_reference(bits: Bits) -> RefParts:
         chapter = parsed_ch
 
     # Step 3: Resolve verse (bits[2])
-    verse: Optional[int] = 1
+    verse: int | None = 1
     if len(bits) > 2:
         # Verses can be lists/ranges (e.g. "29--", "29-31,33");
         # for navigation we use the first verse number present.
@@ -235,7 +235,7 @@ def resolve_reference(bits: Bits) -> RefParts:
 
 # --- Fast lookup helpers for calculate_book_line ---
 @lru_cache(maxsize=1)
-def _build_info_map() -> Dict[tuple[int, int, int], int]:
+def _build_info_map() -> dict[tuple[int, int, int], int]:
     """Build a map from (book_id, chapter_idx, verse_idx) to absolute line.
 
     sh.Info stores zero-based triples [book_id, chapter_idx, verse_idx] in order.
@@ -281,7 +281,7 @@ def calculate_book_line(book: int, chapter: int, verse: int, _current_line_num: 
       only to preserve the public signature during migration.
     """
     # Explicitly mark unused parameter to satisfy linters and convey intent.
-    _ = _current_line_num  # unused; kept for API compatibility  # noqa: F841, ARG002
+    _ = _current_line_num  # unused; kept for API compatibility
     # Convert inputs and guard against bad types/values with clear errors.
     try:
         book_id = int(book) - 1

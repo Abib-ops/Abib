@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "abib"
-version = "417.23"
+version = "417.24"
 description = "A Bible study application"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -35,6 +35,11 @@ packages = {find = {where = ["src"]}}
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.ruff.lint.per-file-ignores]
+# Abib.py is the intentionally CamelCase main module; renaming it would break
+# the application's imports and packaging, so the module-name check is ignored.
+"src/abib/Abib.py" = ["N999"]
 
 [dependency-groups]
 dev = [

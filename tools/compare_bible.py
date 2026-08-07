@@ -1,7 +1,9 @@
 import re
 import unicodedata
-from project_setup import SRC_PATH
+
 from bible_common import parse_pce_text
+from project_setup import SRC_PATH
+
 
 def normalize_text(text):
     if not text:

@@ -5,10 +5,13 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-from typing import Any, Optional
-from pathlib import Path
+
 import json
+from pathlib import Path
+from typing import Any
+
 from abib.core import shared as sh
+
 
 class SettingsService:
     """Service to handle application settings persistence and migration."""
@@ -18,7 +21,7 @@ class SettingsService:
         self.settings_dir = Path(sh.user_settings_dir)
         self.user_settings_path = self.settings_dir / self.filename
         self._ensure_dir()
-        self._cached_settings: Optional[dict[str, Any]] = None
+        self._cached_settings: dict[str, Any] | None = None
 
     def _ensure_dir(self) -> None:
         self.user_settings_path.parent.mkdir(parents=True, exist_ok=True)

@@ -10,13 +10,12 @@
 ## Used by Abib.py (sh.CURRENT_VERSION) =>
 ################################################################################
 
-from abib.core import shared as sh
-from datetime import datetime, timedelta
-from typing import Any
-from abib import utils
-
 import re
+from datetime import datetime, timedelta, timezone
+from typing import Any
 
+from abib import utils
+from abib.core import shared as sh
 
 ANY_OF_WORDS_IGNORED_WORDS = {
     "a", "an", "and", "are", "as", "at", "be", "but", "by", "for", "from",
@@ -173,8 +172,7 @@ def compare_versions(version1: str, version2: str) -> int:
         if not v or not isinstance(v, str):
             return [0]
         v = v.strip()
-        if v.startswith("v"):
-            v = v[1:]
+        v = v.removeprefix("v")
         parts = []
         for p in v.split("."):
             # Extract only digits from the start of the part
@@ -386,7 +384,6 @@ def check_roman_chapter_adjacent(reference_text: str) -> str:
         return reference_text
     else:
         # print(f"449 Reference text: {ref} needs to be split.")
-        pass
 
         # Find the start of the roman numeral.
         for i in range(len_ref, 0, -1):
@@ -473,7 +470,7 @@ def get_date_file(date_index: int = 0, adjustment: int = 0) -> tuple:
     morn_or_even: str = ""
 
     # Get today's date and apply the date_index offset
-    today = datetime.now() + timedelta(hours=date_index)
+    today = datetime.now(tz=timezone.utc).astimezone() + timedelta(hours=date_index)
 
     # Extract the necessary date information
     month = today.strftime("%B")  # E.g. "February"

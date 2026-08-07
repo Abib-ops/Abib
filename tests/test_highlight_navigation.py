@@ -9,6 +9,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import cast
 
+# noinspection PyPep8Naming
 from abib import Abib as app
 
 
@@ -26,11 +27,12 @@ class FakeHighlighter:
     def add_multi_highlight(self, line_num: int, pos: int, length: int) -> None:
         self.ranges.append((line_num, pos, length))
 
-    def highlight_line(self, line_num, fmt) -> None:
+    def highlight_line(self, line_num, _fmt) -> None:
         self.lines.append(line_num)
 
 
-def test_normal_verse_navigation_does_not_reuse_previous_multi_word_search_highlights(monkeypatch):
+def _setup_multi_word_search_window(monkeypatch, occurs):
+    """Build the shared window/highlighter fixture for multi-word search tests."""
     window = SimpleNamespace()
     highlighter = FakeHighlighter()
     window.dlg = SimpleNamespace(checks=[3, 0, 5])
@@ -39,7 +41,7 @@ def test_normal_verse_navigation_does_not_reuse_previous_multi_word_search_highl
     window.store = "passing"
     window.y = 5
     window.occur = [[(5, 12), (20, 24)]]
-    window.occurs = [2]
+    window.occurs = occurs
     window.verse = 0
 
     monkeypatch.setattr(app, "w", window)
@@ -48,6 +50,12 @@ def test_normal_verse_navigation_does_not_reuse_previous_multi_word_search_highl
     monkeypatch.setattr(app, "linehighlightcolor", "#fff59d")
     monkeypatch.setattr(app, "linetextcolor", "#000000")
     window.adjust_highlighting = lambda ln, current_position: None
+
+    return window, highlighter
+
+
+def test_normal_verse_navigation_does_not_reuse_previous_multi_word_search_highlights(monkeypatch):
+    window, highlighter = _setup_multi_word_search_window(monkeypatch, [2])
 
     app.MainWindow.on_text_changed(cast(app.MainWindow, cast(object, window)), 1)
 
@@ -56,23 +64,7 @@ def test_normal_verse_navigation_does_not_reuse_previous_multi_word_search_highl
 
 
 def test_active_multi_word_search_result_still_highlights(monkeypatch):
-    window = SimpleNamespace()
-    highlighter = FakeHighlighter()
-    window.dlg = SimpleNamespace(checks=[3, 0, 5])
-    window.hiLita = highlighter
-    window.key = "passing"
-    window.store = "passing"
-    window.y = 5
-    window.occur = [[(5, 12), (20, 24)]]
-    window.occurs = [0]
-    window.verse = 0
-
-    monkeypatch.setattr(app, "w", window)
-    monkeypatch.setattr(app, "KJV", ["", "And Saul took him that day."])
-    monkeypatch.setattr(app, "Amap_rev", {1: 0})
-    monkeypatch.setattr(app, "linehighlightcolor", "#fff59d")
-    monkeypatch.setattr(app, "linetextcolor", "#000000")
-    window.adjust_highlighting = lambda ln, current_position: None
+    window, highlighter = _setup_multi_word_search_window(monkeypatch, [0])
 
     app.MainWindow.on_text_changed(cast(app.MainWindow, cast(object, window)), 1)
 
@@ -116,9 +108,10 @@ def test_raw_result_click_recomputes_highlight_offsets(monkeypatch):
         class MoveOperation:
             End = 0
 
-        def __init__(self, block=None) -> None:
+        def __init__(self, _block=None) -> None:
             pass
 
+    # noinspection PyUnresolvedReferences
     monkeypatch.setattr(app, "QTextCursor", FakeCursor)
 
     calls: list[tuple[int, int]] = []
@@ -175,6 +168,7 @@ def test_find_next_history_uses_top_verse_shown_in_main_window(monkeypatch):
 
     monkeypatch.setattr(app, "w", window)
     app.forward.clear()
+    # noinspection PyUnresolvedReferences
     monkeypatch.setattr(app.history, "back_push", lambda win, current_position: pushed_positions.append(current_position))
     monkeypatch.setattr(app, "get_next_occurrence", lambda: 20)
 

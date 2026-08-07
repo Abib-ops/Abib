@@ -6,14 +6,14 @@
 
 from __future__ import annotations
 
-from typing import Tuple, Any
+from typing import Any
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QDialogButtonBox, QLabel, QStyle
 from PySide6.QtGui import QFontMetrics
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QLabel, QStyle
 
-from abib.ui.ui_find import UiDialog as UiDialog
 from abib.services.settings import SettingsService
+from abib.ui.ui_find import UiDialog
 
 
 class FindDialog(QDialog):
@@ -143,7 +143,9 @@ class FindDialog(QDialog):
 
         # Schedule a post-layout alignment to account for any geometry changes after show
         try:
-            from PySide6.QtCore import QTimer  # local import to avoid polluting the module top
+            from PySide6.QtCore import (
+                QTimer,  # local import to avoid polluting the module top
+            )
             QTimer.singleShot(0, self._reposition_right_labels)
         except (ImportError, AttributeError, RuntimeError, TypeError, ValueError):
             pass
@@ -185,7 +187,9 @@ class FindDialog(QDialog):
         cb1.setCurrentIndex(0)
         # Expect BOOKS_IN_THE_BIBLE - 1 as the last index
         try:
-            from abib.core.shared import BOOKS_IN_THE_BIBLE  # local import to avoid heavy module import at the top
+            from abib.core.shared import (
+                BOOKS_IN_THE_BIBLE,  # local import to avoid heavy module import at the top
+            )
             cb2.setCurrentIndex(BOOKS_IN_THE_BIBLE - 1)
         except (ImportError, TypeError, ValueError):
             # Fallback if constant not available for any reason
@@ -286,12 +290,12 @@ class FindDialog(QDialog):
         self.get_checks()
         if hasattr(self._main, "findf3"):
             # mirror previous behaviour by setting the parent's key and calling findf3
-            setattr(self._main, "key", key)
+            self._main.key = key
             self._main.findf3(i, j)
         if hasattr(self._main, "close_find_window"):
             self._main.close_find_window()
 
-    def get_scope(self) -> Tuple[int, int]:
+    def get_scope(self) -> tuple[int, int]:
         """Get the scope from the comboboxes."""
         assert self.ui.comboBox_1 is not None
         assert self.ui.comboBox_2 is not None
@@ -323,7 +327,7 @@ class FindDialog(QDialog):
             enabled = k >= start_idx
             # Prefer QStandardItemModel-style enable/disable if available
             try:
-                item = getattr(model, "item")(k)
+                item = model.item(k)
             except (AttributeError, TypeError):
                 item = None
             if item is not None:

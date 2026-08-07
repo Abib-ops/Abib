@@ -10,12 +10,14 @@
 ## Used by Abib.py (CURRENT_VERSION) =>
 ################################################################################
 
-from abib.utils.files import readfile
 import sys
-import tomllib
 from os import getenv
 from pathlib import Path
 from platform import system
+
+import tomllib
+
+from abib.utils.files import readfile
 
 
 # Load version from pyproject.toml
@@ -29,9 +31,8 @@ def _get_version() -> str:
     
     if getattr(sys, 'frozen', False):
         # If running as a PyInstaller bundle, check the bundle directory
-        if hasattr(sys, '_MEIPASS'):
-            # Use getattr to avoid linting warnings about protected member access
-            meipass = getattr(sys, '_MEIPASS')
+        meipass: str = getattr(sys, '_MEIPASS', '')
+        if meipass:
             search_paths.insert(0, Path(meipass) / "abib" / "pyproject.toml")
     
     for path in search_paths:
@@ -45,12 +46,13 @@ def _get_version() -> str:
             continue
             
     # 2. Hardcoded fallback (should be updated per release)
-    return "417.23"
+    return "417.24"
 
 CURRENT_VERSION = _get_version()
 
-if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-    package_directory: Path = Path(getattr(sys, '_MEIPASS')) / "abib"
+_meipass: str = getattr(sys, '_MEIPASS', '')
+if getattr(sys, 'frozen', False) and _meipass:
+    package_directory: Path = Path(_meipass) / "abib"
 else:
     package_directory: Path = Path(__file__).resolve().parent.parent
 
@@ -69,7 +71,7 @@ elif system() == 'Linux':
     user_settings_dir = Path.home() / ".config" / "Abib"
 else:
     print("Unknown operating system.")
-    exit()
+    sys.exit()
 
 # Construct the paths to assets regardless of the operating system.
 images_dir: Path = package_directory / "images"

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Any, cast
+from typing import Any
 
 from abib.core import shared as sh
 
@@ -35,9 +35,9 @@ class AudioService:
     - Fails gracefully if multimedia backends are unavailable.
     """
 
-    def __init__(self, config: Optional[AudioConfig] = None) -> None:
+    def __init__(self, config: AudioConfig | None = None) -> None:
         self.config = config or AudioConfig()
-        self._effect: Optional["QSoundEffect"] = None
+        self._effect: Any = None
         self._load_failed: bool = False
         # Lazy load on first play
 
@@ -64,7 +64,7 @@ class AudioService:
                 except (TypeError, ValueError, AttributeError):
                     pass
             # Keep a persistent instance so the backend stays initialised
-            self._effect = cast(Any, effect)
+            self._effect = effect
         except (RuntimeError, AttributeError, OSError):
             # Any failure here disables audio but must never crash the app
             self._effect = None

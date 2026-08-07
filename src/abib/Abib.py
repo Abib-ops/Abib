@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.1 and python3.14.6 (64-bit).
 
-29/07/2026
+07/08/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --all-extras --upgrade
@@ -91,17 +91,37 @@ import re
 import sqlite3
 import time
 import webbrowser
+from collections.abc import Iterator
 from itertools import islice
 from pathlib import Path
 from sys import exit
-from typing import Any, Dict, Set, List, Iterator
+from typing import Any
 
-from PySide6.QtCore import Qt, QRect, QEvent, QObject, QPoint
-from PySide6.QtGui import (QMouseEvent, QKeyEvent, QColor, QFont,
-                           QTextCursor, QTextCharFormat, QKeySequence, QShortcut)
-from PySide6.QtWidgets import (QMainWindow, QWidget,
-                               QPlainTextEdit, QLineEdit, QComboBox, QGridLayout, QMessageBox,
-                               QPushButton, QVBoxLayout, QStatusBar, QFileDialog, QSizePolicy)
+from PySide6.QtCore import QEvent, QObject, QPoint, QRect, Qt
+from PySide6.QtGui import (
+    QColor,
+    QFont,
+    QKeyEvent,
+    QKeySequence,
+    QMouseEvent,
+    QShortcut,
+    QTextCharFormat,
+    QTextCursor,
+)
+from PySide6.QtWidgets import (
+    QComboBox,
+    QFileDialog,
+    QGridLayout,
+    QLineEdit,
+    QMainWindow,
+    QMessageBox,
+    QPlainTextEdit,
+    QPushButton,
+    QSizePolicy,
+    QStatusBar,
+    QVBoxLayout,
+    QWidget,
+)
 
 from abib.core import fcs
 from abib.core import shared as sh
@@ -245,7 +265,7 @@ def get_next_occurrence() -> int:
     return current_position
 
 
-def findf3_ww_any(x1: int, x2: int, _set: Dict[str, Set], r_list: list, win: 'MainWindow') -> None:
+def findf3_ww_any(x1: int, x2: int, _set: dict[str, set], r_list: list, win: 'MainWindow') -> None:
     """Match any word."""
 
     from abib.services.search_service import findf3_ww_any as _find_any
@@ -326,7 +346,7 @@ class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs) -> None:
         """Initialise."""
         settings_service = kwargs.pop("settings_service", None)
-        super(MainWindow, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Load saved settings or initialise default ones.
 
@@ -373,7 +393,9 @@ class MainWindow(QMainWindow):
         self.shortcut_last_work: QShortcut | None = None
         # Placeholder for the 4th-column vertical button layout added in initui
         self.side_buttons_col: QVBoxLayout | None = None
-        self.other_works_map: Dict[str, str] = {}
+        self.other_works_map: dict[str, str] = {}
+        # Live map of Other Works checkboxes in the settings menu (populated in initui)
+        self._works_menu_checkboxes: dict[str, Any] = {}
         self.statusBar: Any = None
         self.okButton: Any = None
         self.dlg: Any = None  # No external window yet.
@@ -433,7 +455,7 @@ class MainWindow(QMainWindow):
 
         #Qt.QTimer.singleShot(0, lambda: self.display_devotional("PM", -1))  # Adjusted to yesterday evening's reading.
 
-        self.nwin: List[str] = [
+        self.nwin: list[str] = [
             'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
             'Joshua', 'Judges', 'Ruth', 'I Samuel', 'II Samuel', 'I Kings',
             'II Kings', 'I Chronicles', 'II Chronicles', 'Ezra', 'Nehemiah',
@@ -449,10 +471,10 @@ class MainWindow(QMainWindow):
             'II John', 'III John', 'Jude', 'Revelation']
 
         # Set up for Genesis 1:1
-        self.nchapters: List[str] = []
+        self.nchapters: list[str] = []
         for _ in range(1, 51):
             self.nchapters.append(str(_))
-        self.nverses: List[str] = []
+        self.nverses: list[str] = []
         for _ in range(1, 32):
             self.nverses.append(str(_))
 
@@ -674,7 +696,12 @@ class MainWindow(QMainWindow):
             self._release_main_width_limit()
             return
 
-        from abib.ui.search_results import SearchResult, format_reference, highlight_result_text, result_verse_text
+        from abib.ui.search_results import (
+            SearchResult,
+            format_reference,
+            highlight_result_text,
+            result_verse_text,
+        )
 
         search_text = self.keym or self.key
         search_mode = self.dlg.checks[0]
@@ -959,7 +986,7 @@ class MainWindow(QMainWindow):
         self.other_works_combo.blockSignals(True)
         try:
             self.other_works_combo.clear()
-            allowed: List[str] = []
+            allowed: list[str] = []
             try:
                 show_map = dict(self.settings.get("show_work") or {})
             except (TypeError, ValueError, AttributeError):
@@ -994,17 +1021,17 @@ class MainWindow(QMainWindow):
         # Use QWidgetAction with a QPushButton so clicking doesn't close the menu,
         # allowing multiple changes in one go.
         try:
-            from PySide6.QtWidgets import QWidgetAction, QPushButton
+            from PySide6.QtWidgets import QPushButton, QWidgetAction
 
             # Ensure we have a live map of checkboxes to update during bulk ops
-            if not hasattr(self, "_works_menu_checkboxes") or not isinstance(getattr(self, "_works_menu_checkboxes"), dict):
+            if not hasattr(self, "_works_menu_checkboxes") or not isinstance(self._works_menu_checkboxes, dict):
                 self._works_menu_checkboxes = {}
 
             def _set_all_works(visible: bool) -> None:
                 current_map = dict(self.settings.get("show_work") or {})
                 val = "true" if visible else "false"
                 # Use a distinct local name to avoid shadowing outer-scope variables
-                for work_stem in self.other_works_map.keys():
+                for work_stem in self.other_works_map:
                     current_map[work_stem] = val
                 self.settings["show_work"] = current_map
                 # Update the checkbox widgets in-place without closing the menu
@@ -1050,7 +1077,7 @@ class MainWindow(QMainWindow):
 
         # Build checkable items that do NOT close the menu on toggle
         try:
-            from PySide6.QtWidgets import QWidgetAction, QCheckBox
+            from PySide6.QtWidgets import QCheckBox, QWidgetAction
 
             # Reset and rebuild the checkbox map
             self._works_menu_checkboxes = {}
@@ -1116,36 +1143,35 @@ class MainWindow(QMainWindow):
         if source is None:
             return super().eventFilter(source, event)  # type: ignore[arg-type]
 
-        if source == self.display_verse_input and event.type() == QEvent.Type.KeyPress:
-            if isinstance(event, QKeyEvent):
-                if event.key() == Qt.Key.Key_Up:  # Handle Up Arrow
-                    if self.command_history and self.history_index > 0:
-                        self.history_index -= 1
-                        self.display_verse_input.setText(self.command_history[self.history_index])
-                    elif self.command_history and self.history_index == -1:
-                        self.history_index = len(self.command_history) - 1
-                        self.display_verse_input.setText(self.command_history[self.history_index])
-                    return True
+        if source == self.display_verse_input and event.type() == QEvent.Type.KeyPress and isinstance(event, QKeyEvent):
+            if event.key() == Qt.Key.Key_Up:  # Handle Up Arrow
+                if self.command_history and self.history_index > 0:
+                    self.history_index -= 1
+                    self.display_verse_input.setText(self.command_history[self.history_index])
+                elif self.command_history and self.history_index == -1:
+                    self.history_index = len(self.command_history) - 1
+                    self.display_verse_input.setText(self.command_history[self.history_index])
+                return True
 
-                elif event.key() == Qt.Key.Key_Down:  # Handle Down Arrow
-                    if self.command_history and self.history_index < len(self.command_history) - 1:
-                        self.history_index += 1
-                        self.display_verse_input.setText(self.command_history[self.history_index])
-                    elif self.history_index == len(self.command_history) - 1:
-                        self.history_index += 1
-                        self.display_verse_input.clear()  # Clear input when navigating below the last command
-                    return True
+            elif event.key() == Qt.Key.Key_Down:  # Handle Down Arrow
+                if self.command_history and self.history_index < len(self.command_history) - 1:
+                    self.history_index += 1
+                    self.display_verse_input.setText(self.command_history[self.history_index])
+                elif self.history_index == len(self.command_history) - 1:
+                    self.history_index += 1
+                    self.display_verse_input.clear()  # Clear input when navigating below the last command
+                return True
 
-                elif event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:  # Handle Enter
-                    current_text = self.display_verse_input.text().strip()
-                    if current_text:
-                        self.command_history.append(current_text)  # Add current text to history
-                        self.history_index = -1  # Reset history index
-                        # print(f"Executed: {current_text}") # Simulate command execution
-                        # print ("Return key intercepted in eventFilter") # Debugging
-                        self.goto_line()  # Trigger goto_line manually
-                        self.display_verse_input.clear()  # Clear the input field after submission
-                    return True
+            elif event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:  # Handle Enter
+                current_text = self.display_verse_input.text().strip()
+                if current_text:
+                    self.command_history.append(current_text)  # Add current text to history
+                    self.history_index = -1  # Reset history index
+                    # print(f"Executed: {current_text}") # Simulate command execution
+                    # print ("Return key intercepted in eventFilter") # Debugging
+                    self.goto_line()  # Trigger goto_line manually
+                    self.display_verse_input.clear()  # Clear the input field after submission
+                return True
 
         # Handle clicks inside the Bible text editor: when the user clicks
         # on any line, update the status bar to reflect the clicked verse.
@@ -1159,81 +1185,80 @@ class MainWindow(QMainWindow):
             # Defensive placeholder; real handling is for viewport object
             pass
         elif (hasattr(self.textEditor, 'viewport') and 
-              source == self.textEditor.viewport()):
+              source == self.textEditor.viewport() and
+              event.type() == QEvent.Type.MouseButtonPress):
             # Only process mouse button presses
-            if event.type() == QEvent.Type.MouseButtonPress:
-                try:
-                    if isinstance(event, QMouseEvent):
-                        if event.button() == Qt.MouseButton.LeftButton:
-                            # Map click position to document block/line
-                            try:
-                                pos = event.position() if hasattr(event, 'position') else event.pos()
-                            except (RuntimeError, AttributeError):
-                                pos = None
-                            if pos is None:
-                                return super().eventFilter(source, event)  # type: ignore[arg-type]
-                            try:
-                                # event.position() (PySide6 6.11+) returns QPointF; 
-                                # cursorForPosition requires QPoint.
-                                point = pos.toPoint() if hasattr(pos, 'toPoint') else pos
-                                assert isinstance(point, QPoint)
-                                cursor = self.textEditor.cursorForPosition(point)
-                                block = cursor.block()
-                                line_no = int(block.blockNumber())
-                            except (RuntimeError, AttributeError, TypeError, ValueError, AssertionError):
-                                return super().eventFilter(source, event)  # type: ignore[arg-type]
+            try:
+                if isinstance(event, QMouseEvent) and event.button() == Qt.MouseButton.LeftButton:
+                    # Map click position to document block/line
+                    try:
+                        pos = event.position() if hasattr(event, 'position') else event.pos()
+                    except (RuntimeError, AttributeError):
+                        pos = None
+                    if pos is None:
+                        return super().eventFilter(source, event)  # type: ignore[arg-type]
+                    try:
+                        # event.position() (PySide6 6.11+) returns QPointF; 
+                        # cursorForPosition requires QPoint.
+                        point = pos.toPoint() if hasattr(pos, 'toPoint') else pos
+                        assert isinstance(point, QPoint)
+                        cursor = self.textEditor.cursorForPosition(point)
+                        block = cursor.block()
+                        line_no = int(block.blockNumber())
+                    except (RuntimeError, AttributeError, TypeError, ValueError, AssertionError):
+                        return super().eventFilter(source, event)  # type: ignore[arg-type]
 
-                            # Resolve the clicked line to the verse index (current_position)
-                            # Prefer the nearest verse start at or before the clicked line.
-                            current_position = None
-                            try:
-                                if line_no in Amap:
-                                    current_position = Amap_rev[line_no]
-                                else:
-                                    # Search backward first for up to 12 lines, then forward
-                                    found = False
-                                    for delta in range(1, 13):
-                                        ln_back = line_no - delta
-                                        if ln_back in Amap:
-                                            current_position = Amap_rev[ln_back]
-                                            found = True
-                                            break
-                                        ln_fwd = line_no + delta
-                                        if ln_fwd in Amap:
-                                            current_position = Amap_rev[ln_fwd]
-                                            found = True
-                                            break
-                                    if not found:
-                                        # Fallback: use existing top-of-screen detection
-                                        current_position = self.get_line_number()
-                            except (RuntimeError, AttributeError, TypeError, ValueError):
+                    # Resolve the clicked line to the verse index (current_position)
+                    # Prefer the nearest verse start at or before the clicked line.
+                    current_position = None
+                    try:
+                        if line_no in Amap:
+                            current_position = Amap_rev[line_no]
+                        else:
+                            # Search backward first for up to 12 lines, then forward
+                            found = False
+                            for delta in range(1, 13):
+                                ln_back = line_no - delta
+                                if ln_back in Amap:
+                                    current_position = Amap_rev[ln_back]
+                                    found = True
+                                    break
+                                ln_fwd = line_no + delta
+                                if ln_fwd in Amap:
+                                    current_position = Amap_rev[ln_fwd]
+                                    found = True
+                                    break
+                            if not found:
+                                # Fallback: use existing top-of-screen detection
                                 current_position = self.get_line_number()
+                    except (RuntimeError, AttributeError, TypeError, ValueError):
+                        current_position = self.get_line_number()
 
-                            # Do not force-scroll the view; keep the current scroll position.
+                    # Do not force-scroll the view; keep the current scroll position.
 
-                            # Update the status bar to reflect the clicked verse
+                    # Update the status bar to reflect the clicked verse
+                    try:
+                        if isinstance(current_position, int):
+                            self.ref_to_statusbar(current_position)
+                            # Persist the last Bible position so any reload restores here
                             try:
-                                if isinstance(current_position, int):
-                                    self.ref_to_statusbar(current_position)
-                                    # Persist the last Bible position so any reload restores here
-                                    try:
-                                        self._last_bible_position = int(current_position)
-                                        # Remember the last explicitly clicked position for context-sensitive actions
-                                        self._last_clicked_position = int(current_position)
-                                        # Also update the general last-context position used by Commentary
-                                        self._last_context_position = int(current_position)
-                                    except (TypeError, ValueError):
-                                        pass
-                            except (RuntimeError, AttributeError, TypeError, ValueError):
+                                self._last_bible_position = int(current_position)
+                                # Remember the last explicitly clicked position for context-sensitive actions
+                                self._last_clicked_position = int(current_position)
+                                # Also update the general last-context position used by Commentary
+                                self._last_context_position = int(current_position)
+                            except (TypeError, ValueError):
                                 pass
+                    except (RuntimeError, AttributeError, TypeError, ValueError):
+                        pass
 
-                            # Do not consume the event so that the default text selection behaviour
-                            # (click, drag to select, double-click to select a word)
-                            # continues to work in the Bible view.
-                            return False
-                except (RuntimeError, AttributeError, TypeError, ValueError):
-                    # Fall through to default processing on any unexpected error
-                    pass
+                    # Do not consume the event so that the default text selection behaviour
+                    # (click, drag to select, double-click to select a word)
+                    # continues to work in the Bible view.
+                    return False
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                # Fall through to default processing on any unexpected error
+                pass
 
         # Pass the event to the parent class
         return super().eventFilter(source, event)  # type: ignore[arg-type]
@@ -1426,7 +1451,9 @@ class MainWindow(QMainWindow):
         reader = getattr(self, "text_edit_window", None)
         if reader is None:
             # Defer import to reduce startup cost
-            from abib.ui.text_window import TextDocumentWindow as ExternalTextDocumentWindow
+            from abib.ui.text_window import (
+                TextDocumentWindow as ExternalTextDocumentWindow,
+            )
             new_reader = ExternalTextDocumentWindow(
                 initial_file_path=req_path,
                 settings_path=getattr(self, "user_settings_path", None),
@@ -1437,7 +1464,7 @@ class MainWindow(QMainWindow):
             # When the user clicks a scripture reference in the reader, navigate here
             try:
                 win.referenceActivated.connect(self._on_reader_reference_activated)
-                setattr(win, "_connected_to_main", True)
+                win._connected_to_main = True
             except (AttributeError, RuntimeError, TypeError):
                 pass
             # Apply the current theme to the new window and its editor
@@ -1488,7 +1515,7 @@ class MainWindow(QMainWindow):
             try:
                 if not getattr(win, "_connected_to_main", False):
                     win.referenceActivated.connect(self._on_reader_reference_activated)
-                    setattr(win, "_connected_to_main", True)
+                    win._connected_to_main = True
             except (AttributeError, RuntimeError, TypeError):
                 pass
             try:
@@ -1504,7 +1531,7 @@ class MainWindow(QMainWindow):
         try:
             if not getattr(win_to_show, "_display_signal_connected", False):
                 win_to_show.displayedChanged.connect(self._on_reader_displayed_changed)
-                setattr(win_to_show, "_display_signal_connected", True)
+                win_to_show._display_signal_connected = True
         except (AttributeError, RuntimeError, TypeError):
             pass
         self._update_other_works_search_button(True)
@@ -1768,14 +1795,14 @@ class MainWindow(QMainWindow):
             else:
                 self.find_f4()
 
-    def make_key_whole(self, _key: str, _dict: Dict, _set: Dict[str, Set]) -> tuple[int, str]:
+    def make_key_whole(self, _key: str, _dict: dict, _set: dict[str, set]) -> tuple[int, str]:
         """Make _key conform to Match whole word only.
 
         Return the number of whole words in the _key variable.
         """
 
         numstart, _key = fcs.split_strip(_key)
-        words: List = _key.split()
+        words: list = _key.split()
         words = [item for item in words if item in _dict]
         _key = ''
         for i in words:
@@ -1799,8 +1826,8 @@ class MainWindow(QMainWindow):
         win: Any = w
 
         p = "():,’;-?[].!<>"
-        ae: List[str] = ['aea', 'aeu', 'aes', 'aet', 'aene', 'aeno', 'AEno', 'AEne', 'Aeno', 'Aene']
-        ae_unicode: List[str] = ['æa', 'æu', 'æs', 'æt', 'æne', 'æno', 'Æno', 'Æne', 'Æno', 'Æne']
+        ae: list[str] = ['aea', 'aeu', 'aes', 'aet', 'aene', 'aeno', 'AEno', 'AEne', 'Aeno', 'Aene']
+        ae_unicode: list[str] = ['æa', 'æu', 'æs', 'æt', 'æne', 'æno', 'Æno', 'Æne', 'Æno', 'Æne']
         count = -1
         for _ in ae:
             count += 1
@@ -1995,8 +2022,8 @@ class MainWindow(QMainWindow):
             key: str = win.key
             # set_ and set_dict are dictionaries of words in the KJV Bible.
             # For each word, there is a set of verse/line numbers where the word occurs.
-            set_: Dict[Any, Set] = set_dict
-            r_list: List | tuple = Rstp
+            set_: dict[Any, set] = set_dict
+            r_list: list | tuple = Rstp
         else:
             assert self.dlg.checks[1] == 0      # The Case isn't checked.
             dic = strpd_low_dict
@@ -2052,7 +2079,7 @@ class MainWindow(QMainWindow):
 
         return current_position
 
-    def find_whole_word_single(self, x1: int, x2: int, _set: Dict[str, Set], r_list: List) -> None:
+    def find_whole_word_single(self, x1: int, x2: int, _set: dict[str, set], r_list: list) -> None:
         """Match the whole single word."""
 
         # 1. Create a local reference with a type hint to satisfy the linter
@@ -2060,7 +2087,7 @@ class MainWindow(QMainWindow):
         win: Any = w
 
         try:
-            win.occur = sorted(list(_set[win.key]))
+            win.occur = sorted(_set[win.key])
         except KeyError:
             win.occurring = 0
         else:
@@ -2331,9 +2358,8 @@ class MainWindow(QMainWindow):
         self.textEditor.moveCursor(QTextCursor.MoveOperation.End)
         self.textEditor.setTextCursor(linecursor)
         self.textEditor.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)
-        if self.dlg is not None:
-            if self.dlg.checks[0] == 3 or self.dlg.checks[0] == 4:
-                win.key = win.store
+        if self.dlg is not None and (self.dlg.checks[0] == 3 or self.dlg.checks[0] == 4):
+            win.key = win.store
 
     def on_text_changed(self, ln: int) -> None:
         """Highlighting."""
@@ -2353,26 +2379,25 @@ class MainWindow(QMainWindow):
         should_highlight = True
 
         try:
-            if self.dlg is not None:
-                if self.dlg.checks[0] == 3 or self.dlg.checks[0] == 4:
-                    should_highlight = False
-                    win.store = win.key
-                    saved_y = win.y
-                    current_position = Amap_rev[ln]
-                    if (0 <= win.verse < len(win.occurs) and win.verse < len(win.occur)
-                            and win.occurs[win.verse] == current_position):
-                        should_highlight = True
-                        win.hiLita.clear = False
-                        keys = sorted(win.occur[win.verse])
-                        for i in keys:
-                            assert isinstance(i, (list, tuple))
-                            win.key = '+' * (i[1] - i[0])
-                            win.y = i[0]
-                            self.adjust_highlighting(ln, current_position)
-                            pos = win.y + win.hiLita.lineinc
-                            length = len(win.key) + win.hiLita.keyinc
-                            win.hiLita.add_multi_highlight(ln, pos, length)
-                    win.y = saved_y
+            if self.dlg is not None and (self.dlg.checks[0] == 3 or self.dlg.checks[0] == 4):
+                should_highlight = False
+                win.store = win.key
+                saved_y = win.y
+                current_position = Amap_rev[ln]
+                if (0 <= win.verse < len(win.occurs) and win.verse < len(win.occur)
+                        and win.occurs[win.verse] == current_position):
+                    should_highlight = True
+                    win.hiLita.clear = False
+                    keys = sorted(win.occur[win.verse])
+                    for i in keys:
+                        assert isinstance(i, (list, tuple))
+                        win.key = '+' * (i[1] - i[0])
+                        win.y = i[0]
+                        self.adjust_highlighting(ln, current_position)
+                        pos = win.y + win.hiLita.lineinc
+                        length = len(win.key) + win.hiLita.keyinc
+                        win.hiLita.add_multi_highlight(ln, pos, length)
+                win.y = saved_y
 
             if should_highlight:
                 win.hiLita.highlight_line(ln, fmt)
@@ -2461,10 +2486,8 @@ class MainWindow(QMainWindow):
                 current_position = int(self._last_bible_position)
             except (AttributeError, TypeError, ValueError):
                 current_position = 0
-        if current_position < 0:
-            current_position = 0
-        if current_position > sh.LAST_VERSE_IN_BIBLE:
-            current_position = sh.LAST_VERSE_IN_BIBLE
+        current_position = max(current_position, 0)
+        current_position = min(current_position, sh.LAST_VERSE_IN_BIBLE)
         try:
             entry = sh.Info[current_position]
             b = int(entry[0]) + 1
@@ -2534,10 +2557,8 @@ class MainWindow(QMainWindow):
         if current_position == -1:
             self.display_verse_input.clear()
         else:
-            if current_position < 0:
-                current_position = 0
-            if current_position > sh.LAST_VERSE_IN_BIBLE:
-                current_position = sh.LAST_VERSE_IN_BIBLE
+            current_position = max(current_position, 0)
+            current_position = min(current_position, sh.LAST_VERSE_IN_BIBLE)
             self.display_verse(current_position)
 
     def  goto_book(self, _index: int) -> None:
@@ -2571,10 +2592,8 @@ class MainWindow(QMainWindow):
         ref = ref.replace(' ', '')
         # print(f"ref in goto_book: {ref}")
         current_position = self.reference_to_line_number(ref, book)
-        if current_position < 0:
-            current_position = 0
-        if current_position > sh.LAST_VERSE_IN_BIBLE:
-            current_position = sh.LAST_VERSE_IN_BIBLE
+        current_position = max(current_position, 0)
+        current_position = min(current_position, sh.LAST_VERSE_IN_BIBLE)
         self.display_verse(current_position)
         self.goto_chapter(_index)
 
@@ -2613,14 +2632,12 @@ class MainWindow(QMainWindow):
 
         ref = win.nwin[book]
         ref = ref.replace(' ', '')
-        ref = f"{ref} {str(chapter + 1)}"
+        ref = f"{ref} {chapter + 1!s}"
 
         # print(f"ref in goto_chapter: {ref}")
         current_position = self.reference_to_line_number(ref, book, chapter)
-        if current_position < 0:
-            current_position = 0
-        if current_position > sh.LAST_VERSE_IN_BIBLE:
-            current_position = sh.LAST_VERSE_IN_BIBLE
+        current_position = max(current_position, 0)
+        current_position = min(current_position, sh.LAST_VERSE_IN_BIBLE)
         self.display_verse(current_position)
 
     def goto_verse(self, _index: int) -> None:
@@ -2641,13 +2658,11 @@ class MainWindow(QMainWindow):
 
         ref = win.nwin[book]
         ref = ref.replace(' ', '')
-        ref = f"{ref} {str(chapter + 1)}.{verse + 1}"
+        ref = f"{ref} {chapter + 1!s}.{verse + 1}"
         # print(f"ref in goto_verse: {ref}")
         current_position = self.reference_to_line_number(ref, book, chapter)
-        if current_position < 0:
-            current_position = 0
-        if current_position > sh.LAST_VERSE_IN_BIBLE:
-            current_position = sh.LAST_VERSE_IN_BIBLE
+        current_position = max(current_position, 0)
+        current_position = min(current_position, sh.LAST_VERSE_IN_BIBLE)
         # print(f"current_position in goto_verse: {current_position}")
         self.display_verse(current_position)
 
@@ -2700,7 +2715,7 @@ class MainWindow(QMainWindow):
         assert w is not None
         win: Any = w
 
-        inf: List = sh.Info[current_line]
+        inf: list = sh.Info[current_line]
         current_chapter: int = inf[1]
         # print(f"2474 current_chapter: {current_chapter}")
         current_verse = inf[2]
@@ -3102,7 +3117,7 @@ class MainWindow(QMainWindow):
                     prev_is_bible = isinstance(getattr(self, "path1", None), str) and str(Path(self.path1).name) == "KJB_PCE.txt"
                 except (OSError, TypeError, ValueError):
                     prev_is_bible = False
-                if prev_is_bible and not str(Path(path1).name) == "KJB_PCE.txt":
+                if prev_is_bible and str(Path(path1).name) != "KJB_PCE.txt":
                     try:
                         self._last_bible_position = int(self.get_line_number())
                     except (RuntimeError, TypeError, ValueError):
@@ -3156,10 +3171,8 @@ class MainWindow(QMainWindow):
                     except (TypeError, ValueError):
                         last_pos = 0
                     # Clamp to valid range
-                    if last_pos < 0:
-                        last_pos = 0
-                    if last_pos > sh.LAST_VERSE_IN_BIBLE:
-                        last_pos = sh.LAST_VERSE_IN_BIBLE
+                    last_pos = max(last_pos, 0)
+                    last_pos = min(last_pos, sh.LAST_VERSE_IN_BIBLE)
                     self.display_verse(last_pos)
                 else:
                     win.otherFileFlag = True
@@ -3313,7 +3326,9 @@ class MainWindow(QMainWindow):
 
         if not self.secondary_window or not self.secondary_window.isVisible():
             # Create a new secondary window if it doesn't exist or is closed
-            from abib.ui.windows import SecondaryWindow as ExtSecondaryWindow  # deferred import
+            from abib.ui.windows import (
+                SecondaryWindow as ExtSecondaryWindow,  # deferred import
+            )
             self.secondary_window = ExtSecondaryWindow(
                 sme_text,
                 navigate_left_cb=lambda: self.display_secondary_window(-12),

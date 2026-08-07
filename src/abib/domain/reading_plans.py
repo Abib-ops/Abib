@@ -7,9 +7,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from json import JSONDecodeError, load
 from pathlib import Path
-from typing import Dict, Tuple, Optional
-from json import load, JSONDecodeError
 
 from abib.core import fcs
 from abib.core import shared as sh
@@ -38,10 +37,10 @@ class ReadingPlans:
     - Returning the SME text and embedded scripture reference
     """
 
-    def __init__(self, sme_json_path: Optional[Path] = None) -> None:
+    def __init__(self, sme_json_path: Path | None = None) -> None:
         # Determine JSON path in-app directory by default
         self.sme_json_path = sme_json_path or (sh.base_dir / "morning_evening.json")
-        self._sme_data: Dict[str, Dict[str, str]] = {}
+        self._sme_data: dict[str, dict[str, str]] = {}
 
         # Initialise the date state using fcs.get_date_file (tuple[str, str, int])
         year, time_of_day, index = fcs.get_date_file()
@@ -66,7 +65,7 @@ class ReadingPlans:
         self._date = DateFile(y, tod, idx)
 
     # ---- Public API ----
-    def get_devotional_entry(self, adjustment: int = 0) -> Tuple[str, str]:
+    def get_devotional_entry(self, adjustment: int = 0) -> tuple[str, str]:
         """Return (sme_text, scripture_ref) for the given adjustment.
 
         adjustment: the existing UI expects increments of 12 (-12 previous, +12 next).

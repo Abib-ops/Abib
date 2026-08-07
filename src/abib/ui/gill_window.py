@@ -6,21 +6,21 @@
 
 from __future__ import annotations
 
+import re
 import sqlite3
 import time
-import re
-from pathlib import Path
 from itertools import islice
+from pathlib import Path
 from typing import Any
 
-from PySide6.QtWidgets import (QWidget, QTextEdit, QPushButton, QGridLayout)
-from PySide6.QtGui import (QKeySequence, QWheelEvent, QMouseEvent, QShortcut)
-from PySide6.QtCore import Qt, QEvent, QPoint
+from PySide6.QtCore import QEvent, QPoint, Qt
+from PySide6.QtGui import QKeySequence, QMouseEvent, QShortcut, QWheelEvent
+from PySide6.QtWidgets import QGridLayout, QPushButton, QTextEdit, QWidget
 
 from abib.core import shared as sh
+from abib.domain import scripture_refs
 from abib.services.settings import SettingsService
 from abib.ui.ui_helpers import SimpleScripturePopup
-from abib.domain import scripture_refs
 
 
 class GillCommentaryWindow(QWidget):
@@ -113,10 +113,8 @@ class GillCommentaryWindow(QWidget):
         # Set the initial font size from settings and apply as both widget and document font
         try:
             fs = int(self._settings_service.get_commentary_font_size())
-            if fs < 8:
-                fs = 8
-            if fs > 40:
-                fs = 40
+            fs = max(fs, 8)
+            fs = min(fs, 40)
             fnt = self.viewer.font()
             if hasattr(fnt, "setPointSize"):
                 fnt.setPointSize(fs)
@@ -236,6 +234,17 @@ class GillCommentaryWindow(QWidget):
             except (RuntimeError, AttributeError):
                 pass
 
+    def _persist_geometry(self) -> None:
+        """Persist the current window geometry to settings."""
+        try:
+            geom = self.geometry()
+            assert self._settings_service is not None
+            self._settings_service.save_window_geometry(
+                "gill_commentary_window", int(geom.x()), int(geom.y()), int(geom.width()), int(geom.height())
+            )
+        except (RuntimeError, TypeError, ValueError, AssertionError):
+            pass
+
     # --------- DB helpers ---------
     def _ensure_conn(self) -> sqlite3.Connection | None:
         if self._conn is None:
@@ -268,41 +277,20 @@ class GillCommentaryWindow(QWidget):
         except sqlite3.Error:
             pass
         # Persist final geometry on close
-        try:
-            geom = self.geometry()
-            assert self._settings_service is not None
-            self._settings_service.save_window_geometry(
-                "gill_commentary_window", int(geom.x()), int(geom.y()), int(geom.width()), int(geom.height())
-            )
-        except (RuntimeError, TypeError, ValueError, AssertionError):
-            pass
+        self._persist_geometry()
         self._conn = None
         super().closeEvent(event)
 
     # Persist geometry on move/resize
     def moveEvent(self, event):  # type: ignore[override]
-        try:
-            geom = self.geometry()
-            assert self._settings_service is not None
-            self._settings_service.save_window_geometry(
-                "gill_commentary_window", int(geom.x()), int(geom.y()), int(geom.width()), int(geom.height())
-            )
-        except (RuntimeError, TypeError, ValueError, AssertionError):
-            pass
+        self._persist_geometry()
         try:
             return super().moveEvent(event)
         except (RuntimeError, AttributeError, TypeError):
             return None
 
     def resizeEvent(self, event):  # type: ignore[override]
-        try:
-            geom = self.geometry()
-            assert self._settings_service is not None
-            self._settings_service.save_window_geometry(
-                "gill_commentary_window", int(geom.x()), int(geom.y()), int(geom.width()), int(geom.height())
-            )
-        except (RuntimeError, TypeError, ValueError, AssertionError):
-            pass
+        self._persist_geometry()
         try:
             return super().resizeEvent(event)
         except (RuntimeError, AttributeError, TypeError):
@@ -336,10 +324,8 @@ class GillCommentaryWindow(QWidget):
             x = int(x)
         except (TypeError, ValueError):
             x = 1
-        if x < 0:
-            x = 0
-        if x > sh.LAST_VERSE_IN_BIBLE:
-            x = sh.LAST_VERSE_IN_BIBLE
+        x = max(x, 0)
+        x = min(x, sh.LAST_VERSE_IN_BIBLE)
         self._x = x
         self._display_current()
 
@@ -512,10 +498,8 @@ class GillCommentaryWindow(QWidget):
             s = int(size)
         except (TypeError, ValueError):
             s = 12
-        if s < 8:
-            s = 8
-        if s > 40:
-            s = 40
+        s = max(s, 8)
+        s = min(s, 40)
         try:
             fnt = self.viewer.font()
             # Avoid redundant application
@@ -547,11 +531,10 @@ class GillCommentaryWindow(QWidget):
                 # Use a local reference with a type hint to satisfy the linter
                 if w is not None:
                     win: Any = w
-                    if hasattr(win, "apply_font_size"):
-                        # Only notify if the main window's font size is different
-                        if win.settings_service.get_bible_font_size() != s:
-                            win.settings_service.update_bible_font_size(s)
-                            win.apply_font_size()
+                    # Only notify if the main window's font size is different
+                    if hasattr(win, "apply_font_size") and win.settings_service.get_bible_font_size() != s:
+                        win.settings_service.update_bible_font_size(s)
+                        win.apply_font_size()
 
             # Refresh the display to apply the new font size to the HTML content
             self._display_current()
@@ -662,7 +645,7 @@ class GillCommentaryWindow(QWidget):
                                         if ph is not None:
                                             # Prefer helper API if available
                                             try:
-                                                is_vis = bool(getattr(ph, 'is_visible') and ph.is_visible())  # type: ignore[attr-defined]
+                                                is_vis = bool(ph.is_visible and ph.is_visible())  # type: ignore[attr-defined]
                                             except (RuntimeError, AttributeError, TypeError, ValueError):
                                                 # If helper API missing or failed, assume not visible
                                                 # (avoid private access)
@@ -686,7 +669,7 @@ class GillCommentaryWindow(QWidget):
                                 w = Abib.w
                                 if bcv is not None and w is not None:
                                     win: Any = w
-                                    if hasattr(win, 'move_to_line') and callable(getattr(win, 'move_to_line')):
+                                    if hasattr(win, 'move_to_line') and callable(win.move_to_line):
                                         b, c, v = bcv
                                         try:
                                             current_ln = win.get_line_number() if hasattr(win, 'get_line_number') else 0
@@ -795,26 +778,15 @@ class GillCommentaryWindow(QWidget):
                     self._ref_cache = {}
                 except (RuntimeError, AttributeError, TypeError, ValueError):
                     pass
-            s = href.strip()
-            if not s:
+            header = self._split_href_header(href)
+            if header is None:
                 return None
-            # Trim leading '#'
-            if s.startswith('#'):
-                s = s[1:]
-            # Tolerate leading 'b', 'B', 'c' or 'C'
-            if s and (s[0] in ('b', 'B', 'c', 'C')):
-                s = s[1:]
-            parts = s.split('.')
-            if len(parts) < 2:
-                return None
-            b = int(parts[0])
-            c = int(parts[1])
-            versespec = parts[2] if len(parts) >= 3 else '1'
+            b, c, versespec = header
             # Normalise: replace en/em dashes, strip spaces, remove trailing punctuation and letter suffixes
             versespec = versespec.replace('–', '-').replace('—', '-')
             versespec = versespec.strip()
             # Drop trailing punctuation
-            versespec = versespec.rstrip(" ,;:.')]}\"”」}")
+            versespec = re.sub(r"[ ,;:.')\]}\"”」]+$", "", versespec)
             # Chapter-only → verse 1
             if not versespec:
                 versespec = '1'
@@ -907,22 +879,37 @@ class GillCommentaryWindow(QWidget):
             return None
 
     @staticmethod
+    def _split_href_header(href: str) -> tuple[int, int, str] | None:
+        """Parse a Gill href into (book, chapter, versespec); returns None if invalid."""
+        s = href.strip()
+        if not s:
+            return None
+        # Trim leading '#'
+        s = s.removeprefix('#')
+        # Tolerate leading 'b', 'B', 'c' or 'C'
+        if s and (s[0] in ('b', 'B', 'c', 'C')):
+            s = s[1:]
+        parts = s.split('.')
+        if len(parts) < 2:
+            return None
+        try:
+            b = int(parts[0])
+            c = int(parts[1])
+        except (TypeError, ValueError):
+            return None
+        versespec = parts[2] if len(parts) >= 3 else '1'
+        return b, c, versespec
+
+    @staticmethod
     def _parse_href_to_bcv(href: str) -> tuple[int, int, int] | None:
         """Return the first verse target (book, chapter, verse) from a Gill href."""
         try:
-            s = href.strip()
-            if s.startswith('#'):
-                s = s[1:]
-            if s and (s[0] in ('b', 'B', 'c', 'C')):
-                s = s[1:]
-            parts = s.split('.')
-            if len(parts) < 2:
+            header = GillCommentaryWindow._split_href_header(href)
+            if header is None:
                 return None
-            b = int(parts[0])
-            c = int(parts[1])
-            vpart = parts[2] if len(parts) >= 3 else '1'
+            b, c, vpart = header
             vpart = vpart.replace('–', '-').replace('—', '-').strip()
-            vpart = vpart.rstrip(" ,;:.')]}\"”」}")
+            vpart = re.sub(r"[ ,;:.')\]}\"”」]+$", "", vpart)
             if not vpart:
                 vpart = '1'
             first_seg = vpart.split(',')[0].strip()
@@ -930,8 +917,7 @@ class GillCommentaryWindow(QWidget):
             if '-' in first_seg:
                 first_seg = first_seg.split('-', 1)[0].strip()
             v = int(first_seg)
-            if v < 1:
-                v = 1
+            v = max(v, 1)
             return b, c, v
         except (TypeError, ValueError, IndexError, AttributeError):
             return None
@@ -992,14 +978,10 @@ class GillCommentaryWindow(QWidget):
         except (TypeError, ValueError):
             d = self._hide_delay_ms
         # Clamp
-        if h < 0:
-            h = 0
-        if h > 5000:
-            h = 5000
-        if d < 0:
-            d = 0
-        if d > 5000:
-            d = 5000
+        h = max(h, 0)
+        h = min(h, 5000)
+        d = max(d, 0)
+        d = min(d, 5000)
         self._hover_delay_ms = h
         self._hide_delay_ms = d
         try:

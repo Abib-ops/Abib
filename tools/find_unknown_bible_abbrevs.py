@@ -32,9 +32,9 @@ Output:
 
 from __future__ import annotations
 
+import csv
 import re
 import sys
-import csv
 from pathlib import Path
 
 # Ensure the project root is on sys.path when run from tools/
@@ -43,9 +43,9 @@ from project_setup import PROJECT_ROOT
 # Try to import bibledict from shared.py in the same project
 try:
     from abib.core.shared import bibledict
-except Exception as e:
+except ImportError as e:
     print(f"Error importing bibledict from abib.core.shared: {e}")
-    sys.exit(1)
+    raise SystemExit(1) from e
 
 
 # ----- Configuration -----
@@ -61,7 +61,7 @@ OUTPUT_CSV = PROJECT_ROOT / "unknown_bible_abbreviations.csv"
 
 
 # Build a normalised key set from bibledict for fast membership testing
-KNOWN = {k.lower() for k in bibledict.keys()}
+KNOWN = {k.lower() for k in bibledict}
 
 
 # Regex to catch modern-style references: Book token followed by chapter/verse
@@ -123,8 +123,7 @@ def normalize_book_token(token: str) -> str:
     # Work with a version that still preserves spaces for roman handling
     t0 = token.strip().lower()
     # Remove the trailing dot that sometimes goes with abbreviations (e.g. "Jn.")
-    if t0.endswith('.'):
-        t0 = t0[:-1]
+    t0 = t0.removesuffix('.')
     # Prefer converting leading roman numerals only when separated by a space
     m_roman = re.match(r"^(i{1,3})\s+(.*)$", t0)
     if m_roman:
@@ -157,9 +156,7 @@ def is_excluded(norm: str) -> bool:
     if norm in ROMAN_EXCLUDE:
         return True
     # Skip single letters (e.g. p.) unless they are known book keys (handled elsewhere)
-    if len(norm) == 1:
-        return True
-    return False
+    return len(norm) == 1
 
 
 def iter_text_files(root: Path):

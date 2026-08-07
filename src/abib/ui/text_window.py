@@ -6,43 +6,42 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import re
-from typing import Any, Dict, List, Set, Optional, cast
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any, cast
 
-from PySide6.QtCore import Qt, QEvent, QTimer, QPoint, Signal, QCoreApplication
+from PySide6.QtCore import QCoreApplication, QEvent, QPoint, Qt, QTimer, Signal
 from PySide6.QtGui import (
     QColor,
     QFont,
-    QTextCursor,
-    QTextCharFormat,
-    QPalette,
     QKeySequence,
-    QTextDocument,
-    QShortcut,
     QMouseEvent,
+    QPalette,
+    QShortcut,
+    QTextCharFormat,
+    QTextCursor,
+    QTextDocument,
     QWheelEvent,
 )
 from PySide6.QtWidgets import (
-    QDialog,
-    QLabel,
-    QVBoxLayout,
-    QPlainTextEdit,
-    QWidget,
-    QTextEdit,
-    QLineEdit,
-    QPushButton,
     QCheckBox,
+    QDialog,
     QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPlainTextEdit,
     QProgressBar,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
 )
 
-from abib.core import fcs
-from abib.core import scripture
+from abib.core import fcs, scripture
 from abib.core import shared as sh
-from abib.ui.ui_helpers import SimpleScripturePopup
 from abib.services.settings import SettingsService
-
+from abib.ui.ui_helpers import SimpleScripturePopup
 
 # List of files to ignore for scripture highlighting
 IGNORE_HIGHLIGHTS = {"HELP.txt", "README.txt", "COPYING"}
@@ -96,12 +95,12 @@ class TextDocumentWindow(QDialog):
         else:
             self.settings_service: SettingsService = SettingsService()
 
-        self.settings: Dict[str, Any] = self.settings_service.settings
+        self.settings: dict[str, Any] = self.settings_service.settings
         self.settings_path: str = str(self.settings_service.user_settings_path)
 
         self.current_reference = None
         self.current_file_stem = None
-        self._find_dlg: Optional[QDialog] = None
+        self._find_dlg: QDialog | None = None
         self.setWindowTitle("Text Reader")
 
         # Load initial window geometry from SettingsService
@@ -173,8 +172,8 @@ class TextDocumentWindow(QDialog):
             self._save_debounce: QTimer = QTimer(self)
             self._save_debounce.setSingleShot(True)
             self._save_debounce.setInterval(150)
-            self._pending_save_stem: Optional[str] = None
-            self._pending_save_value: Optional[int] = None
+            self._pending_save_stem: str | None = None
+            self._pending_save_value: int | None = None
             self._save_debounce.timeout.connect(self._flush_pending_save)
         except (RuntimeError, AttributeError, TypeError):
             self._save_debounce = None  # type: ignore
@@ -205,7 +204,7 @@ class TextDocumentWindow(QDialog):
             self.layout.addWidget(self._progress_container)
             # Animated pulse for the message (cycles dots …)
             # Optional because the fail-safe path below may set it to None
-            self._progress_pulse: Optional[QTimer] = QTimer(self)
+            self._progress_pulse: QTimer | None = QTimer(self)
             if self._progress_pulse is not None:
                 pulse: Any = self._progress_pulse
                 try:
@@ -215,10 +214,10 @@ class TextDocumentWindow(QDialog):
                 # Guarded connect to satisfy static analysers that type QTimer.timeout (Signal)
                 # may not expose .connect in stubs, while at runtime it does.
                 try:
-                    sig = getattr(pulse, "timeout", None)
-                    cn = getattr(sig, "connect", None)
-                    if callable(cn):
-                        cn(self._tick_progress_pulse)
+                    # pulse is Any-typed, so this dynamic access is invisible to
+                    # static analysers (avoids false-positive None-callable warnings)
+                    # while working correctly at runtime for a real QTimer.
+                    pulse.timeout.connect(self._tick_progress_pulse)
                 except (AttributeError, TypeError, RuntimeError):
                     pass
             self._progress_indeterminate: bool = False
@@ -251,10 +250,10 @@ class TextDocumentWindow(QDialog):
         self._popup_helper: SimpleScripturePopup | None = None
 
         # Lazy highlighting state
-        self._all_references: List[Dict[str, Any]] = []
-        self._ref_index: Set[tuple] = set()
-        self._lines: List[str] = []
-        self._line_offsets: List[int] = []
+        self._all_references: list[dict[str, Any]] = []
+        self._ref_index: set[tuple] = set()
+        self._lines: list[str] = []
+        self._line_offsets: list[int] = []
         self._next_line_index: int = 0
         # Has the current document been scanned for references yet?
         # Prevents repeated whole-document rescans when none are present.
@@ -270,10 +269,10 @@ class TextDocumentWindow(QDialog):
         # Pending restore guard: while a restore is in progress for a given stem
         # and the desired value is not yet reachable, suppress saving partial
         # scroll values to settings.json.
-        self._pending_restore_stem: Optional[str] = None
+        self._pending_restore_stem: str | None = None
         self._pending_restore_value: int = 0
         # Extra selections for QPlainTextEdit highlighting
-        self._extra_selections: List[Any] = []
+        self._extra_selections: list[Any] = []
         # Track whether the reference list is sorted by abs_start
         self._refs_sorted: bool = True
         # Trigger quick visible-range highlight on scroll
@@ -315,17 +314,17 @@ class TextDocumentWindow(QDialog):
         self._hover_timer.timeout.connect(self._do_hover)
 
         # Async file loading state
-        self._load_timer: Optional[QTimer] = None
+        self._load_timer: QTimer | None = None
         self._load_fp = None
         self._load_total: int = 0
         self._load_read: int = 0
         self._load_chunks: list[bytes] = []
         self._load_token: int = 0
         # Track the currently connected timeout slot so we can disconnect safely
-        self._load_timeout_slot: Optional[object] = None
+        self._load_timeout_slot: object | None = None
         # Idempotency/reentrancy guards for loading
         self._is_loading_file: bool = False
-        self._loaded_file_path: Optional[str] = None
+        self._loaded_file_path: str | None = None
 
         if initial_file_path:
             self.load_text_file(initial_file_path)
@@ -333,13 +332,13 @@ class TextDocumentWindow(QDialog):
         self.canonical_books = scripture.CANONICAL_BOOKS
 
         # Pending jump-to-anchor patterns to be applied after a file finishes loading
-        self._pending_jump_patterns: Optional[list[str]] = None
+        self._pending_jump_patterns: list[str] | None = None
         # Pending jump-to-character offset to be applied after a file finishes loading
-        self._pending_jump_char: Optional[int] = None
+        self._pending_jump_char: int | None = None
 
         # ---- Lightweight Find dialog state and shortcuts ----
         # Use the concrete dialog type so static analysers know about `.edit`, `.build_flags`, etc.
-        self._find_dlg: Optional["TextDocumentWindow._ReaderFindDialog"] = None
+        self._find_dlg: TextDocumentWindow._ReaderFindDialog | None = None
         try:
             # Keyboard shortcuts within the reader window
             sc_find = QShortcut(QKeySequence.StandardKey.Find, self)
@@ -415,10 +414,12 @@ class TextDocumentWindow(QDialog):
                             win_service: Any = ws
                             if win_service.get_bible_font_size() != size_int:
                                 win_service.update_bible_font_size(size_int)
-                                af = getattr(widget, "apply_font_size", None)
-                                if af:
-                                    af_func: Any = af
-                                    af_func()
+                                # widget_any is Any-typed, so this dynamic access is
+                                # invisible to static analysers (avoids false-positive
+                                # None-callable warnings) while working correctly at runtime.
+                                widget_any: Any = widget
+                                if callable(getattr(widget_any, "apply_font_size", None)):
+                                    widget_any.apply_font_size()
                     break
         except (AttributeError, RuntimeError):
             pass
@@ -801,7 +802,7 @@ class TextDocumentWindow(QDialog):
             # Callback
             try:
                 if callable(on_done):
-                    on_done()
+                    cast(Callable[..., Any], on_done)()
             except (RuntimeError, AttributeError, TypeError, ValueError):
                 # Do not allow callback errors to propagate; handle common runtime/callback issues
                 pass
@@ -1253,10 +1254,8 @@ class TextDocumentWindow(QDialog):
             if getattr(self, "_progress_indeterminate", False):
                 return
             pct = 0 if total_bytes <= 0 else int((read_bytes / total_bytes) * 100)
-            if pct < 0:
-                pct = 0
-            if pct > 100:
-                pct = 100
+            pct = max(pct, 0)
+            pct = min(pct, 100)
             # During the IO phase, clamp to a cap so the bar doesn't hit 100% before
             # decode/layout/highlighting complete.
             try:
@@ -1290,10 +1289,8 @@ class TextDocumentWindow(QDialog):
             if self._progress_bar is None:
                 return
             pb: Any = self._progress_bar
-            if pct < 0:
-                pct = 0
-            if pct > 100:
-                pct = 100
+            pct = max(pct, 0)
+            pct = min(pct, 100)
             # Ensure determinate mode
             pb.setRange(0, 100)
             pb.setValue(int(pct))
@@ -1350,7 +1347,8 @@ class TextDocumentWindow(QDialog):
                 # Safely disconnect the last connected slot, if any
                 try:
                     if getattr(self, "_load_timeout_slot", None) is not None:
-                        self._load_timer.timeout.disconnect(self._load_timeout_slot)
+                        lt_cancel: Any = self._load_timer
+                        lt_cancel.timeout.disconnect(self._load_timeout_slot)
                 except (RuntimeError, TypeError):
                     pass
                 self._load_timeout_slot = None
@@ -1485,8 +1483,11 @@ class TextDocumentWindow(QDialog):
             msg = f"Loading {stem}"
             self._show_progress(msg, total)
 
-            # Open the file in binary and iterate in chunks via QTimer
-            fp = open(abs_path, 'rb')
+            # Open the file in binary and iterate in chunks via QTimer.
+            # The handle is intentionally kept open across timer ticks (stored in
+            # self._load_fp) and closed later in _step(), so a context manager is
+            # not applicable here.
+            fp = open(abs_path, 'rb')  # noqa: SIM115
             self._load_fp = fp
             self._load_total = total
             self._load_read = 0
@@ -1560,7 +1561,8 @@ class TextDocumentWindow(QDialog):
                             # Safely disconnect the connected timeout slot, if any
                             try:
                                 if getattr(self, "_load_timeout_slot", None) is not None:
-                                    self._load_timer.timeout.disconnect(self._load_timeout_slot)
+                                    lt_eof: Any = self._load_timer
+                                    lt_eof.timeout.disconnect(self._load_timeout_slot)
                             except (RuntimeError, TypeError):
                                 pass
                             self._load_timeout_slot = None
@@ -1957,7 +1959,7 @@ class TextDocumentWindow(QDialog):
 
     # ----------------------- Find dialog implementation -----------------------
     class _ReaderFindDialog(QDialog):
-        def __init__(self, parent: "TextDocumentWindow") -> None:
+        def __init__(self, parent: TextDocumentWindow) -> None:
             super().__init__(parent)
             self.setWindowTitle("Search")
             self.setModal(False)
@@ -2060,9 +2062,10 @@ class TextDocumentWindow(QDialog):
         # Some PySide6 builds require QFlags<QTextDocument::FindFlag> rather than plain ints.
         def build_flags(self):
             try:
-                # Start with a zero-value FindFlag if available; fall back to 0
-                base = getattr(QTextDocument, "FindFlag", None)
-                flags = base(0) if base is not None else 0
+                # Start from a plain integer zero and OR in the enum members.
+                # Qt accepts this, and it avoids constructing a possibly-None
+                # FindFlag type (which triggers false-positive None-callable warnings).
+                flags: Any = 0
                 if self.case_box.isChecked():
                     flags |= getattr(QTextDocument.FindFlag, "FindCaseSensitively", 0)
                 if self.whole_box.isChecked():
@@ -2135,10 +2138,11 @@ class TextDocumentWindow(QDialog):
                 pass
 
         # If term changed, restart from beginning/end
-        last_term = getattr(dlg, "_last_term", "")
+        dlg_term: Any = dlg
+        last_term = getattr(dlg_term, "_last_term", "")
         if term != last_term:
             try:
-                dlg._last_term = term
+                dlg_term._last_term = term
                 cursor = self.text_edit.textCursor()
                 if forward:
                     cursor.setPosition(0)
@@ -2247,12 +2251,12 @@ class TextDocumentWindow(QDialog):
 
         QTimer.singleShot(0, _highlight_lazy)
 
-    def _apply_highlights_for_refs(self, base: int, refs: List[Dict[str, Any]], *, allow_existing: bool = False) -> None:
+    def _apply_highlights_for_refs(self, base: int, refs: list[dict[str, Any]], *, allow_existing: bool = False) -> None:
         """Collect highlighting ranges for a set of references on a line.
         Deduplicates by (start, length) using self._ref_index.
         Applies ExtraSelections for highlighting.
         """
-        selections: List[Any] = []
+        selections: list[Any] = []
         for r in refs:
             # Support either relative ('start') or absolute ('abs_start') inputs
             r_val: Any = r.get('start', r.get('abs_start', 0))
@@ -2444,7 +2448,7 @@ class TextDocumentWindow(QDialog):
                 hi = mid - 1
 
         # Iterate forward adding selections within range
-        batch: List[Dict[str, Any]] = []
+        batch: list[dict[str, Any]] = []
         for i in range(start_idx, len(refs)):
             r = refs[i]
             start_pos = int(r.get('abs_start', 0))
@@ -2495,7 +2499,7 @@ class TextDocumentWindow(QDialog):
                 return r
         return None
 
-    def _get_ref_vertical_range(self, ref: Dict[str, Any]) -> tuple[int, int]:
+    def _get_ref_vertical_range(self, ref: dict[str, Any]) -> tuple[int, int]:
         """Return the (top, bottom) global Y coordinates of the reference."""
         start = ref.get('abs_start', 0)
         length = ref.get('length', 0)
@@ -2511,7 +2515,7 @@ class TextDocumentWindow(QDialog):
         bottom = viewport.mapToGlobal(rect_end.bottomLeft()).y()
         return min(top, bottom), max(top, bottom)
 
-    def _check_popup_overlap(self, ref: Dict[str, Any], pos: QPoint, text: str) -> bool:
+    def _check_popup_overlap(self, ref: dict[str, Any], pos: QPoint, text: str) -> bool:
         """Check if the popup at current position would overlap the reference."""
         # Check if the feature is disabled in settings
         if not self.settings.get("reader_auto_scroll_popups", True):
@@ -2524,7 +2528,7 @@ class TextDocumentWindow(QDialog):
             
         # Use a local reference with a type hint to satisfy the linter
         helper: Any = self._popup_helper
-        px, py, pw, ph = helper.predict_geometry(
+        _px, py, _pw, ph = helper.predict_geometry(
             self.text_edit, text, pos, self.text_edit.font()
         )
         ref_top, ref_bottom = self._get_ref_vertical_range(ref)
@@ -2567,8 +2571,9 @@ class TextDocumentWindow(QDialog):
                 # Build a navigation-friendly reference string using the first verse only
                 # to ensure compatibility with MainWindow.goto_line parsing.
                 book = ref.get('book')
-                chapter = ref.get('chapter')
-                verse_str = str(ref.get('verse'))
+                chapter: Any = ref.get('chapter')
+                verse_val: Any = ref.get('verse')
+                verse_str = str(verse_val) if verse_val is not None else ""
                 # Extract the first verse number from possible ranges/lists like "16-18, 21"
                 m = re.search(r"\d+", verse_str or "")
                 first_verse = m.group(0) if m else verse_str
@@ -2776,8 +2781,8 @@ class TextDocumentWindow(QDialog):
 
     def get_scripture(self, reference):
         book = reference['book']
-        chapter = reference['chapter']
-        verse = reference['verse']
+        chapter: Any = reference['chapter']
+        verse: Any = reference['verse']
         scripture_text = self.lookup_scripture(book, chapter, verse)
 
         normalized_book = self.normalize_book_input(book)
@@ -2786,7 +2791,7 @@ class TextDocumentWindow(QDialog):
             return "Scripture not found.", ""
 
         # Use canonical book name for display
-        full_book = self.canonical_books.get(book_id, book)
+        full_book: Any = self.canonical_books.get(book_id, book)
 
         # Sanitise verse for display: collapse any internal whitespace (incl. CR/LF)
         verse_str = str(verse)

@@ -1,7 +1,8 @@
 import sys
-from pathlib import Path
 from json import load
+from pathlib import Path
 from typing import Any
+
 
 def readfile(input_filename: str, file_length: int, base_dir: Path | None = None) -> list[int | str]:
     """File reading routine — reads a text file into a list."""

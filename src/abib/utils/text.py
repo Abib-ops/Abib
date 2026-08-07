@@ -1,6 +1,7 @@
 import re
 from string import ascii_letters, digits
 
+
 def split_strip(_key: str) -> tuple[int, str]:
     """Remove whitespace from '_key' entered as passage reference."""
     p = " ()[];:'!<>,.-?"       # Characters to strip ’ not needed.
@@ -50,8 +51,7 @@ def remove_junk(text: str) -> str:
         rex = squeeze(':', rex)
 
         #  Remove possible KJV ending.
-        if rex.endswith(' KJV'):
-            rex = rex[:-4]
+        rex = rex.removesuffix(' KJV')
     return rex
 
 def is_float_re(string_: str) -> bool:

@@ -5,16 +5,22 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-from PySide6.QtCore import Qt, QEvent, QPoint
+
+from typing import Any
+
+from PySide6.QtCore import QEvent, QObject, QPoint, Qt
+from PySide6.QtGui import QWheelEvent
 from PySide6.QtWidgets import (
-    QPlainTextEdit,
     QDialog,
-    QWidget,
     QLabel,
-    QVBoxLayout,
+    QPlainTextEdit,
     QScrollArea,
+    QVBoxLayout,
+    QWidget,
 )
-import abib.utils as utils
+
+from abib import utils
+
 
 def get_screen_size() -> tuple[int, int]:
     return utils.get_screen_size()
@@ -46,13 +52,16 @@ def fit_to_screen(window_width: int, window_height: int) -> tuple[int, int]:
 
 
 class NoZoomDialog(QDialog):
-    def eventFilter(self, obj, event):
+    def eventFilter(self, watched: QObject, event: QEvent) -> bool:
         # Block Ctrl+Wheel events on any child widget
-        if event.type() == QEvent.Type.Wheel:
-            if Qt.KeyboardModifier.ControlModifier in event.modifiers():
-                event.ignore()
-                return True
-        return super().eventFilter(obj, event)
+        if (
+            event.type() == QEvent.Type.Wheel
+            and isinstance(event, QWheelEvent)
+            and Qt.KeyboardModifier.ControlModifier in event.modifiers()
+        ):
+            event.ignore()
+            return True
+        return super().eventFilter(watched, event)
 
     def showEvent(self, event):
         # Install event filter on all child widgets when a dialog is shown
@@ -187,7 +196,7 @@ class SimpleScripturePopup:
             
         # Limit height to avoid covering too much screen (max 60% of screen height)
         try:
-            screen_w, screen_h = get_screen_size()
+            _screen_w, screen_h = get_screen_size()
             max_h = int(screen_h * 0.6)
         except (RuntimeError, AttributeError):
             max_h = 600
@@ -229,9 +238,11 @@ class SimpleScripturePopup:
     def _calculate_position(host_editor: QWidget, pos: QPoint, popup_h: int, y_offset: int = 60) -> tuple[int, int]:
         """Shared logic to calculate (x, y) coordinates for the popup."""
         try:
-            # host_editor is a QTextEdit/QPlainTextEdit
-            cursor = getattr(host_editor, 'cursorForPosition')(pos)
-            rect = getattr(host_editor, 'cursorRect')(cursor)
+            # host_editor is a QTextEdit/QPlainTextEdit; alias as Any so static
+            # analysers don't flag the QWidget subclass-specific attributes.
+            editor: Any = host_editor
+            cursor = editor.cursorForPosition(pos)
+            rect = editor.cursorRect(cursor)
             global_tl = host_editor.mapToGlobal(rect.topLeft())
             editor_tl = host_editor.mapToGlobal(host_editor.rect().topLeft())
             editor_br = host_editor.mapToGlobal(host_editor.rect().bottomRight())
@@ -244,8 +255,7 @@ class SimpleScripturePopup:
 
             min_y = int(editor_tl.y())
             max_y = int(editor_br.y()) - popup_h
-            if max_y < min_y:
-                max_y = min_y
+            max_y = max(max_y, min_y)
             popup_y = max(min_y, min(popup_y, max_y))
 
             return int(popup_x), int(popup_y)
@@ -269,7 +279,7 @@ class SimpleScripturePopup:
             
         # 2. Calculate height based on content
         try:
-            screen_w, screen_h = get_screen_size()
+            _screen_w, screen_h = get_screen_size()
             max_h = int(screen_h * 0.6)
             
             # Temporarily set text/font to measure

@@ -6,12 +6,12 @@
 
 from __future__ import annotations
 
-from typing import Optional, Protocol, Any
+from typing import Any, Protocol
 
 try:
     # Import minimal Qt types; allow this module to import without Qt
-    from PySide6.QtWidgets import QWidget
     from PySide6.QtPrintSupport import QPrintDialog
+    from PySide6.QtWidgets import QWidget
 except ImportError:  # pragma: no cover - allow import without Qt
     QWidget = object  # type: ignore
     QPrintDialog = object  # type: ignore
@@ -27,7 +27,7 @@ class PrintingService:
     """Wraps Qt printing so UI code stays thin and testable."""
 
     @staticmethod
-    def print_plain_text(editor: Optional[EditorPrinter], parent: Optional[QWidget] = None) -> bool:
+    def print_plain_text(editor: EditorPrinter | None, parent: QWidget | None = None) -> bool:
         """Open a print dialog and print the given plain text editor.
 
         Returns True if a print job was accepted and attempted; False if cancelled,

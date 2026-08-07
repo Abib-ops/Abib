@@ -8,7 +8,8 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any
+
 import csv_report
 
 
@@ -17,20 +18,19 @@ def normalize_text(s: str) -> str:
     return s.replace("\r\n", "\n").replace("\r", "\n")
 
 
-def scan_tabs(text: str) -> List[Dict[str, Any]]:
+def scan_tabs(text: str) -> list[dict[str, Any]]:
     """Return a list of dicts describing each tab character position.
 
     Each dict contains: line (1-based), column (1-based), abs_index (0-based),
     and context (a short snippet of the line with the tab marked as \t).
     """
-    rows: List[Dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
     line_no = 1
     col_no = 1
-    abs_index = 0
     # Pre-split lines for context extraction while keeping indices aligned to the normalised text
     lines = text.split("\n")
     # Build starting absolute index of each line for efficient context lookup
-    line_starts: List[int] = []
+    line_starts: list[int] = []
     cur = 0
     for i, ln in enumerate(lines):
         line_starts.append(cur)
@@ -40,7 +40,7 @@ def scan_tabs(text: str) -> List[Dict[str, Any]]:
             cur += 1
 
     # Iterate once through text to capture line/column/index
-    for ch in text:
+    for abs_index, ch in enumerate(text):
         if ch == "\t":
             # Extract context: the full line containing the tab
             # Find the line index via binary search on line_starts (linear scan here is fine too)
@@ -60,15 +60,14 @@ def scan_tabs(text: str) -> List[Dict[str, Any]]:
             col_no = 1
         else:
             col_no += 1
-        abs_index += 1
     return rows
 
 
-def process_path(path: Path) -> List[Dict[str, Any]]:
+def process_path(path: Path) -> list[dict[str, Any]]:
     """Scan a file path for tabs and return CSV rows with file info."""
     try:
         raw = path.read_text(encoding="utf-8", errors="replace")
-    except Exception as e:
+    except (OSError, UnicodeError, ValueError) as e:
         return [
             {
                 "file": path.name,
@@ -82,7 +81,7 @@ def process_path(path: Path) -> List[Dict[str, Any]]:
 
     content = normalize_text(raw)
     findings = scan_tabs(content)
-    rows: List[Dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
     for f in findings:
         rows.append(
             {
@@ -112,12 +111,12 @@ def process_path(path: Path) -> List[Dict[str, Any]]:
     return rows
 
 
-def _write_csv(csv_path: Path, rows: List[Dict[str, Any]]) -> None:
+def _write_csv(csv_path: Path, rows: list[dict[str, Any]]) -> None:
     """Write rows to csv_path using the shared csv_report fields."""
     csv_report.write_csv(csv_path, rows, fieldnames=csv_report.CSV_FIELDS)
 
 
-def main(argv: List[str] | None = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Scan text files for tab characters and export a CSV report.")
     parser.add_argument(
         "--input",
@@ -156,12 +155,12 @@ def main(argv: List[str] | None = None) -> int:
 
     default_csv: Path
     if in_path.is_dir():
-        files: List[Path] = sorted(p for p in in_path.glob("*.txt") if p.is_file())
+        files: list[Path] = sorted(p for p in in_path.glob("*.txt") if p.is_file())
         default_csv = in_path / "tabs_report.csv"
     else:
         if in_path.suffix.lower() != ".txt":
             print(f"WARNING: Input file does not have .txt extension: {in_path.name}")
-        files: List[Path] = [in_path]
+        files: list[Path] = [in_path]
         default_csv = in_path.with_suffix(in_path.suffix + ".tabs.csv")
 
     if not files:
@@ -171,12 +170,12 @@ def main(argv: List[str] | None = None) -> int:
         try:
             _write_csv(csv_path, [])
             print(f"Report written: {csv_path} (no files)")
-        except Exception as e:
+        except (OSError, ValueError) as e:
             print(f"ERROR writing CSV: {e}")
             return 1
         return 0
 
-    all_rows: List[Dict[str, Any]] = []
+    all_rows: list[dict[str, Any]] = []
     total_tabs = 0
     for p in files:
         rows = process_path(p)
@@ -188,7 +187,7 @@ def main(argv: List[str] | None = None) -> int:
         _write_csv(csv_path, all_rows)
         print(f"Report written: {csv_path}")
         print(f"Scanned {len(files)} file(s). Tabs found: {total_tabs}.")
-    except Exception as e:
+    except (OSError, ValueError) as e:
         print(f"ERROR writing CSV: {e}")
         return 1
 

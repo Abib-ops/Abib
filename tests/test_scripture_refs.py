@@ -8,9 +8,9 @@ from __future__ import annotations
 
 import unittest
 
-from abib.core import shared as sh
-from abib.domain.scripture_refs import resolve_reference, calculate_book_line
 from abib.core import scripture
+from abib.core import shared as sh
+from abib.domain.scripture_refs import calculate_book_line, resolve_reference
 
 
 class TestScriptureRefs(unittest.TestCase):
@@ -44,6 +44,7 @@ class TestScriptureRefs(unittest.TestCase):
         book, chap, verse = resolve_reference(["Deuteronomy", "32", "29--"])
         self.assertEqual((book, chap, verse), (5, 32, 29))
         # And calculate a valid line without raising
+        assert book is not None and chap is not None and verse is not None
         idx = calculate_book_line(book, chap, verse, 0)
         self.assertIsInstance(idx, int)
 

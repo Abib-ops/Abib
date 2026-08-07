@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any, List, Tuple
+from typing import Any
 
 
 class History:
@@ -18,11 +18,11 @@ class History:
     """
 
     def __init__(self) -> None:
-        self.back: List[Tuple[Any, ...]] = []
-        self.forward: List[Tuple[Any, ...]] = []
+        self.back: list[tuple[Any, ...]] = []
+        self.forward: list[tuple[Any, ...]] = []
 
     @staticmethod
-    def _snapshot(win) -> Tuple[Any, ...]:
+    def _snapshot(win) -> tuple[Any, ...]:
         return (
             win.current_position if hasattr(win, "current_position") else 0,
             win.y,
@@ -47,7 +47,7 @@ class History:
 
     # ---- Internal helpers to remove duplication ----
     @staticmethod
-    def _build_saving(win, current_position: int) -> Tuple[Any, ...]:
+    def _build_saving(win, current_position: int) -> tuple[Any, ...]:
         """Create a snapshot tuple using an explicit current_position.
 
         We do not rely on win.current_position here to keep behaviour identical
@@ -76,7 +76,7 @@ class History:
         )
 
     @staticmethod
-    def _restore_from_saving(win, saving: Tuple[Any, ...]) -> int:
+    def _restore_from_saving(win, saving: tuple[Any, ...]) -> int:
         """Restore a window state from a snapshot tuple and return position."""
         current_position = saving[0]
         win.y = saving[1]
@@ -111,7 +111,7 @@ class History:
         win.dlg = saving[18]
         return current_position
 
-    def _push(self, stack: List[Tuple[Any, ...]], win, current_position: int) -> None:
+    def _push(self, stack: list[tuple[Any, ...]], win, current_position: int) -> None:
         """Generic push with deduplication on (position, y)."""
         saving = self._build_saving(win, current_position)
         if not stack:
@@ -121,7 +121,7 @@ class History:
         if not (last[0] == current_position and last[1] == win.y):
             stack.append(saving)
 
-    def _pop(self, stack: List[Tuple[Any, ...]], win) -> int:
+    def _pop(self, stack: list[tuple[Any, ...]], win) -> int:
         """Generic pop that restores state and returns the position, or 0 if empty."""
         if not stack:
             return 0

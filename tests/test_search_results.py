@@ -4,7 +4,12 @@
 
 # -*- coding: utf-8 -*-
 
-from abib.ui.search_results import find_highlight_ranges, format_reference, highlight_result_text, result_verse_text
+from abib.ui.search_results import (
+    find_highlight_ranges,
+    format_reference,
+    highlight_result_text,
+    result_verse_text,
+)
 
 
 def test_format_reference_handles_normal_and_one_chapter_books():

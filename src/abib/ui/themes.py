@@ -6,20 +6,20 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Optional, Protocol, cast, Any, TYPE_CHECKING
-import sys
 import platform
+import sys
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 if TYPE_CHECKING:
+    from PySide6.QtGui import QColor, QPalette
     from PySide6.QtWidgets import QApplication, QWidget
-    from PySide6.QtGui import QPalette, QColor
     QPaletteT = QPalette
     QColorT = QColor
 else:
     try:
-        from PySide6.QtWidgets import QPlainTextEdit, QApplication, QWidget
-        from PySide6.QtGui import QPalette, QColor
+        from PySide6.QtGui import QColor, QPalette
+        from PySide6.QtWidgets import QApplication, QPlainTextEdit, QWidget
     except ImportError:
         QPlainTextEdit = object  # type: ignore
         QApplication = object  # type: ignore
@@ -50,10 +50,10 @@ class ThemeManager:
     manipulating global state directly and keeps UI code thin.
     """
 
-    def __init__(self, state: Optional[ThemeState] = None) -> None:
+    def __init__(self, state: ThemeState | None = None) -> None:
         self.state = state or ThemeState()
         # Track style switching to Fusion on Windows 10 dark mode
-        self._original_style_name: Optional[str] = None
+        self._original_style_name: str | None = None
         self._using_fusion: bool = False
 
     # ---- State ----
@@ -284,7 +284,7 @@ class ThemeManager:
             cast(Any, app).setStyleSheet(light_base_styles)
 
     # ---- Apply helpers ----
-    def apply_to_editor(self, editor: Optional[EditorWithStyleSheet]) -> None:
+    def apply_to_editor(self, editor: EditorWithStyleSheet | None) -> None:
         if editor is None:
             return
         if self.state.is_dark_mode:
@@ -306,7 +306,7 @@ class ThemeManager:
                 """
             )
 
-    def apply_widget(self, widget: Optional[QWidget]) -> None:
+    def apply_widget(self, widget: QWidget | None) -> None:
         """Apply the current palette to a specific widget (useful for dialogs)."""
         if widget is None:
             return
@@ -317,7 +317,7 @@ class ThemeManager:
             # Be tolerant of the Qt object lifecycle and type issues but avoid swallowing all exceptions
             pass
 
-    def apply_to_secondary(self, secondary_window: Optional[ThemeApplier]) -> None:
+    def apply_to_secondary(self, secondary_window: ThemeApplier | None) -> None:
         if secondary_window is None:
             return
         try:

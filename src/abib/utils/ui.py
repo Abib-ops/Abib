@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QApplication
 
+
 def get_screen_size() -> tuple[int, int]:
     """Get the primary screen dimensions."""
     try:

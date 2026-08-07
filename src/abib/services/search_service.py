@@ -5,8 +5,10 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
+
 import re
-from typing import Dict, Set, TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, cast
+
 from abib.core import fcs
 
 if TYPE_CHECKING:
@@ -29,7 +31,7 @@ def iterate_list(keywords: list[str], r_list: list, win: MainWindow) -> None:
                 coordinates.append((m.start(), m.end()))
         win.occur.append(coordinates)
 
-def findf3_ww_ac(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list: list, win: MainWindow) -> None:
+def findf3_ww_ac(x1: int, x2: int, numwords: int, _set: dict[str, set], r_list: list, win: MainWindow) -> None:
     """Whole words (phrase)."""
     liszt = win.key.split(' ')
     s = _set[liszt[0]] & _set[liszt[1]]
@@ -37,7 +39,7 @@ def findf3_ww_ac(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list: 
         for i in range(2, numwords):
             j = liszt[i]
             s = s & _set[j]
-    win.occur = sorted(list(s))
+    win.occur = sorted(s)
     win.occurs = []
 
     pattern = re.compile(rf"\b{re.escape(win.key)}\b")
@@ -50,7 +52,7 @@ def findf3_ww_ac(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list: 
     liszt = [win.key]
     iterate_list(liszt, r_list, win)
 
-def findf3_ww_all(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list: list, win: MainWindow) -> None:
+def findf3_ww_all(x1: int, x2: int, numwords: int, _set: dict[str, set], r_list: list, win: MainWindow) -> None:
     """Match all the words (phrase)."""
     liszt = win.key.split(' ')
     try:
@@ -63,7 +65,7 @@ def findf3_ww_all(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list:
     if numwords > 2:
         for i in range(2, numwords):
             s = s & _set[liszt[i]]
-    win.occur = sorted(list(s))
+    win.occur = sorted(s)
     win.occurs = []
     for i in win.occur:
         if i < x1 or i > x2:
@@ -72,7 +74,7 @@ def findf3_ww_all(x1: int, x2: int, numwords: int, _set: Dict[str, Set], r_list:
     iterate_list(liszt, r_list, win)
     win.occurring = len(win.occurs)
 
-def findf3_ww_any(x1: int, x2: int, _set: Dict[str, Set], r_list: list, win: MainWindow) -> None:
+def findf3_ww_any(x1: int, x2: int, _set: dict[str, set], r_list: list, win: MainWindow) -> None:
     """Find any of the words."""
     liszt = win.key.split(' ')
     s = set()

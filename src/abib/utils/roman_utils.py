@@ -1,5 +1,7 @@
 import re
-from roman import fromRoman, InvalidRomanNumeralError
+
+from roman import InvalidRomanNumeralError, fromRoman
+
 
 def convert_roman_to_integer(reference_text: str) -> str:
     """

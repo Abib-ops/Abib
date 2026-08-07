@@ -7,12 +7,12 @@
 from __future__ import annotations
 
 import csv
+from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import List, Dict, Any, Iterable, Sequence
-
+from typing import Any
 
 # Standard CSV columns used by tools that emit line-based text diagnostics
-CSV_FIELDS: List[str] = [
+CSV_FIELDS: list[str] = [
     "file",
     "type",
     "book",
@@ -24,7 +24,7 @@ CSV_FIELDS: List[str] = [
 ]
 
 
-def write_csv(csv_path: Path, rows: Iterable[Dict[str, Any]], fieldnames: Sequence[str] | None = None) -> None:
+def write_csv(csv_path: Path, rows: Iterable[dict[str, Any]], fieldnames: Sequence[str] | None = None) -> None:
     """Write rows to csv_path with a header.
 
     - Ensures parent directory exists.

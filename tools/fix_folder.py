@@ -13,10 +13,11 @@ Copy the files to an empty folder of your choosing and then run this script.
 
 """
 
-import os
-import sys
 import glob
+import os
 import re
+import sys
+
 
 def detect_text_language(text):
     """Detect if the text contains Hebrew, Arabic, or other languages."""
@@ -244,7 +245,7 @@ def clean_previous_corrected_files(folder_path):
             os.remove(corrected_file)
             print(f"  ✓ Deleted: {filename}")
             deleted_count += 1
-        except Exception as e:
+        except OSError as e:
             print(f"  ✗ Failed to delete {filename}: {e}")
             failed_deletions.append(filename)
     
@@ -280,7 +281,7 @@ def correct_file_encoding(input_filename):
     except UnicodeDecodeError as e:
         print(f"  Error: Could not read file as UTF-8. {e}")
         return -1
-    except Exception as e:
+    except (OSError, UnicodeError, ValueError) as e:
         print(f"  Error: {e}")
         return -1
 

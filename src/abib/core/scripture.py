@@ -13,11 +13,13 @@ so it can be maintained and tested in one place.
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List
-from roman import fromRoman, InvalidRomanNumeralError
+from typing import Any
+
+from roman import InvalidRomanNumeralError, fromRoman
+
 from abib.core import shared as sh
 
-# Pre-compiled regexes for normalize_book_input
+# Pre-compiled regexes for normalise_book_input
 _RE_ORD_1ST = re.compile(r"^1\s*st\.?")
 _RE_ORD_2ND = re.compile(r"^2\s*nd\.?")
 _RE_ORD_3RD = re.compile(r"^3\s*rd\.?")
@@ -30,7 +32,7 @@ _RE_ROMAN_1 = re.compile(r"^(i)(?=\b|\s|\.)")
 _RE_NON_WORD = re.compile(r"\W+")
 
 # Pre-calculated abbreviation keys for classify_book_input
-_SHORT_ALPHA_KEYS = tuple(k for k in sh.bibledict.keys() if k.isalpha() and len(k) <= 3)
+_SHORT_ALPHA_KEYS = tuple(k for k in sh.bibledict if k.isalpha() and len(k) <= 3)
 
 _LEGACY_MAP = {
     "cant": "canticles",
@@ -39,7 +41,7 @@ _LEGACY_MAP = {
 }
 
 # Canonical book names keyed by 'book' id (1-based), aligning with shared.bibledict
-CANONICAL_BOOKS: Dict[int, str] = {
+CANONICAL_BOOKS: dict[int, str] = {
     1: "Genesis",
     2: "Exodus",
     3: "Leviticus",
@@ -140,7 +142,7 @@ def normalize_book_input(book_input: str) -> str:
     return s
 
 
-def classify_book_input(user_input: str) -> Dict[str, Any]:
+def classify_book_input(user_input: str) -> dict[str, Any]:
     """Classify a free-form input for quick-jump intent.
 
     Returns a dict with keys:
@@ -176,9 +178,8 @@ def classify_book_input(user_input: str) -> Dict[str, Any]:
     # Track the longest matching abbreviation to bias toward more specific keys
     best_match: str | None = None
     for k in _SHORT_ALPHA_KEYS:
-        if s.startswith(k):
-            if best_match is None or len(k) > len(best_match):
-                best_match = k
+        if s.startswith(k) and (best_match is None or len(k) > len(best_match)):
+            best_match = k
 
     if best_match:
         bid = sh.bibledict.get(best_match)
@@ -194,7 +195,7 @@ def classify_book_input(user_input: str) -> Dict[str, Any]:
     # Also detect startswith any longer known key (e.g. "jonas" starts with "jonas" exact, already handled;
     # here we care about misleading beginnings that match full long keys like "amos" -> would have matched above).
     # If starts with any known key but with letters glued without a separator (rare), treat as ambiguous too.
-    for k in sh.bibledict.keys():
+    for k in sh.bibledict:
         if s.startswith(k):
             bid2 = sh.bibledict[k]
             if len(s) == len(k) or s[len(k)] in sep_chars:
@@ -247,7 +248,7 @@ _PATTERN = rf"""
 # Compile once for performance; allows scanning whole documents efficiently
 _PATTERN_RE = re.compile(_PATTERN, re.IGNORECASE | re.VERBOSE)
 
-# Regexes for cleaning and normalization within find_scripture_references/lookup_scripture
+# Regexes for cleaning and normalisation within find_scripture_references/lookup_scripture
 _RE_STRIP_WS_START = re.compile(rf"^{_WS}+")
 _RE_STRIP_WS_PUNC_END = re.compile(rf"(?:{_WS}|[)\];:.,\"'“”‘’])+$")
 _RE_DOUBLE_HYPHEN = re.compile(r"-{2,}")
@@ -270,12 +271,12 @@ _CONTINUATION_RE = re.compile(
 )
 
 
-def find_scripture_references(text: str) -> List[Dict[str, Any]]:
+def find_scripture_references(text: str) -> list[dict[str, Any]]:
     """Find scripture references in a given text.
 
     Returns a list of dicts: {text, book, chapter, verse, start, length}
     """
-    references: List[Dict[str, Any]] = []
+    references: list[dict[str, Any]] = []
 
     scan_pos = 0
     n = len(text)
@@ -418,7 +419,7 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
                     if after and (
                         after[0].isdigit()
                         or after[0].isupper()
-                        or re.match(r"(?:st|nd|rd|th)\b", after, re.I)
+                        or re.match(r"(?:st|nd|rd|th)\b", after, re.IGNORECASE)
                     ):
                         break
 
@@ -488,7 +489,7 @@ def find_scripture_references(text: str) -> List[Dict[str, Any]]:
     return references
 
 
-def lookup_scripture(bible_data: Dict[str, Any], book: str, chapter: int, verses: str) -> str:
+def lookup_scripture(bible_data: dict[str, Any], book: str, chapter: int, verses: str) -> str:
     """Look up verse text(s) from bible_data, returning a human-readable string.
 
     - Normalises book token
@@ -508,11 +509,11 @@ def lookup_scripture(bible_data: Dict[str, Any], book: str, chapter: int, verses
 
     # Determine the maximum verse available in this chapter (used for clamping)
     try:
-        max_verse_in_chapter = max(int(k) for k in chapter_data.keys()) if chapter_data else 0
+        max_verse_in_chapter = max(int(k) for k in chapter_data) if chapter_data else 0
     except (ValueError, TypeError):
         max_verse_in_chapter = 0
 
-    verse_numbers: List[int] = []
+    verse_numbers: list[int] = []
     for raw_part in verses.split(','):
         part = raw_part.strip().replace("–", "-").replace("—", "-")
         # Collapse multiple hyphens to a single hyphen so "29--" becomes "29-"
@@ -551,7 +552,7 @@ def lookup_scripture(bible_data: Dict[str, Any], book: str, chapter: int, verses
             except (ValueError, TypeError):
                 return "Scripture not found."
 
-    results: List[str] = []
+    results: list[str] = []
     for ve in verse_numbers:
         verse_text = chapter_data.get(str(ve))
         if verse_text is None:

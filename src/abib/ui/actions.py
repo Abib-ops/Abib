@@ -7,25 +7,24 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional
 
+from PySide6.QtCore import QSize
 from PySide6.QtGui import QAction, QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import QToolBar
-from PySide6.QtCore import QSize
 
 from abib.core import shared as sh
 
 
 @dataclass
 class ActionsBundle:
-    file_toolbar: Optional[QToolBar]
-    edit_toolbar: Optional[QToolBar]
-    actions: List[QAction]
+    file_toolbar: QToolBar | None
+    edit_toolbar: QToolBar | None
+    actions: list[QAction]
 
 
 @dataclass
 class ShortcutsBundle:
-    shortcuts: List[QShortcut]
+    shortcuts: list[QShortcut]
 
 
 def setup_shortcuts(window) -> ShortcutsBundle:
@@ -33,7 +32,7 @@ def setup_shortcuts(window) -> ShortcutsBundle:
 
     Returns a bundle to keep references alive for the lifetime of the window.
     """
-    shortcuts: List[QShortcut] = []
+    shortcuts: list[QShortcut] = []
 
     # Ctrl++
     sc_inc1 = QShortcut(QKeySequence("Ctrl++"), window)
@@ -163,10 +162,10 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
     # Build a tickable list of Other Works under the Settings submenu
     # Prefer a public helper on the window; fall back to a private one if present
     try:
-        builder = getattr(window, "build_show_works_menu", None)
-        if not callable(builder):
-            # Backward-compatible fallback: use a private method if available
-            builder = getattr(window, "_build_show_works_menu", None)
+        primary = getattr(window, "build_show_works_menu", None)
+        # Backward-compatible fallback: use a private method if available
+        fallback = getattr(window, "_build_show_works_menu", None)
+        builder = primary if callable(primary) else fallback
         if callable(builder):
             builder(settings_menu)
     except (AttributeError, RuntimeError, TypeError, ValueError):

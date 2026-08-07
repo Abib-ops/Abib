@@ -8,10 +8,34 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.23
+Abib v417.24
 ------------
 
 Changelog.
+Abib v417.24
+
+- Maintenance: Project-wide code-quality clean-up. Resolved a large batch of
+  Ruff lint findings across the application, tools and tests without changing
+  any user-facing behaviour. This included narrowing broad "except Exception"
+  handlers to the specific errors that can actually occur (BLE001),
+  collapsing nested "if" statements into single combined conditions (SIM102),
+  returning boolean conditions directly (SIM103), removing redundant
+  ".keys()" calls when iterating dictionaries (SIM118), dropping unnecessary
+  inner "list()" calls inside "sorted()" (C414), preferring "TypeError" for
+  invalid-type guards (TRY004), using "!=" instead of a negated "==" (SIM201),
+  prefixing unused unpacked variables with an underscore (RUF059), replacing
+  the builtin "exit()" with "sys.exit()" (PLR1722), passing a timezone to
+  "datetime.now()" (DTZ005), and other minor tidy-ups.
+- Added a Ruff per-file ignore for the intentionally CamelCase main module
+  "src/abib/Abib.py" (N999), since renaming it would break the application's
+  imports and packaging.
+- Dependencies: certifi upgraded from 2026.6.17 to 2026.7.22 and packaging
+  upgraded from 26.2 to 26.3.
+
+No user-facing feature changes in this release; this is a maintenance
+release focused on code quality and dependency currency. Built with
+Python 3.14.6 and PySide6 6.11.1 (64-bit).
+
 Abib v417.23
 
 - Feature: The Find/Search Results panel is now a separate window that docks

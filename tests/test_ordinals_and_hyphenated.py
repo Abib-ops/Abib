@@ -5,7 +5,7 @@
 # -*- coding: utf-8 -*-
 
 from abib.core import shared as sh
-from abib.core.scripture import normalize_book_input, find_scripture_references
+from abib.core.scripture import find_scripture_references, normalize_book_input
 
 
 def test_normalize_book_input_suffix_ordinals():

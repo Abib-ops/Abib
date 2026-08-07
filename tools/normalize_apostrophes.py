@@ -4,9 +4,10 @@
 
 # -*- coding: utf-8 -*-
 
-import re
 import os
+import re
 import sys
+
 
 def normalize_apostrophes(text):
     """
@@ -61,11 +62,11 @@ def process_file(filepath):
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             content = f.read()
-    except Exception as e:
+    except (OSError, UnicodeError, ValueError) as e:
         print(f"Error reading {filepath}: {e}")
         return 'continue'
 
-    new_content, changes = normalize_apostrophes(content)
+    _new_content, changes = normalize_apostrophes(content)
 
     if not changes:
         print("No changes needed.")

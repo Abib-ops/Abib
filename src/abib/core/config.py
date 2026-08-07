@@ -4,6 +4,7 @@
 
 from typing import Any
 
+
 def get_default_settings() -> dict[str, Any]:
     """Return a fresh copy of Abib's default settings dictionary.
     This centralises defaults so other components (e.g. Settings dialog reset)

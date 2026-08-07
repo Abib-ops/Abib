@@ -5,15 +5,18 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
+
 from typing import Any
+
 from PySide6.QtGui import QSyntaxHighlighter, QTextCharFormat
+
 
 class SyntaxHighlighter(QSyntaxHighlighter):
     """Syntax highlighter."""
 
     def __init__(self, parent) -> None:
         """Initialise highlighter."""
-        super(SyntaxHighlighter, self).__init__(parent)
+        super().__init__(parent)
         self._highlight_lines: dict[int, QTextCharFormat] = {}
         self._multi_highlights: dict[int, list[tuple[int, int]]] = {}
         self.lineinc = 0

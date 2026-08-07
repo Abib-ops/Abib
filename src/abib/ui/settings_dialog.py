@@ -8,22 +8,22 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from PySide6.QtCore import QRunnable, QThreadPool
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
-    QDialog,
-    QVBoxLayout,
     QCheckBox,
     QComboBox,
+    QDialog,
     QDialogButtonBox,
-    QPushButton,
     QLabel,
+    QPushButton,
     QSpinBox,
     QSplashScreen,
+    QVBoxLayout,
 )
-from PySide6.QtGui import QPixmap
-from PySide6.QtCore import QThreadPool, QRunnable
 
-from abib.services.settings import SettingsService
 from abib.core import shared as sh
+from abib.services.settings import SettingsService
 
 if TYPE_CHECKING:
     from abib.Abib import MainWindow
@@ -186,7 +186,7 @@ class SettingsDialog(QDialog):
                     pass
 
         try:
-            result = _check_for_updates(parent=self)
+            result: Any = _check_for_updates(parent=self)
         except (RuntimeError, TypeError, ValueError):
             result = None
 
@@ -295,8 +295,9 @@ class SettingsDialog(QDialog):
 
     @staticmethod
     def _update_splash_visibility(prev_show: bool, new_show: bool) -> None:
-        from abib import Abib
         from PySide6.QtWidgets import QWidget
+
+        from abib import Abib
         # Access module-level globals from Abib
 
         # Turning splash OFF

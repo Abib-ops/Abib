@@ -7,42 +7,42 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from json import JSONDecodeError, load
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
-from json import load, JSONDecodeError
+from typing import Any
 
-from abib.core import shared as sh
 from abib.core import fcs
+from abib.core import shared as sh
 
 
 @dataclass
 class BibleData:
-    KJV: Tuple[str, ...]
+    KJV: tuple[str, ...]
     KJB_PCE_LASTLINE: int
     EOTNOC: str
-    Amap: List[Any]
-    Amap_rev: Dict[int, int]
-    Ps119: List[int]
-    P119: List[Any]
-    book_bounds: List[int]
-    starts_with_italics: List[int]
+    Amap: list[Any]
+    Amap_rev: dict[int, int]
+    Ps119: list[int]
+    P119: list[Any]
+    book_bounds: list[int]
+    starts_with_italics: list[int]
 
 
 @dataclass
 class SearchData:
-    Rnew: Tuple[str, ...]
-    Rlow: Tuple[str, ...]
-    Rstp: Tuple[str, ...]
-    Rlsp: Tuple[str, ...]
-    stripped_dict: Dict[str, Any]
-    strpd_low_dict: Dict[str, Any]
-    set_dict: Dict[str, Any]
-    set_lowdict: Dict[str, Any]
+    Rnew: tuple[str, ...]
+    Rlow: tuple[str, ...]
+    Rstp: tuple[str, ...]
+    Rlsp: tuple[str, ...]
+    stripped_dict: dict[str, Any]
+    strpd_low_dict: dict[str, Any]
+    set_dict: dict[str, Any]
+    set_lowdict: dict[str, Any]
 
 
 @dataclass
 class SmeData:
-    data: Dict[str, Dict[str, str]]
+    data: dict[str, dict[str, str]]
     date_file: tuple
 
 
@@ -84,18 +84,18 @@ class DataLoader:
         Amap_rev = {int(ln): cp for cp, ln in enumerate(Amap)}
 
         # Psalm 119 helpers
-        Ps119: List[int] = [
+        Ps119: list[int] = [
             15907, 15915, 15923, 15931, 15939, 15947, 15955, 15963, 15971, 15979,
             15987, 15995, 16003, 16011, 16019, 16027, 16035, 16043, 16051, 16059,
             16067
         ]
-        P119: List[Any] = [Amap[_] for _ in Ps119]
+        P119: list[Any] = [Amap[_] for _ in Ps119]
 
         # Precomputed bounds/flags used by syntax/highlighting (kept for parity)
         # Compute book start bounds (0-based verse indices) for all 66 books from Info,
         # then append a sentinel (LAST_VERSE_IN_BIBLE + 1). This avoids hard-coded
         # mistakes and guarantees strict monotonicity and correctness across all books.
-        book_bounds: List[int] = [sh.LAST_VERSE_IN_BIBLE + 1] * sh.BOOKS_IN_THE_BIBLE
+        book_bounds: list[int] = [sh.LAST_VERSE_IN_BIBLE + 1] * sh.BOOKS_IN_THE_BIBLE
         try:
             # shared.Info is a tuple of per-verse metadata; index 0 is the 0-based book id
             for idx in range(sh.LAST_VERSE_IN_BIBLE + 1):
@@ -145,9 +145,9 @@ class DataLoader:
         Rlsp = tuple(fcs.readio("PCE-stripped_lower.txt", sh.EOF_BIBLE_TEXT))
 
         with open(base / "stripped_dict.txt", encoding="utf-8") as f:
-            stripped_dict: Dict[str, Any] = load(f)
+            stripped_dict: dict[str, Any] = load(f)
         with open(base / "strpd_low_dict.txt", encoding="utf-8") as f:
-            strpd_low_dict: Dict[str, Any] = load(f)
+            strpd_low_dict: dict[str, Any] = load(f)
 
         set_dict = fcs.load_list_set_dict("list_dict.json", stripped_dict)
         set_lowdict = fcs.load_list_set_dict("list_lowdict.json", strpd_low_dict)
@@ -171,7 +171,7 @@ class DataLoader:
             return self._sme
         assert self.base_dir is not None
         base: Path = self.base_dir
-        data: Dict[str, Dict[str, str]] = {}
+        data: dict[str, dict[str, str]] = {}
         sme_path = base / "morning_evening.json"
         try:
             with open(sme_path, "r", encoding="utf-8") as fh:

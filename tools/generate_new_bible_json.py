@@ -1,6 +1,7 @@
 import json
-from project_setup import SRC_PATH
+
 from bible_common import CANONICAL_BOOKS, parse_pce_text
+from project_setup import SRC_PATH
 
 
 def main():

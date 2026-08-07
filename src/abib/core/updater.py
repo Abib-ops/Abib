@@ -6,10 +6,10 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import ctypes
-from ctypes import wintypes
 import subprocess
+from ctypes import wintypes
+from pathlib import Path
 from typing import Any, cast
 
 import requests
@@ -41,15 +41,14 @@ def check_for_updates(parent=None):
             raise ValueError(f"Failed to parse JSON: {e}")
 
         if not isinstance(data, dict):
-            raise ValueError("Response data is not a dictionary")
+            raise TypeError("Response data is not a dictionary")
 
         latest_version = data.get("tag_name", "")
         if latest_version is None:
             latest_version = ""
         latest_version = str(latest_version).strip()
         
-        if latest_version.startswith("v"):
-            latest_version = latest_version[1:]
+        latest_version = latest_version.removeprefix("v")
 
         assets = data.get("assets", [])
         if not isinstance(assets, list):
@@ -67,7 +66,7 @@ def check_for_updates(parent=None):
             try:
                 # Use sh.CURRENT_VERSION directly to ensure we have the latest value
                 output: int = fcs.compare_versions(sh.CURRENT_VERSION, latest_version)
-            except Exception as e:
+            except (ValueError, TypeError, AttributeError) as e:
                 raise ValueError(f"Version comparison failed: {e}")
 
             if output == -1:
@@ -104,7 +103,7 @@ def check_for_updates(parent=None):
         except (RuntimeError, AttributeError, TypeError):
             pass
         return None
-    except Exception as e:
+    except (ValueError, TypeError, KeyError) as e:
         # Catch all other errors (ValueErrors, etc.)
         try:
             QMessageBox.warning(parent, "Update check failed", f"Received an unexpected response from the update server.\n\nDetails: {e}")
@@ -185,15 +184,14 @@ def download_upgrade(version: str, exe_url: str) -> bool:
         if response.status_code == 200:
             download_path = Path.home() / "Downloads" / f"Abib_setup_{version}_win.exe"
             with open(download_path, "wb") as download_file:
-                for chunk in response.iter_content(chunk_size=1024):
-                    download_file.write(chunk)
+                download_file.writelines(response.iter_content(chunk_size=1024))
             print(f"Download complete. Installer saved to {download_path}")
             return True
         else:
             print(f"Download failed. Status code: {response.status_code}")
             return False
     except requests.exceptions.RequestException as ee:
-        print(f"An error occurred while downloading the upgrade: {str(ee)}")
+        print(f"An error occurred while downloading the upgrade: {ee!s}")
         return False
 
 

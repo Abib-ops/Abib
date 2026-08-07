@@ -5,18 +5,21 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-from typing import List, Tuple, Sequence, Dict, Set
+
+from collections.abc import Sequence
+
 from abib.domain import search as search_domain
+
 
 class BibleSearchService:
     """Service to coordinate Bible searches and result state."""
     
-    def __init__(self, kjv_data: Sequence[str], set_dict: Dict[str, Set]) -> None:
+    def __init__(self, kjv_data: Sequence[str], set_dict: dict[str, set]) -> None:
         self.kjv_data = kjv_data
         self.set_dict = set_dict
         
         # Search state
-        self.last_results: List[Tuple[int, int, int]] = []
+        self.last_results: list[tuple[int, int, int]] = []
         self.occurrence_index: int = 0
         self.occurrences_total: int = 0
         self.search_key: str = ""
@@ -28,7 +31,7 @@ class BibleSearchService:
         self.occurrence_index = 0
         return self.occurrences_total
 
-    def get_current_result(self) -> Tuple[int, int, int] | None:
+    def get_current_result(self) -> tuple[int, int, int] | None:
         """Get current (line, start, end) based on occurrence_index."""
         if 0 <= self.occurrence_index < self.occurrences_total:
             return self.last_results[self.occurrence_index]

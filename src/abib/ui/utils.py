@@ -5,8 +5,11 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-from PySide6.QtWidgets import QApplication
+
 from typing import cast
+
+from PySide6.QtWidgets import QApplication
+
 
 def get_screen_size() -> tuple[int, int]:
     """Get the primary screen dimensions."""
