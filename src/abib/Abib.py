@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.1 and python3.14.6 (64-bit).
 
-07/08/2026
+14/08/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --all-extras --upgrade
@@ -718,8 +718,15 @@ class MainWindow(QMainWindow):
 
         if results:
             dock.set_results(results, search_text)
-            dock.show()
-            self._position_search_results_window()
+            # Suppress width persistence while the window is shown and positioned
+            # programmatically; otherwise the transient natural size (~100px) that
+            # Qt applies on show() would overwrite the saved preference.
+            dock._positioning = True
+            try:
+                dock.show()
+                self._position_search_results_window()
+            finally:
+                dock._positioning = False
             dock.raise_()
         else:
             dock.clear_results()

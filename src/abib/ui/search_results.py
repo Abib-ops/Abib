@@ -117,6 +117,8 @@ class SearchResultsWindow(QWidget):
         self.setWindowTitle("Search Results")
         self._results: list[SearchResult] = []
         self._settings_service = settings_service
+        # When True, programmatic geometry changes must not persist the width.
+        self._positioning = False
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(4, 4, 4, 4)
@@ -178,6 +180,8 @@ class SearchResultsWindow(QWidget):
         """Persist the current panel width to settings."""
         if self._settings_service is None:
             return
+        if self._positioning:
+            return
         try:
             self._settings_service.update_search_results_width(self.width())
         except (AttributeError, RuntimeError, TypeError, ValueError):
@@ -185,5 +189,5 @@ class SearchResultsWindow(QWidget):
 
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
-        if self.isVisible():
+        if self.isVisible() and not self._positioning:
             self.save_width()

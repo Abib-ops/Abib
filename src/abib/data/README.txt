@@ -8,10 +8,30 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.24
+Abib v417.25
 ------------
 
 Changelog.
+Abib v417.25
+
+- Bug fix: The remembered Search Results window width (the
+  "search_results_width" setting in settings.json) is no longer overwritten
+  with the window's transient ~100px natural size. Previously, when the
+  Search Results window was shown and positioned programmatically, Qt briefly
+  laid the widget out at its small default size and fired a resize event,
+  which saved that tiny width over the user's chosen preference.
+- Introduced a "_positioning" guard flag on SearchResultsWindow. While the
+  window is being shown and positioned programmatically, save_width() and
+  resizeEvent() now skip persisting the width, so only genuine, user-driven
+  resizes are saved. The flag is set around the show()/positioning sequence in
+  Abib._update_search_results_panel() and always reset afterwards.
+- Dependencies: charset-normalizer upgraded from 3.4.9 to 3.5.0, pyinstaller
+  upgraded from 6.21.0 to 6.22.0, and setuptools upgraded from 83.0.0 to
+  84.0.0. Dependencies refreshed via uv sync --all-extras --upgrade.
+
+This is a bug-fix release that also refreshes build tooling and dependencies.
+Built with Python 3.14.6 and PySide6 6.11.1 (64-bit).
+
 Abib v417.24
 
 - Maintenance: Project-wide code-quality clean-up. Resolved a large batch of
