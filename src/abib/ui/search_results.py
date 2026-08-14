@@ -182,6 +182,13 @@ class SearchResultsWindow(QWidget):
             return
         if self._positioning:
             return
+        # Never persist the width of a window that has not actually been
+        # displayed with results. A window that was only created and hidden
+        # (e.g. the user never ran a search this session) reports Qt's small
+        # default/natural width, which must not overwrite the saved
+        # preference when this is called on application close.
+        if not self.isVisible():
+            return
         try:
             self._settings_service.update_search_results_width(self.width())
         except (AttributeError, RuntimeError, TypeError, ValueError):
@@ -189,5 +196,13 @@ class SearchResultsWindow(QWidget):
 
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
+        # Persist only genuine, user-driven resizes. Programmatic show()/
+        # setGeometry calls emit non-spontaneous resize events that can carry
+        # Qt's transient ~120px natural size; these must never overwrite the
+        # saved preference. Spontaneous events come from the window manager
+        # (e.g. the user dragging the window edge). The _positioning guard is
+        # kept as an extra safeguard because it is timing-dependent on its own.
+        if not event.spontaneous():
+            return
         if self.isVisible() and not self._positioning:
             self.save_width()

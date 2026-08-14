@@ -8,10 +8,32 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.25
+Abib v417.26
 ------------
 
 Changelog.
+Abib v417.26
+
+- Bug fix: The remembered Search Results window width (the
+  "search_results_width" setting in settings.json) is no longer overwritten
+  with the window's small ~120px default width. The previous "_positioning"
+  guard (v417.25) was timing-dependent: Qt could deliver the transient
+  resize event after the guard had already been reset, and the width was
+  also saved on application close even when the Search Results window had
+  never been opened during the session.
+- resizeEvent() now persists the width only for genuine, user-driven
+  (spontaneous) resize events; the non-spontaneous resize events produced by
+  programmatic show()/setGeometry calls are ignored, so Qt's transient
+  natural size can no longer leak into the setting.
+- save_width() now refuses to persist the width when the window is not
+  visible, so closing the application without ever opening the Search
+  Results window can no longer overwrite the saved preference.
+- Added unit tests covering the new save_width guards (skipped when hidden,
+  skipped while positioning, and persisted when visible).
+
+This is a bug-fix release. Built with Python 3.14.6 and PySide6 6.11.1
+(64-bit).
+
 Abib v417.25
 
 - Bug fix: The remembered Search Results window width (the

@@ -130,6 +130,50 @@ class TestSettingsService(unittest.TestCase):
         saved_data = cast(MagicMock, self.service.save).call_args[0][0]
         self.assertFalse(saved_data["gill_show_popups"])
 
+class TestSearchResultsWindow(unittest.TestCase):
+    def _make_window(self):
+        from abib.ui.search_results import SearchResultsWindow
+        service = MagicMock()
+        window = SearchResultsWindow(None, service)
+        return window, service
+
+    def test_save_width_skips_when_hidden(self):
+        # A window that was created but never shown (e.g. the user never ran a
+        # search this session) reports Qt's small default width. Saving it on
+        # application close must NOT overwrite the stored preference.
+        window, service = self._make_window()
+        try:
+            self.assertFalse(window.isVisible())
+            window.save_width()
+            cast(MagicMock, service.update_search_results_width).assert_not_called()
+        finally:
+            window.deleteLater()
+
+    def test_save_width_skips_while_positioning(self):
+        window, service = self._make_window()
+        try:
+            window.show()
+            window._positioning = True
+            window.save_width()
+            cast(MagicMock, service.update_search_results_width).assert_not_called()
+        finally:
+            window.close()
+            window.deleteLater()
+
+    def test_save_width_persists_when_visible(self):
+        window, service = self._make_window()
+        try:
+            window.resize(650, 400)
+            window.show()
+            window.save_width()
+            cast(MagicMock, service.update_search_results_width).assert_called_once()
+            args, _ = cast(MagicMock, service.update_search_results_width).call_args
+            self.assertEqual(args[0], window.width())
+        finally:
+            window.close()
+            window.deleteLater()
+
+
 class TestThemes(unittest.TestCase):
     def test_theme_manager_toggle(self):
         state = ThemeState(is_dark_mode=False)
