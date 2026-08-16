@@ -14,7 +14,17 @@ Abib v417.28
 Changelog.
 Abib v417.28
 
+- UI: In Dark mode the coloured toolbar controls keep their light
+  backgrounds, so their text is now pinned to dark (#000000) to stay
+  readable (previously it could render light-on-light and become hard to
+  see). This applies to the Book/Chapter/Verse drop-downs, the F2
+  verse-entry box, and it's OK button, the Find/Find Next buttons, the
+  dual-purpose Back/Forward buttons, the Book/Chapter navigation buttons,
+  and the "Other Works" controls (the works drop-down, Last Work and
+  Search Work).
 
+This release fixes Dark-mode readability of the coloured toolbar controls.
+Built with Python 3.14.6 and PySide6 6.11.1 (64-bit).
 
 Abib v417.27
 
@@ -26,11 +36,6 @@ Abib v417.27
   Book-, Book+, Chapter- and Chapter+ navigation buttons are light yellow;
   and the bottom-line "Other Works" controls (the works drop-down, Last Work
   and Search Work) are light pink.
-- UI: In Dark mode the coloured controls keep their light backgrounds, so
-  their text is now pinned to dark (#000000) to stay readable. This applies
-  to the Book/Chapter/Verse drop-downs, the F2 verse-entry box and its OK
-  button, the Find/Find Next buttons, the dual-purpose Back/Forward buttons,
-  the Book/Chapter navigation buttons, and the "Other Works" controls.
 - Bug fix: The "Other Works" reader Search (Find) function silently did
   nothing when a search was run. _ReaderFindDialog.build_flags() now returns
   a typed QTextDocument.FindFlag(0) base (ORing in the enum members) instead
