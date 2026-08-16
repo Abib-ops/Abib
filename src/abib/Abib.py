@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.1 and python3.14.6 (64-bit).
 
-14/08/2026
+16/08/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --all-extras --upgrade
@@ -769,7 +769,7 @@ class MainWindow(QMainWindow):
     def _setup_input_fields(self) -> None:
         self.display_verse_input: QLineEdit = QLineEdit()
         self.display_verse_input.setToolTip("F2, Enter or OK to search for a verse.")
-        self.display_verse_input.setStyleSheet("QLineEdit { background-color: #e6f4e6; }")
+        self.display_verse_input.setStyleSheet("QLineEdit { background-color: #e6f4e6; color: #000000; }")
         self.display_verse_input.setGeometry(QRect(50, 50, 200, 25))
         self.display_verse_input.installEventFilter(self)
         self.command_history = []
@@ -777,7 +777,7 @@ class MainWindow(QMainWindow):
 
     def _setup_comboboxes(self) -> None:
         # Pale green shade to visually group the Book/Chapter/Verse selectors.
-        combo_style = "QComboBox { background-color: #e6f4e6; }"
+        combo_style = "QComboBox { background-color: #e6f4e6; color: #000000; }"
 
         self.comboBox_1: QComboBox = QComboBox()
         self.comboBox_1.addItems(self.nwin)
@@ -811,7 +811,7 @@ class MainWindow(QMainWindow):
         self.display_verse_input.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         self.okButton = QPushButton("OK")
-        self.okButton.setStyleSheet("QPushButton { text-align: left; background-color: #e6f4e6; }")
+        self.okButton.setStyleSheet("QPushButton { text-align: left; background-color: #e6f4e6; color: #000000; }")
         self.okButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.okButton.setToolTip("Enter")
         self.display_verse_input.returnPressed.connect(self.goto_line)
@@ -827,28 +827,28 @@ class MainWindow(QMainWindow):
 
         # Row 3: Find (col 0), Find Next (col 1), Back (col 2), Forward (col 3), Commentary (col 4)
         self.buttonf3 = QPushButton("Find", self)
-        self.buttonf3.setStyleSheet("QPushButton { text-align: left; background-color: #ffe6cc; }")
+        self.buttonf3.setStyleSheet("QPushButton { text-align: left; background-color: #ffe6cc; color: #000000; }")
         self.buttonf3.clicked.connect(self.search_current_word)
         self.buttonf3.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.buttonf3.setToolTip("F3")
         grid.addWidget(self.buttonf3, 3, 0)
 
         self.buttonf4 = QPushButton("Find Next")
-        self.buttonf4.setStyleSheet("QPushButton { text-align: left; background-color: #ffe6cc; }")
+        self.buttonf4.setStyleSheet("QPushButton { text-align: left; background-color: #ffe6cc; color: #000000; }")
         self.buttonf4.clicked.connect(self.repeat_find_forward)
         self.buttonf4.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.buttonf4.setToolTip("F4")
         grid.addWidget(self.buttonf4, 3, 1)
 
         self.buttonf5 = QPushButton("Back")
-        self.buttonf5.setStyleSheet("QPushButton { text-align: left; background-color: #b6d7b0; }")
+        self.buttonf5.setStyleSheet("QPushButton { text-align: left; background-color: #b6d7b0; color: #000000; }")
         self.buttonf5.clicked.connect(self.history_back)
         self.buttonf5.setToolTip("F5")
         self.buttonf5.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         grid.addWidget(self.buttonf5, 3, 2)
 
         self.buttonf6 = QPushButton("Forward")
-        self.buttonf6.setStyleSheet("QPushButton { text-align: left; background-color: #b6d7b0; }")
+        self.buttonf6.setStyleSheet("QPushButton { text-align: left; background-color: #b6d7b0; color: #000000; }")
         self.buttonf6.clicked.connect(self.history_forward)
         self.buttonf6.setToolTip("F6")
         self.buttonf6.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -856,28 +856,28 @@ class MainWindow(QMainWindow):
 
         # Row 4: Book- (col 0), Book+ (col 1), Chapter- (col 2), Chapter+ (col 3)
         self.buttonf7 = QPushButton("Book-")
-        self.buttonf7.setStyleSheet("QPushButton { text-align: left; background-color: #ffffcc; }")
+        self.buttonf7.setStyleSheet("QPushButton { text-align: left; background-color: #ffffcc; color: #000000; }")
         self.buttonf7.clicked.connect(self.earlier_book)
         self.buttonf7.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.buttonf7.setToolTip("F7")
         grid.addWidget(self.buttonf7, 4, 0)
 
         self.buttonf8 = QPushButton("Book+")
-        self.buttonf8.setStyleSheet("QPushButton { text-align: left; background-color: #ffffcc; }")
+        self.buttonf8.setStyleSheet("QPushButton { text-align: left; background-color: #ffffcc; color: #000000; }")
         self.buttonf8.clicked.connect(self.later_book)
         self.buttonf8.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.buttonf8.setToolTip("F8")
         grid.addWidget(self.buttonf8, 4, 1)
 
         self.buttonf10 = QPushButton("Chapter-")
-        self.buttonf10.setStyleSheet("QPushButton { text-align: left; background-color: #ffffcc; }")
+        self.buttonf10.setStyleSheet("QPushButton { text-align: left; background-color: #ffffcc; color: #000000; }")
         self.buttonf10.clicked.connect(self.earlier_chapter)
         self.buttonf10.setToolTip("F10")
         self.buttonf10.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         grid.addWidget(self.buttonf10, 4, 2)
 
         self.buttonf11 = QPushButton("Chapter+")
-        self.buttonf11.setStyleSheet("QPushButton { text-align: left; background-color: #ffffcc; }")
+        self.buttonf11.setStyleSheet("QPushButton { text-align: left; background-color: #ffffcc; color: #000000; }")
         self.buttonf11.clicked.connect(self.later_chapter)
         self.buttonf11.setToolTip("F11")
         self.buttonf11.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -920,18 +920,18 @@ class MainWindow(QMainWindow):
         self.other_works_combo = QComboBox()
         assert self.other_works_combo is not None
         self.other_works_combo.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.other_works_combo.setStyleSheet("QComboBox { background-color: #ffe6ee; }")
+        self.other_works_combo.setStyleSheet("QComboBox { background-color: #ffe6ee; color: #000000; }")
 
         self.last_work_btn = QPushButton("Last Work")
         assert self.last_work_btn is not None
-        self.last_work_btn.setStyleSheet("QPushButton { text-align: left; background-color: #ffe6ee; }")
+        self.last_work_btn.setStyleSheet("QPushButton { text-align: left; background-color: #ffe6ee; color: #000000; }")
         self.last_work_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.last_work_btn.setToolTip("Open the last read book (Ctrl+L)")
         self.last_work_btn.clicked.connect(self._select_last_other_work)  # type: ignore[attr-defined]
 
         self.search_work_btn = QPushButton("Search Work")
         assert self.search_work_btn is not None
-        self.search_work_btn.setStyleSheet("QPushButton { text-align: left; background-color: #ffe6ee; }")
+        self.search_work_btn.setStyleSheet("QPushButton { text-align: left; background-color: #ffe6ee; color: #000000; }")
         self.search_work_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.search_work_btn.setToolTip("Search in the opened Other Works text (Ctrl+F)")
         self.search_work_btn.clicked.connect(self._open_reader_search)  # type: ignore[attr-defined]

@@ -8,10 +8,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.27
+Abib v417.28
 ------------
 
 Changelog.
+Abib v417.28
+
+
+
 Abib v417.27
 
 - UI: The main-window controls are now colour-coded into visual groups to
@@ -22,6 +26,11 @@ Abib v417.27
   Book-, Book+, Chapter- and Chapter+ navigation buttons are light yellow;
   and the bottom-line "Other Works" controls (the works drop-down, Last Work
   and Search Work) are light pink.
+- UI: In Dark mode the coloured controls keep their light backgrounds, so
+  their text is now pinned to dark (#000000) to stay readable. This applies
+  to the Book/Chapter/Verse drop-downs, the F2 verse-entry box and its OK
+  button, the Find/Find Next buttons, the dual-purpose Back/Forward buttons,
+  the Book/Chapter navigation buttons, and the "Other Works" controls.
 - Bug fix: The "Other Works" reader Search (Find) function silently did
   nothing when a search was run. _ReaderFindDialog.build_flags() now returns
   a typed QTextDocument.FindFlag(0) base (ORing in the enum members) instead
