@@ -8,10 +8,33 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.26
+Abib v417.27
 ------------
 
 Changelog.
+Abib v417.27
+
+- UI: The main-window controls are now colour-coded into visual groups to
+  make the toolbar easier to scan. The Book, Chapter and Verse drop-downs,
+  the F2 verse-entry box, and it's OK button share a pale green shade; the
+  Find and Find Next buttons are light orange; the Back and Forward buttons
+  use a slightly darker green to signal their dual-purpose nature; the
+  Book-, Book+, Chapter- and Chapter+ navigation buttons are light yellow;
+  and the bottom-line "Other Works" controls (the works drop-down, Last Work
+  and Search Work) are light pink.
+- Bug fix: The "Other Works" reader Search (Find) function silently did
+  nothing when a search was run. _ReaderFindDialog.build_flags() now returns
+  a typed QTextDocument.FindFlag(0) base (ORing in the enum members) instead
+  of a plain integer 0. Newer PySide6 builds reject a plain int for
+  QPlainTextEdit.find(text, options) and raise a TypeError that was being
+  swallowed, so no match was ever selected.
+- Added regression tests covering the typed find-flag return value, Find
+  Next selection and advancement, and case-sensitive searching in the
+  reader.
+
+This release adds UI colour grouping and a Search bug fix. Built with
+Python 3.14.6 and PySide6 6.11.1 (64-bit).
+
 Abib v417.26
 
 - Bug fix: The remembered Search Results window width (the

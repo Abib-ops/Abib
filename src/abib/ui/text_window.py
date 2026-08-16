@@ -2062,14 +2062,15 @@ class TextDocumentWindow(QDialog):
         # Some PySide6 builds require QFlags<QTextDocument::FindFlag> rather than plain ints.
         def build_flags(self):
             try:
-                # Start from a plain integer zero and OR in the enum members.
-                # Qt accepts this, and it avoids constructing a possibly-None
-                # FindFlag type (which triggers false-positive None-callable warnings).
-                flags: Any = 0
+                # Start from a typed zero FindFlag and OR in the enum members.
+                # Newer PySide6 builds require QTextDocument.FindFlag for find(),
+                # and reject a plain int (raising TypeError), so we must not start
+                # from a bare integer here.
+                flags: Any = QTextDocument.FindFlag(0)
                 if self.case_box.isChecked():
-                    flags |= getattr(QTextDocument.FindFlag, "FindCaseSensitively", 0)
+                    flags |= getattr(QTextDocument.FindFlag, "FindCaseSensitively", QTextDocument.FindFlag(0))
                 if self.whole_box.isChecked():
-                    flags |= getattr(QTextDocument.FindFlag, "FindWholeWords", 0)
+                    flags |= getattr(QTextDocument.FindFlag, "FindWholeWords", QTextDocument.FindFlag(0))
                 return flags
             except (AttributeError, TypeError, RuntimeError, ValueError):
                 # Fallback to integer flags using helper if enums are unavailable

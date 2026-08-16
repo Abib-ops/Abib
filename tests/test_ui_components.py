@@ -174,6 +174,72 @@ class TestSearchResultsWindow(unittest.TestCase):
             window.deleteLater()
 
 
+class TestReaderFind(unittest.TestCase):
+    """Regression tests for the Other Works reader Search (Find) dialog."""
+
+    def _make_reader(self):
+        from abib.ui.text_window import TextDocumentWindow
+        service = SettingsService("test_reader_find_settings.json")
+        window = TextDocumentWindow(settings_service=service)
+        window.text_edit.setPlainText("alpha beta gamma\nbeta delta beta\nomega")
+        return window
+
+    def _reset_cursor_to_start(self, window):
+        from PySide6.QtGui import QTextCursor
+        cursor = window.text_edit.textCursor()
+        cursor.setPosition(0)
+        window.text_edit.setTextCursor(cursor)
+
+    def test_build_flags_returns_qt_find_flag(self):
+        # Regression: build_flags previously returned a plain int (0), which
+        # newer PySide6 rejects for QPlainTextEdit.find(), raising TypeError.
+        from PySide6.QtGui import QTextDocument
+        window = self._make_reader()
+        try:
+            window.show_find_dialog()
+            dlg = window._find_dlg
+            self.assertIsNotNone(dlg)
+            flags = dlg.build_flags()
+            self.assertIsInstance(flags, QTextDocument.FindFlag)
+        finally:
+            window.close()
+            window.deleteLater()
+
+    def test_find_next_selects_match(self):
+        window = self._make_reader()
+        try:
+            self._reset_cursor_to_start(window)
+            window.show_find_dialog()
+            dlg = window._find_dlg
+            dlg.edit.setText("beta")
+
+            window.find_next()
+            self.assertEqual(window.text_edit.textCursor().selectedText(), "beta")
+
+            # A second Find Next advances to the following occurrence.
+            first_pos = window.text_edit.textCursor().position()
+            window.find_next()
+            self.assertEqual(window.text_edit.textCursor().selectedText(), "beta")
+            self.assertNotEqual(window.text_edit.textCursor().position(), first_pos)
+        finally:
+            window.close()
+            window.deleteLater()
+
+    def test_find_case_sensitive(self):
+        window = self._make_reader()
+        try:
+            self._reset_cursor_to_start(window)
+            window.show_find_dialog()
+            dlg = window._find_dlg
+            dlg.case_box.setChecked(True)
+            dlg.edit.setText("BETA")
+            window.find_next()
+            self.assertEqual(window.text_edit.textCursor().selectedText(), "")
+        finally:
+            window.close()
+            window.deleteLater()
+
+
 class TestThemes(unittest.TestCase):
     def test_theme_manager_toggle(self):
         state = ThemeState(is_dark_mode=False)
