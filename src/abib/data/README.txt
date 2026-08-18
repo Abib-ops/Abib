@@ -8,10 +8,24 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.28
+Abib v417.29
 ------------
 
 Changelog.
+Abib v417.29
+
+- Runtime: Python upgraded from 3.14.6 to 3.14.7 (64-bit).
+- Maintenance: Dependency and build-tooling refresh. PySide6 (and its
+  shiboken6, pyside6-essentials and pyside6-addons components) upgraded from
+  6.11.1 to 6.11.2, charset-normalizer from 3.5.0 to 3.5.1, idna from 3.18 to
+  3.19, pygments from 2.20.0 to 2.21.0, and pyinstaller from 6.22.0 to 6.22.2.
+  Dependencies refreshed via uv sync --all-extras --upgrade.
+- No user-facing behaviour changes; all existing tests continue to pass.
+
+This is a maintenance release that upgrades the Python runtime and refreshes
+dependencies and build tooling. Built with Python 3.14.7 and PySide6 6.11.2
+(64-bit).
+
 Abib v417.28
 
 - UI: In Dark mode the coloured toolbar controls keep their light

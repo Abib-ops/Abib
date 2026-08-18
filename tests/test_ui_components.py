@@ -185,7 +185,6 @@ class TestReaderFind(unittest.TestCase):
         return window
 
     def _reset_cursor_to_start(self, window):
-        from PySide6.QtGui import QTextCursor
         cursor = window.text_edit.textCursor()
         cursor.setPosition(0)
         window.text_edit.setTextCursor(cursor)
