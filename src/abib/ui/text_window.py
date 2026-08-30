@@ -2068,9 +2068,9 @@ class TextDocumentWindow(QDialog):
                 # from a bare integer here.
                 flags: Any = QTextDocument.FindFlag(0)
                 if self.case_box.isChecked():
-                    flags |= getattr(QTextDocument.FindFlag, "FindCaseSensitively", QTextDocument.FindFlag(0))
+                    flags |= cast(Any, getattr(QTextDocument.FindFlag, "FindCaseSensitively", QTextDocument.FindFlag(0)))
                 if self.whole_box.isChecked():
-                    flags |= getattr(QTextDocument.FindFlag, "FindWholeWords", QTextDocument.FindFlag(0))
+                    flags |= cast(Any, getattr(QTextDocument.FindFlag, "FindWholeWords", QTextDocument.FindFlag(0)))
                 return flags
             except (AttributeError, TypeError, RuntimeError, ValueError):
                 # Fallback to integer flags using helper if enums are unavailable
@@ -2126,51 +2126,98 @@ class TextDocumentWindow(QDialog):
             term = win_dlg.edit.text()
         except (RuntimeError, AttributeError):
             term = ""
+        # Ignore any CR/LF characters that may be present in the search term
+        # (e.g. pasted multi-line text); QPlainTextEdit.find cannot match across
+        # line boundaries, so strip them out before searching.
+        if term:
+            term = term.replace("\r", "").replace("\n", "")
         if not term:
             return
 
-        win_dlg_f: Any = dlg
-        flags = win_dlg_f.build_flags()
-        if not forward:
-            try:
-                flags |= getattr(QTextDocument.FindFlag, "FindBackward", _qdoc_find_flag("FindBackward"))
-            except (AttributeError, TypeError, RuntimeError, ValueError):
-                # Keep whatever we have
-                pass
-
-        # If term changed, restart from beginning/end
-        dlg_term: Any = dlg
-        last_term = getattr(dlg_term, "_last_term", "")
-        if term != last_term:
-            try:
-                dlg_term._last_term = term
-                cursor = self.text_edit.textCursor()
-                if forward:
-                    cursor.setPosition(0)
-                else:
-                    doc = self.text_edit.document()
-                    cursor.setPosition(doc.characterCount() - 1)
-                self.text_edit.setTextCursor(cursor)
-            except (RuntimeError, AttributeError):
-                pass
-
-        # Try to find; if not found (or an error occurs), wrap once and try again
+        # Read the search options (case sensitivity / whole word) from the dialog.
+        dlg_opts: Any = dlg
         try:
-            # Pass proper flags to find(); avoid casting to Any to keep types compatible
-            # but use cast(Any, flags) if the analyzer is still unhappy with the int/FindFlag mismatch
-            f_flags: Any = flags
-            if not self.text_edit.find(term, f_flags):
-                cursor = self.text_edit.textCursor()
-                if forward:
-                    cursor.setPosition(0)
+            case_sensitive = bool(dlg_opts.case_box.isChecked())
+        except (RuntimeError, AttributeError):
+            case_sensitive = False
+        try:
+            whole_words = bool(dlg_opts.whole_box.isChecked())
+        except (RuntimeError, AttributeError):
+            whole_words = False
+
+        # Search over the original document text, but allow any run of whitespace
+        # (including CR/LF line breaks) in the document to match a single space in
+        # the search term. This lets a term like "as many lives as a cat" match
+        # text where a line break separates "lives" and "as". QPlainTextEdit.find
+        # cannot match across line boundaries, so we run our own regex search and
+        # then map the match back to a cursor selection in the real document.
+        try:
+            doc_text = self.text_edit.toPlainText()
+        except (RuntimeError, AttributeError):
+            doc_text = ""
+
+        if not doc_text:
+            return
+
+        # Build a regular expression from the term. Split the term on whitespace
+        # and join the (escaped) tokens with \s+ so any whitespace in the term
+        # matches one or more whitespace characters (spaces, tabs, CR/LF) in the
+        # searched text. This is what allows a match to span a line break.
+        try:
+            tokens: list[str] = [str(re.escape(tok)) for tok in term.split() if tok]
+            if not tokens:
+                return
+            pattern = r"\s+".join(tokens)
+            if whole_words:
+                pattern = r"\b" + pattern + r"\b"
+            regex = re.compile(pattern, 0 if case_sensitive else re.IGNORECASE)
+        except (re.error, ValueError):
+            return
+
+        # Determine where to start searching from, based on the current selection.
+        try:
+            cur = self.text_edit.textCursor()
+            sel_start = cur.selectionStart()
+            sel_end = cur.selectionEnd()
+        except (RuntimeError, AttributeError):
+            sel_start = 0
+            sel_end = 0
+
+        match: Any
+        if forward:
+            match = regex.search(doc_text, max(0, int(sel_end)))
+            if match is None:
+                # Wrap around to the beginning of the document.
+                match = regex.search(doc_text, 0)
+        else:
+            last_before: Any = None
+            for m in regex.finditer(doc_text):
+                if m.end() <= sel_start:
+                    last_before = m
                 else:
-                    doc = self.text_edit.document()
-                    cursor.setPosition(doc.characterCount() - 1)
-                self.text_edit.setTextCursor(cursor)
-                self.text_edit.find(term, f_flags)
-        except (RuntimeError, AttributeError, TypeError):
-            # Silently ignore lifecycle/type errors from Qt objects
-            pass
+                    break
+            if last_before is None:
+                # Wrap around to the last match in the document.
+                for m in regex.finditer(doc_text):
+                    last_before = m
+            match = last_before
+
+        if match is None:
+            return
+
+        # Select the match in the real document.
+        try:
+            orig_start = int(match.start())
+            orig_end = int(match.end())
+            if orig_end <= orig_start:
+                return
+            cursor = self.text_edit.textCursor()
+            cursor.setPosition(orig_start)
+            cursor.setPosition(orig_end, QTextCursor.MoveMode.KeepAnchor)
+            self.text_edit.setTextCursor(cursor)
+        except (RuntimeError, AttributeError, IndexError, TypeError):
+            return
+
         try:
             self.text_edit.ensureCursorVisible()
         except (RuntimeError, AttributeError):

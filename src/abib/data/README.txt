@@ -8,10 +8,35 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.29
+Abib v417.30
 ------------
 
 Changelog.
+Abib v417.30
+
+- Bug fix: The "Other Works" reader Search (Find) now matches a search term
+  that spans a line break. QPlainTextEdit.find cannot match across line
+  boundaries, so a phrase such as "as many lives as a cat" was never found
+  when a line break separated two of its words. The reader now strips any
+  CR/LF characters from the search term and runs its own regular-expression
+  search over the document text, joining the term's whitespace-separated
+  tokens with \s+ so any run of whitespace (spaces, tabs, or line breaks)
+  matches, then maps the result back to a selection in the reader. Case
+  sensitivity and whole-word options are honoured, and Find still wraps
+  around the document in both directions.
+- Maintenance: Minor type-checker clean-ups. _ReaderFindDialog.build_flags()
+  now wraps the resolved QTextDocument.FindFlag members with cast(...) when
+  ORing them together, and the raw-search helpers occurrent() and find_f4()
+  copy self.gent into a local variable before calling next(), so the static
+  analyser can narrow the generator type correctly. No runtime behaviour
+  changes.
+- Maintenance: Build tooling refresh. pyinstaller-hooks-contrib upgraded
+  from 2026.6 to 2026.7.
+
+This release fixes cross-line searching in the "Other Works" reader and
+refreshes build tooling. Built with Python 3.14.7 and PySide6 6.11.2
+(64-bit).
+
 Abib v417.29
 
 - Runtime: Python upgraded from 3.14.6 to 3.14.7 (64-bit).
