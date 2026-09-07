@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.2 and python3.14.7 (64-bit).
 
-30/08/2026
+07/09/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --all-extras --upgrade
@@ -406,6 +406,10 @@ class MainWindow(QMainWindow):
         self.search_results_window: Any = None
         self.concordance_service: Any = None
         self.concordance_window: Any = None
+        self.other_works_reference_index: Any = None
+        self.other_works_references_window: Any = None
+        self.other_works_text_search_service: Any = None
+        self.other_works_text_search_window: Any = None
         # Guard flag to avoid recursive move/resize while repositioning the
         # separate Search Results window relative to the main window.
         self._positioning_search_results: bool = False
@@ -791,6 +795,66 @@ class MainWindow(QMainWindow):
             history.back_push(w, current_line)
         self.display_verse_from_history(current_position)
 
+    def open_other_works_references(self) -> None:
+        """Open the Other Works scripture-reference index browser."""
+        from abib.services.other_works_reference_index import OtherWorksReferenceIndex
+        from abib.ui.other_works_references_window import OtherWorksReferencesWindow
+
+        show_work = dict(self.settings.get("show_work") or {}) if isinstance(self.settings, dict) else {}
+        if self.other_works_reference_index is None:
+            self.other_works_reference_index = OtherWorksReferenceIndex(self.other_works_map, show_work)
+        else:
+            self.other_works_reference_index = OtherWorksReferenceIndex(self.other_works_map, show_work)
+
+        if self.other_works_references_window is None:
+            parent = self if isinstance(self, QWidget) else None
+            self.other_works_references_window = OtherWorksReferencesWindow(self.other_works_reference_index, parent)
+            self.other_works_references_window.occurrenceActivated.connect(self._on_other_work_reference_activated)
+        else:
+            self.other_works_references_window._service = self.other_works_reference_index
+            self.other_works_references_window.clear_search()
+
+        self.other_works_references_window.show()
+        self.other_works_references_window.raise_()
+        self.other_works_references_window.activateWindow()
+
+    def _on_other_work_reference_activated(self, work_path: str, abs_start: int, length: int) -> None:
+        """Open an indexed Other Work occurrence and jump to its character range."""
+        self._open_text_file_in_window(work_path)
+        try:
+            reader: Any = getattr(self, "text_edit_window", None)
+            if reader is not None:
+                if getattr(reader, "_is_loading_file", False):
+                    reader._pending_reference_offset = (int(abs_start), int(length))
+                    reader._pending_jump_char = int(abs_start)
+                reader.jump_to_reference_offset(abs_start, length)
+        except (AttributeError, RuntimeError, TypeError, ValueError):
+            pass
+
+    def open_other_works_text_search(self) -> None:
+        """Open the Other Works text-search browser."""
+        from abib.services.other_works_text_search import OtherWorksTextSearchService
+        from abib.ui.other_works_text_search_window import OtherWorksTextSearchWindow
+
+        show_work = dict(self.settings.get("show_work") or {}) if isinstance(self.settings, dict) else {}
+        self.other_works_text_search_service = OtherWorksTextSearchService(self.other_works_map, show_work)
+
+        if self.other_works_text_search_window is None:
+            parent = self if isinstance(self, QWidget) else None
+            self.other_works_text_search_window = OtherWorksTextSearchWindow(self.other_works_text_search_service, parent)
+            self.other_works_text_search_window.occurrenceActivated.connect(self._on_other_work_text_search_activated)
+        else:
+            self.other_works_text_search_window._service = self.other_works_text_search_service
+            self.other_works_text_search_window.clear_search()
+
+        self.other_works_text_search_window.show()
+        self.other_works_text_search_window.raise_()
+        self.other_works_text_search_window.activateWindow()
+
+    def _on_other_work_text_search_activated(self, work_path: str, abs_start: int, length: int) -> None:
+        """Open an Other Works text-search occurrence and jump to its character range."""
+        MainWindow._on_other_work_reference_activated(self, work_path, abs_start, length)
+
     def _setup_input_fields(self) -> None:
         self.display_verse_input: QLineEdit = QLineEdit()
         self.display_verse_input.setToolTip("F2, Enter or OK to search for a verse.")
@@ -1089,6 +1153,8 @@ class MainWindow(QMainWindow):
                 if getattr(self, "settings_service", None):
                     self.settings_service.save(self.settings)
                 self._refresh_other_works_combo()
+                if getattr(self, "other_works_reference_index", None) is not None:
+                    self.other_works_reference_index.rebuild()
 
             # Build non-closing buttons inside the menu
             select_all_btn = QPushButton("Select all Other Works", settings_menu)
@@ -1135,6 +1201,8 @@ class MainWindow(QMainWindow):
                         if getattr(self, "settings_service", None):
                             self.settings_service.save(self.settings)
                         self._refresh_other_works_combo()
+                        if getattr(self, "other_works_reference_index", None) is not None:
+                            self.other_works_reference_index.rebuild()
                     return _toggle
 
                 cb.toggled.connect(_make_toggle_cb(stem))
@@ -1160,6 +1228,8 @@ class MainWindow(QMainWindow):
                         if getattr(self, "settings_service", None):
                             self.settings_service.save(self.settings)
                         self._refresh_other_works_combo()
+                        if getattr(self, "other_works_reference_index", None) is not None:
+                            self.other_works_reference_index.rebuild()
                     return _toggle
 
                 act.toggled.connect(_make_toggler(stem))
@@ -1360,6 +1430,13 @@ class MainWindow(QMainWindow):
             concordance: Any = getattr(self, "concordance_window", None)
             if concordance is not None:
                 concordance.close()
+        except (AttributeError, RuntimeError, TypeError, ValueError):
+            pass
+
+        try:
+            references_window: Any = getattr(self, "other_works_references_window", None)
+            if references_window is not None:
+                references_window.close()
         except (AttributeError, RuntimeError, TypeError, ValueError):
             pass
         

@@ -335,6 +335,7 @@ class TextDocumentWindow(QDialog):
         self._pending_jump_patterns: list[str] | None = None
         # Pending jump-to-character offset to be applied after a file finishes loading
         self._pending_jump_char: int | None = None
+        self._pending_reference_offset: tuple[int, int] | None = None
 
         # ---- Lightweight Find dialog state and shortcuts ----
         # Use the concrete dialog type so static analysers know about `.edit`, `.build_flags`, etc.
@@ -826,6 +827,11 @@ class TextDocumentWindow(QDialog):
                     return
                 nonlocal attempts, last_max, stable_ticks
                 attempts -= 1
+                if getattr(self, "_pending_reference_offset", None) is not None or isinstance(
+                        getattr(self, "_pending_jump_char", None), int
+                ):
+                    finalize_upgrade_and_done()
+                    return
                 # Validate scrollbar each tick
                 try:
                     maximum = int(sb_px.maximum())
@@ -1609,6 +1615,9 @@ class TextDocumentWindow(QDialog):
                     self._pending_restore_value = int(last_position)
 
                     def _after_restore():
+                        # The content is loaded and the saved-position restore has finished;
+                        # clear loading before applying any queued precise jump so it moves now.
+                        self._is_loading_file = False
                         # After the content-anchored restore finalises, begin highlighting
                         try:
                             # If a precise char jump was requested during a load, apply it first
@@ -1616,7 +1625,12 @@ class TextDocumentWindow(QDialog):
                                 pending_char = getattr(self, "_pending_jump_char", None)
                             except AttributeError:
                                 pending_char = None
-                            if isinstance(pending_char, int) and pending_char >= 0:
+                            pending_reference = getattr(self, "_pending_reference_offset", None)
+                            if isinstance(pending_reference, tuple) and len(pending_reference) == 2:
+                                self.jump_to_reference_offset(int(pending_reference[0]), int(pending_reference[1]))
+                                self._pending_reference_offset = None
+                                self._pending_jump_char = None
+                            elif isinstance(pending_char, int) and pending_char >= 0:
                                 self._jump_to_char_now(int(pending_char))
                                 self._pending_jump_char = None
 
@@ -1655,7 +1669,7 @@ class TextDocumentWindow(QDialog):
                                 lt_done.stop()
                             except (RuntimeError, AttributeError):
                                 pass
-                        # Ensure the loading state is cleared after successful restore/finalise
+                        # Ensure the loading state remains cleared after successful restore/finalise
                         self._is_loading_file = False
 
                     # Perform content-anchored restore first, then highlight via callback
@@ -1822,6 +1836,42 @@ class TextDocumentWindow(QDialog):
             return True
         except (RuntimeError, AttributeError, TypeError, ValueError):
             return False
+
+    def jump_to_reference_offset(self, abs_start: int, length: int) -> bool:
+        """Select and scroll to an absolute character range in the loaded text."""
+        try:
+            start = int(abs_start)
+            span = int(length)
+        except (TypeError, ValueError):
+            return False
+        if start < 0 or span <= 0:
+            return False
+        if getattr(self, "_is_loading_file", False):
+            self._pending_reference_offset = (start, span)
+            self._pending_jump_char = start
+            return True
+
+        try:
+            doc = self.text_edit.document()
+            total_chars = int(doc.characterCount()) if doc is not None else 0
+        except (AttributeError, RuntimeError, TypeError, ValueError):
+            return False
+        if total_chars <= 1 or start >= total_chars:
+            return False
+
+        end = min(start + span, max(0, total_chars - 1))
+        if end <= start:
+            return False
+
+        try:
+            cursor = self.text_edit.textCursor()
+            cursor.setPosition(start)
+            cursor.setPosition(end, QTextCursor.MoveMode.KeepAnchor)
+            self.text_edit.setTextCursor(cursor)
+            self.text_edit.ensureCursorVisible()
+        except (AttributeError, RuntimeError, TypeError, ValueError):
+            return False
+        return True
 
     def _try_load_precomputed_refs(self, text_path: Path, content: str) -> bool:
         """Attempt to load precomputed reference indices for the given text.

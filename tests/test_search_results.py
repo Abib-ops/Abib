@@ -44,3 +44,11 @@ def test_result_verse_text_uses_bible_line_mapping():
 
     assert result_verse_text(0, kjv, amap) == "Genesis 1:1 text"
     assert result_verse_text(1, kjv, amap) == "Genesis 1:2 text"
+
+
+def test_result_verse_text_removes_leading_verse_number():
+    kjv = ("title line", "2 And the earth was without form", "3 ¶ And God said")
+    amap = (1, 2)
+
+    assert result_verse_text(0, kjv, amap) == "And the earth was without form"
+    assert result_verse_text(1, kjv, amap) == "¶ And God said"

@@ -71,7 +71,7 @@ def highlight_result_text(text: str, search_text: str, search_mode: int, case_se
 def result_verse_text(position: int, kjv: Sequence[str], amap: Sequence[int | str]) -> str:
     """Return the display verse text for a compact search-result position."""
     line_number = int(amap[position])
-    return str(kjv[line_number])
+    return re.sub(r"^\d+\s+", "", str(kjv[line_number]))
 
 
 def find_highlight_ranges(text: str, search_text: str, search_mode: int, case_sensitive: bool) -> list[tuple[int, int]]:

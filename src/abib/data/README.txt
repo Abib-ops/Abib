@@ -8,22 +8,61 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.31
+Abib v417.32
 ------------
 
 Changelog.
+Abib v417.32
+
+- New feature: Other Works references. A new "Other Works References"
+  entry on the "Study" menu opens a window that finds every place in
+  your enabled "Other Works" library that cites a given Bible reference.
+  Enter a book, chapter and verse and the window searches across all
+  enabled works (using their precomputed reference companions) and lists
+  the matching occurrences grouped by verse. Clicking an occurrence opens
+  the relevant work and jumps straight to the cited passage, selecting the
+  exact character range of the reference in the reader.
+- The reference index respects the same "show work" selection used
+  elsewhere, and it rebuilds automatically when you enable or disable
+  works in Settings so the results always match your current library.
+- New feature: Other Works text search. A companion "Other Works Text
+  Search" entry on the "Study" menu opens a window that searches the plain
+  text of your enabled "Other Works" library for a word or phrase. The
+  search is case-insensitive and matches literal text (single words or
+  multi-word phrases), listing each occurrence with a concise snippet of
+  the surrounding text. Clicking an occurrence opens the relevant work and
+  jumps straight to the matched text, selecting its exact character range
+  in the reader. Like the references browser, it honours the current "show
+  work" selection so disabled works are skipped.
+- Tests: Added coverage for the Other Works reference index (building,
+  reference-key handling, occurrence extraction), the references window
+  (searching, grouping, empty state and occurrence payloads), the reader's
+  jump-to-reference-offset behaviour, and the main-window integration that
+  opens a work and navigates to the cited range. Also added coverage for
+  the Other Works text-search service (case-insensitive and phrase
+  matching, disabled-work exclusion, offsets and snippets) and its window.
+
+This release adds an "Other Works References" browser and an "Other Works
+Text Search" window for finding and jumping to Bible references and to
+literal text across the enabled Other Works library. Built with Python
+3.14.7 and PySide6 6.11.2 (64-bit).
+
+Please note: this entry is presented as is, in a fairly raw state.
+Apologies for the rough nature of it; it is offered here for now and will
+hopefully be tidied up and refined in a later release.
+
 Abib v417.31
 
-- New feature: Bible concordance. A new "Study" menu with a "Concordance"
-  entry opens a dedicated window that indexes every word of the KJV text.
-  The left pane lists each word alphabetically with its total number of
-  occurrences (common stop words such as "the", "and" and "of" are omitted
-  to keep the list useful), and the right pane shows every reference and
-  verse for the selected word. A filter box at the top narrows the word
-  list as you type; typing two or more words instead performs an on-demand
-  whole-word phrase search across the whole Bible. Clicking a reference
-  jumps the main window straight to that verse, pushing the current
-  location onto the Back history so you can return with Back (F5).
+- New feature: a Bible concordance, accessed from a new "Study" menu whose
+  "Concordance" entry opens a dedicated window that indexes every word of
+  the KJV text. The left pane lists each word alphabetically with its
+  total number of occurrences (common stop words such as "the", "and" and
+  "of" are omitted to keep the list useful), and the right pane shows every
+  reference and verse for the selected word. A filter box at the top narrows
+  the word list as you type; typing two or more words instead performs an
+  on-demand whole-word phrase search across the whole Bible. Clicking a
+  reference jumps the main window straight to that verse, pushing the
+  current location onto the Back history so you can return with Back (F5).
 - Tests: Added coverage for the concordance service (word and phrase
   indexing, stop-word handling, reference formatting), the concordance
   window (filtering, entry selection and reference activation), and the

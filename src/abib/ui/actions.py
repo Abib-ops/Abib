@@ -127,6 +127,16 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
     concordance_action.triggered.connect(window.open_concordance)
     study_menu.addAction(concordance_action)
 
+    other_works_references_action = QAction("Other Works References      ", window)
+    other_works_references_action.setStatusTip("Find enabled Other Works by Bible reference")
+    other_works_references_action.triggered.connect(window.open_other_works_references)
+    study_menu.addAction(other_works_references_action)
+
+    other_works_text_search_action = QAction("Other Works Text Search      ", window)
+    other_works_text_search_action.setStatusTip("Search text in enabled Other Works")
+    other_works_text_search_action.triggered.connect(window.open_other_works_text_search)
+    study_menu.addAction(other_works_text_search_action)
+
     # Help menu items
     help_menu = window.menuBar().addMenu("&Help")
 
@@ -184,7 +194,7 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
     actions = [
         github_action, open_file_action, print_action, exit_action,
         copy_action, select_action,
-        concordance_action,
+        concordance_action, other_works_references_action, other_works_text_search_action,
         copyright_action, help_action, readme_action, about_action, settings_action,
     ]
 
