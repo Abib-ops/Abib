@@ -8,28 +8,46 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.30
+Abib v417.31
 ------------
 
 Changelog.
+Abib v417.31
+
+- New feature: Bible concordance. A new "Study" menu with a "Concordance"
+  entry opens a dedicated window that indexes every word of the KJV text.
+  The left pane lists each word alphabetically with its total number of
+  occurrences (common stop words such as "the", "and" and "of" are omitted
+  to keep the list useful), and the right pane shows every reference and
+  verse for the selected word. A filter box at the top narrows the word
+  list as you type; typing two or more words instead performs an on-demand
+  whole-word phrase search across the whole Bible. Clicking a reference
+  jumps the main window straight to that verse, pushing the current
+  location onto the Back history so you can return with Back (F5).
+- Tests: Added coverage for the concordance service (word and phrase
+  indexing, stop-word handling, reference formatting), the concordance
+  window (filtering, entry selection and reference activation), and the
+  main-window integration that navigates to a clicked reference.
+
+This release adds a Bible concordance for browsing and searching every
+word and phrase in the KJV text. Built with Python 3.14.7 and PySide6
+6.11.2 (64-bit).
+
 Abib v417.30
 
-- Bug fix: The "Other Works" reader Search (Find) now matches a search term
-  that spans a line break. QPlainTextEdit.find cannot match across line
-  boundaries, so a phrase such as "as many lives as a cat" was never found
-  when a line break separated two of its words. The reader now strips any
-  CR/LF characters from the search term and runs its own regular-expression
-  search over the document text, joining the term's whitespace-separated
-  tokens with \s+ so any run of whitespace (spaces, tabs, or line breaks)
-  matches, then maps the result back to a selection in the reader. Case
-  sensitivity and whole-word options are honoured, and Find still wraps
-  around the document in both directions.
-- Maintenance: Minor type-checker clean-ups. _ReaderFindDialog.build_flags()
-  now wraps the resolved QTextDocument.FindFlag members with cast(...) when
-  ORing them together, and the raw-search helpers occurrent() and find_f4()
-  copy self.gent into a local variable before calling next(), so the static
-  analyser can narrow the generator type correctly. No runtime behaviour
-  changes.
+- Bug fix: Search (Find) in the "Other Works" reader now finds phrases that
+  wrap across a line break. Because QPlainTextEdit.find cannot match past a
+  line boundary, a phrase such as "as many lives as a cat" was missed
+  whenever a line break fell between two of its words. Find now runs its own
+  search: it strips CR/LF from the search term and joins the term's words
+  with a whitespace pattern (\s+), so any spaces, tabs, or line breaks
+  between them match, then selects the result in the reader. Case-sensitive
+  and whole-word options still apply, and Find still wraps around the
+  document in both directions.
+- Maintenance: Type-checker clean-ups with no change to behaviour. Find-flag
+  handling in the reader's search dialog is now correctly typed, and the
+  raw-search helpers copy their generator into a local variable before
+  advancing it so the static analyser can narrow its type.
 - Maintenance: Build tooling refresh. pyinstaller-hooks-contrib upgraded
   from 2026.6 to 2026.7.
 

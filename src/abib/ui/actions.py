@@ -120,6 +120,13 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
     select_action.triggered.connect(window.textEditor.selectAll)
     edit_menu.addAction(select_action)
 
+    study_menu = window.menuBar().addMenu("&Study")
+
+    concordance_action = QAction("Concordance", window)
+    concordance_action.setStatusTip("Open Bible concordance")
+    concordance_action.triggered.connect(window.open_concordance)
+    study_menu.addAction(concordance_action)
+
     # Help menu items
     help_menu = window.menuBar().addMenu("&Help")
 
@@ -177,6 +184,7 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
     actions = [
         github_action, open_file_action, print_action, exit_action,
         copy_action, select_action,
+        concordance_action,
         copyright_action, help_action, readme_action, about_action, settings_action,
     ]
 

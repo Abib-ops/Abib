@@ -404,6 +404,8 @@ class MainWindow(QMainWindow):
         # Predeclare actions bundle to satisfy linters (assigned in initui)
         self.actions_bundle = None
         self.search_results_window: Any = None
+        self.concordance_service: Any = None
+        self.concordance_window: Any = None
         # Guard flag to avoid recursive move/resize while repositioning the
         # separate Search Results window relative to the main window.
         self._positioning_search_results: bool = False
@@ -764,6 +766,29 @@ class MainWindow(QMainWindow):
             forward.clear()
             history.back_push(w, current_line)
         self._sync_search_state_for_result(current_position)
+        self.display_verse_from_history(current_position)
+
+    def open_concordance(self) -> None:
+        """Open the Bible concordance window, creating it on first use."""
+        if self.concordance_service is None:
+            from abib.services.concordance_service import ConcordanceService
+            self.concordance_service = ConcordanceService(KJV, Amap, sh.Info, self.nwin, sh.onechapterbooks)
+
+        if self.concordance_window is None:
+            from abib.ui.concordance_window import ConcordanceWindow
+            self.concordance_window = ConcordanceWindow(self.concordance_service, self)
+            self.concordance_window.referenceActivated.connect(self._on_concordance_reference_activated)
+
+        self.concordance_window.show()
+        self.concordance_window.raise_()
+        self.concordance_window.activateWindow()
+
+    def _on_concordance_reference_activated(self, current_position: int) -> None:
+        """Jump to the clicked concordance reference."""
+        current_line = self.get_line_number()
+        if current_line != current_position:
+            forward.clear()
+            history.back_push(w, current_line)
         self.display_verse_from_history(current_position)
 
     def _setup_input_fields(self) -> None:
@@ -1328,6 +1353,13 @@ class MainWindow(QMainWindow):
             if dock is not None:
                 dock.save_width()
                 dock.close()
+        except (AttributeError, RuntimeError, TypeError, ValueError):
+            pass
+
+        try:
+            concordance: Any = getattr(self, "concordance_window", None)
+            if concordance is not None:
+                concordance.close()
         except (AttributeError, RuntimeError, TypeError, ValueError):
             pass
         
@@ -2131,8 +2163,9 @@ class MainWindow(QMainWindow):
 
         if win.occurrence == 0:
             self.gent = self.gen(win.key, x1, x2)
-        assert self.gent is not None
-        current_position, win.y, win.occurrence = next(self.gent)
+        gent = self.gent
+        assert gent is not None
+        current_position, win.y, win.occurrence = next(gent)
         win.statusBar.showMessage(win.nav.get_status_message(current_position))
 
         return current_position
@@ -2157,12 +2190,13 @@ class MainWindow(QMainWindow):
                 history.back_push(w, current_position)
 
             # Ensure self.gent is a valid generator
-            if self.gent is None:
+            gent = self.gent
+            if gent is None:
                 raise ValueError(
                     "self.gent has not been initialized. It must be assigned a valid generator before calling find_f4.")
 
             try:
-                current_position, win.y, win.occurrence = next(self.gent)
+                current_position, win.y, win.occurrence = next(gent)
             except StopIteration:
                 # Handle generator exhaustion if needed
                 self.statusBar.showMessage("Search completed: no more matches.")

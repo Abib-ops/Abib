@@ -26,7 +26,8 @@ def test_open_commentary_window_uses_current_bible_line_not_stale_context(monkey
         def __init__(self, **kwargs) -> None:
             pass
 
-        def set_reference(self, book: int, chapter: int, verse: int) -> None:
+        @staticmethod
+        def set_reference(book: int, chapter: int, verse: int) -> None:
             references.append((book, chapter, verse))
 
         def apply_theme(self, is_dark: bool) -> None:

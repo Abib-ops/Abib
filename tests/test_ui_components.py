@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import unittest
-from typing import cast
+from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
 from PySide6.QtGui import QColor, QPalette
@@ -131,7 +131,8 @@ class TestSettingsService(unittest.TestCase):
         self.assertFalse(saved_data["gill_show_popups"])
 
 class TestSearchResultsWindow(unittest.TestCase):
-    def _make_window(self):
+    @staticmethod
+    def _make_window():
         from abib.ui.search_results import SearchResultsWindow
         service = MagicMock()
         window = SearchResultsWindow(None, service)
@@ -177,14 +178,16 @@ class TestSearchResultsWindow(unittest.TestCase):
 class TestReaderFind(unittest.TestCase):
     """Regression tests for the Other Works reader Search (Find) dialog."""
 
-    def _make_reader(self):
+    @staticmethod
+    def _make_reader():
         from abib.ui.text_window import TextDocumentWindow
         service = SettingsService("test_reader_find_settings.json")
         window = TextDocumentWindow(settings_service=service)
         window.text_edit.setPlainText("alpha beta gamma\nbeta delta beta\nomega")
         return window
 
-    def _reset_cursor_to_start(self, window):
+    @staticmethod
+    def _reset_cursor_to_start(window):
         cursor = window.text_edit.textCursor()
         cursor.setPosition(0)
         window.text_edit.setTextCursor(cursor)
@@ -198,7 +201,7 @@ class TestReaderFind(unittest.TestCase):
             window.show_find_dialog()
             dlg = window._find_dlg
             self.assertIsNotNone(dlg)
-            flags = dlg.build_flags()
+            flags = cast(Any, dlg).build_flags()
             self.assertIsInstance(flags, QTextDocument.FindFlag)
         finally:
             window.close()
@@ -209,7 +212,7 @@ class TestReaderFind(unittest.TestCase):
         try:
             self._reset_cursor_to_start(window)
             window.show_find_dialog()
-            dlg = window._find_dlg
+            dlg = cast(Any, window._find_dlg)
             dlg.edit.setText("beta")
 
             window.find_next()
@@ -229,7 +232,7 @@ class TestReaderFind(unittest.TestCase):
         try:
             self._reset_cursor_to_start(window)
             window.show_find_dialog()
-            dlg = window._find_dlg
+            dlg = cast(Any, window._find_dlg)
             dlg.case_box.setChecked(True)
             dlg.edit.setText("BETA")
             window.find_next()
