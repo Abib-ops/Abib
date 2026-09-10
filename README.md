@@ -11,14 +11,26 @@ Not this crowded normally.
 ![Abib screenshot](src/abib/images/Screenshot.jpg)
 
 ## What's to like in Abib
-- Quick: jump to any verse quickly with abbreviated book names and chapter verse like jo3.16
+- Quick: jump to any verse instantly with abbreviated book names and chapter verse like jo3.16
 - which is John 3:16 or 1th5.28 for 1 Thessalonians 5:28.
-- Compact: a tidy window that sits neatly beside video or notes
+- Compact: a tidy window that sits neatly beside video or notes.
 - Simple 'Find': find words and phrases fast in the Bible.
-- Search the Books, Commentaries, and Dictionaries, with the 'Search' button.  
-- Built‑in daily readings: Spurgeon’s Morning & Evening
+- Search the Books, Commentaries, and Dictionaries, with the 'Search' button.
+- **Concordance (new):** browse every word of the KJV alphabetically with its
+  occurrence count, or type two or more words for an instant whole‑word phrase
+  search across the whole Bible. Click any result to jump straight to the verse.
+- **Other Works References (new):** find every place in your "Other Works"
+  library that cites a given Bible reference, grouped by verse — then click to
+  open the work at the exact passage.
+- **Other Works Text Search (new):** search the full text of your "Other Works"
+  library for a word or phrase and jump straight to the match, even when it
+  wraps across a line break.
+- **Smarter reference detection:** clickable scripture links now recognise older
+  roman‑numeral references (e.g. "Rom. xii. 17"), even when split across a line.
+- Built‑in daily readings: Spurgeon’s Morning & Evening, and Daily Light on the
+  Daily Path.
 - John Gill Exposition of the Entire Bible — click the Commentary button.
-- Extras: Pilgrim’s Progress and other classic works included
+- Extras: Pilgrim’s Progress and other classic works included.
 - Light or Dark theme; font size you can adjust with Ctrl++ and Ctrl+-.
 - Works offline; no accounts, no telemetry.
 
@@ -36,13 +48,14 @@ Not this crowded normally.
 - Daily reading: open the Devotional “Morning & Evening” by C. H. Spurgeon, 
 - or use "Daily Light on the Daily Path".
 - Other books: use the bottom‑left drop‑down to open Pilgrim’s Progress and more.
+- Study tools: open the "Study" menu for the Concordance, Other Works References, and Other Works Text Search.
 
 For tips and shortcuts, see HELP.txt in the repository or the installed folder.
 
 ## Questions
 - Updates: Abib can check for updates and offer to download when a new version is available
-- or only update when you want it to.
-- Privacy: Abib works offline. It only accesses the internet to check for updates.
+- but only when you want it to.
+- Privacy: Abib works offline. It only accesses the internet to check for updates when requested.
 - License: Abib is free software (GPL‑3.0 or later). See LICENSE for details.
 
 PDF resources

@@ -28,9 +28,9 @@ Companion file schema (format = 1):
 }
 
 Usage examples:
-  python tools/precompute_refs.py
-  python tools/precompute_refs.py --input "Other Works" --output "Other Works companions"
-  python tools/precompute_refs.py --force
+  uv run python tools/precompute_refs.py
+  uv run python tools/precompute_refs.py --input "Other Works" --output "Other Works companions"
+  uv run python tools/precompute_refs.py --force
 
 Notes:
 - Normalisation matches the app: CRLF/CR are converted to LF before scanning and hashing.
@@ -72,7 +72,7 @@ from project_setup import PROJECT_ROOT
 
 from abib.core import scripture
 
-PARSER_VERSION = "2025-12-27-fix-numbered-book-continuations"
+PARSER_VERSION = "2026-09-10-roman-crlf-refs"
 FORMAT_VERSION = 1
 
 

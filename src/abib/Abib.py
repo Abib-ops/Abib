@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.2 and python3.14.7 (64-bit).
 
-07/09/2026
+10/09/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --all-extras --upgrade

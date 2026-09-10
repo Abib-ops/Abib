@@ -212,6 +212,9 @@ _WS = r"[\s\u00A0\u202F\u2007\u2009\u200A\u2000-\u2006]"
 # No-newline whitespace class for intra-reference glue (spaces/tabs and narrow no-breaks only).
 # This prevents matches from spanning across line breaks into list bullets like "-2" on the next line.
 _NO_NL_WS = r"[\t \u00A0\u202F\u2007\u2009\u200A\u2000-\u2006]"
+# Allows an optional single line break inside a reference (old typeset roman refs
+# frequently split "xii." and the verse across a line), but never a blank line.
+_NL1_WS = rf"(?:{_NO_NL_WS}*\n?{_NO_NL_WS}*)"
 
 _ORD_SUFFIX = r"(?:st|nd|rd)?"  # for Arabic 1st/2nd/3rd
 _ORD_WORDS = r"(?:first|second|third)"  # written-out ordinals
@@ -229,7 +232,7 @@ _VERSE_LIST = rf"{_VERSE_UNIT}(?:{_NO_NL_WS}*,{_NO_NL_WS}*{_VERSE_UNIT})*"
 
 _arabic_re = rf"(?P<chap_a>\d{{1,3}}){_NO_NL_WS}*[:.]{_NO_NL_WS}*(?P<vers_a>{_VERSE_LIST})"
 # Allow optional dot or colon after a Roman chapter, e.g. xxii. 17 or xxii:17 or xxii 17
-_roman_re = rf"(?P<chap_r>[ivxlcdm]+){_NO_NL_WS}*[:.]?{_NO_NL_WS}*(?:v(?:er\.)?{_NO_NL_WS}*)?(?P<vers_r>{_VERSE_LIST})"
+_roman_re = rf"(?P<chap_r>[ivxlcdm]+){_NL1_WS}[:.]?{_NL1_WS}(?:v(?:er\.)?{_NO_NL_WS}*)?(?P<vers_r>{_VERSE_LIST})"
 _nochap_re = rf"(?P<vers_only>{_VERSE_LIST})"
 # Chapter-only (no verses) after a book, used to carry forward book context in lists like
 # "Ps 2; 16; 18:43; 69:7-9".

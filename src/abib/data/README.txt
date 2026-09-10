@@ -8,10 +8,28 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.32
+Abib v417.33
 ------------
 
 Changelog.
+Abib v417.33
+
+- Bug fix: Scripture references in the "Other Works" library that use the
+  older roman-numeral style (for example "Rom. xii. 17") are now detected
+  even when the chapter and verse are split across a line break. Previously
+  the reference parser refused to cross a line break between the chapter
+  and the verse, so these older typeset references were silently ignored
+  and never became clickable. The parser now allows a single line break at
+  that point, while still refusing to join text across a blank line so
+  unrelated numbers in the following paragraph are not swallowed.
+- Maintenance: The reference parser version was bumped and the precomputed
+  "Other Works" reference companion files were regenerated so the newly
+  detected roman-style references appear throughout the library.
+
+This release fixes detection of older roman-numeral scripture references
+that are split across a line break in the "Other Works" library. Built with
+Python 3.14.7 and PySide6 6.11.2 (64-bit).
+
 Abib v417.32
 
 - New feature: Other Works references. A new "Other Works References"
