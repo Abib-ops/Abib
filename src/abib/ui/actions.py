@@ -55,7 +55,7 @@ def setup_shortcuts(window) -> ShortcutsBundle:
 def setup_menus_and_toolbars(window) -> ActionsBundle:
     """Create menus, toolbars, and actions on the provided main window.
 
-    Mirrors the previous inline setup in Abib.MainWindow.initui, wiring the same
+    Mirrors the previous inline setup in Abib.MainWindow.init_ui, wiring the same
     icons, labels, status tips, and signal handlers.
     """
     # Get the menu bar; QMainWindow.menuBar() ensures one exists
@@ -177,14 +177,8 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
     settings_action.triggered.connect(window.open_settings_dialog)
     settings_menu.addAction(settings_action)
     # Build a tickable list of Other Works under the Settings submenu
-    # Prefer a public helper on the window; fall back to a private one if present
     try:
-        primary = getattr(window, "build_show_works_menu", None)
-        # Backward-compatible fallback: use a private method if available
-        fallback = getattr(window, "_build_show_works_menu", None)
-        builder = primary if callable(primary) else fallback
-        if callable(builder):
-            builder(settings_menu)
+        window.build_show_works_menu(settings_menu)
     except (AttributeError, RuntimeError, TypeError, ValueError):
         # If dynamic building fails, ignore to keep the app functional
         pass

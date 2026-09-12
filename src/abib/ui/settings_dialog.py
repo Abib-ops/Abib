@@ -282,7 +282,7 @@ class SettingsDialog(QDialog):
 
         # Apply to Gill window if open
         try:
-            gill_win = getattr(self.main_window, "_gill_win", None)
+            gill_win = getattr(self.main_window, "gill_win", None)
             if gill_win is not None:
                 if hasattr(gill_win, "set_popup_timing"):
                     gill_win.set_popup_timing(int(new_gill_hover), int(new_gill_hide))

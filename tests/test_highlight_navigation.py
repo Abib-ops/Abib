@@ -125,9 +125,12 @@ def test_raw_result_click_recomputes_highlight_offsets(monkeypatch):
         setTextCursor=lambda cursor: None,
     )
 
+    # The window's own methods now read search/nav state from ``self`` (in
+    # production ``self is w``), so the dispatch object must carry that state.
     fake_self = SimpleNamespace(
         dlg=window.dlg,
         textEditor=text_editor,
+        occurs=window.occurs,
         adjust_highlighting=lambda ln, current_position: calls.append((ln, current_position)),
         on_text_changed=lambda ln: None,
         ref_to_statusbar=lambda current_position: None,
@@ -159,11 +162,19 @@ def test_find_next_history_uses_top_verse_shown_in_main_window(monkeypatch):
     window.message = ""
 
     pushed_positions: list[int] = []
+    # The window's own methods now read search/nav state from ``self`` (in
+    # production ``self is w``), so the dispatch object must carry that state.
     fake_self = SimpleNamespace(
         dlg=window.dlg,
         get_line_number=lambda: 99,
         statusBar=SimpleNamespace(repaint=lambda: None),
         goto_line_find=lambda current_position: None,
+        occurs=window.occurs,
+        occurrence=window.occurrence,
+        occurring=window.occurring,
+        verse=window.verse,
+        finding=window.finding,
+        message=window.message,
     )
 
     monkeypatch.setattr(app, "w", window)

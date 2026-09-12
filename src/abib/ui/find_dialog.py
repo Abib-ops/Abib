@@ -20,7 +20,7 @@ class FindDialog(QDialog):
     """Find a dialog extracted from Abib.py and made parent-aware.
 
     This version avoids referencing the global `w` by using the provided parent
-    MainWindow instance for data (nwin) and actions (findf3, close_find_window).
+    MainWindow instance for data (nwin) and actions (find_in_range, close_find_window).
     """
 
     def __init__(self, parent=None, settings_service: SettingsService | None = None) -> None:
@@ -282,16 +282,16 @@ class FindDialog(QDialog):
             le1.setFocus()
 
     def getter(self) -> None:
-        """Get values from the find window and transfer to findf3 on the parent."""
+        """Get values from the find window and transfer to find_in_range on the parent."""
         assert self.ui.lineEdit_1 is not None
         le1: Any = self.ui.lineEdit_1
         key = le1.text()
         i, j = self.get_scope()
         self.get_checks()
-        if hasattr(self._main, "findf3"):
-            # mirror previous behaviour by setting the parent's key and calling findf3
+        if hasattr(self._main, "find_in_range"):
+            # mirror previous behaviour by setting the parent's key and calling find_in_range
             self._main.key = key
-            self._main.findf3(i, j)
+            self._main.find_in_range(i, j)
         if hasattr(self._main, "close_find_window"):
             self._main.close_find_window()
 

@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.2 and python3.14.7 (64-bit).
 
-10/09/2026
+12/09/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --all-extras --upgrade
@@ -87,15 +87,15 @@ Avoid shell‑only Windows commands; prefer Python equivalents (file I/O, env va
 Test with QT_QPA_PLATFORM=xcb (X11) or ensure Wayland plugins are present.
 """
 
-import re
+import logging
 import sqlite3
+import sys
 import time
 import webbrowser
 from collections.abc import Iterator
 from itertools import islice
 from pathlib import Path
-from sys import exit
-from typing import Any
+from typing import Any, cast
 
 from PySide6.QtCore import QEvent, QObject, QPoint, QRect, Qt
 from PySide6.QtGui import (
@@ -127,6 +127,7 @@ from abib.core import fcs
 from abib.core import shared as sh
 from abib.core.history import History
 from abib.core.navigation import NavigationCore
+from abib.services import search_service
 from abib.services.settings import SettingsService
 from abib.ui.ui_helpers import NoZoomPlainTextEdit
 
@@ -134,22 +135,22 @@ history = History()
 back = history.back
 forward = history.forward
 
-# Global window 'handle' placeholder; set by app.run() at startup
+# Module logger. Swallowed exceptions are logged here (usually at DEBUG level)
+# instead of being silently discarded, so genuine failures can be surfaced.
+logger = logging.getLogger(__name__)
+
+# Global window 'handle' placeholder; set by app.run() at startup.
+# NOTE: MainWindow's own methods use ``self`` directly; this global remains only
+# for the module-level helpers below (``get_next_occurrence``/``reset_attributes``),
+# the ``@staticmethod`` shortcut handlers (``commentary_key``/``calculate_position``),
+# and external windows (gill_window.py, highlighter.py).
 w: Any | None = None
 # Global splash screen reference (kept alive until the user disables it in settings)
 splash: Any | None = None
 
-# try:
-#     import torch
-#     HAS_TORCH = True
-#     CUDA_AVAILABLE = torch.cuda.is_available()
-#     device_name = torch.cuda.get_device_name(0) if CUDA_AVAILABLE else "CPU"
-#     print(f"Junie Status: PyTorch Loaded | Device: {device_name} | CUDA: {CUDA_AVAILABLE}")
-# except ImportError:
-#     torch = None
-#     HAS_TORCH = False
-#     CUDA_AVAILABLE = False
-#     print ("Junie Status: PyTorch not found. AI features disabled.")
+# Number of lines to search backward/forward when mapping a clicked editor line
+# to its verse index (see eventFilter's click handling).
+VERSE_LINE_SEARCH_RADIUS: int = 12
 
 
 ## Step 5: Reduce import and initialisation cost
@@ -173,17 +174,9 @@ book_bounds: list[int] = []
 starts_with_italics: list[int] = []
 KJB_PCE_LASTLINE: int = 0
 EOTNOC: str = ""
-Rnew: tuple = ()
-
-Rlow: tuple = ()
-
-Rstp: tuple = ()
-Rlsp: tuple = ()
-# Search dictionaries and sources
-stripped_dict: dict = {}
-strpd_low_dict: dict = {}
-set_dict: dict = {}
-set_lowdict: dict = {}
+# Search data tables (Rnew/Rlow/Rstp/Rlsp and the stripped/set dictionaries) are
+# no longer stored here: they are loaded into a SearchData context and registered
+# with the search engine via search_service.set_search_data() (see app.run).
 # Screen metrics
 width: int = 0
 height: int = 0
@@ -203,7 +196,6 @@ CURRENT_VERSION = sh.CURRENT_VERSION
 try:
     myappid = f"Abib Bible Reader.{CURRENT_VERSION}"
     if windll:
-        from typing import cast
         cast(Any, windll).shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except (AttributeError, OSError) as e:
     # AttributeError: non-Windows (windll is None); OSError: Windows API failure
@@ -211,71 +203,21 @@ except (AttributeError, OSError) as e:
 
 
 def get_next_occurrence() -> int:
-    """Count occurrence(s) of w.key and give current_position and w.y values.
-
-    w.occurs is a list of all the current_position values in the search results.
-    w.occur is a corresponding list which gives the start w.y and finish w.yend of
-    the searched for item in the particular verse.
-    w.occurring is the total number of times the search key was found.
-    w.verse is the number of the items in the search list.
-    len(w.occur[w.verse]) is the number of search results in a particular verse.
-    w.finding is the number of items found within the verse.
-    """
+    """Delegate to the search engine, operating on the global window handle."""
 
     assert w is not None
-    # 1. Create a local reference with a type hint to satisfy the linter
-    win: Any = w
-
-    if win.dlg is not None and win.dlg.checks[0] in (3, 4):
-        current_position = win.occurs[win.verse]
-        win.finding = 0
-        if win.occur[win.verse]:
-            win.occur[win.verse].sort(key=lambda _x: _x[0])
-            win.y = win.occur[win.verse][0][0]
-            win.yend = win.occur[win.verse][0][1]
-        win.occurrence += 1
-        win.statusBar.showMessage(win.nav.get_status_message(current_position))
-        return current_position
-
-    # 2. Use the local reference 'win' for all attribute access and assignments
-    current_position = win.occurs[-1]
-
-    if win.verse < len(win.occurs):
-        win.finding += 1
-        current_position = win.occurs[win.verse]
-        if win.finding + 1 <= len(win.occur[win.verse]):
-            win.y = win.occur[win.verse][win.finding][0]
-            win.yend = win.occur[win.verse][win.finding][1]
-            win.occurrence += 1
-            win.statusBar.showMessage(win.nav.get_status_message(current_position))
-        elif win.verse + 1 < len(win.occurs):
-            win.verse += 1
-            win.finding = 0
-            win.y = win.occur[win.verse][win.finding][0]
-            win.yend = win.occur[win.verse][win.finding][1]
-            win.occurrence += 1
-            current_position = win.occurs[win.verse]
-            win.statusBar.showMessage(win.nav.get_status_message(current_position))
-    elif win.verse >= len(win.occurs):
-        current_position = win.occurs[-1]
-
-    # print(f'len(win.occurs = {len(win.occurs)})')
-    # print(f'win.occurring = {win.occurring}')
-
-    return current_position
+    return search_service.get_next_occurrence(cast("MainWindow", w))
 
 
-def findf3_ww_any(x1: int, x2: int, _set: dict[str, set], r_list: list, win: 'MainWindow') -> None:
+def find_whole_word_any(x1: int, x2: int, _set: dict[str, set], r_list: list, win: 'MainWindow') -> None:
     """Match any word."""
 
-    from abib.services.search_service import findf3_ww_any as _find_any
-    _find_any(x1, x2, _set, r_list, win)
+    search_service.find_whole_word_any(x1, x2, _set, r_list, win)
 
 
 def make_offset(ln: int) -> int:
     """Enable highlighting of first verses while showing the titles above."""
 
-    # print('make_offset')
     n: str = KJV[ln][0]
     m: str
     spacesfound: int = 0
@@ -317,8 +259,6 @@ def make_offset(ln: int) -> int:
 def reset_attributes() -> None:
     """Instance attribute resetting routine."""
 
-    # print('reset_attributes')
-    
     assert w is not None
     # 1. Create a local reference with a type hint to satisfy the linter
     win: Any = w
@@ -385,23 +325,23 @@ class MainWindow(QMainWindow):
         self.buttonf13: Any = None
         self.buttonf14: Any = None
         self.other_works_combo: QComboBox | None = None
-        # Predeclare UI elements that are instantiated in initui to satisfy linters
+        # Predeclare UI elements that are instantiated in init_ui to satisfy linters
         self.last_work_btn: QPushButton | None = None
-        # Search button for Other Works (instantiated in initui)
+        # Search button for Other Works (instantiated in init_ui)
         self.search_work_btn: QPushButton | None = None
         # Keyboard shortcut for reopening the last Other Work (predeclared for linters)
         self.shortcut_last_work: QShortcut | None = None
-        # Placeholder for the 4th-column vertical button layout added in initui
+        # Placeholder for the 4th-column vertical button layout added in init_ui
         self.side_buttons_col: QVBoxLayout | None = None
         self.other_works_map: dict[str, str] = {}
-        # Live map of Other Works checkboxes in the settings menu (populated in initui)
+        # Live map of Other Works checkboxes in the settings menu (populated in init_ui)
         self._works_menu_checkboxes: dict[str, Any] = {}
         self.statusBar: Any = None
         self.okButton: Any = None
         self.dlg: Any = None  # No external window yet.
         # self.textEditor: QPlainTextEdit = QPlainTextEdit()
         self.textEditor: Any = NoZoomPlainTextEdit()
-        # Predeclare actions bundle to satisfy linters (assigned in initui)
+        # Predeclare actions bundle to satisfy linters (assigned in init_ui)
         self.actions_bundle = None
         self.search_results_window: Any = None
         self.concordance_service: Any = None
@@ -412,13 +352,23 @@ class MainWindow(QMainWindow):
         self.other_works_text_search_window: Any = None
         # Guard flag to avoid recursive move/resize while repositioning the
         # separate Search Results window relative to the main window.
-        self._positioning_search_results: bool = False
+        self.positioning_search_results: bool = False
         
         # Theme manager (extract dark mode logic)
         # Initialise 'ThemeManager' based on persisted settings
         from abib.ui.themes import ThemeManager, ThemeState  # local import (deferred)
         is_dark = self.settings.get("theme", "Light") == "Dark"
         self.theme = ThemeManager(ThemeState(is_dark_mode=is_dark))
+
+        # Theming controller (owns palette/refresh logic; MainWindow delegates to it)
+        from abib.ui.theme_controller import ThemeController  # local import (deferred)
+        self.theme_ctrl = ThemeController(self)
+
+        # Search Results window manager (owns the results panel lifecycle/geometry)
+        from abib.ui.results_window_manager import (
+            SearchResultsWindowManager,  # local import (deferred)
+        )
+        self.results_manager = SearchResultsWindowManager(self)
 
         # Initialise the last known Bible position from settings.
         # This is updated at various navigation points.
@@ -442,7 +392,7 @@ class MainWindow(QMainWindow):
         self._just_restored_from_aux: bool = False
 
         # Gill commentary window (lazy-created on first use)
-        self._gill_win: Any | None = None
+        self.gill_win: Any | None = None
 
         # Navigation core
         self.nav = NavigationCore(self)
@@ -517,7 +467,7 @@ class MainWindow(QMainWindow):
         self.otherFileFlag: bool = True
         self.y: int = 0
 
-        self.initui()
+        self.init_ui()
 
     @property
     def last_context_position(self) -> int:
@@ -562,19 +512,7 @@ class MainWindow(QMainWindow):
                 raise
         return self._reading_plans
 
-    def update_other_works_search_button(self, enabled: bool | None = None) -> None:
-        """Public proxy for toggling the Other Works search button.
-
-        Provides a non-underscored API for external callers and delegates
-        to the internal implementation.
-        """
-        try:
-            self._update_other_works_search_button(enabled)
-        except (RuntimeError, AttributeError, TypeError):
-            # Match existing guarded usage pattern (best-effort toggle)
-            pass
-
-    def initui(self) -> None:
+    def init_ui(self) -> None:
         """Initialise Mainwindow GUI."""
         from abib.ui.highlighter import SyntaxHighlighter  # deferred import
 
@@ -584,7 +522,7 @@ class MainWindow(QMainWindow):
         try:
             self.textEditor.viewport().installEventFilter(self)
         except (RuntimeError, AttributeError):
-            pass
+            logger.debug("Could not install event filter on text editor viewport", exc_info=True)
 
         self._setup_input_fields()
         self._setup_comboboxes()
@@ -596,10 +534,7 @@ class MainWindow(QMainWindow):
         self.setLayout(grid)
 
         for _col in range(5):
-            try:
-                grid.setColumnStretch(_col, 1)
-            except (RuntimeError, AttributeError, TypeError):
-                pass
+            grid.setColumnStretch(_col, 1)
 
         grid.addWidget(self.textEditor, 0, 0, 1, 5)
         self.textEditor.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
@@ -624,120 +559,29 @@ class MainWindow(QMainWindow):
         self.set_theme(self.settings)
 
     def _setup_search_results_panel(self) -> None:
-        """Create the separate Search Results window."""
-        from abib.ui.search_results import SearchResultsWindow  # deferred import
+        """Delegate to the Search Results window manager."""
 
-        self.search_results_window = SearchResultsWindow(self, self.settings_service)
-        self.search_results_window.resultActivated.connect(self._on_search_result_activated)
-        self.search_results_window.hide()
+        self.results_manager.setup_search_results_panel()
 
     def _search_results_width(self) -> int:
-        """Return the persisted width (in pixels) for the Search Results window."""
-        if self.settings_service is None:
-            return 400
-        try:
-            return int(self.settings_service.get_search_results_width())
-        except (AttributeError, RuntimeError, TypeError, ValueError):
-            return 400
+        """Delegate to the Search Results window manager."""
+
+        return self.results_manager.search_results_width()
 
     def _release_main_width_limit(self) -> None:
-        """Remove the width cap that reserves room for the Search Results window."""
-        try:
-            self.setMaximumWidth(16777215)  # QWIDGETSIZE_MAX
-        except (RuntimeError, AttributeError):
-            pass
+        """Delegate to the Search Results window manager."""
+
+        self.results_manager.release_main_width_limit()
 
     def _position_search_results_window(self) -> None:
-        """Glue the Search Results window to the right of the main window.
+        """Delegate to the Search Results window manager."""
 
-        The main window's width is capped (and shrunk if necessary) so that the
-        Search Results window always fits on screen; a maximised/fullscreen main
-        window is restored to a normal size to make room.
-        """
-        win: Any = getattr(self, "search_results_window", None)
-        if win is None:
-            return
-        if self._positioning_search_results:
-            return
-        self._positioning_search_results = True
-        try:
-            panel_width = self._search_results_width()
-            try:
-                screen = self.screen().availableGeometry()
-            except (AttributeError, RuntimeError):
-                from PySide6.QtWidgets import QApplication
-                screen = QApplication.primaryScreen().availableGeometry()
-
-            # Un-maximise so the main window can make room on the right.
-            if self.isMaximized() or self.isFullScreen():
-                self.showNormal()
-
-            # Cap the main window width so the results window always fits.
-            max_main_width = max(300, screen.width() - panel_width)
-            self.setMaximumWidth(max_main_width)
-
-            geo = self.geometry()
-            if geo.width() > max_main_width:
-                self.resize(max_main_width, geo.height())
-                geo = self.geometry()
-
-            # Keep the main window far enough left to leave room on the right.
-            max_left = screen.right() - panel_width - geo.width() + 1
-            if geo.left() > max_left:
-                self.move(max(screen.left(), max_left), geo.top())
-                geo = self.geometry()
-
-            win.setGeometry(geo.right() + 1, geo.top(), panel_width, geo.height())
-        finally:
-            self._positioning_search_results = False
+        self.results_manager.position_search_results_window()
 
     def _update_search_results_panel(self) -> None:
-        """Populate the Search Results window from the current search state."""
-        dock = self.search_results_window
-        if dock is None:
-            return
-        if self.dlg is None or self.occurring == 0 or not self.occurs:
-            dock.clear_results()
-            dock.hide()
-            self._release_main_width_limit()
-            return
+        """Delegate to the Search Results window manager."""
 
-        from abib.ui.search_results import (
-            SearchResult,
-            format_reference,
-            highlight_result_text,
-            result_verse_text,
-        )
-
-        search_text = self.keym or self.key
-        search_mode = self.dlg.checks[0]
-        case_sensitive = self.dlg.checks[1] == 1
-        results: list[SearchResult] = []
-        for current_position in self.occurs:
-            try:
-                verse_text = result_verse_text(current_position, KJV, Amap)
-                reference = format_reference(current_position, sh.Info, self.nwin, sh.onechapterbooks)
-            except (IndexError, TypeError, ValueError):
-                continue
-            html_text = highlight_result_text(verse_text, search_text, search_mode, case_sensitive)
-            results.append(SearchResult(current_position, reference, verse_text, html_text))
-
-        if results:
-            dock.set_results(results, search_text)
-            # Suppress width persistence while the window is shown and positioned
-            # programmatically; otherwise the transient natural size (~100px) that
-            # Qt applies on show() would overwrite the saved preference.
-            dock._positioning = True
-            try:
-                dock.show()
-                self._position_search_results_window()
-            finally:
-                dock._positioning = False
-            dock.raise_()
-        else:
-            dock.clear_results()
-            dock.hide()
-            self._release_main_width_limit()
+        self.results_manager.update_search_results_panel()
 
     def _sync_search_state_for_result(self, current_position: int) -> None:
         """Make the current search state match a clicked result verse."""
@@ -763,12 +607,12 @@ class MainWindow(QMainWindow):
             self.y = self.occur[verse_index][0][0]
             self.yend = self.occur[verse_index][0][1]
 
-    def _on_search_result_activated(self, current_position: int) -> None:
+    def on_search_result_activated(self, current_position: int) -> None:
         """Jump to the clicked search result."""
         current_line = self.get_line_number()
         if current_line != current_position:
             forward.clear()
-            history.back_push(w, current_line)
+            history.back_push(self, current_line)
         self._sync_search_state_for_result(current_position)
         self.display_verse_from_history(current_position)
 
@@ -792,7 +636,7 @@ class MainWindow(QMainWindow):
         current_line = self.get_line_number()
         if current_line != current_position:
             forward.clear()
-            history.back_push(w, current_line)
+            history.back_push(self, current_line)
         self.display_verse_from_history(current_position)
 
     def open_other_works_references(self) -> None:
@@ -820,7 +664,7 @@ class MainWindow(QMainWindow):
 
     def _on_other_work_reference_activated(self, work_path: str, abs_start: int, length: int) -> None:
         """Open an indexed Other Work occurrence and jump to its character range."""
-        self._open_text_file_in_window(work_path)
+        self.open_text_file_in_window(work_path)
         try:
             reader: Any = getattr(self, "text_edit_window", None)
             if reader is not None:
@@ -829,7 +673,7 @@ class MainWindow(QMainWindow):
                     reader._pending_jump_char = int(abs_start)
                 reader.jump_to_reference_offset(abs_start, length)
         except (AttributeError, RuntimeError, TypeError, ValueError):
-            pass
+            logger.debug("Failed to jump to Other Works reference offset", exc_info=True)
 
     def open_other_works_text_search(self) -> None:
         """Open the Other Works text-search browser."""
@@ -998,12 +842,12 @@ class MainWindow(QMainWindow):
             shortcut_cmt = QShortcut(QKeySequence("Ctrl+Shift+C"), self)
             shortcut_cmt.activated.connect(self.open_commentary_window)
         except (RuntimeError, TypeError, AttributeError):
-            pass
+            logger.debug("Could not create Ctrl+Shift+C commentary shortcut", exc_info=True)
 
         try:
             self._normalize_control_heights()
         except (RuntimeError, AttributeError, TypeError):
-            pass
+            logger.debug("Could not normalise control heights", exc_info=True)
 
     def _setup_other_works(self, grid: QGridLayout) -> None:
         self.other_works_combo = QComboBox()
@@ -1011,7 +855,7 @@ class MainWindow(QMainWindow):
         self.other_works_combo.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.other_works_combo.setStyleSheet("QComboBox { background-color: #ffe6ee; color: #000000; }")
 
-        self.last_work_btn = QPushButton("Last Work")
+        self.last_work_btn = QPushButton("Open Work")
         assert self.last_work_btn is not None
         self.last_work_btn.setStyleSheet("QPushButton { text-align: left; background-color: #ffe6ee; color: #000000; }")
         self.last_work_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -1073,7 +917,7 @@ class MainWindow(QMainWindow):
             self.shortcut_last_work.setContext(Qt.ShortcutContext.WindowShortcut)
             self.shortcut_last_work.activated.connect(self._select_last_other_work)  # type: ignore[attr-defined]
         except (RuntimeError, AttributeError, TypeError):
-            pass
+            logger.debug("Could not create Ctrl+L last-work shortcut", exc_info=True)
 
         # self.update_title()
         self.show()
@@ -1105,7 +949,7 @@ class MainWindow(QMainWindow):
         finally:
             self.other_works_combo.blockSignals(False)
 
-    def _build_show_works_menu(self, settings_menu) -> None:
+    def build_show_works_menu(self, settings_menu) -> None:
         """Populate the given Settings submenu with a tickable list of Other Works.
 
         Toggling an item updates settings['show_work'] and refreshes the combo box.
@@ -1148,7 +992,7 @@ class MainWindow(QMainWindow):
                         finally:
                             checkbox.blockSignals(bs)
                 except (AttributeError, RuntimeError, TypeError, ValueError):
-                    pass
+                    logger.debug("Failed to sync Other Works checkbox states", exc_info=True)
                 # Persist and refresh combo
                 if getattr(self, "settings_service", None):
                     self.settings_service.save(self.settings)
@@ -1172,8 +1016,8 @@ class MainWindow(QMainWindow):
             # Separator between bulk actions and individual list
             settings_menu.addSeparator()
         except (ImportError, AttributeError, RuntimeError, TypeError, ValueError):
-            # If widget actions cannot be created, silently skip bulk controls
-            pass
+            # If widget actions cannot be created, skip the bulk controls
+            logger.debug("Could not build bulk Other Works menu controls", exc_info=True)
 
         show_map = dict(self.settings.get("show_work") or {})
         # Ensure keys exist for current files
@@ -1235,19 +1079,6 @@ class MainWindow(QMainWindow):
                 act.toggled.connect(_make_toggler(stem))
                 settings_menu.addAction(act)
 
-    # Public wrapper used by ui.actions to avoid accessing a protected member from outside
-    def build_show_works_menu(self, settings_menu) -> None:
-        """Public entry point to build the tickable Other Works list under Settings.
-
-        Delegates to the internal implementation. Exists to satisfy linters that
-        warn about external access to protected members (methods prefixed with underscore).
-        """
-        try:
-            self._build_show_works_menu(settings_menu)
-        except (AttributeError, RuntimeError, TypeError, ValueError):
-            # Fail-safe: ignore errors so the rest of the menu remains functional
-            pass
-
     def eventFilter(self, source: QObject, event: QEvent) -> bool:
         """Custom event filter to handle key events on QLineEdit."""
         if source is None:
@@ -1272,13 +1103,11 @@ class MainWindow(QMainWindow):
                     self.display_verse_input.clear()  # Clear input when navigating below the last command
                 return True
 
-            elif event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:  # Handle Enter
+            elif event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):  # Handle Enter
                 current_text = self.display_verse_input.text().strip()
                 if current_text:
                     self.command_history.append(current_text)  # Add current text to history
                     self.history_index = -1  # Reset history index
-                    # print(f"Executed: {current_text}") # Simulate command execution
-                    # print ("Return key intercepted in eventFilter") # Debugging
                     self.goto_line()  # Trigger goto_line manually
                     self.display_verse_input.clear()  # Clear the input field after submission
                 return True
@@ -1288,13 +1117,7 @@ class MainWindow(QMainWindow):
         # Do not force any special scrolling; keep behaviour simple.
         # Use the module-level QMouseEvent imported at the top of this file.
 
-        if source == getattr(self, 'textEditor', None) and source is not None:
-            # If the source is the editor itself (rare), prefer viewport below
-            pass
-        elif source == getattr(self, 'textEditor', None) and hasattr(source, 'viewport'):
-            # Defensive placeholder; real handling is for viewport object
-            pass
-        elif (hasattr(self.textEditor, 'viewport') and 
+        if (hasattr(self.textEditor, 'viewport') and
               source == self.textEditor.viewport() and
               event.type() == QEvent.Type.MouseButtonPress):
             # Only process mouse button presses
@@ -1327,7 +1150,7 @@ class MainWindow(QMainWindow):
                         else:
                             # Search backward first for up to 12 lines, then forward
                             found = False
-                            for delta in range(1, 13):
+                            for delta in range(1, VERSE_LINE_SEARCH_RADIUS + 1):
                                 ln_back = line_no - delta
                                 if ln_back in Amap:
                                     current_position = Amap_rev[ln_back]
@@ -1358,9 +1181,9 @@ class MainWindow(QMainWindow):
                                 # Also update the general last-context position used by Commentary
                                 self._last_context_position = int(current_position)
                             except (TypeError, ValueError):
-                                pass
+                                logger.debug("Could not persist last clicked Bible position", exc_info=True)
                     except (RuntimeError, AttributeError, TypeError, ValueError):
-                        pass
+                        logger.debug("Could not update status bar for clicked verse", exc_info=True)
 
                     # Do not consume the event so that the default text selection behaviour
                     # (click, drag to select, double-click to select a word)
@@ -1368,24 +1191,21 @@ class MainWindow(QMainWindow):
                     return False
             except (RuntimeError, AttributeError, TypeError, ValueError):
                 # Fall through to default processing on any unexpected error
-                pass
+                logger.debug("Unexpected error handling editor mouse click", exc_info=True)
 
         # Pass the event to the parent class
         return super().eventFilter(source, event)  # type: ignore[arg-type]
 
     def _reposition_search_results_window(self) -> None:
-        """Keep the Search Results window glued to the main window when visible."""
-        if self._positioning_search_results:
-            return
-        win: Any = getattr(self, "search_results_window", None)
-        if win is not None and win.isVisible():
-            self._position_search_results_window()
+        """Delegate to the Search Results window manager."""
+
+        self.results_manager.reposition_search_results_window()
 
     def moveEvent(self, event):
         try:
             self._reposition_search_results_window()
         except (RuntimeError, AttributeError, TypeError):
-            pass
+            logger.debug("Could not reposition Search Results window on move", exc_info=True)
         try:
             return super().moveEvent(event)
         except (RuntimeError, AttributeError, TypeError):
@@ -1395,7 +1215,7 @@ class MainWindow(QMainWindow):
         try:
             self._reposition_search_results_window()
         except (RuntimeError, AttributeError, TypeError):
-            pass
+            logger.debug("Could not reposition Search Results window on resize", exc_info=True)
         try:
             return super().resizeEvent(event)
         except (RuntimeError, AttributeError, TypeError):
@@ -1415,7 +1235,7 @@ class MainWindow(QMainWindow):
         try:
             self.settings_service.update_last_bible_position(int(self._last_bible_position))
         except (AttributeError, TypeError, ValueError):
-            pass
+            logger.debug("Could not persist last Bible position on close", exc_info=True)
 
         # Persist the Search Results window width and close it
         try:
@@ -1424,57 +1244,57 @@ class MainWindow(QMainWindow):
                 dock.save_width()
                 dock.close()
         except (AttributeError, RuntimeError, TypeError, ValueError):
-            pass
+            logger.debug("Could not save/close Search Results window on close", exc_info=True)
 
         try:
             concordance: Any = getattr(self, "concordance_window", None)
             if concordance is not None:
                 concordance.close()
         except (AttributeError, RuntimeError, TypeError, ValueError):
-            pass
+            logger.debug("Could not close concordance window on close", exc_info=True)
 
         try:
             references_window: Any = getattr(self, "other_works_references_window", None)
             if references_window is not None:
                 references_window.close()
         except (AttributeError, RuntimeError, TypeError, ValueError):
-            pass
+            logger.debug("Could not close Other Works references window on close", exc_info=True)
         
         # Explicitly close secondary windows to ensure they trigger their own closeEvent/save logic
         try:
-            gill: Any = getattr(self, "_gill_win", None)
+            gill: Any = getattr(self, "gill_win", None)
             if gill is not None:
                 gill.close()
         except (RuntimeError, AttributeError):
-            pass
+            logger.debug("Could not close Gill commentary window on close", exc_info=True)
             
         try:
             reader: Any = getattr(self, "text_edit_window", None)
             if reader is not None:
                 reader.close()
         except (RuntimeError, AttributeError):
-            pass
+            logger.debug("Could not close reader window on close", exc_info=True)
             
         try:
             secondary: Any = getattr(self, "secondary_window", None)
             if secondary is not None:
                 secondary.close()
         except (RuntimeError, AttributeError):
-            pass
+            logger.debug("Could not close secondary window on close", exc_info=True)
 
         try:
             about: Any = getattr(self, "about_window", None)
             if about is not None:
                 about.close()
         except (RuntimeError, AttributeError):
-            pass
+            logger.debug("Could not close about window on close", exc_info=True)
 
         try:
             find_dlg: Any = getattr(self, "dlg", None)
             if find_dlg is not None:
                 find_dlg.close()
         except (RuntimeError, AttributeError):
-            pass
+            logger.debug("Could not close find dialog on close", exc_info=True)
 
         event.accept()
 
@@ -1482,14 +1302,12 @@ class MainWindow(QMainWindow):
         current_size = self.settings_service.get_bible_font_size()
         new_size = min(current_size + 2, 72)  # Max size of 72
         self.settings_service.update_bible_font_size(new_size)
-        # print(f"DEBUG: Increase Bible fontsize to: {new_size}")
         self.apply_font_size()
 
     def decrease_font_size(self):
         current_size = self.settings_service.get_bible_font_size()
         new_size = max(current_size - 2, 8)  # Min size of 8
         self.settings_service.update_bible_font_size(new_size)
-        # print(f"DEBUG: Decrease Bible fontsize to: {new_size}")
         self.apply_font_size()
 
     def apply_font_size(self):
@@ -1509,10 +1327,10 @@ class MainWindow(QMainWindow):
                     if int(getattr(r, "reader_fontsize", 0)) != self.fontsize:
                         r.apply_font_size(self.fontsize)
                 except (AttributeError, RuntimeError, TypeError, ValueError):
-                    pass
+                    logger.debug("Could not propagate font size to reader window", exc_info=True)
 
             # 2. Gill Commentary Window
-            gill = getattr(self, "_gill_win", None)
+            gill = getattr(self, "gill_win", None)
             if gill:
                 try:
                     g: Any = gill
@@ -1521,7 +1339,7 @@ class MainWindow(QMainWindow):
                     if current_gill_font.pointSize() != self.fontsize:
                         g.apply_font_size(self.fontsize)
                 except (AttributeError, RuntimeError, TypeError, ValueError):
-                    pass
+                    logger.debug("Could not propagate font size to Gill commentary window", exc_info=True)
 
             # 3. Secondary (Devotional) Window
             secondary = getattr(self, "secondary_window", None)
@@ -1532,7 +1350,7 @@ class MainWindow(QMainWindow):
                         s.fontsize = self.fontsize
                         s.update_font()
                 except (AttributeError, RuntimeError, TypeError, ValueError):
-                    pass
+                    logger.debug("Could not propagate font size to secondary window", exc_info=True)
 
     def feature(self) -> None:
         """Open the Other Works reader window for the currently selected item."""
@@ -1552,7 +1370,7 @@ class MainWindow(QMainWindow):
             pp = other_works_dir / "Pilgrims-Progress.txt"
             path = str(pp) if pp.exists() else None
             if path:
-                self._open_text_file_in_window(path)
+                self.open_text_file_in_window(path)
 
     @staticmethod
     def open_github_releases() -> None:
@@ -1560,10 +1378,6 @@ class MainWindow(QMainWindow):
         webbrowser.open("https://github.com/Abib-ops/Abib/releases")
 
     def open_text_file_in_window(self, path: str) -> None:
-        """Public wrapper to open or update the external text reader window."""
-        self._open_text_file_in_window(path)
-
-    def _open_text_file_in_window(self, path: str) -> None:
         """Open the ExternalTextDocumentWindow with the given file path 
            or update existing, then focus it."""
         # Normalise the incoming path for consistent comparisons
@@ -1590,12 +1404,12 @@ class MainWindow(QMainWindow):
                 win.referenceActivated.connect(self._on_reader_reference_activated)
                 win._connected_to_main = True
             except (AttributeError, RuntimeError, TypeError):
-                pass
+                logger.debug("Could not connect reader referenceActivated signal", exc_info=True)
             # Apply the current theme to the new window and its editor
             try:
                 win.apply_theme(self.theme.state.is_dark_mode)
             except (RuntimeError, AttributeError):
-                pass
+                logger.debug("Could not apply theme to new reader window", exc_info=True)
             # Apply palette to the window; ThemeManager handles internal safety
             self.theme.apply_widget(win)
             win_to_show = win
@@ -1612,14 +1426,14 @@ class MainWindow(QMainWindow):
                     try:
                         win.apply_theme(self.theme.state.is_dark_mode)
                     except (RuntimeError, AttributeError):
-                        pass
+                        logger.debug("Could not apply theme to loading reader window", exc_info=True)
                     self.theme.apply_widget(win)
                     win.show()
                     win.raise_()
                     win.activateWindow()
                     return
             except (AttributeError, RuntimeError, TypeError, ValueError, OSError):
-                pass
+                logger.debug("Could not fast-path an already-loading reader window", exc_info=True)
             # Guard: if the requested work is already loaded, avoid reloading
             try:
                 current_stem = getattr(win, "current_file_stem", None)
@@ -1631,7 +1445,7 @@ class MainWindow(QMainWindow):
                 try:
                     win.apply_theme(self.theme.state.is_dark_mode)
                 except (RuntimeError, AttributeError):
-                    pass
+                    logger.debug("Could not refresh theme on existing reader window", exc_info=True)
                 self.theme.apply_widget(win)
             else:
                 win.load_text_file(req_path)
@@ -1641,11 +1455,11 @@ class MainWindow(QMainWindow):
                     win.referenceActivated.connect(self._on_reader_reference_activated)
                     win._connected_to_main = True
             except (AttributeError, RuntimeError, TypeError):
-                pass
+                logger.debug("Could not reconnect reader referenceActivated signal", exc_info=True)
             try:
                 win.apply_theme(self.theme.state.is_dark_mode)
             except (RuntimeError, AttributeError):
-                pass
+                logger.debug("Could not apply theme to reused reader window", exc_info=True)
             self.theme.apply_widget(win)
             win_to_show = win
         win_to_show.show()
@@ -1657,8 +1471,8 @@ class MainWindow(QMainWindow):
                 win_to_show.displayedChanged.connect(self._on_reader_displayed_changed)
                 win_to_show._display_signal_connected = True
         except (AttributeError, RuntimeError, TypeError):
-            pass
-        self._update_other_works_search_button(True)
+            logger.debug("Could not connect reader displayedChanged signal", exc_info=True)
+        self.update_other_works_search_button(True)
 
     def _on_reader_reference_activated(self, ref: str) -> None:
         """Navigate the Bible main window to the clicked reference from the reader window."""
@@ -1671,16 +1485,16 @@ class MainWindow(QMainWindow):
                 self.raise_()
                 self.activateWindow()
             except (RuntimeError, AttributeError):
-                pass
+                logger.debug("Could not raise main window after reader navigation", exc_info=True)
         except (ValueError, TypeError, KeyError, IndexError, RuntimeError):
-            # Be resilient: if parsing fails, ignore silently
-            pass
+            # Be resilient: if parsing fails, do not propagate the error
+            logger.debug("Could not navigate to reader-activated reference %r", ref, exc_info=True)
 
     def _on_reader_displayed_changed(self, visible: bool) -> None:
         """Enable/disable the Search button based on reader visibility."""
-        self._update_other_works_search_button(bool(visible))
+        self.update_other_works_search_button(bool(visible))
 
-    def _update_other_works_search_button(self, enabled: bool | None = None) -> None:
+    def update_other_works_search_button(self, enabled: bool | None = None) -> None:
         """Set the Search button enabled state. If enabled is None, inferred from reader visibility."""
         btn = getattr(self, "search_work_btn", None)
         if btn is None:
@@ -1698,21 +1512,21 @@ class MainWindow(QMainWindow):
                 state = bool(enabled)
             b.setEnabled(state)
         except (RuntimeError, AttributeError, TypeError):
-            pass
+            logger.debug("Could not update Other Works search button state", exc_info=True)
 
     def _open_reader_search(self) -> None:
         """Open or focus the Search dialog for the Other Works reader window."""
         reader = getattr(self, "text_edit_window", None)
         if not reader:
             # No reader open; keep the button disabled just in case
-            self._update_other_works_search_button(False)
+            self.update_other_works_search_button(False)
             return
         try:
             win: Any = reader
             win.show_find_dialog()
-            self._update_other_works_search_button(True)
+            self.update_other_works_search_button(True)
         except (AttributeError, RuntimeError, TypeError):
-            pass
+            logger.debug("Could not open reader search dialog", exc_info=True)
 
     def _open_other_work(self, stem: str) -> None:
         """Open or update the TextDocumentWindow for the selected Other Works item."""
@@ -1731,7 +1545,7 @@ class MainWindow(QMainWindow):
                 try:
                     win.apply_theme(self.theme.state.is_dark_mode)
                 except (RuntimeError, AttributeError):
-                    pass
+                    logger.debug("Could not apply theme when reopening current Other Work", exc_info=True)
                 self.theme.apply_widget(win)
                 win.show()
                 win.raise_()
@@ -1743,13 +1557,13 @@ class MainWindow(QMainWindow):
                         if getattr(self, "settings_service", None):
                             self.settings_service.save(self.settings)
                 except (OSError, TypeError, ValueError, RuntimeError):
-                    pass
+                    logger.debug("Could not persist last Other Work selection", exc_info=True)
                 return
         except (AttributeError, RuntimeError, TypeError, ValueError, OSError):
             # If any attribute access fails, fall back to the normal open path
-            pass
+            logger.debug("Could not fast-path already-open Other Work; using normal path", exc_info=True)
         # Open/update the reader window
-        self._open_text_file_in_window(path)
+        self.open_text_file_in_window(path)
         # Persist last selected work in settings so the combo defaults next launch
         try:
             if isinstance(self.settings, dict):
@@ -1759,7 +1573,7 @@ class MainWindow(QMainWindow):
                     self.settings_service.save(self.settings)
         except (OSError, TypeError, ValueError, RuntimeError):
             # Be tolerant: failure to persist should not break the opening
-            pass
+            logger.debug("Could not persist last Other Work selection", exc_info=True)
 
     def _select_last_other_work(self) -> None:
         """Re-select and open the last read Other Works item in the combo box.
@@ -1794,12 +1608,11 @@ class MainWindow(QMainWindow):
                 try:
                     self.other_works_combo.blockSignals(False)
                 except (RuntimeError, AttributeError, TypeError):
-                    pass
+                    logger.debug("Could not re-enable Other Works combo signals", exc_info=True)
             # Ensure the reader opens even if a platform doesn't emit currentTextChanged
             self._open_other_work(str(last_work or ""))
         except (RuntimeError, AttributeError, KeyError, TypeError, ValueError):
-            # Be silent on any unexpected issue
-            pass
+            logger.debug("Could not select/open the last Other Work", exc_info=True)
 
     def show_about_dialog(self):
         """Show the 'About' window when Help -> About is clicked."""
@@ -1817,27 +1630,25 @@ class MainWindow(QMainWindow):
     def helper(self) -> None:
         """Open the Help section in a separate window."""
         help_path = str(Path(sh.current_directory / 'HELP.txt'))
-        self._open_text_file_in_window(help_path)
+        self.open_text_file_in_window(help_path)
 
     def copyright(self) -> None:
         """Open the Licence in a separate window."""
         copying_path = str(Path(sh.current_directory / 'COPYING'))
-        self._open_text_file_in_window(copying_path)
+        self.open_text_file_in_window(copying_path)
 
     def readme(self) -> None:
         """Open the Readme file in a separate window."""
         readme_path = str(Path(sh.current_directory / 'README.txt'))
-        self._open_text_file_in_window(readme_path)
+        self.open_text_file_in_window(readme_path)
 
     def reload(self) -> None:
         """Reload KJB_PCE.txt"""
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
         if win.otherFileFlag:
-            # print('reloaded')
             win.otherFileFlag = False
             self.file_open(str(Path(sh.current_directory / 'KJB_PCE.txt')))
             # Do NOT re-centre or reset attributes here.
@@ -1852,19 +1663,19 @@ class MainWindow(QMainWindow):
                 if getattr(self, "_aux_origin_saved", False):
                     self._aux_origin_saved = False
             except (RuntimeError, AttributeError, TypeError, ValueError):
-                pass
+                logger.debug("Could not restore geometry when reloading the Bible view", exc_info=True)
             # Signal to Back handler that we just restored the Bible view, 
             # so the very next Back press should be ignored to preserve
             # the restored verse position.
             try:
                 self._just_restored_from_aux = True
             except (AttributeError, RuntimeError):
-                pass
+                logger.debug("Could not set the just-restored-from-aux flag", exc_info=True)
 
     # ENTRY POINT FOR F3 FIND.
     # Create a slot for launching the find dialog box.
 
-    def onFindBtnClicked(self) -> None:
+    def on_find_button_clicked(self) -> None:
         """Launch the Find dialog box."""
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
@@ -1920,78 +1731,20 @@ class MainWindow(QMainWindow):
                 self.find_f4()
 
     def make_key_whole(self, _key: str, _dict: dict, _set: dict[str, set]) -> tuple[int, str]:
-        """Make _key conform to Match whole word only.
+        """Delegate to the search engine."""
 
-        Return the number of whole words in the _key variable.
-        """
-
-        numstart, _key = fcs.split_strip(_key)
-        words: list = _key.split()
-        words = [item for item in words if item in _dict]
-        _key = ''
-        for i in words:
-            _key += i + ' '
-        _key = _key[:-1]  # Remove the last space character.
-        num = len(words)
-        if num != numstart and (self.dlg.checks[0] == 2 or self.dlg.checks[1] == 3):
-            # A word or part of a word was removed.
-            num = 0
-
-        return num, _key
+        return search_service.make_key_whole(self, _key, _dict, _set)
 
     def prepare_key_for_find(self) -> None:
-        """Adjust 'key' for searching in Rnew, which has no Unicode italics.
+        """Delegate to the search engine."""
 
-        It also has a different apostrophe and uses æ and Æ.
-        """
+        search_service.prepare_key_for_find(self)
 
-        # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
-
-        p = "():,’;-?[].!<>"
-        ae: list[str] = ['aea', 'aeu', 'aes', 'aet', 'aene', 'aeno', 'AEno', 'AEne', 'Aeno', 'Aene']
-        ae_unicode: list[str] = ['æa', 'æu', 'æs', 'æt', 'æne', 'æno', 'Æno', 'Æne', 'Æno', 'Æne']
-        count = -1
-        for _ in ae:
-            count += 1
-            if _ in win.key:
-                index = win.key.find(_)
-                j = len(_)
-                j += index
-                w.key = win.key[:index] + ae_unicode[count] + win.key[j:]
-                break
-        line = ''
-        for _ in win.key:
-            if _ in p:
-                if _ == '-' and self.dlg.checks[0] != 1:
-                    continue
-                else:
-                    line += _
-                    continue
-            ch = ord(_)
-            if ch in range(119860, 119885):
-                ch -= 119795
-                line += chr(ch)
-            elif ch in range(119886, 119911):
-                ch -= 119789
-                line += chr(ch)
-            elif ch == 119997:
-                ch = 104
-                line += chr(ch)
-            elif ch == 39:
-                ch = 8217
-                line += chr(ch)
-            else:
-                line += _
-        w.key = line
-
-    def findf3(self, x_start: int, x_end: int) -> None:
+    def find_in_range(self, x_start: int, x_end: int) -> None:
         """Find function."""
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
         #self.display_verse_input.setFocus()
         current_position = self.get_line_number()
@@ -2026,9 +1779,9 @@ class MainWindow(QMainWindow):
             win.occurring = 0
 
             if self.dlg.checks[2] == 6:
-                self.iterate_regex(Rnew, x1, x2)
+                self.iterate_regex(search_service.get_search_data().Rnew, x1, x2)
                 if win.occurring != 0:
-                    w.y = win.occur[0][0][0]
+                    win.y = win.occur[0][0][0]
                     win.occurrence = 0
                     win.verse = 0
                     win.finding = -1
@@ -2039,10 +1792,10 @@ class MainWindow(QMainWindow):
             else:
                 tv = self.dlg.checks[0] == 1   # Raw
                 if not tv:
-                    current_position = self.findf3_ww(x1, x2)
+                    current_position = self.find_whole_word(x1, x2)
                 elif tv:
                     # Raw.
-                    current_position = self.findf3_raw(current_position, x1, x2, keylow)
+                    current_position = self.find_raw(current_position, x1, x2, keylow)
 
         if win.occurring == 0:
             current_position = savedx
@@ -2051,220 +1804,58 @@ class MainWindow(QMainWindow):
 
         if win.key in ('q', 'Q'):
             self.display_verse_input.clear()
-            exit()
+            sys.exit()
         if not error_flag:
             self.goto_line_find(current_position)
         self._update_search_results_panel()
 
     def iterate_regex(self, r: tuple, x1: int, x2: int) -> None:
-        """Iterate over R and find all the occurrences of key(s) in liszt."""
+        """Delegate to the search engine."""
 
-        # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        search_service.iterate_regex(self, r, x1, x2)
 
-        win.occurring = 0
-        win.occur = []
-        win.occurs = []
-        if self.dlg.checks[1] == 1:             # Match case
-            pattern = rf"{win.key}"
-        else:
-            assert self.dlg.checks[1] == 0      # Ignore the case
-            pattern = rf"(?i){win.key}"
-        # Iterate inclusively within the provided limits [x1, x2]
-        for _ in range(x1, x2 + 1):
-            coordinate = []
-            try:
-                for m in re.finditer(pattern, r[_]):
-                    win.occurring += 1
-                    coordinate.append((m.start(), m.end()))
-            except re.error:
-                msg = 'Regular Expression Error.'
-                self.on_error(msg, 2000, True)
-                w.occurring = 0
-                break
-            if coordinate:
-                win.occur.append(coordinate)
-                win.occurs.append(_)
+    def find_raw(self, current_position: int, x1: int, x2: int, keylow: str) -> int:
+        """Delegate to the search engine."""
 
-    def findf3_raw(self, current_position: int, x1: int, x2: int, keylow: str) -> int:
-        """Find Raw."""
-
-        # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
-
-        win.occurs = []
-        win.occur = []
-
-        # Count occurrences inclusively within the provided limits [x1, x2]
-        if self.dlg.checks[1] == 1:  # Match case
-            source = Rnew
-            search_key = win.key
-        elif self.dlg.checks[1] == 0:  # Lower case
-            source = Rlow
-            search_key = keylow
-        else:
-            source = Rnew
-            search_key = win.key
-
-        for i in range(x1, x2 + 1):
-            coordinate = []
-            start_search = 0
-            while True:
-                y = source[i].find(search_key, start_search)
-                if y == -1:
-                    break
-                coordinate.append((y, y + len(search_key)))
-                win.occurring += 1
-                start_search = y + 1
-            if coordinate:
-                win.occur.append(coordinate)
-                win.occurs.append(i)
-
-        if win.occurring != 0:
-            win.occurrence = 0
-            current_position = self.occurrent(x1, x2)
-            if win.message:
-                self.statusBar.showMessage(win.message)
-            self.statusBar.repaint()
-
-        return current_position
+        return search_service.find_raw(self, current_position, x1, x2, keylow)
 
     def assign_values(self) -> Any:
-        """Can't remember what this does."""
+        """Delegate to the search engine."""
 
-        # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        return search_service.assign_values(self)
 
-        # print('assign_values')
-        numwords: int
-        win.verse = 0
-        if self.dlg.checks[1] == 1:             # Match case.
-            dic: Any = stripped_dict
-            key: str = win.key
-            # set_ and set_dict are dictionaries of words in the KJV Bible.
-            # For each word, there is a set of verse/line numbers where the word occurs.
-            set_: dict[Any, set] = set_dict
-            r_list: list | tuple = Rstp
-        else:
-            assert self.dlg.checks[1] == 0      # The Case isn't checked.
-            dic = strpd_low_dict
-            key = win.key.lower()
-            set_ = set_lowdict
-            r_list = Rlsp
-        numwords, win.key = self.make_key_whole(key, dic, set_)
-        win.keym = win.key  # 16/12/2024
+    def find_whole_word(self, x1: int, x2: int) -> int:
+        """Delegate to the search engine."""
 
-        return numwords, set_, r_list
-
-    def findf3_ww(self, x1: int, x2: int) -> int:
-        """Find Whole Words."""
-
-        # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
-
-        numwords, set_, r_list = self.assign_values()
-        current_position: int = 0  # Pointer to the first verse with the searched for key.
-        if numwords == 1:
-            self.find_whole_word_single(x1, x2, set_, r_list)   # Match the whole single word.
-            if self.dlg.checks[0] in (3, 4):
-                win.occurring = len(win.occurs)
-            if win.occurring != 0:
-                win.occurrence = 0
-                win.verse = 0
-                win.finding = -1
-                current_position = get_next_occurrence()
-                if win.message:
-                    self.statusBar.showMessage(win.message)
-                self.statusBar.repaint()
-        elif numwords > 1:
-            from abib.services.search_service import findf3_ww_ac, findf3_ww_all
-            if self.dlg.checks[0] == 2:
-                findf3_ww_ac(x1, x2, numwords, set_, r_list, self)
-            elif self.dlg.checks[0] == 3:
-                findf3_ww_all(x1, x2, numwords, set_, r_list, self)
-            elif self.dlg.checks[0] == 4:
-                _, win.key = fcs.any_of_the_words_lookup(win.key, set_)
-                findf3_ww_any(x1, x2, set_, r_list, self)
-            if win.occurring != 0:
-                if self.dlg.checks[0] in (2, 3, 4):
-                    win.occurrence = 0
-                    win.verse = 0
-                    win.finding = -1
-                    current_position = get_next_occurrence()
-                if win.message:
-                    self.statusBar.showMessage(win.message)
-                self.statusBar.repaint()
-        else:
-            win.occurring = 0
-
-        return current_position
+        return search_service.find_whole_word(self, x1, x2)
 
     def find_whole_word_single(self, x1: int, x2: int, _set: dict[str, set], r_list: list) -> None:
-        """Match the whole single word."""
+        """Delegate to the search engine."""
 
-        # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
-
-        try:
-            win.occur = sorted(_set[win.key])
-        except KeyError:
-            win.occurring = 0
-        else:
-            win.occurs = []
-            for i in win.occur:
-                if i < x1 or i > x2:
-                    continue
-                win.occurs.append(i)
-            # List of lists with tuple of the word positions, within the related verse.
-            liszt = [win.key]
-            if self.dlg.checks[0] == 4:
-                from abib.services.search_service import check_count_sort
-                check_count_sort(liszt, r_list, self)
-            else:
-                from abib.services.search_service import iterate_list
-                iterate_list(liszt, r_list, self)
-        # List of verses containing the searched for item.
-        # Number of occurrences of the searchitem within the range x1 to x2.
+        search_service.find_whole_word_single(self, x1, x2, _set, r_list)
 
     def occurrent(self, x1: int, x2: int) -> int:
-        """Count occurrences of the item searched for."""
+        """Delegate to the search engine."""
 
-        # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
-
-        if win.occurrence == 0:
-            self.gent = self.gen(win.key, x1, x2)
-        gent = self.gent
-        assert gent is not None
-        current_position, win.y, win.occurrence = next(gent)
-        win.statusBar.showMessage(win.nav.get_status_message(current_position))
-
-        return current_position
+        return search_service.occurrent(self, x1, x2)
 
     def find_f4(self) -> None:
         """Repeat find frontend for raw search."""
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
         if win.occurrence < win.occurring:
             current_position = self.get_line_number()
 
             if forward:
-                history.back_push(w, current_position)
+                history.back_push(self, current_position)
                 while forward:
                     b_ = forward.pop()
                     back.append(b_)
             else:
                 forward.clear()
-                history.back_push(w, current_position)
+                history.back_push(self, current_position)
 
             # Ensure self.gent is a valid generator
             gent = self.gent
@@ -2290,19 +1881,18 @@ class MainWindow(QMainWindow):
         """Repeat find frontend for Whole words."""
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
         if len(win.occurs) > 0 and win.occurrence < win.occurring:
             current_position = self.get_line_number()
             if forward:
-                history.back_push(w, current_position)
+                history.back_push(self, current_position)
                 while forward:
                     b_ = forward.pop()
                     back.append(b_)
             else:
                 forward.clear()
-                history.back_push(w, current_position)
+                history.back_push(self, current_position)
 
             if self.dlg.checks[0] in (3, 4):
                 win.verse += 1
@@ -2317,29 +1907,9 @@ class MainWindow(QMainWindow):
             self.goto_line_find(current_position)
 
     def gen(self, key: str, x1: int, x2: int):
-        """Return the next position of the searched for key using in-memory data."""
-        assert w is not None
-        win: Any = w
-        d1 = 0
-        if self.dlg.checks[1] == 1:
-            source = Rnew
-        else:
-            source = Rlow
-            key = key.lower()
+        """Delegate to the search engine."""
 
-        for current_position in range(x1, x2 + 1):
-            if current_position >= len(source):
-                break
-            a = source[current_position]
-            start_search = 0
-            while True:
-                y = a.find(key, start_search)
-                if y == -1:
-                    break
-                d1 += 1
-                win.y = y
-                start_search = y + 1
-                yield current_position, win.y, d1
+        return search_service.gen(self, key, x1, x2)
 
     def goto_line_find(self, current_position: int) -> None:
         """Find function - prepare for output."""
@@ -2358,17 +1928,17 @@ class MainWindow(QMainWindow):
         """
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
         add: int
         if '¶ ' in KJV[ln] and truth is True:
             win.y += 2
             end = win.y
+        search_data = search_service.get_search_data()
         if self.dlg.checks[1] == 0:
-            add = fcs.repeat_find(Rlow[current_position], start, end)
+            add = fcs.repeat_find(search_data.Rlow[current_position], start, end)
         else:
-            add = fcs.repeat_find(Rnew[current_position], start, end)
+            add = fcs.repeat_find(search_data.Rnew[current_position], start, end)
         return add
 
     def stripped_punctuation_adjust_ki(self, current_position: int, start: int, end: int) -> int:
@@ -2378,10 +1948,11 @@ class MainWindow(QMainWindow):
         """
 
         add: int
+        search_data = search_service.get_search_data()
         if self.dlg.checks[1] == 0:
-            add = fcs.repeat_find_keyinc(Rlow[current_position], start, end)
+            add = fcs.repeat_find_keyinc(search_data.Rlow[current_position], start, end)
         else:
-            add = fcs.repeat_find_keyinc(Rnew[current_position], start, end)
+            add = fcs.repeat_find_keyinc(search_data.Rnew[current_position], start, end)
 
         return add
 
@@ -2389,8 +1960,7 @@ class MainWindow(QMainWindow):
         """Adjust highlighting for longer length Unicode characters."""
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
         add = 0
         # In multi-word modes (3 and 4) we highlight individual spans; rely on provided win.key and win.y
@@ -2424,8 +1994,7 @@ class MainWindow(QMainWindow):
         """keyinc section."""
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
         num = 0
         ignore = [8217]
@@ -2445,10 +2014,8 @@ class MainWindow(QMainWindow):
         """Display Bible text in textEditor."""
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
-        # print('display_verse')
         try:
             ln = int(next(islice(Amap, current_position, None)))
         except (StopIteration, TypeError, ValueError):
@@ -2466,16 +2033,14 @@ class MainWindow(QMainWindow):
             self._last_bible_position = int(current_position)
             self._last_context_position = int(current_position)
         except (TypeError, ValueError):
-            pass
+            logger.debug("Could not persist last Bible position", exc_info=True)
 
     def move_to_line(self, ln: int) -> None:
         """Display engine."""
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
-        # print('move_to_line')
         self.textEditor.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
         self.on_text_changed(ln)
         ln = make_offset(ln)
@@ -2490,15 +2055,13 @@ class MainWindow(QMainWindow):
     def on_text_changed(self, ln: int) -> None:
         """Highlighting."""
 
-        # print('on_text_changed')
         fmt = QTextCharFormat()
         assert linehighlightcolor is not None
         assert linetextcolor is not None
         fmt.setBackground(QColor(linehighlightcolor))
         fmt.setForeground(QColor(linetextcolor))
 
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
         win.hiLita.clear = True
         win.hiLita.clear_highlight()
@@ -2528,14 +2091,13 @@ class MainWindow(QMainWindow):
             if should_highlight:
                 win.hiLita.highlight_line(ln, fmt)
         except ValueError:
-            pass
+            logger.debug("Could not compute multi-highlight for line %r", ln, exc_info=True)
 
     def display_verse_from_history(self, current_position: int) -> None:
         """Display Bible text in textEditor after a back or forward pop."""
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
         try:
             ln = int(next(islice(Amap, current_position, None)))
@@ -2554,7 +2116,7 @@ class MainWindow(QMainWindow):
                     win.y = win.occur[win.verse][0][0]
                     win.yend = win.occur[win.verse][0][1]
             except (ValueError, IndexError):
-                pass
+                logger.debug("Could not resync search state from history", exc_info=True)
         elif (self.dlg is not None and self.dlg.checks[0] in (1, 2)
               and self.dlg.checks[2] != 6 and current_position in win.occurs):
             # Single-highlight search modes (Raw / Whole words) store match
@@ -2579,14 +2141,13 @@ class MainWindow(QMainWindow):
             self._last_bible_position = int(current_position)
             self._last_context_position = int(current_position)
         except (TypeError, ValueError):
-            pass
+            logger.debug("Could not persist last Bible position", exc_info=True)
 
     def ref_to_statusbar(self, current_position: int) -> None:
         """Display messages in the status bar."""
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
         message = win.message if win.message else self.nav.get_status_message(current_position)
 
@@ -2602,7 +2163,7 @@ class MainWindow(QMainWindow):
             try:
                 QMessageBox.warning(self, "Commentary", f"Database not found:\n{db_path}")
             except (RuntimeError, TypeError):
-                pass
+                logger.debug("Could not show commentary database-not-found warning", exc_info=True)
             return
 
         try:
@@ -2625,39 +2186,39 @@ class MainWindow(QMainWindow):
             b, c, v = self.nav.get_current_bcv()
 
         # Lazily create the window
-        if self._gill_win is None:
+        if self.gill_win is None:
             try:
                 # Create as a true top-level window (no parent) so it can be viewed independently
                 # Share the same settings service to avoid cache divergence
-                self._gill_win = GillCommentaryWindow(db_path=db_path, parent=None, settings_service=self.settings_service)
+                self.gill_win = GillCommentaryWindow(db_path=db_path, parent=None, settings_service=self.settings_service)
             except (RuntimeError, TypeError, sqlite3.Error) as exc:
                 try:
                     QMessageBox.critical(self, "Commentary", f"Unable to open commentary window.\n{exc}")
                 except (RuntimeError, TypeError):
-                    pass
-                self._gill_win = None
+                    logger.debug("Could not show commentary open-failure dialog", exc_info=True)
+                self.gill_win = None
                 return
 
         # Update content and show the window
         try:
             # Use (book, chapter, fromverse) lookups per current DB access strategy
-            if isinstance(self._gill_win, GillCommentaryWindow):
-                self._gill_win.set_reference(b, c, v)
+            if isinstance(self.gill_win, GillCommentaryWindow):
+                self.gill_win.set_reference(b, c, v)
                 # Apply the current theme
                 try:
-                    self._gill_win.apply_theme(self.theme.state.is_dark_mode)
-                    self.theme.apply_widget(self._gill_win)
+                    self.gill_win.apply_theme(self.theme.state.is_dark_mode)
+                    self.theme.apply_widget(self.gill_win)
                 except (RuntimeError, AttributeError):
-                    pass
+                    logger.debug("Could not apply theme to commentary window", exc_info=True)
         except (AttributeError, TypeError, ValueError):
-            pass
+            logger.debug("Could not set commentary reference", exc_info=True)
         try:
-            assert self._gill_win is not None
-            self._gill_win.show()
-            self._gill_win.raise_()
-            self._gill_win.activateWindow()
+            assert self.gill_win is not None
+            self.gill_win.show()
+            self.gill_win.raise_()
+            self.gill_win.activateWindow()
         except (RuntimeError, AttributeError, TypeError, AssertionError):
-            pass
+            logger.debug("Could not show/raise commentary window", exc_info=True)
 
     # Auto-follow toggle removed from MainWindow.
 
@@ -2668,17 +2229,15 @@ class MainWindow(QMainWindow):
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         current_position: int = self.get_line_number()
         forward.clear()
-        history.back_push(w, current_position)
+        history.back_push(self, current_position)
         reset_attributes()
         if not ref:
             ref = self.display_verse_input.text()
-            # print(f"ref: {ref}")
         ref = fcs.remove_junk(ref)
         if ref in ('q', 'Q'):
             self.display_verse_input.clear()
-            exit()
+            sys.exit()
 
-        # print(f"ref in goto_line: {ref}")
         current_position = self.reference_to_line_number(ref)
         if current_position == -1:
             self.display_verse_input.clear()
@@ -2691,13 +2250,12 @@ class MainWindow(QMainWindow):
         """Move the display to the line requested by comboBox_1."""
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         current_position = self.get_line_number()
         forward.clear()
-        history.back_push(w, current_position)
+        history.back_push(self, current_position)
         reset_attributes()
         book: int = self.comboBox_1.currentIndex()
         # book is an index 0-65
@@ -2716,7 +2274,6 @@ class MainWindow(QMainWindow):
         self.comboBox_3.addItems(self.nverses)
         ref = win.nwin[book]
         ref = ref.replace(' ', '')
-        # print(f"ref in goto_book: {ref}")
         current_position = self.reference_to_line_number(ref, book)
         current_position = max(current_position, 0)
         current_position = min(current_position, sh.LAST_VERSE_IN_BIBLE)
@@ -2727,13 +2284,12 @@ class MainWindow(QMainWindow):
         """Move the display to the line requested by comboBox_2."""
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         current_position: int = self.get_line_number()
         forward.clear()
-        history.back_push(w, current_position)
+        history.back_push(self, current_position)
         reset_attributes()
         book: int = self.comboBox_1.currentIndex()
         chapter: int = self.comboBox_2.currentIndex()
@@ -2760,7 +2316,6 @@ class MainWindow(QMainWindow):
         ref = ref.replace(' ', '')
         ref = f"{ref} {chapter + 1!s}"
 
-        # print(f"ref in goto_chapter: {ref}")
         current_position = self.reference_to_line_number(ref, book, chapter)
         current_position = max(current_position, 0)
         current_position = min(current_position, sh.LAST_VERSE_IN_BIBLE)
@@ -2770,13 +2325,12 @@ class MainWindow(QMainWindow):
         """Move the display to the line requested by comboBox_3."""
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         current_position: int = self.get_line_number()
         forward.clear()
-        history.back_push(w, current_position)
+        history.back_push(self, current_position)
         reset_attributes()
         book: int = self.comboBox_1.currentIndex()
         chapter: int = self.comboBox_2.currentIndex()
@@ -2785,20 +2339,18 @@ class MainWindow(QMainWindow):
         ref = win.nwin[book]
         ref = ref.replace(' ', '')
         ref = f"{ref} {chapter + 1!s}.{verse + 1}"
-        # print(f"ref in goto_verse: {ref}")
         current_position = self.reference_to_line_number(ref, book, chapter)
         current_position = max(current_position, 0)
         current_position = min(current_position, sh.LAST_VERSE_IN_BIBLE)
-        # print(f"current_position in goto_verse: {current_position}")
         self.display_verse(current_position)
 
     def reference_to_line_number(self, reference_text: str, book: int = 0, chapter: int = 0) -> int:
         """Convert reference text to a line number in the Bible."""
         from abib.domain.scripture_refs import normalize_reference
-        
+
         current_line = self.get_line_number()
         normalized = normalize_reference(reference_text, book, chapter)
-        
+
         if not normalized:
             self.on_error("Invalid format. Please enter a valid reference.", 750, True)
             return -1
@@ -2843,11 +2395,7 @@ class MainWindow(QMainWindow):
 
         inf: list = sh.Info[current_line]
         current_chapter: int = inf[1]
-        # print(f"2474 current_chapter: {current_chapter}")
         current_verse = inf[2]
-        # print(f"2475 current_verse: {current_verse}")
-        # print(f"2476 current_line: {current_line}")
-        # print(f"new_verse: {new_verse}")
 
         if new_verse >= 0:
             new_line: int = current_line - current_verse + new_verse
@@ -2855,25 +2403,18 @@ class MainWindow(QMainWindow):
             new_line = current_line + new_verse + 1
             new_verse = current_verse + new_verse + 1
 
-        # print(f"2477 new_line: {new_line}")
-
         message = f"Out of bounds. No verse {new_verse + 1} here!"
         try:
             new_chapter: int = sh.Info[new_line][1]
-            # print(f"2484 new_chapter: {new_chapter}")
         except IndexError:
-            # print(">>>>>>>>>>>>>>>")
             win.on_error(message, 750, True)
             return_value = current_line
         else:
             if new_chapter != current_chapter:
-                # print("<<<<<<<<<<<<<<")
                 win.on_error(message, 750, True)
                 return_value = current_line
             else:
                 return_value = new_line
-
-        # print(f"2476 return_value: {return_value}")
 
         return return_value
 
@@ -2892,14 +2433,12 @@ class MainWindow(QMainWindow):
 
         message: str = "Not a book name."
         self.on_error(message, 750, True)
-        # print(message)
 
     def error_invalid_verse_or_position(self):
         """Handle invalid chapter/verse errors."""
 
         message: str = "Invalid chapter or verse."
         self.on_error(message, 750, True)
-        # print(message)
 
     def get_line_number(self):
         """Find the line number of the verse at the top of the screen."""
@@ -2933,8 +2472,7 @@ class MainWindow(QMainWindow):
         """Mouse trapping routine."""
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
         if event.buttons() == Qt.MouseButton.LeftButton:
             current_position: int = self.get_line_number()
@@ -2961,10 +2499,10 @@ class MainWindow(QMainWindow):
             Qt.Key.Key_F9: self.open_commentary_window_shortcut,
             Qt.Key.Key_F10: self.earlier_chapter,
             Qt.Key.Key_F11: self.later_chapter,
-            Qt.Key.Key_C: self.C,
+            Qt.Key.Key_C: self.commentary_key,
             Qt.Key.Key_Question: self.feature,
             Qt.Key.Key_F12: self.show_devotional,
-            Qt.Key.Key_Q: exit}
+            Qt.Key.Key_Q: sys.exit}
 
         if event.key():
             try:
@@ -2987,15 +2525,14 @@ class MainWindow(QMainWindow):
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         current_position: int = self.get_line_number()
         forward.clear()
-        history.back_push(w, current_position)
-        self.onFindBtnClicked()
+        history.back_push(self, current_position)
+        self.on_find_button_clicked()
 
     def repeat_find_forward(self) -> None:
         """Find the next key F4."""
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         if win.key == ' ' or win.no_f3_yet == 0:
@@ -3014,11 +2551,11 @@ class MainWindow(QMainWindow):
         if getattr(self, "_just_restored_from_aux", False):
             self._just_restored_from_aux = False
             return
-        w.message = ''
+        self.message = ''
         if len(back) > 0:
             current_position: int = self.get_line_number()
-            history.forward_push(w, current_position)
-            current_position = history.back_pop(w)
+            history.forward_push(self, current_position)
+            current_position = history.back_pop(self)
             self.display_verse_from_history(current_position)
 
     def history_forward(self) -> None:
@@ -3027,8 +2564,8 @@ class MainWindow(QMainWindow):
         self.reload()  # Reload KJB_PCE.txt if another file loaded.
         if len(forward) > 0:
             current_position: int = self.get_line_number()
-            history.back_push(w, current_position)
-            current_position = history.forward_pop(w)
+            history.back_push(self, current_position)
+            current_position = history.forward_pop(self)
             self.display_verse_from_history(current_position)
 
     def open_commentary_window_shortcut(self) -> None:
@@ -3042,7 +2579,7 @@ class MainWindow(QMainWindow):
         self.display_secondary_window()
 
     @staticmethod
-    def C() -> None:
+    def commentary_key() -> None:
         """Commentary key."""
         # Use a local reference with a type hint to satisfy the linter
         win: Any = w
@@ -3064,7 +2601,7 @@ class MainWindow(QMainWindow):
             self.on_error('No earlier book!', 3000, True)
         else:
             forward.clear()
-            history.back_push(w, current_position)
+            history.back_push(self, current_position)
             reset_attributes()
             current_position = sh.Info.index((newbook, 0, 0))
             self.display_verse(current_position)
@@ -3080,7 +2617,7 @@ class MainWindow(QMainWindow):
             self.on_error('No later book!', 3000, True)
         else:
             forward.clear()
-            history.back_push(w, current_position)
+            history.back_push(self, current_position)
             reset_attributes()
             current_position = sh.Info.index((newbook, 0, 0))
             self.display_verse(current_position)
@@ -3108,7 +2645,7 @@ class MainWindow(QMainWindow):
             book = newbook
         current_position = sh.Info.index((book, newchapter, 0))
         forward.clear()
-        history.back_push(w, old_position)
+        history.back_push(self, old_position)
         reset_attributes()
         self.display_verse(current_position)
 
@@ -3137,7 +2674,7 @@ class MainWindow(QMainWindow):
             book = newbook
         current_position = sh.Info.index((book, newchapter, 0))
         forward.clear()
-        history.back_push(w, old_position)
+        history.back_push(self, old_position)
         reset_attributes()
         self.display_verse(current_position)
 
@@ -3153,7 +2690,7 @@ class MainWindow(QMainWindow):
 
         if clearbool:
             self.statusBar.clearMessage()
-            w.message = ''
+            self.message = ''
 
     def beep(self, current_position: int, lm: float) -> None:
         """Makes a beep sound and clears the message."""
@@ -3166,7 +2703,7 @@ class MainWindow(QMainWindow):
         # Delay for 'lm' second.
         time.sleep(lm)
 
-        w.message = ''
+        self.message = ''
         self.ref_to_statusbar(current_position)
         self.statusBar.repaint()
 
@@ -3182,17 +2719,14 @@ class MainWindow(QMainWindow):
         """File opening routine."""
 
         # 1. Create a local reference with a type hint to satisfy the linter
-        assert w is not None
-        win: Any = w
+        win: Any = self
 
-        # print('file_open ', path1)
         if path1:
             pass
         else:
             path1, _ = QFileDialog.getOpenFileName(
                 self, "Open file", "",
                 "Text documents (*.txt);All files (*.*)")
-            # print(path1, ' Opened')
         if path1:
             try:
                 text_data: str | None = None
@@ -3215,7 +2749,7 @@ class MainWindow(QMainWindow):
                                 # Keep legacy behaviour (fail loudly) if marker missing
                                 print('Failed to find the line ', EOTNOC)
                                 print('Cannot continue until this is put right.')
-                                exit()
+                                sys.exit()
                             start_idx = loc + len(EOTNOC) + 1
                             text_data = original[start_idx:]
                             # Best-effort cache write (do not fail to open if this causes an error)
@@ -3224,7 +2758,7 @@ class MainWindow(QMainWindow):
                                     assert text_data is not None
                                     f_out.write(text_data)
                             except (OSError, PermissionError):
-                                pass
+                                logger.debug("Could not write stripped Bible cache", exc_info=True)
                     except (OSError, UnicodeDecodeError, ValueError):
                         # Fall back to generic read if anything goes wrong in the optimised path
                         text_data = None
@@ -3268,7 +2802,7 @@ class MainWindow(QMainWindow):
                         if doc_obj is not None:
                             doc_obj.setUndoRedoEnabled(False)
                     except (RuntimeError, AttributeError):
-                        pass
+                        logger.debug("Could not disable undo/redo before text load", exc_info=True)
                     assert win.PCE_text is not None
                     self.textEditor.setPlainText(win.PCE_text)
                 finally:
@@ -3280,11 +2814,11 @@ class MainWindow(QMainWindow):
                         if doc_final is not None:
                             doc_final.setUndoRedoEnabled(True)
                     except (RuntimeError, AttributeError):
-                        pass
+                        logger.debug("Could not re-enable undo/redo after text load", exc_info=True)
                     try:
                         self.textEditor.setUpdatesEnabled(True)
                     except (RuntimeError, AttributeError):
-                        pass
+                        logger.debug("Could not re-enable editor updates after text load", exc_info=True)
                 self.update_title()
 
                 if path1[-11:] == r'KJB_PCE.txt':
@@ -3310,8 +2844,8 @@ class MainWindow(QMainWindow):
                             # Reset clear flag so future highlights (when the Bible is reopened) work normally
                             win.hiLita.clear = False
                     except (AttributeError, RuntimeError):
-                        # Be conservative; highlighting state is non-critical for auxiliary files
-                        pass
+                        # Highlighting state is non-critical for auxiliary files
+                        logger.debug("Could not clear highlighting for auxiliary file", exc_info=True)
 
     def file_print(self) -> None:
         """File print routine."""
@@ -3343,102 +2877,19 @@ class MainWindow(QMainWindow):
 
 
     def _refresh_theme_across_ui(self) -> None:
-        """Apply the app palette, style the main editor, update secondary windows, and
-        re-theme any open dialogs/windows.
-         Centralised to avoid duplication."""
-        # Apply application-wide palette first so dialogs/menus follow suit
-        self.theme.apply_app_palette()
-        # Apply to the main editor and secondary window
-        self.theme.apply_to_editor(self.textEditor)
-        self.update_text_display_theme()
-        # Per user request: the verse input / search box should always have a white background and black text
-        # in both themes to distinguish it from other dark controls.
-        if self.theme.state.is_dark_mode:
-            self.display_verse_input.setStyleSheet(
-                "QLineEdit { background-color: #ffffff; color: #000000; border: 1px solid #3a3a3a; }"
-            )
-        else:
-            self.display_verse_input.setStyleSheet(
-                "QLineEdit { background-color: #ffffff; color: #000000; border: 1px solid #b5b5b5; }"
-            )
-        # Keep control heights consistent with the active style/theme
-        try:
-            self._normalize_control_heights()
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            pass
-        # Also refresh any currently open dialogs/windows
-        if getattr(self, 'dlg', None):
-            self.theme.apply_widget(self.dlg)
-        if getattr(self, 'about_window', None):
-            self.theme.apply_widget(self.about_window)
-        if getattr(self, 'text_edit_window', None):
-            try:
-                self.text_edit_window.apply_theme(self.theme.state.is_dark_mode)
-            except (RuntimeError, AttributeError):
-                pass
-            self.theme.apply_widget(self.text_edit_window)
-        if getattr(self, '_gill_win', None):
-            # Use a local reference with a type hint to satisfy the linter
-            gw: Any = self._gill_win
-            try:
-                gw.apply_theme(self.theme.state.is_dark_mode)
-            except (RuntimeError, AttributeError):
-                pass
-            self.theme.apply_widget(gw)
+        """Delegate to the theming controller."""
+
+        self.theme_ctrl.refresh_theme_across_ui()
 
     def _normalize_control_heights(self) -> None:
-        """Make QComboBox controls the same height as pushbuttons.
+        """Delegate to the theming controller."""
 
-        Uses the current style's sizeHint for a reference QPushButton (OK)
-        to compute a DPI- and theme-aware height, then applies it to the
-        main comboboxes.
-        Called after UI setup and whenever the theme changes.
-        """
-        try:
-            ref_btn = getattr(self, 'okButton', None)
-            if not ref_btn:
-                return
-            # Use a local reference with a type hint to satisfy the linter
-            r: Any = ref_btn
-            ref_h = int(r.sizeHint().height())
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            ref_h = 0
-        if not ref_h:
-            return
-        # Controls to normalise to the same height as pushbuttons
-        for ctrl_name in (
-            'comboBox_1',
-            'comboBox_2',
-            'comboBox_3',
-            'other_works_combo',
-            'display_verse_input',  # F2 text entry box
-        ):
-            ctrl = getattr(self, ctrl_name, None)
-            if ctrl is None:
-                continue
-            # Use a local reference with a type hint to satisfy the linter
-            c: Any = ctrl
-            try:
-                c.setFixedHeight(ref_h)
-            except (RuntimeError, AttributeError, TypeError, ValueError):
-                # Be tolerant of lifecycle/style changes
-                pass
+        self.theme_ctrl.normalize_control_heights()
 
     def set_theme(self, the_settings):
-        """Apply the theme from settings using ThemeManager without legacy globals."""
+        """Delegate to the theming controller."""
 
-        theme_key = 'theme'
-        current_theme = the_settings.get(theme_key, 'Light')
-
-        # Set ThemeManager state explicitly to match settings
-        self.theme.state.is_dark_mode = (current_theme == 'Dark')
-
-        # Apply the palette and refresh all open UI elements
-        self._refresh_theme_across_ui()
-
-        # Ensure settings reflect what's applied and persist
-        self.settings[theme_key] = 'Dark' if self.theme.state.is_dark_mode else 'Light'
-        self.settings_service.save(self.settings)
+        self.theme_ctrl.set_theme(the_settings)
 
     def display_secondary_window(self, offset: int = 0) -> None:
         """Creates and displays the secondary window to show SME text.
@@ -3486,33 +2937,19 @@ class MainWindow(QMainWindow):
             try:
                 self.goto_line(sme_ref)
             except (ValueError, TypeError, KeyError, IndexError):
-                # Ignore navigation errors; still show text
-                pass
+                # Navigation failed; still show the devotional text
+                logger.debug("Could not navigate to devotional reference %r", sme_ref, exc_info=True)
         return sme_text
 
     def toggle_dark_mode(self):
-        """Toggle dark mode using ThemeManager and persist to settings."""
+        """Delegate to the theming controller."""
 
-        # Toggle via ThemeManager
-        is_dark = self.theme.toggle()
-
-        # Persist selection in settings
-        self.settings["theme"] = "Dark" if is_dark else "Light"
-        self.settings_service.save(self.settings)
-
-        # Apply the palette and refresh all open UI elements
-        self._refresh_theme_across_ui()
+        self.theme_ctrl.toggle_dark_mode()
 
     def update_text_display_theme(self) -> None:
-        """Update the text display theme using ThemeManager."""
+        """Delegate to the theming controller."""
 
-        # Apply to the secondary window if available
-        if self.secondary_window and getattr(self.secondary_window, 'text_display', None):
-            self.theme.apply_to_secondary(self.secondary_window)
-            return
-        # If the secondary window (or its text display) does not exist yet, exit quietly.
-        # This method can be called during startup/theme changes before the window is created.
-        return
+        self.theme_ctrl.update_text_display_theme()
 #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of MainWindow class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

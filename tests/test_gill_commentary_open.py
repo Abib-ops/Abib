@@ -50,7 +50,7 @@ def test_open_commentary_window_uses_current_bible_line_not_stale_context(monkey
     monkeypatch.setattr(AbibModule.sh, "Info", [[0, 0, 0], [8, 0, 0], [9, 1, 2]])
 
     window = SimpleNamespace()
-    window._gill_win = None
+    window.gill_win = None
     window.settings_service = SimpleNamespace()
     window.theme = SimpleNamespace(
         state=SimpleNamespace(is_dark_mode=False),

@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from PySide6.QtCore import QObject, QRunnable, Qt, QThreadPool, Signal
 from PySide6.QtGui import QColor, QIcon, QPixmap
@@ -17,7 +17,8 @@ from PySide6.QtWidgets import QApplication, QSplashScreen
 from abib import Abib as AbibModule
 from abib.Abib import MainWindow
 from abib.core import shared as sh
-from abib.services.data_loader import DataLoader
+from abib.services import search_service
+from abib.services.data_loader import DataLoader, SearchData
 from abib.services.settings import SettingsService
 
 
@@ -103,23 +104,8 @@ def _load_bible_text_and_maps(loader: DataLoader) -> None:
 
 
 def _load_search_indexes(loader: DataLoader) -> None:
-    s = loader.load_search()
-    _assign_attrs(
-        AbibModule,
-        s,
-        [
-            "Rnew",
-            
-            "Rlow",
-            
-            "Rstp",
-            "Rlsp",
-            "stripped_dict",
-            "strpd_low_dict",
-            "set_dict",
-            "set_lowdict",
-        ],
-    )
+    # Register the loaded search data with the search engine's context.
+    search_service.set_search_data(loader.load_search())
 
 
 def _load_sme_metadata(loader: DataLoader) -> None:
@@ -186,6 +172,17 @@ def run() -> None:
     # Expose the window instance at module level for helpers
     AbibModule.w = w
 
+    # Register empty search data until the background loader completes. This
+    # matches the previous empty module-level placeholders so any early access
+    # by highlighting helpers behaves as before (empty tables) rather than
+    # raising because no context has been registered yet.
+    search_service.set_search_data(
+        SearchData(
+            Rnew=(), Rlow=(), Rstp=(), Rlsp=(),
+            stripped_dict={}, strpd_low_dict={}, set_dict={}, set_lowdict={},
+        )
+    )
+
     # Use centralised DataLoader
     loader = DataLoader()
     _load_bible_text_and_maps(loader)
@@ -215,23 +212,8 @@ def run() -> None:
     task = _LoadSearchTask(loader)
 
     def _on_search_loaded(s: object) -> None:
-        # Assign loaded search structures into the Abib module
-        _assign_attrs(
-            AbibModule,
-            s,
-            [
-                "Rnew",
-                
-                "Rlow",
-                
-                "Rstp",
-                "Rlsp",
-                "stripped_dict",
-                "strpd_low_dict",
-                "set_dict",
-                "set_lowdict",
-            ],
-        )
+        # Register the loaded search structures with the search engine's context.
+        search_service.set_search_data(cast(SearchData, s))
         # Enable the search controls now that indexes are ready
         try:
             w.update_other_works_search_button(True)

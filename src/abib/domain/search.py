@@ -25,7 +25,7 @@ def iterate_regex(r: tuple, x1: int, x2: int, kjv: Sequence[str]) -> list[tuple[
 
 def find_words_any(_x1: int, _x2: int, _set_dict: dict[str, set], _kjv: Sequence[str]) -> list[int]:
     """Find lines that contain any of the words in set_dict keys within the range [_x1, _x2)."""
-    # This is a simplified version of findf3_ww_any
+    # This is a simplified version of find_whole_word_any
     # In practice, it usually intersects sets of line numbers
     # But for a direct port from what was in Abib.py:
     results = []

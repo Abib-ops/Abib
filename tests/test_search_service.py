@@ -8,7 +8,7 @@ from types import SimpleNamespace
 from typing import TYPE_CHECKING, cast
 
 from abib.core.fcs import any_of_the_words_lookup
-from abib.services.search_service import findf3_ww_all, findf3_ww_any
+from abib.services.search_service import find_whole_word_all, find_whole_word_any
 
 if TYPE_CHECKING:
     from abib.Abib import MainWindow
@@ -28,7 +28,7 @@ def test_all_words_counts_matching_verses_not_individual_words():
     }
     win = cast("MainWindow", cast(object, SimpleNamespace(key="rest ever")))
 
-    findf3_ww_all(0, len(r_list) - 1, 2, lookup, r_list, win)
+    find_whole_word_all(0, len(r_list) - 1, 2, lookup, r_list, win)
 
     assert win.occurs == [0, 3]
     assert win.occurring == 2
@@ -50,7 +50,7 @@ def test_any_words_counts_matching_verses_not_individual_words():
     }
     win = cast("MainWindow", cast(object, SimpleNamespace(key="rest ever")))
 
-    findf3_ww_any(0, len(r_list) - 1, lookup, r_list, win)
+    find_whole_word_any(0, len(r_list) - 1, lookup, r_list, win)
 
     assert win.occurs == [3, 0, 2, 1]
     assert win.occurring == 4

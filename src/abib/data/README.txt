@@ -8,10 +8,29 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.33
+Abib v417.34
 ------------
 
 Changelog.
+Abib v417.34
+
+- Maintenance: Internal code clean-up with no change to behaviour. The
+  monolithic main-window class was broken up into focused collaborators -
+  the search engine now lives in its own service, and theming and the
+  Search Results / Other Works window handling were moved into dedicated
+  controllers - making the code smaller and easier to maintain.
+- Maintenance: The search engine no longer reaches back into global state;
+  its runtime data now flows through an explicit context object, and the
+  live-window handle is passed in rather than read from a module global.
+- Maintenance: Removed silent exception swallowing in favour of proper
+  logging, deleted dead code and leftover debug remnants, promoted internal
+  helpers to clean public names, and applied consistent PEP 8 naming and
+  named constants in place of magic numbers.
+
+This release is a maintenance update focused on code quality and
+maintainability, with no change to features or behaviour. Built with
+Python 3.14.7 and PySide6 6.11.2 (64-bit).
+
 Abib v417.33
 
 - Bug fix: Scripture references in the "Other Works" library that use the

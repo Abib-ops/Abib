@@ -16,7 +16,7 @@ def _make_jump_window() -> tuple[SimpleNamespace, list[str], list[tuple[int, int
     jumped: list[tuple[int, int]] = []
     reader = SimpleNamespace(jump_to_reference_offset=lambda start, length: jumped.append((start, length)))
     window = SimpleNamespace(text_edit_window=reader)
-    window._open_text_file_in_window = opened.append
+    window.open_text_file_in_window = opened.append
     return window, opened, jumped
 
 
@@ -43,7 +43,7 @@ def test_other_work_reference_activation_queues_jump_for_loading_reader(qapp):
         jump_to_reference_offset=jump_to_reference_offset,
     )
     window = SimpleNamespace(text_edit_window=reader)
-    window._open_text_file_in_window = opened.append
+    window.open_text_file_in_window = opened.append
 
     # noinspection PyTypeChecker
     AbibModule.MainWindow._on_other_work_reference_activated(window, "C:\\Works\\Example.txt", 42, 9)
