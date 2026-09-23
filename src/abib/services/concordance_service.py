@@ -26,7 +26,7 @@ DEFAULT_STOP_WORDS = frozenset({
     "will", "with", "you", "your", "yours", "yourself", "yourselves",
 })
 
-TOKEN_RE = re.compile(r"[A-Za-z]+(?:['’][A-Za-z]+)?")
+TOKEN_RE = re.compile(r"[A-Za-z]+(?:['’-][A-Za-z]+)*")
 
 
 @dataclass(frozen=True)
@@ -43,9 +43,19 @@ class ConcordanceEntry:
     hits: tuple[ConcordanceHit, ...]
 
 
+def _canonical_token(token: str) -> str:
+    """Case-fold a matched token and drop internal hyphens.
+
+    Hyphenated names such as ``Hephzi-bah`` are matched as a single token by
+    ``TOKEN_RE`` and then collapsed here so that both ``Hephzi-bah`` and
+    ``Hephzibah`` map to the same concordance key.
+    """
+    return token.casefold().replace("-", "")
+
+
 def normalize_term(term: str) -> str:
     """Return the concordance key for a word or phrase."""
-    return " ".join(match.group(0).casefold() for match in TOKEN_RE.finditer(term))
+    return " ".join(_canonical_token(match.group(0)) for match in TOKEN_RE.finditer(term))
 
 
 class ConcordanceService:
@@ -124,7 +134,7 @@ class ConcordanceService:
                 continue
             hit = self._make_hit(position, verse_text)
             for match in TOKEN_RE.finditer(verse_text):
-                term = match.group(0).casefold()
+                term = _canonical_token(match.group(0))
                 if term in self._stop_words:
                     continue
                 hits_by_term[term].append(hit)

@@ -8,10 +8,39 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.34
+Abib v417.35
 ------------
 
 Changelog.
+Abib v417.35
+
+- New feature: Strong's / original-language lookup. A new "Strong's
+  Lookup" button (also Ctrl+Shift+S) opens a dedicated window that shows
+  the original Hebrew and Greek words behind the King James text. The
+  tagged words of the current verse are listed as clickable links labelled
+  with their Strong's numbers; clicking a word (or typing a code such as
+  H0430 or G3056) shows its dictionary entry - the original-script lemma,
+  transliteration, pronunciation, short and long definitions, and how many
+  times the number occurs in the Bible. The window follows the verse you
+  move to in the Bible window and supports Ctrl++/Ctrl+- font zoom, with
+  its position, size and font size remembered between runs.
+- The lookup builds on the earlier StrongsService/strongs.sqlite work: a
+  "Find all occurrences" button lists every verse containing a given
+  Strong's number in the normal Search Results window, where each row is a
+  clickable verse (with the tagged word highlighted) that jumps the Bible
+  window to it, exactly like an ordinary text search.
+- Attribution: the Strong's-tagged KJV text is from Bolls Life
+  (bolls.life); the Strong's Hebrew and Greek dictionaries are from
+  OpenScriptures (HebrewLexicon and StrongsGreekDictionary), licensed
+  CC BY-SA 4.0. See HELP.txt for details.
+- Maintenance: Upgraded bundled dependencies - idna to 3.20, PyInstaller
+  to 6.22.3 and urllib3 to 2.8.0.
+
+This release adds a Strong's / original-language lookup window for
+exploring the Hebrew and Greek behind the KJV, including per-word
+dictionary entries and a "find all occurrences" search by Strong's number.
+Built with Python 3.14.7 and PySide6 6.11.2 (64-bit).
+
 Abib v417.34
 
 - Maintenance: Internal code clean-up with no change to behaviour. The

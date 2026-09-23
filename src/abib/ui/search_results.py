@@ -49,9 +49,8 @@ def format_reference(
     return f"{book_name} {chapter}:{verse}"
 
 
-def highlight_result_text(text: str, search_text: str, search_mode: int, case_sensitive: bool) -> str:
-    """Return escaped HTML for a verse with search terms highlighted."""
-    ranges = find_highlight_ranges(text, search_text, search_mode, case_sensitive)
+def render_highlighted(text: str, ranges: list[tuple[int, int]]) -> str:
+    """Return escaped HTML for *text* with the given character *ranges* marked."""
     if not ranges:
         return html.escape(text)
 
@@ -66,6 +65,41 @@ def highlight_result_text(text: str, search_text: str, search_mode: int, case_se
         current = end
     parts.append(html.escape(text[current:]))
     return ''.join(parts)
+
+
+def highlight_result_text(text: str, search_text: str, search_mode: int, case_sensitive: bool) -> str:
+    """Return escaped HTML for a verse with search terms highlighted."""
+    ranges = find_highlight_ranges(text, search_text, search_mode, case_sensitive)
+    return render_highlighted(text, ranges)
+
+
+def highlight_tagged_words(text: str, tags: Sequence[tuple[str, str]], code: str) -> str:
+    """Return escaped HTML highlighting only the words tagged with *code*.
+
+    *tags* is the verse's ``(surface, strongs)`` pairs in reading order. The
+    verse *text* is walked once, advancing a cursor as each surface is located,
+    so only the specific occurrences whose Strong's number equals *code* are
+    highlighted. A word spelled identically to the target but tagged with a
+    *different* Strong's number (or untagged) is therefore left unmarked,
+    avoiding spurious highlights in the search results.
+    """
+    ranges: list[tuple[int, int]] = []
+    cursor = 0
+    lowered = text.lower()
+    for surface, strongs in tags:
+        if not surface:
+            continue
+        idx = text.find(surface, cursor)
+        if idx == -1:
+            # Tolerate case differences between the KJV text and the tag data.
+            idx = lowered.find(surface.lower(), cursor)
+        if idx == -1:
+            continue
+        end = idx + len(surface)
+        if strongs == code:
+            ranges.append((idx, end))
+        cursor = end
+    return render_highlighted(text, ranges)
 
 
 def result_verse_text(position: int, kjv: Sequence[str], amap: Sequence[int | str]) -> str:

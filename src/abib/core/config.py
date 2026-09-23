@@ -21,6 +21,8 @@ def get_default_settings() -> dict[str, Any]:
         "bible_font_size": 12,
         # Font size for the 'Other Works' reader window
         "reader_font_size": 12,
+        # Font size for the Strong's (original-language) lookup window
+        "strongs_font_size": 12,
         # Whether scripture popups in the reader should automatically scroll the view
         # if the popup otherwise obscures the reference itself.
         "reader_auto_scroll_popups": True,
@@ -59,6 +61,12 @@ def get_default_settings() -> dict[str, Any]:
             "y": 100,
             "width": 400,
             "height": 500
+        },
+        "strongs_window": {
+            "x": 120,
+            "y": 120,
+            "width": 480,
+            "height": 560
         },
         "reader_find_window": {
             "x": 100,

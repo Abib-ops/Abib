@@ -19,6 +19,16 @@ def make_service() -> ConcordanceService:
     return ConcordanceService(kjv, amap, info, book_names, set())
 
 
+def make_hyphen_service() -> ConcordanceService:
+    kjv = (
+        "but thou shalt be called Hephzi-bah, and thy land Beulah.",
+    )
+    amap = (0,)
+    info = ((0, 61, 3),)
+    book_names = ("Isaiah",)
+    return ConcordanceService(kjv, amap, info, book_names, set())
+
+
 def test_normalize_term_case_folds_words_and_phrases():
     assert normalize_term("  The LORD's Mercies! ") == "the lord's mercies"
 
@@ -54,3 +64,25 @@ def test_matching_entries_filters_alphabetical_entries():
     entries = make_service().matching_entries("lig")
 
     assert [entry.term for entry in entries] == ["light"]
+
+
+def test_normalize_term_collapses_hyphenated_names():
+    assert normalize_term("Hephzi-bah") == "hephzibah"
+
+
+def test_hyphenated_name_found_without_hyphen():
+    entry = make_hyphen_service().get_entry("Hephzibah")
+
+    assert entry is not None
+    assert entry.term == "hephzibah"
+    assert entry.count == 1
+    assert "Hephzi-bah" in entry.hits[0].verse_text
+
+
+def test_hyphenated_name_found_with_hyphen():
+    entry = make_hyphen_service().get_entry("Hephzi-bah")
+
+    assert entry is not None
+    assert entry.term == "hephzibah"
+    assert entry.count == 1
+    assert "Hephzi-bah" in entry.hits[0].verse_text

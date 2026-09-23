@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.11.2 and python3.14.7 (64-bit).
 
-12/09/2026
+23/09/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --all-extras --upgrade
@@ -393,6 +393,9 @@ class MainWindow(QMainWindow):
 
         # Gill commentary window (lazy-created on first use)
         self.gill_win: Any | None = None
+
+        # Strong's / original-language lookup window (lazy-created on first use)
+        self.strongs_win: Any | None = None
 
         # Navigation core
         self.nav = NavigationCore(self)
@@ -844,6 +847,19 @@ class MainWindow(QMainWindow):
         except (RuntimeError, TypeError, AttributeError):
             logger.debug("Could not create Ctrl+Shift+C commentary shortcut", exc_info=True)
 
+        self.buttonf14 = QPushButton("Strong's Lookup")
+        self.buttonf14.setStyleSheet("QPushButton { text-align: left; }")
+        self.buttonf14.clicked.connect(self.open_strongs_window)
+        self.buttonf14.setToolTip("Open Strong's / original-language lookup (Ctrl+Shift+S)")
+        self.buttonf14.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        grid.addWidget(self.buttonf14, 4, 4)
+
+        try:
+            shortcut_strongs = QShortcut(QKeySequence("Ctrl+Shift+S"), self)
+            shortcut_strongs.activated.connect(self.open_strongs_window)
+        except (RuntimeError, TypeError, AttributeError):
+            logger.debug("Could not create Ctrl+Shift+S Strong's shortcut", exc_info=True)
+
         try:
             self._normalize_control_heights()
         except (RuntimeError, AttributeError, TypeError):
@@ -882,7 +898,7 @@ class MainWindow(QMainWindow):
         controls = [
             'comboBox_1', 'comboBox_2', 'comboBox_3', 'display_verse_input', 'okButton', 'buttonTheme',
             'buttonf3', 'buttonf4', 'buttonf5', 'buttonf6', 'buttonf7', 'buttonf8', 'buttonf9',
-            'buttonf10', 'buttonf11', 'buttonf12', 'buttonf13', 'other_works_combo', 'last_work_btn', 'search_work_btn'
+            'buttonf10', 'buttonf11', 'buttonf12', 'buttonf13', 'buttonf14', 'other_works_combo', 'last_work_btn', 'search_work_btn'
         ]
         for name in controls:
             wdg = getattr(self, name, None)
@@ -1267,6 +1283,13 @@ class MainWindow(QMainWindow):
                 gill.close()
         except (RuntimeError, AttributeError):
             logger.debug("Could not close Gill commentary window on close", exc_info=True)
+
+        try:
+            strongs: Any = getattr(self, "strongs_win", None)
+            if strongs is not None:
+                strongs.close()
+        except (RuntimeError, AttributeError):
+            logger.debug("Could not close Strong's window on close", exc_info=True)
             
         try:
             reader: Any = getattr(self, "text_edit_window", None)
@@ -2034,6 +2057,18 @@ class MainWindow(QMainWindow):
             self._last_context_position = int(current_position)
         except (TypeError, ValueError):
             logger.debug("Could not persist last Bible position", exc_info=True)
+        self._notify_strongs_position(current_position)
+
+    def _notify_strongs_position(self, current_position: int) -> None:
+        """Keep the Strong's window in sync with the main Bible position, if open."""
+        strongs: Any = getattr(self, "strongs_win", None)
+        if strongs is None:
+            return
+        try:
+            if strongs.isVisible():
+                strongs.set_position(int(current_position))
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            logger.debug("Could not sync Strong's window position", exc_info=True)
 
     def move_to_line(self, ln: int) -> None:
         """Display engine."""
@@ -2142,6 +2177,7 @@ class MainWindow(QMainWindow):
             self._last_context_position = int(current_position)
         except (TypeError, ValueError):
             logger.debug("Could not persist last Bible position", exc_info=True)
+        self._notify_strongs_position(current_position)
 
     def ref_to_statusbar(self, current_position: int) -> None:
         """Display messages in the status bar."""
@@ -2219,6 +2255,138 @@ class MainWindow(QMainWindow):
             self.gill_win.activateWindow()
         except (RuntimeError, AttributeError, TypeError, AssertionError):
             logger.debug("Could not show/raise commentary window", exc_info=True)
+
+    def open_strongs_window(self) -> None:
+        """Open or focus the Strong's / original-language lookup window on the current verse."""
+        from abib.services.strongs_service import StrongsService  # deferred import
+        from abib.ui.strongs_window import StrongsWindow  # deferred import
+
+        # Resolve DB path in the application folder (mirrors gill.cmt.sqlite).
+        db_path = Path(sh.str_cwd) / "strongs.sqlite"
+        if not db_path.exists():
+            try:
+                QMessageBox.warning(self, "Strong's Lookup", f"Database not found:\n{db_path}")
+            except (RuntimeError, TypeError):
+                logger.debug("Could not show Strong's database-not-found warning", exc_info=True)
+            return
+
+        try:
+            current_position = int(self.get_line_number())
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            try:
+                current_position = int(self._last_bible_position)
+            except (AttributeError, TypeError, ValueError):
+                current_position = 0
+        current_position = max(current_position, 0)
+        current_position = min(current_position, sh.LAST_VERSE_IN_BIBLE)
+        try:
+            self._last_bible_position = current_position
+            self._last_context_position = current_position
+        except (AttributeError, TypeError, ValueError):
+            logger.debug("Could not persist last Bible position for Strong's window", exc_info=True)
+
+        # Lazily create the window.
+        if self.strongs_win is None:
+            try:
+                service = StrongsService(db_path)
+                self.strongs_win = StrongsWindow(
+                    service=service, parent=None, settings_service=self.settings_service
+                )
+            except (RuntimeError, TypeError, sqlite3.Error) as exc:
+                try:
+                    QMessageBox.critical(self, "Strong's Lookup", f"Unable to open Strong's window.\n{exc}")
+                except (RuntimeError, TypeError):
+                    logger.debug("Could not show Strong's open-failure dialog", exc_info=True)
+                self.strongs_win = None
+                return
+
+        # Update content and show the window.
+        try:
+            if isinstance(self.strongs_win, StrongsWindow):
+                self.strongs_win.set_position(current_position)
+                # Route "Find all occurrences" into the main Search Results window.
+                self.strongs_win.on_find_occurrences = self._show_strongs_occurrences
+                try:
+                    self.strongs_win.apply_theme(self.theme.state.is_dark_mode)
+                    self.theme.apply_widget(self.strongs_win)
+                except (RuntimeError, AttributeError):
+                    logger.debug("Could not apply theme to Strong's window", exc_info=True)
+        except (AttributeError, TypeError, ValueError):
+            logger.debug("Could not set Strong's position", exc_info=True)
+        try:
+            assert self.strongs_win is not None
+            self.strongs_win.show()
+            self.strongs_win.raise_()
+            self.strongs_win.activateWindow()
+        except (RuntimeError, AttributeError, TypeError, AssertionError):
+            logger.debug("Could not show/raise Strong's window", exc_info=True)
+
+    def _show_strongs_occurrences(self, code: str, verses: list[int]) -> None:
+        """Populate the Search Results window with every verse containing *code*.
+
+        This is the callback wired into the Strong's window's "Find all
+        occurrences" button (see :meth:`open_strongs_window`).  It reuses the
+        normal search-results display so that Strong's-number results look and
+        behave exactly like a text search: each row is a clickable verse that
+        jumps the main window when activated.
+        """
+        from abib.ui.search_results import (
+            SearchResult,
+            format_reference,
+            highlight_tagged_words,
+            result_verse_text,
+        )
+
+        dock = self.search_results_window
+        if dock is None:
+            self._setup_search_results_panel()
+            dock = self.search_results_window
+        if dock is None:
+            return
+
+        # The Strong's service (used to highlight the tagged word(s) per verse).
+        service: Any = getattr(self.strongs_win, "_service", None)
+
+        results: list[SearchResult] = []
+        for position in verses:
+            try:
+                verse_text = result_verse_text(position, KJV, Amap)
+                reference = format_reference(position, sh.Info, self.nwin, sh.onechapterbooks)
+            except (IndexError, TypeError, ValueError):
+                continue
+            tag_pairs: list[tuple[str, str]] = []
+            if service is not None:
+                try:
+                    tag_pairs = [
+                        (tag.surface, tag.strongs)
+                        for tag in service.get_tags_for_verse(position)
+                    ]
+                except (AttributeError, RuntimeError, sqlite3.Error):
+                    tag_pairs = []
+            # Highlight only the specific word occurrences tagged with *code*,
+            # so identically-spelled words tagged with a different Strong's
+            # number are not spuriously highlighted. Falls back to plain
+            # escaped text when no tag data is available.
+            html_text = highlight_tagged_words(verse_text, tag_pairs, code)
+            results.append(SearchResult(position, reference, verse_text, html_text))
+
+        if not results:
+            dock.clear_results()
+            dock.hide()
+            self._release_main_width_limit()
+            self.on_error(f"No occurrences of {code} found...", 2000, True)
+            return
+
+        dock.set_results(results, code)
+        # Suppress width persistence while the window is shown and positioned
+        # programmatically (mirrors update_search_results_panel).
+        dock._positioning = True
+        try:
+            dock.show()
+            self._position_search_results_window()
+        finally:
+            dock._positioning = False
+        dock.raise_()
 
     # Auto-follow toggle removed from MainWindow.
 

@@ -108,5 +108,13 @@ def _literal_casefold_spans(content: str, query_pattern: re.Pattern[str]) -> tup
 
 
 def _literal_whitespace_pattern(query_folded: str) -> re.Pattern[str]:
-    tokens = [re.escape(token) for token in query_folded.split() if token]
-    return re.compile(r"\s+".join(tokens))
+    parts: list[str] = []
+    for token in query_folded.split():
+        # Drop hyphens from the query and allow an optional hyphen (possibly
+        # followed by a line break/whitespace) between characters, so that both
+        # "Hephzibah" and "Hephzi-bah" match source text such as "Hephzi-bah".
+        chars = [re.escape(char) for char in token if char != "-"]
+        if not chars:
+            continue
+        parts.append(r"(?:-\s*)?".join(chars))
+    return re.compile(r"\s+".join(parts))

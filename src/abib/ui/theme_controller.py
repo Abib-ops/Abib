@@ -70,6 +70,14 @@ class ThemeController:
             except (RuntimeError, AttributeError):
                 pass
             win.theme.apply_widget(gw)
+        if getattr(win, 'strongs_win', None):
+            # Use a local reference with a type hint to satisfy the linter
+            sw: Any = win.strongs_win
+            try:
+                sw.apply_theme(win.theme.state.is_dark_mode)
+            except (RuntimeError, AttributeError):
+                pass
+            win.theme.apply_widget(sw)
 
     def normalize_control_heights(self) -> None:
         """Make QComboBox controls the same height as pushbuttons.

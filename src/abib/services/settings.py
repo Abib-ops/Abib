@@ -218,6 +218,16 @@ class SettingsService:
         data["reader_font_size"] = size
         self.save(data)
 
+    def get_strongs_font_size(self) -> int:
+        """Get the Strong's window font size from settings."""
+        return self.settings.get("strongs_font_size", 12)
+
+    def update_strongs_font_size(self, size: int) -> None:
+        """Update the Strong's window font size in settings."""
+        data = self.settings
+        data["strongs_font_size"] = size
+        self.save(data)
+
     def get_gill_hover_delay_ms(self) -> int:
         """Get the Gill hover delay in milliseconds."""
         return self.settings.get("gill_hover_delay_ms", 120)

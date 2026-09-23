@@ -134,6 +134,7 @@ def test_raw_result_click_recomputes_highlight_offsets(monkeypatch):
         adjust_highlighting=lambda ln, current_position: calls.append((ln, current_position)),
         on_text_changed=lambda ln: None,
         ref_to_statusbar=lambda current_position: None,
+        _notify_strongs_position=lambda current_position: None,
     )
 
     app.MainWindow.display_verse_from_history(cast(app.MainWindow, cast(object, fake_self)), 1)

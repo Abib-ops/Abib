@@ -8,7 +8,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 ABIB HELP:
 **********
 
-Abib Bible Reader v417.34
+Abib Bible Reader v417.35
 
 *************************
 ATTRIBUTION & LICENSE:
@@ -26,6 +26,11 @@ Third-Party Attributions:
 - Pure Cambridge Edition of the KJV: bibleprotector.com
 - Spurgeon Resources: spurgeon.org and Eternal Life Ministries
 - Icons and UI elements: Produced by the Abib Contributors
+- Strong's-tagged KJV text (word→Strong's numbers): Bolls Life
+  (bolls.life) King James Version with Strong's tagging.
+- Strong's Hebrew and Greek dictionaries: OpenScriptures
+  HebrewLexicon and StrongsGreekDictionary
+  (github.com/openscriptures), licensed CC BY-SA 4.0.
 *************************
 
 Follow Scripture on your PC while listening to a sermon or message.
@@ -42,14 +47,14 @@ You can start from the beginning and follow the instructions below.
 
 First, uninstall any previous version of the program.
 
-Get the "Abib_setup_417.34_win.exe" file from 'Abib-ops' on GitHub,
+Get the "Abib_setup_417.35_win.exe" file from 'Abib-ops' on GitHub,
 find it in the 'Abib' repository.
 
 **************************************************
 * See: https://github.com/Abib-ops/Abib/releases *
 **************************************************
 
-Next, double-click the "Abib_setup_417.34_win.exe" installer and follow
+Next, double-click the "Abib_setup_417.35_win.exe" installer and follow
 the instructions, mostly click Next a few times, agree to the
 licence, and Abib will install. Please ignore any negative windows that
 claim that Abib is from an unknown author.
@@ -194,6 +199,57 @@ Notes
 - The Gill commentary window is independent; you can keep it open while
   navigating elsewhere. At the very start of the Bible (Genesis 1:1),
   Prev has no effect; Next moves to Genesis 1:2 as expected.
+
+Strong's / Original-Language Lookup window.
+-------------------------------------------
+
+Abib can show the original Hebrew and Greek words behind the King James
+text, using Strong's numbers. Every word of the KJV that carries a
+Strong's number can be looked up to see its original-language lemma,
+transliteration, pronunciation, and a short and long definition.
+
+How to open
+- Click the “Strong's Lookup” button on the main window, or press
+  Ctrl+Shift+S. The window opens as an independent (top‑level) window,
+  so you can place it anywhere.
+
+What you’ll see
+- The top panel lists the tagged words of the current verse as clickable
+  links (each labelled with its Strong's number, e.g. H0430 or G3056).
+- Click a word (or type a code into the entry box and press Enter) to show
+  its dictionary entry in the detail panel below: the original‑script
+  lemma, transliteration, pronunciation, definitions, and how many times
+  the number occurs in the Bible.
+- The entry box accepts flexible forms such as H430, h0430 or G3056.
+
+Find all occurrences
+- With an entry shown, click “Find all occurrences” to list every verse
+  that contains that Strong's number in the main Search Results window.
+  Each row is a clickable verse that jumps the Bible window to it, exactly
+  like an ordinary text search, with the tagged word highlighted.
+
+Zooming the font
+- Use Ctrl++ (or Ctrl+=) to increase and Ctrl+- to decrease the font size.
+  The chosen size is remembered between runs.
+
+Auto‑follow
+- While the window is open it follows the verse you move to in the Bible
+  window, so the tagged words always match the verse on screen. Use its
+  Prev/Next buttons to step through verses independently.
+
+Where the data is stored
+- File: strongs.sqlite in the Abib application folder.
+- Tables: word_tags (one row per tagged word occurrence, addressed by
+  Abib's global verse index), strongs_dict (the Hebrew/Greek dictionary),
+  and meta.
+
+Saved settings
+- Abib stores the Strong's window position/size and its font size in
+  settings.json under the keys “strongs_window” and “strongs_font_size”.
+
+Missing data
+- If strongs.sqlite is not present, the button/window report that the
+  data is unavailable rather than failing; the rest of Abib is unaffected.
 
 (There is no need to type a colon in the text entry box used to display a
 particular verse, as the full stop is recognised, and it is easier than
@@ -585,7 +641,7 @@ Installing Abib on Linux.
 -------------------------
 (You can try, but it will need quite a bit of modification to make it work.)
 
-Get the "Abib_linux_417.34.tar.bz2" file from the author.
+Get the "Abib_linux_417.35.tar.bz2" file from the author.
 
     If you can get it, then it may be an earlier version because of
     recent changes that work on Windows only, and the direction of
@@ -593,7 +649,7 @@ Get the "Abib_linux_417.34.tar.bz2" file from the author.
     But with some modifications, it could be made to work on Linux.
 
 Move it to your home folder or desired location and navigate there.
-Expand the compressed archive with: tar -jxvf Abib_linux_417.34.tar.bz2
+Expand the compressed archive with: tar -jxvf Abib_linux_417.35.tar.bz2
 
 $ chmod +x Abib will make sure that the executable flag is set.
 

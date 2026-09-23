@@ -12,6 +12,7 @@ from types import ModuleType, SimpleNamespace
 from typing import cast
 
 from abib import Abib as AbibModule
+from tests._window_open_helpers import make_window_open_env
 
 
 def test_open_commentary_window_uses_current_bible_line_not_stale_context(monkeypatch, tmp_path):
@@ -45,21 +46,9 @@ def test_open_commentary_window_uses_current_bible_line_not_stale_context(monkey
     fake_module = ModuleType("abib.ui.gill_window")
     fake_module.GillCommentaryWindow = FakeGillCommentaryWindow
     monkeypatch.setitem(sys.modules, "abib.ui.gill_window", fake_module)
-    monkeypatch.setattr(AbibModule.sh, "str_cwd", str(tmp_path))
-    monkeypatch.setattr(AbibModule.sh, "LAST_VERSE_IN_BIBLE", 2)
-    monkeypatch.setattr(AbibModule.sh, "Info", [[0, 0, 0], [8, 0, 0], [9, 1, 2]])
-
-    window = SimpleNamespace()
+    window = make_window_open_env(monkeypatch, tmp_path)
     window.gill_win = None
-    window.settings_service = SimpleNamespace()
-    window.theme = SimpleNamespace(
-        state=SimpleNamespace(is_dark_mode=False),
-        apply_widget=lambda widget: None,
-    )
     window.nav = SimpleNamespace(get_current_bcv=lambda: (9, 1, 1))
-    window._last_bible_position = 1
-    window._last_context_position = 1
-    window.get_line_number = lambda: 2
 
     AbibModule.MainWindow.open_commentary_window(cast(AbibModule.MainWindow, cast(object, window)))
 

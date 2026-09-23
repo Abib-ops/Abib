@@ -99,3 +99,27 @@ def test_search_returns_empty_results_for_empty_query(tmp_path):
 
     assert results.query == ""
     assert results.occurrences == ()
+
+
+def test_search_finds_hyphenated_name_without_hyphen(tmp_path):
+    path = tmp_path / "Names.txt"
+    path.write_text("thy land shall be called Hephzi-bah, and Beulah.", encoding="utf-8")
+    service = OtherWorksTextSearchService({"Names": str(path)}, {"Names": True})
+
+    results = service.search("Hephzibah")
+
+    assert [(occ.work_stem, occ.matched_text) for occ in results.occurrences] == [
+        ("Names", "Hephzi-bah"),
+    ]
+
+
+def test_search_finds_hyphenated_name_with_hyphen(tmp_path):
+    path = tmp_path / "Names.txt"
+    path.write_text("thy land shall be called Hephzi-bah, and Beulah.", encoding="utf-8")
+    service = OtherWorksTextSearchService({"Names": str(path)}, {"Names": True})
+
+    results = service.search("Hephzi-bah")
+
+    assert [(occ.work_stem, occ.matched_text) for occ in results.occurrences] == [
+        ("Names", "Hephzi-bah"),
+    ]
