@@ -14,7 +14,7 @@ are unaffected.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
     from abib.Abib import MainWindow
@@ -46,6 +46,16 @@ class ThemeController:
             win.display_verse_input.setStyleSheet(
                 "QLineEdit { background-color: #ffffff; color: #000000; border: 1px solid #b5b5b5; }"
             )
+        # Restyle the coloured pushbuttons for the active theme
+        try:
+            self.apply_coloured_buttons_theme()
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
+        # Restyle the coloured comboboxes for the active theme
+        try:
+            self.apply_coloured_comboboxes_theme()
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            pass
         # Keep control heights consistent with the active style/theme
         try:
             self.normalize_control_heights()
@@ -78,6 +88,91 @@ class ThemeController:
             except (RuntimeError, AttributeError):
                 pass
             win.theme.apply_widget(sw)
+
+    # Mapping of coloured pushbutton attribute names to their theme colours.
+    # Each entry is (light background / base colour, brighter dark-mode text colour).
+    _COLOURED_BUTTONS: ClassVar[dict[str, tuple[str, str]]] = {
+        'okButton': ('#e6f4e6', '#8cff8c'),   # OK (brighter green)
+        'buttonTheme': ('#d6e4ff', '#8cb4ff'),  # Light/Dark (blue)
+        'buttonf3': ('#ffe6cc', '#ffb84d'),   # Find (brighter orange)
+        'buttonf4': ('#ffe6cc', '#ffb84d'),   # Find Next (brighter orange)
+        'buttonf5': ('#b6d7b0', '#8cff8c'),   # Back (brighter green)
+        'buttonf6': ('#b6d7b0', '#8cff8c'),   # Forward (brighter green)
+        'buttonf7': ('#ffffcc', '#ffff66'),   # Book- (brighter yellow)
+        'buttonf8': ('#ffffcc', '#ffff66'),   # Book+ (brighter yellow)
+        'buttonf10': ('#ffffcc', '#ffff66'),  # Chapter- (brighter yellow)
+        'buttonf11': ('#ffffcc', '#ffff66'),  # Chapter+ (brighter yellow)
+        'last_work_btn': ('#ffe6ee', '#ff8cc6'),   # Open Work (brighter pink)
+        'search_work_btn': ('#ffe6ee', '#ff8cc6'),  # Search Work (brighter pink)
+    }
+
+    @staticmethod
+    def _apply_coloured_theme(
+        win: MainWindow,
+        mapping: dict[str, tuple[str, str]],
+        light_style: str,
+        dark_style: str,
+    ) -> None:
+        """Restyle a group of coloured controls for the active theme.
+
+        ``mapping`` pairs each control's attribute name on ``win`` with its
+        ``(base_colour, dark_text)`` colours. ``light_style`` and ``dark_style``
+        are format strings expecting ``base_colour`` / ``dark_text`` keywords and
+        are applied in light and dark mode respectively.
+        """
+        is_dark = win.theme.state.is_dark_mode
+        for name, (base_colour, dark_text) in mapping.items():
+            widget = getattr(win, name, None)
+            if widget is None:
+                continue
+            w: Any = widget
+            template = dark_style if is_dark else light_style
+            style = template.format(base_colour=base_colour, dark_text=dark_text)
+            try:
+                w.setStyleSheet(style)
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                pass
+
+    def apply_coloured_buttons_theme(self) -> None:
+        """Restyle the coloured pushbuttons for the active theme.
+
+        In light mode the button uses its base colour as the background with
+        black text. In dark mode the background is left to the palette so it
+        matches the plain buttons in the right-hand column exactly, and a
+        brighter variant of the base colour is used for the text instead.
+        """
+        # In dark mode do not set a background-color so these buttons inherit the
+        # same palette-driven background as the plain buttons on the right.
+        self._apply_coloured_theme(
+            self._win,
+            self._COLOURED_BUTTONS,
+            "QPushButton {{ text-align: left; background-color: {base_colour}; color: #000000; }}",
+            "QPushButton {{ text-align: left; color: {dark_text}; }}",
+        )
+
+    # Mapping of coloured combobox attribute names to their theme colours.
+    # Each entry is (light background / base colour, brighter dark-mode text colour).
+    _COLOURED_COMBOBOXES: ClassVar[dict[str, tuple[str, str]]] = {
+        'comboBox_1': ('#e6f4e6', '#8cff8c'),        # Book (green)
+        'comboBox_2': ('#e6f4e6', '#8cff8c'),        # Chapter (green)
+        'comboBox_3': ('#e6f4e6', '#8cff8c'),        # Verse (green)
+        'other_works_combo': ('#ffe6ee', '#ff8cc6'),  # Other Works (pink)
+    }
+
+    def apply_coloured_comboboxes_theme(self) -> None:
+        """Restyle the coloured comboboxes for the active theme.
+
+        In light mode the combobox uses its base colour as the background with
+        black text. In dark mode the background matches the plain controls
+        (a dark grey) and a brighter variant of the base colour is used for
+        the text instead.
+        """
+        self._apply_coloured_theme(
+            self._win,
+            self._COLOURED_COMBOBOXES,
+            "QComboBox {{ background-color: {base_colour}; color: #000000; }}",
+            "QComboBox {{ background-color: #2a2a2a; color: {dark_text}; }}",
+        )
 
     def normalize_control_heights(self) -> None:
         """Make QComboBox controls the same height as pushbuttons.

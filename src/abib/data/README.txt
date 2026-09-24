@@ -8,10 +8,34 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.35
+Abib v417.36
 ------------
 
 Changelog.
+Abib v417.36
+
+- UI polish: The start of the text in the main-window combo boxes (the
+  Book, Chapter and Verse selectors and the Other Works list) now lines
+  up vertically with the label text of the main-window buttons. Matching
+  left padding was applied to the combo boxes and buttons, and the combo
+  boxes use a read-only inner line edit with matching text margins so
+  their text begins at the same horizontal position as the buttons.
+- Dark mode polish: The coloured main-window buttons and combo boxes
+  (the green Book/Chapter/Verse and OK/Back/Forward controls, the orange
+  Find controls, the yellow Book/Chapter steppers and the pink Other
+  Works controls) now recolour correctly for the active theme. In dark
+  mode they drop their pale light-mode backgrounds so they match the
+  surrounding dark controls, and instead show their identifying colour as
+  brighter, easy-to-read text; light mode keeps the familiar coloured
+  backgrounds. The recolouring is reapplied automatically whenever you
+  toggle between light and dark themes.
+
+This release is a small user-interface polish update that vertically
+aligns the start of the combo-box text with the button text and improves
+the dark-mode colouring of the main-window buttons and combo boxes, with
+no change to features or behaviour. Built with Python 3.14.7 and PySide6
+6.11.2 (64-bit).
+
 Abib v417.35
 
 - New feature: Strong's / original-language lookup. A new "Strong's
