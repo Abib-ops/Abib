@@ -4,7 +4,6 @@
 
 # -*- coding: utf-8 -*-
 
-from __future__ import annotations
 
 from abib.core import shared as sh
 from abib.core.scripture import find_scripture_references, normalize_book_input

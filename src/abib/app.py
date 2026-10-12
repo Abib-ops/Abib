@@ -4,7 +4,6 @@
 
 # -*- coding: utf-8 -*-
 
-from __future__ import annotations
 
 from typing import Any, cast
 
@@ -81,8 +80,6 @@ class _LoadSearchTask(QRunnable):
                 self.signals.failed.emit(str(e))
             except (RuntimeError, TypeError):
                 pass
-
-
 
 
 def _load_bible_text_and_maps(loader: DataLoader) -> None:

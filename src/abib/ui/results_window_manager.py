@@ -12,7 +12,6 @@ keeps thin delegators (including the ``moveEvent``/``resizeEvent`` hooks and the
 ``_update_search_results_panel`` entry point used by the search flow).
 """
 
-from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 

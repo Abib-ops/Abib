@@ -12,7 +12,6 @@ keeps thin delegators so external callers (settings dialog, theme toggle button)
 are unaffected.
 """
 
-from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, ClassVar
 

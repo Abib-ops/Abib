@@ -30,7 +30,6 @@ Output:
       normalized_key, raw_forms, count, example_file, line, snippet
 """
 
-from __future__ import annotations
 
 import csv
 import re

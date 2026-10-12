@@ -8,10 +8,47 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.36
+Abib v417.37
 ------------
 
 Changelog.
+Abib v417.37
+
+- Maintenance: Routine upkeep with no change to features or behaviour.
+  The application version was bumped to 417.37 and the build date
+  updated. The Python runtime was upgraded to 3.15.0 and the project's
+  minimum required Python was raised to 3.15. The user-interface toolkit
+  PySide6 (with its shiboken6, addons and essentials components) was
+  upgraded from 6.11.2 to 6.12.0, which also brought in the pyside6-pdf
+  and pyside6-webengine 6.12.0.140 components. Other bundled dependencies
+  were refreshed too - charset-normalizer to 3.5.2,
+  pyinstaller-hooks-contrib to 2026.8 and iniconfig to 2.3.1. TOML
+  configuration is now read with the standard-library "tomllib" module,
+  so the third party "tomli" dependency is no longer required.
+- Code modernisation: Took advantage of the newer Python baseline to
+  tidy the codebase, with no change to behaviour. The obfuscated
+  single-element "islice" indexing idiom was replaced with direct list
+  indexing on the navigation and search hot paths; quoted forward-
+  reference annotations were dropped now that annotations evaluate
+  lazily; the window event handlers and a helper were given precise
+  types (QCloseEvent, QMoveEvent, QResizeEvent) in place of loose "Any";
+  the operating-system detection was converted to a match/case block; and
+  a shared "WordSet" type alias was introduced to replace the repeated
+  "dict[str, set]" search annotations across several modules. The now
+  redundant "from __future__ import annotations" import was removed from
+  every module across the source, tests and tools, since annotations
+  evaluate lazily by default on this baseline. Several unnecessary
+  "cast(Any, ...)" wrappers were trimmed now that the PySide6 6.12 type
+  stubs make them redundant (the remaining casts cover genuine dynamic or
+  platform-specific cases), and a helper's parameter type was tightened.
+  The two developer helper scripts in the tools folder were modernised to
+  use pathlib in place of os.path.
+
+This release is a small maintenance update that upgrades the runtime to
+Python 3.15, refreshes bundled dependencies and modernises the codebase,
+with no change to features or behaviour. Built with Python 3.15.0 and
+PySide6 6.12.0 (64-bit).
+
 Abib v417.36
 
 - UI polish: The start of the text in the main-window combo boxes (the

@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "abib"
-version = "417.36"
+version = "417.37"
 description = "A Bible study application"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.15"
 # FIX: Use a simple string for the licence to avoid the deprecation warning
 license = "GPL-3.0-or-later"
 dependencies = [

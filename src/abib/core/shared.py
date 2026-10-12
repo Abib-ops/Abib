@@ -11,11 +11,10 @@
 ################################################################################
 
 import sys
+import tomllib
 from os import getenv
 from pathlib import Path
 from platform import system
-
-import tomllib
 
 from abib.utils.files import readfile
 
@@ -46,7 +45,7 @@ def _get_version() -> str:
             continue
             
     # 2. Hardcoded fallback (should be updated per release)
-    return "417.36"
+    return "417.37"
 
 CURRENT_VERSION = _get_version()
 
@@ -59,19 +58,20 @@ else:
 current_directory: Path = package_directory / "data"
 str_cwd: str = str(current_directory)
 # settings_file: Path = current_directory / 'settings.json'
-user_settings_dir: Path = Path.cwd()  # Initialise with the current working directory as a placeholder value.
+user_settings_dir: Path  # Assigned per-platform below.
 
-if system() == 'Windows':
-    app_data = getenv("APPDATA")
-    assert app_data is not None
-    user_settings_dir = Path(app_data) / "Abib"  # User's directory.
-elif system() == 'Darwin':
-    user_settings_dir = Path.home() / "Library" / "Application Support" / "Abib"
-elif system() == 'Linux':
-    user_settings_dir = Path.home() / ".config" / "Abib"
-else:
-    print("Unknown operating system.")
-    sys.exit()
+match system():
+    case 'Windows':
+        app_data = getenv("APPDATA")
+        assert app_data is not None
+        user_settings_dir = Path(app_data) / "Abib"  # User's directory.
+    case 'Darwin':
+        user_settings_dir = Path.home() / "Library" / "Application Support" / "Abib"
+    case 'Linux':
+        user_settings_dir = Path.home() / ".config" / "Abib"
+    case _:
+        print("Unknown operating system.")
+        sys.exit()
 
 # Construct the paths to assets regardless of the operating system.
 images_dir: Path = package_directory / "images"
@@ -187,6 +187,9 @@ bibledict: dict[str, int] = {
     }
 
 onechapterbooks: set[int] = {30, 56, 62, 63, 64}
+
+# Mapping of a search word to the set of verse positions in which it occurs.
+type WordSet = dict[str, set[int]]
 
 
 # Read Info.txt

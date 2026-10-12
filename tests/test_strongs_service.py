@@ -4,7 +4,6 @@
 
 # -*- coding: utf-8 -*-
 
-from __future__ import annotations
 
 import sqlite3
 from collections.abc import Generator
@@ -71,7 +70,7 @@ def _build_db(path) -> None:
 
 
 @pytest.fixture()
-def service(tmp_path) -> Generator[StrongsService, Any, None]:
+def service(tmp_path) -> Generator[StrongsService, Any]:
     db_path = tmp_path / "strongs.sqlite"
     _build_db(db_path)
     svc = StrongsService(db_path)

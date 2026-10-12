@@ -35,7 +35,6 @@ Schema (see ``tools/BUILD_STRONGS.md``)::
 identical to the position used by ``sh.Info``.
 """
 
-from __future__ import annotations
 
 import re
 import sqlite3

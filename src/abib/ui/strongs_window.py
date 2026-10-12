@@ -21,7 +21,6 @@ If ``strongs.sqlite`` is missing the service degrades gracefully and the window
 simply reports that the data is unavailable rather than crashing.
 """
 
-from __future__ import annotations
 
 from html import escape
 from typing import Any

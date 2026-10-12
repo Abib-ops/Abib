@@ -11,7 +11,7 @@
 ################################################################################
 
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from abib import utils
@@ -108,7 +108,7 @@ def is_float_re(string_: str) -> bool:
     return utils.is_float_re(string_)
 
 
-def any_of_the_words_lookup(_key: str, _set: dict[str, set]) -> tuple[int, str]:
+def any_of_the_words_lookup(_key: str, _set: sh.WordSet) -> tuple[int, str]:
     """Takes '_key' and splits it into separate words in 'liszt',
     which are then looked up in the set of Bible words.
 
@@ -149,8 +149,6 @@ def convert_roman_to_integer(reference_text: str) -> str:
 def isRoman(s: str) -> bool:
     """Regular expression to match valid Roman numerals"""
     return utils.isRoman(s)
-
-
 
 
 def compare_versions(version1: str, version2: str) -> int:
@@ -470,7 +468,7 @@ def get_date_file(date_index: int = 0, adjustment: int = 0) -> tuple:
     morn_or_even: str = ""
 
     # Get today's date and apply the date_index offset
-    today = datetime.now(tz=timezone.utc).astimezone() + timedelta(hours=date_index)
+    today = datetime.now(tz=UTC).astimezone() + timedelta(hours=date_index)
 
     # Extract the necessary date information
     month = today.strftime("%B")  # E.g. "February"

@@ -4,7 +4,6 @@
 
 # -*- coding: utf-8 -*-
 
-from __future__ import annotations
 
 import re
 from typing import TYPE_CHECKING
@@ -13,6 +12,7 @@ from abib.core import fcs
 
 if TYPE_CHECKING:
     from abib.Abib import MainWindow
+    from abib.core.shared import WordSet
     from abib.services.data_loader import SearchData
 
 
@@ -103,7 +103,7 @@ def get_next_occurrence(win: MainWindow) -> int:
     return current_position
 
 
-def make_key_whole(win: MainWindow, _key: str, _dict: dict, _set: dict[str, set]) -> tuple[int, str]:
+def make_key_whole(win: MainWindow, _key: str, _dict: dict, _set: WordSet) -> tuple[int, str]:
     """Make _key conform to Match whole word only.
 
     Return the number of whole words in the _key variable.
@@ -305,7 +305,7 @@ def find_whole_word(win: MainWindow, x1: int, x2: int) -> int:
     return current_position
 
 
-def find_whole_word_single(win: MainWindow, x1: int, x2: int, _set: dict[str, set], r_list: list | tuple) -> None:
+def find_whole_word_single(win: MainWindow, x1: int, x2: int, _set: WordSet, r_list: list | tuple) -> None:
     """Match the whole single word."""
 
     try:
@@ -384,7 +384,7 @@ def iterate_list(keywords: list[str], r_list: list | tuple, win: MainWindow) -> 
                 coordinates.append((m.start(), m.end()))
         win.occur.append(coordinates)
 
-def find_whole_word_phrase(x1: int, x2: int, numwords: int, _set: dict[str, set], r_list: list | tuple, win: MainWindow) -> None:
+def find_whole_word_phrase(x1: int, x2: int, numwords: int, _set: WordSet, r_list: list | tuple, win: MainWindow) -> None:
     """Whole words (phrase)."""
     liszt = win.key.split(' ')
     s = _set[liszt[0]] & _set[liszt[1]]
@@ -405,7 +405,7 @@ def find_whole_word_phrase(x1: int, x2: int, numwords: int, _set: dict[str, set]
     liszt = [win.key]
     iterate_list(liszt, r_list, win)
 
-def find_whole_word_all(x1: int, x2: int, numwords: int, _set: dict[str, set], r_list: list | tuple, win: MainWindow) -> None:
+def find_whole_word_all(x1: int, x2: int, numwords: int, _set: WordSet, r_list: list | tuple, win: MainWindow) -> None:
     """Match all the words (phrase)."""
     liszt = win.key.split(' ')
     try:
@@ -427,7 +427,7 @@ def find_whole_word_all(x1: int, x2: int, numwords: int, _set: dict[str, set], r
     iterate_list(liszt, r_list, win)
     win.occurring = len(win.occurs)
 
-def find_whole_word_any(x1: int, x2: int, _set: dict[str, set], r_list: list | tuple, win: MainWindow) -> None:
+def find_whole_word_any(x1: int, x2: int, _set: WordSet, r_list: list | tuple, win: MainWindow) -> None:
     """Find any of the words."""
     liszt = win.key.split(' ')
     s = set()

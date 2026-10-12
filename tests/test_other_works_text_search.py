@@ -4,7 +4,6 @@
 
 # -*- coding: utf-8 -*-
 
-from __future__ import annotations
 
 from abib.services.other_works_text_search import OtherWorksTextSearchService
 

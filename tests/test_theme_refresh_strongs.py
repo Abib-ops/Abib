@@ -5,7 +5,6 @@ about, text-edit and Gill commentary windows but not the Strong's Lookup
 window, so its background stayed dark/black after a light/dark toggle.
 """
 
-from __future__ import annotations
 
 from types import SimpleNamespace
 from typing import Any, cast

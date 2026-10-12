@@ -39,9 +39,9 @@ Third-party materials and attributions:
 
 Abib Bible Reader אביב
 
-Using PySide6-6.11.2 and python3.14.7 (64-bit).
+Using PySide6-6.12.0 and python3.15.0 (64-bit).
 
-24/09/2026
+12/10/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --all-extras --upgrade
@@ -93,17 +93,19 @@ import sys
 import time
 import webbrowser
 from collections.abc import Iterator
-from itertools import islice
 from pathlib import Path
 from typing import Any, cast
 
 from PySide6.QtCore import QEvent, QObject, QPoint, QRect, Qt
 from PySide6.QtGui import (
+    QCloseEvent,
     QColor,
     QFont,
     QKeyEvent,
     QKeySequence,
     QMouseEvent,
+    QMoveEvent,
+    QResizeEvent,
     QShortcut,
     QTextCharFormat,
     QTextCursor,
@@ -209,7 +211,7 @@ def get_next_occurrence() -> int:
     return search_service.get_next_occurrence(cast("MainWindow", w))
 
 
-def find_whole_word_any(x1: int, x2: int, _set: dict[str, set], r_list: list, win: 'MainWindow') -> None:
+def find_whole_word_any(x1: int, x2: int, _set: sh.WordSet, r_list: list, win: MainWindow) -> None:
     """Match any word."""
 
     search_service.find_whole_word_any(x1, x2, _set, r_list, win)
@@ -224,19 +226,16 @@ def make_offset(ln: int) -> int:
     # Determine the start of Psalms dynamically (avoid magic number 13940)
     try:
         psalms_book_idx: int = sh.bibledict['psalms'] - 1  # 0-based book index
-        # Use islice to avoid direct indexing, keeping linters/type-checkers happy
-        psalms_start_verse_idx: int = next(islice(book_bounds, psalms_book_idx, None))
-    except (KeyError, StopIteration, TypeError):
+        psalms_start_verse_idx: int = book_bounds[psalms_book_idx]
+    except (KeyError, IndexError, TypeError):
         psalms_start_verse_idx = 13940  # Fallback if data not yet loaded
-    # Avoid direct indexing into Amap; use islice with safe fallbacks
     try:
-        lx_source = next(islice(Amap, psalms_start_verse_idx, None))
-        lx: int = int(lx_source) - 1
-    except (StopIteration, TypeError, ValueError):
+        lx: int = int(Amap[psalms_start_verse_idx]) - 1
+    except (IndexError, TypeError, ValueError):
         # Fallbacks if Amap not ready; use known Psalms start or zero
         try:
-            lx: int = int(next(islice(Amap, 13940, None))) - 1
-        except (StopIteration, TypeError, ValueError):
+            lx: int = int(Amap[13940]) - 1
+        except (IndexError, TypeError, ValueError):
             lx = 0
     ec: int = 2
     if n.isalpha() or ln in P119:
@@ -1241,7 +1240,7 @@ class MainWindow(QMainWindow):
 
         self.results_manager.reposition_search_results_window()
 
-    def moveEvent(self, event):
+    def moveEvent(self, event: QMoveEvent) -> None:
         try:
             self._reposition_search_results_window()
         except (RuntimeError, AttributeError, TypeError):
@@ -1251,7 +1250,7 @@ class MainWindow(QMainWindow):
         except (RuntimeError, AttributeError, TypeError):
             return None
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event: QResizeEvent) -> None:
         try:
             self._reposition_search_results_window()
         except (RuntimeError, AttributeError, TypeError):
@@ -1261,7 +1260,7 @@ class MainWindow(QMainWindow):
         except (RuntimeError, AttributeError, TypeError):
             return None
 
-    def closeEvent(self, event: Any):
+    def closeEvent(self, event: QCloseEvent) -> None:
         """Handle window close event - save geometry and close child windows"""
         # Save main window geometry and state
         geometry = self.geometry()
@@ -1777,7 +1776,7 @@ class MainWindow(QMainWindow):
             else:
                 self.find_f4()
 
-    def make_key_whole(self, _key: str, _dict: dict, _set: dict[str, set]) -> tuple[int, str]:
+    def make_key_whole(self, _key: str, _dict: dict, _set: sh.WordSet) -> tuple[int, str]:
         """Delegate to the search engine."""
 
         return search_service.make_key_whole(self, _key, _dict, _set)
@@ -1800,12 +1799,12 @@ class MainWindow(QMainWindow):
 
         self.prepare_key_for_find()
         try:
-            x1 = int(next(islice(book_bounds, x_start, None)))
-        except (StopIteration, TypeError, ValueError):
+            x1 = int(book_bounds[x_start])
+        except (IndexError, TypeError, ValueError):
             x1 = 0
         try:
-            x2 = int(next(islice(book_bounds, x_end + 1, None))) - 1
-        except (StopIteration, TypeError, ValueError):
+            x2 = int(book_bounds[x_end + 1]) - 1
+        except (IndexError, TypeError, ValueError):
             x2 = sh.LAST_VERSE_IN_BIBLE
         current_position = x1
 
@@ -1876,7 +1875,7 @@ class MainWindow(QMainWindow):
 
         return search_service.find_whole_word(self, x1, x2)
 
-    def find_whole_word_single(self, x1: int, x2: int, _set: dict[str, set], r_list: list) -> None:
+    def find_whole_word_single(self, x1: int, x2: int, _set: sh.WordSet, r_list: list) -> None:
         """Delegate to the search engine."""
 
         search_service.find_whole_word_single(self, x1, x2, _set, r_list)
@@ -1962,8 +1961,8 @@ class MainWindow(QMainWindow):
         """Find function - prepare for output."""
 
         try:
-            ln = int(next(islice(Amap, current_position, None)))
-        except (StopIteration, TypeError, ValueError):
+            ln = int(Amap[current_position])
+        except (IndexError, TypeError, ValueError):
             ln = 0
         self.adjust_highlighting(ln, current_position)
         self.move_to_line(ln)
@@ -2064,8 +2063,8 @@ class MainWindow(QMainWindow):
         win: Any = self
 
         try:
-            ln = int(next(islice(Amap, current_position, None)))
-        except (StopIteration, TypeError, ValueError):
+            ln = int(Amap[current_position])
+        except (IndexError, TypeError, ValueError):
             ln = 0
         if current_position in starts_with_italics:  # Verses that start with italics.
             win.hiLita.keyinc = 1
@@ -2159,8 +2158,8 @@ class MainWindow(QMainWindow):
         win: Any = self
 
         try:
-            ln = int(next(islice(Amap, current_position, None)))
-        except (StopIteration, TypeError, ValueError):
+            ln = int(Amap[current_position])
+        except (IndexError, TypeError, ValueError):
             ln = 0
         if current_position in starts_with_italics:  # Verses that start with italics.
             win.hiLita.keyinc = 1
@@ -2611,7 +2610,7 @@ class MainWindow(QMainWindow):
         return return_value
 
     @staticmethod
-    def is_integer(value: Any) -> bool:
+    def is_integer(value: str | int) -> bool:
         """True if the value is an integer."""
 
         val: str = str(value)
@@ -2640,10 +2639,9 @@ class MainWindow(QMainWindow):
         if linenumber in Amap:
             current_position: int = Amap_rev[linenumber]
         else:
-            # Safely get the first element of Amap without direct indexing (for linters/type-checkers)
             try:
-                first_amap = int(next(islice(Amap, 0, None)))
-            except (StopIteration, TypeError, ValueError):
+                first_amap = int(Amap[0])
+            except (IndexError, TypeError, ValueError):
                 first_amap = 0
             if linenumber < first_amap:
                 current_position = 0
@@ -3143,8 +3141,6 @@ class MainWindow(QMainWindow):
 
         self.theme_ctrl.update_text_display_theme()
 #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of MainWindow class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
 
 
 if __name__ == '__main__':

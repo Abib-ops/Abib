@@ -4,7 +4,6 @@
 
 # -*- coding: utf-8 -*-
 
-from __future__ import annotations
 
 import platform
 import sys
@@ -135,7 +134,7 @@ class ThemeManager:
             if self.state.is_dark_mode and _is_windows_10():
                 if not self._original_style_name:
                     try:
-                        self._original_style_name = cast(Any, app).style().objectName()
+                        self._original_style_name = cast("QApplication", app).style().objectName()
                     except (AttributeError, RuntimeError, TypeError):
                         self._original_style_name = None
                 if not self._using_fusion:
@@ -252,7 +251,7 @@ class ThemeManager:
             # Apply a button stylesheet to all Windows versions (10 and 11), since
             # native widgets can render grey buttons in dark mode and ignore the palette.
             styles = dark_base_styles + (button_styles if sys.platform == "win32" else "")
-            cast(Any, app).setStyleSheet(styles)
+            cast("QApplication", app).setStyleSheet(styles)
         else:
             # Light mode: ensure consistent darker-than-default shade for buttons, combos, and line edits
             light_base_styles = (
@@ -281,7 +280,7 @@ class ThemeManager:
                 QComboBox QAbstractItemView { background-color: #ffffff; color: #000000; selection-background-color: #e6f0ff; selection-color: #000000; }
                 """
             )
-            cast(Any, app).setStyleSheet(light_base_styles)
+            cast("QApplication", app).setStyleSheet(light_base_styles)
 
     # ---- Apply helpers ----
     def apply_to_editor(self, editor: EditorWithStyleSheet | None) -> None:
@@ -312,7 +311,7 @@ class ThemeManager:
             return
         pal = self._build_dark_palette() if self.state.is_dark_mode else self._build_light_palette()
         try:
-            cast(Any, widget).setPalette(pal)
+            widget.setPalette(pal)
         except (AttributeError, RuntimeError, TypeError, ValueError):
             # Be tolerant of the Qt object lifecycle and type issues but avoid swallowing all exceptions
             pass

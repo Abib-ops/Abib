@@ -58,7 +58,6 @@ Input file content changes: those are detected via content_sha256 and will trigg
 
 """
 
-from __future__ import annotations
 
 import argparse
 import gzip

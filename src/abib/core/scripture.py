@@ -10,7 +10,6 @@ Scripture parsing, normalisation, and lookup utilities.
 Centralises logic used by the UI (Abib.TextDocumentWindow) and utilities (scan_owen_refs.py)
 so it can be maintained and tested in one place.
 """
-from __future__ import annotations
 
 import re
 from typing import Any

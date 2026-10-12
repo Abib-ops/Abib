@@ -21,7 +21,6 @@ Notes
 - Book-name matching relies on `shared.bibledict`; see that mapping for accepted names.
 - Chapter/verse text may be Arabic numerals or valid Roman numerals (e.g. "iv", "XII").
 """
-from __future__ import annotations
 
 import re
 from collections.abc import Sequence

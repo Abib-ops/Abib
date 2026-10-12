@@ -4,9 +4,9 @@
 
 # -*- coding: utf-8 -*-
 
-import os
 import re
 import sys
+from pathlib import Path
 
 
 def normalize_apostrophes(text):
@@ -54,14 +54,14 @@ def process_file(filepath):
     """
     Processes a single file: reads, normalises, and asks for confirmation to save.
     """
-    if not os.path.isfile(filepath):
+    file_path = Path(filepath)
+    if not file_path.is_file():
         print(f"Skipping {filepath} (not a file).")
         return 'continue'
 
     print(f"\nProcessing: {filepath}")
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
-            content = f.read()
+        content = file_path.read_text(encoding='utf-8')
     except (OSError, UnicodeError, ValueError) as e:
         print(f"Error reading {filepath}: {e}")
         return 'continue'
@@ -72,7 +72,7 @@ def process_file(filepath):
         print("No changes needed.")
         return 'continue'
 
-    print(f"Found {len(changes)} potential changes in {os.path.basename(filepath)}.")
+    print(f"Found {len(changes)} potential changes in {file_path.name}.")
     
     final_lines = content.splitlines()
     applied_count = 0
@@ -105,8 +105,7 @@ def process_file(filepath):
         print(f"\nApplied {applied_count} changes.")
         save = input(f"Save changes to {filepath}? [y/n]: ").lower()
         if save == 'y':
-            with open(filepath, 'w', encoding='utf-8') as f:
-                f.write("\n".join(final_lines))
+            file_path.write_text("\n".join(final_lines), encoding='utf-8')
             print("File saved.")
         else:
             print("Save cancelled.")
@@ -120,16 +119,15 @@ def main():
         print("Usage: python normalize_apostrophes.py <file_or_folder>")
         return
 
-    path = sys.argv[1]
-    if not os.path.exists(path):
+    path = Path(sys.argv[1])
+    if not path.exists():
         print(f"Path not found: {path}")
         return
 
-    if os.path.isfile(path):
+    if path.is_file():
         process_file(path)
-    elif os.path.isdir(path):
-        files = [os.path.join(path, f) for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
-        files.sort()
+    elif path.is_dir():
+        files = sorted(f for f in path.iterdir() if f.is_file())
         
         print(f"Found {len(files)} files in folder: {path}")
         for filepath in files:

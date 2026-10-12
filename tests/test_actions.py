@@ -4,7 +4,6 @@
 
 # -*- coding: utf-8 -*-
 
-from __future__ import annotations
 
 from PySide6.QtWidgets import QMainWindow, QMenu, QTextEdit
 

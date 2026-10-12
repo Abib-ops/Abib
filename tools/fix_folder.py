@@ -13,10 +13,9 @@ Copy the files to an empty folder of your choosing and then run this script.
 
 """
 
-import glob
-import os
 import re
 import sys
+from pathlib import Path
 
 
 def detect_text_language(text):
@@ -227,8 +226,7 @@ def clean_previous_corrected_files(folder_path):
     """Delete all files ending with '-corrected.txt' in the folder."""
     
     # Find all files ending with '-corrected.txt'
-    corrected_pattern = os.path.join(folder_path, "*-corrected.txt")
-    corrected_files = glob.glob(corrected_pattern)
+    corrected_files = sorted(Path(folder_path).glob("*-corrected.txt"))
     
     if not corrected_files:
         print("No previous '-corrected.txt' files found to delete.")
@@ -240,9 +238,9 @@ def clean_previous_corrected_files(folder_path):
     print(f"Found {len(corrected_files)} previous '-corrected.txt' files to delete:")
     
     for corrected_file in corrected_files:
-        filename = os.path.basename(corrected_file)
+        filename = corrected_file.name
         try:
-            os.remove(corrected_file)
+            corrected_file.unlink()
             print(f"  ✓ Deleted: {filename}")
             deleted_count += 1
         except OSError as e:
@@ -261,20 +259,18 @@ def correct_file_encoding(input_filename):
     """Read a file and correct UTF-8 corruption, then save it to a new file."""
     
     # Create output filename
-    name, ext = os.path.splitext(input_filename)
-    output_filename = f"{name}-corrected{ext}"
+    input_path = Path(input_filename)
+    output_path = input_path.with_name(f"{input_path.stem}-corrected{input_path.suffix}")
     
     try:
         # Read the input file
-        with open(input_filename, "r", encoding="utf-8") as file:
-            content = file.read()
+        content = input_path.read_text(encoding="utf-8")
         
         # Fix corruptions
         corrected_content, total_corrections = fix_utf8_corruption(content)
         
         # Write the corrected content
-        with open(output_filename, "w", encoding="utf-8") as file:
-            file.write(corrected_content)
+        output_path.write_text(corrected_content, encoding="utf-8")
         
         return total_corrections
         
@@ -289,11 +285,12 @@ def process_folder(folder_path):
     """Process all .txt files in the given folder."""
     
     # Check if the folder exists
-    if not os.path.exists(folder_path):
+    folder = Path(folder_path)
+    if not folder.exists():
         print(f"Error: Folder '{folder_path}' not found.")
         return False
     
-    if not os.path.isdir(folder_path):
+    if not folder.is_dir():
         print(f"Error: '{folder_path}' is not a directory.")
         return False
     
@@ -304,11 +301,10 @@ def process_folder(folder_path):
     clean_previous_corrected_files(folder_path)
     
     # Find all .txt files in the folder (excluding corrected files)
-    txt_pattern = os.path.join(folder_path, "*.txt")
-    all_txt_files = glob.glob(txt_pattern)
+    all_txt_files = sorted(folder.glob("*.txt"))
     
     # Filter out any remaining corrected files (in case deletion failed)
-    txt_files = [f for f in all_txt_files if not f.endswith("-corrected.txt")]
+    txt_files = [f for f in all_txt_files if not f.name.endswith("-corrected.txt")]
     
     if not txt_files:
         print(f"No source .txt files found in '{folder_path}' (excluding corrected files)")
@@ -324,7 +320,7 @@ def process_folder(folder_path):
     failed_files = []
     
     for txt_file in txt_files:
-        filename = os.path.basename(txt_file)
+        filename = txt_file.name
         print(f"\nProcessing: {filename}")
         
         corrections = correct_file_encoding(txt_file)
@@ -372,8 +368,7 @@ def main():
             return
     
     # Handle relative paths and expand the user home directory
-    folder_path = os.path.expanduser(folder_path)
-    folder_path = os.path.abspath(folder_path)
+    folder_path = str(Path(folder_path).expanduser().resolve())
     
     print(f"Processing all .txt files in: {folder_path}")
     success = process_folder(folder_path)

@@ -4,17 +4,20 @@
 
 # -*- coding: utf-8 -*-
 
-from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 from abib.domain import search as search_domain
+
+if TYPE_CHECKING:
+    from abib.core.shared import WordSet
 
 
 class BibleSearchService:
     """Service to coordinate Bible searches and result state."""
     
-    def __init__(self, kjv_data: Sequence[str], set_dict: dict[str, set]) -> None:
+    def __init__(self, kjv_data: Sequence[str], set_dict: WordSet) -> None:
         self.kjv_data = kjv_data
         self.set_dict = set_dict
         

@@ -11,7 +11,6 @@ after the last Strong's tag (e.g. "any" in Proverbs 30:30,
 "... for<S>6440</S> any;") were silently dropped from ``strongs.sqlite``.
 """
 
-from __future__ import annotations
 
 import importlib
 import json

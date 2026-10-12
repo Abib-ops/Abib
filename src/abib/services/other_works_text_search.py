@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # -*- coding: utf-8 -*-
-from __future__ import annotations
 
 import re
 from dataclasses import dataclass

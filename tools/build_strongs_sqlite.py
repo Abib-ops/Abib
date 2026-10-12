@@ -48,7 +48,6 @@ Usage (from the project root):
     python tools/build_strongs_sqlite.py --output some\\other\\strongs.sqlite
 """
 
-from __future__ import annotations
 
 import argparse
 import json

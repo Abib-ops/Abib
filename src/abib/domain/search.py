@@ -4,10 +4,13 @@
 
 # -*- coding: utf-8 -*-
 
-from __future__ import annotations
 
 import re
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from abib.core.shared import WordSet
 
 
 def iterate_regex(r: tuple, x1: int, x2: int, kjv: Sequence[str]) -> list[tuple[int, int, int]]:
@@ -23,7 +26,7 @@ def iterate_regex(r: tuple, x1: int, x2: int, kjv: Sequence[str]) -> list[tuple[
                 results.append((ln, match.start(), match.end()))
     return results
 
-def find_words_any(_x1: int, _x2: int, _set_dict: dict[str, set], _kjv: Sequence[str]) -> list[int]:
+def find_words_any(_x1: int, _x2: int, _set_dict: WordSet, _kjv: Sequence[str]) -> list[int]:
     """Find lines that contain any of the words in set_dict keys within the range [_x1, _x2)."""
     # This is a simplified version of find_whole_word_any
     # In practice, it usually intersects sets of line numbers
