@@ -4,17 +4,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "abib"
-version = "417.38"
+version = "417.39"
 description = "A Bible study application"
 readme = "README.md"
 requires-python = ">=3.15"
 # FIX: Use a simple string for the licence to avoid the deprecation warning
 license = "GPL-3.0-or-later"
 dependencies = [
-    "PySide6>=6.6.0",
+    "PySide6-Essentials>=6.6.0",   # was: PySide6>=6.6.0 (drops the large PySide6-Addons/QtWebEngine)
     "roman>=5.2",
     "requests>=2.34.0",
-    "pywin32; sys_platform == 'win32'",
+    # Safe installer-size cut: the full "pywin32" package was removed. Abib never
+    # imports it (no win32api/pythoncom/pywintypes usage anywhere - only plain
+    # `sys.platform == 'win32'` string checks), and it is not a dependency of
+    # PySide6-Essentials/shiboken6, so it is dead weight that PyInstaller hooks
+    # would otherwise collect. "pywin32-ctypes" is kept: the PyInstaller Windows
+    # bootloader depends on it.
     "pywin32-ctypes==0.2.3; sys_platform == 'win32'",
 ]
 

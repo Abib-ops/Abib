@@ -8,10 +8,36 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.38
+Abib v417.39
 ------------
 
 Changelog.
+Abib v417.39
+
+- Smaller installer. The user-interface toolkit was switched from the full
+  PySide6 package to PySide6-Essentials, dropping the large PySide6-Addons
+  and bundled QtWebEngine/Chromium components that Abib never used. The
+  unused "pywin32" package was also removed (Abib only performs plain
+  platform string checks and never imports it). Together these noticeably
+  reduce the download and installed size with no change to features.
+- Leaner build configuration. The packaging specification now explicitly
+  excludes the Qt modules Abib does not use (WebEngine, QML/Quick, Charts,
+  3D, SQL, Network, OpenGL, PDF, Svg and others) and strips the Qt
+  translation catalogues and unused plugin categories from the bundle, so
+  only the components the application actually needs are shipped.
+- "Open Work" button improvement. The "Open Work" button (and its Ctrl+L
+  shortcut) now opens whatever title is shown in the "Other Works" selector,
+  even on the first run and after a change of downloaded books. Previously it
+  did nothing when no last-read work was remembered or when the remembered
+  title was no longer present.
+
+This release focuses on reducing the size of the installer by shipping only
+the Qt components Abib actually uses, and makes the "Open Work" button open
+the currently displayed work reliably on first run. Built with Python 3.15.0
+and PySide6 6.12.0 (64-bit).
+
+
+
 Abib v417.38
 
 - New feature: On-demand "Other Works" library. The optional library of
