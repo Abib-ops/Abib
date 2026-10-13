@@ -45,7 +45,7 @@ def _get_version() -> str:
             continue
             
     # 2. Hardcoded fallback (should be updated per release)
-    return "417.37"
+    return "417.38"
 
 CURRENT_VERSION = _get_version()
 
@@ -58,20 +58,23 @@ else:
 current_directory: Path = package_directory / "data"
 str_cwd: str = str(current_directory)
 # settings_file: Path = current_directory / 'settings.json'
-user_settings_dir: Path  # Assigned per-platform below.
+def _resolve_user_settings_dir() -> Path:
+    """Resolve the writable per-user settings directory for the current OS."""
+    match system():
+        case 'Windows':
+            app_data = getenv("APPDATA")
+            assert app_data is not None
+            return Path(app_data) / "Abib"  # User's directory.
+        case 'Darwin':
+            return Path.home() / "Library" / "Application Support" / "Abib"
+        case 'Linux':
+            return Path.home() / ".config" / "Abib"
+        case _:
+            print("Unknown operating system.")
+            sys.exit()
 
-match system():
-    case 'Windows':
-        app_data = getenv("APPDATA")
-        assert app_data is not None
-        user_settings_dir = Path(app_data) / "Abib"  # User's directory.
-    case 'Darwin':
-        user_settings_dir = Path.home() / "Library" / "Application Support" / "Abib"
-    case 'Linux':
-        user_settings_dir = Path.home() / ".config" / "Abib"
-    case _:
-        print("Unknown operating system.")
-        sys.exit()
+
+user_settings_dir: Path = _resolve_user_settings_dir()
 
 # Construct the paths to assets regardless of the operating system.
 images_dir: Path = package_directory / "images"
@@ -82,6 +85,45 @@ if not icon_path.is_file():
 
 # Create the base directory as a Path object
 base_dir = Path(str_cwd)
+
+# ---------------------------------------------------------------------------
+# Other Works / companions path resolution
+#
+# Other Works texts and their precomputed ".refs.json.gz" companions may live
+# in two locations:
+#   * the bundled (read-only) data directory shipped with the application, and
+#   * the writable per-user settings directory (for on-demand downloads).
+# The helpers below centralise path resolution so callers no longer hardcode
+# these directories. The user directory takes precedence over the bundled one
+# so a downloaded copy can override the bundled version.
+# ---------------------------------------------------------------------------
+bundled_other_works_dir: Path = current_directory / "Other Works"
+bundled_companions_dir: Path = current_directory / "Other Works companions"
+user_other_works_dir: Path = user_settings_dir / "Other Works"
+user_companions_dir: Path = user_settings_dir / "Other Works companions"
+
+
+def other_works_dirs() -> list[Path]:
+    """Return existing Other Works directories (bundled first, then user)."""
+    return [d for d in (bundled_other_works_dir, user_other_works_dir) if d.exists()]
+
+
+def companions_dirs() -> list[Path]:
+    """Return existing companions directories (bundled first, then user)."""
+    return [d for d in (bundled_companions_dir, user_companions_dir) if d.exists()]
+
+
+def resolve_companion(stem: str) -> Path | None:
+    """Resolve a companion file for the given work stem.
+
+    The user directory wins over the bundled one so an updated copy can
+    override the bundled version. Returns None when no companion exists.
+    """
+    for d in (user_companions_dir, bundled_companions_dir):
+        p = d / f"{stem}.txt.refs.json.gz"
+        if p.is_file():
+            return p
+    return None
 
 MAX_VERSES_PER_CHAPTER = 176
 MAX_CHAPTER_COUNT = 150

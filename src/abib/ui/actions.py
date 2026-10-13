@@ -136,6 +136,12 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
     other_works_text_search_action.triggered.connect(window.open_other_works_text_search)
     study_menu.addAction(other_works_text_search_action)
 
+    study_menu.addSeparator()
+    update_other_works_action = QAction("Update Other Works…", window)
+    update_other_works_action.setStatusTip("Download new or updated Other Works from the content repository")
+    update_other_works_action.triggered.connect(window.update_other_works)
+    study_menu.addAction(update_other_works_action)
+
     # Help menu items
     help_menu = window.menuBar().addMenu("&Help")
 
@@ -168,26 +174,21 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
 
     help_menu.addSeparator()
     icon10_path = sh.images_dir / 'settings.png'
-    # Create a Settings submenu under Help
-    settings_menu = help_menu.addMenu(QIcon(str(icon10_path)), "Settings")
-    # First item: open the full Settings dialog
-    settings_action = QAction("Open Settings...", window)
+    # Settings now opens the Settings dialog directly (no intermediate submenu).
+    settings_action = QAction(QIcon(str(icon10_path)), "Settings", window)
     settings_action.setStatusTip("Open Settings dialog")
     settings_action.triggered.connect(window.open_settings_dialog)
-    settings_menu.addAction(settings_action)
-    # Build a tickable list of Other Works under the Settings submenu
-    try:
-        window.build_show_works_menu(settings_menu)
-    except (AttributeError, RuntimeError, TypeError, ValueError):
-        # If dynamic building fails, ignore to keep the app functional
-        pass
+    help_menu.addAction(settings_action)
 
     # Note: Gill auto-follow setting has been moved to the main Settings dialog.
+    # Note: the per-book "Other Works" visibility list has been removed - the user
+    # now chooses which optional works to download via "Update Other Works…".
 
     actions = [
         github_action, open_file_action, print_action, exit_action,
         copy_action, select_action,
         concordance_action, other_works_references_action, other_works_text_search_action,
+        update_other_works_action,
         copyright_action, help_action, readme_action, about_action, settings_action,
     ]
 

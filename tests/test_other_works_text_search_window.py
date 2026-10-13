@@ -18,7 +18,6 @@ def make_window(tmp_path: Path) -> OtherWorksTextSearchWindow:
     second.write_text("Second has tender mercy here.", encoding="utf-8")
     service = OtherWorksTextSearchService(
         {"First": str(first), "Second": str(second)},
-        {"First": True, "Second": True},
     )
     return OtherWorksTextSearchWindow(service)
 

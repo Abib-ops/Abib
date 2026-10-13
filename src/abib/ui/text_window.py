@@ -1889,10 +1889,13 @@ class TextDocumentWindow(QDialog):
             base_name = text_path.name  # e.g. "Works of Jonathan Edwards Vol II.txt"
             same_dir_gz = text_path.parent / f"{base_name}.refs.json.gz"
             same_dir_json = text_path.parent / f"{base_name}.refs.json"
-            central_dir = Path(sh.str_cwd) / "Other Works companions"
-            central_gz = central_dir / f"{base_name}.refs.json.gz"
-            central_json = central_dir / f"{base_name}.refs.json"
-            candidates = [same_dir_gz, same_dir_json, central_gz, central_json]
+            # Check companions alongside the text first, then the user and
+            # bundled central folders (user dir wins so a downloaded companion
+            # can override the bundled one).
+            candidates = [same_dir_gz, same_dir_json]
+            for central_dir in (sh.user_companions_dir, sh.bundled_companions_dir):
+                candidates.append(central_dir / f"{base_name}.refs.json.gz")
+                candidates.append(central_dir / f"{base_name}.refs.json")
         except (AttributeError, TypeError):
             return False
 

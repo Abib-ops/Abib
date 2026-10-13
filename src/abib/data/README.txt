@@ -8,10 +8,53 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.37
+Abib v417.38
 ------------
 
 Changelog.
+Abib v417.38
+
+- New feature: On-demand "Other Works" library. The optional library of
+  additional texts (the Puritan, Reformed and reference works) is no
+  longer bundled inside the installer. Only "The Pilgrim's Progress" now
+  ships with Abib as an always-available seed book, so the application
+  still works fully offline on first run. Every other title is downloaded
+  on demand from a separate GitHub content repository
+  (Abib-ops/Abib-OtherWorks) into your personal Abib folder
+  (on Windows, %APPDATA%\Abib\Other Works). This keeps the installer
+  smaller and lets the catalogue of works grow without needing a new
+  release of the application.
+- Choose your own books. A new "Update Other Works..." item on the Study
+  menu opens a dialog listing every available title with a tick box, so
+  you can select exactly which books you want and download only those.
+  Your choice is remembered, and a background check on startup keeps the
+  books you have chosen up to date. Downloads are efficient: a manifest
+  with per-file checksums means only new or changed books are fetched,
+  and each file is verified after download before it is put in place.
+- Download progress. The on-demand download now shows a green progress
+  bar reporting "X of Y books", counting the books themselves and
+  excluding the hidden companion index files, so the number matches what
+  you actually selected. After a download the Other Works list refreshes
+  in place without restarting the application and without popping the
+  reader window open.
+- Simplified Other Works handling. The old per-book "show/hide" list in
+  the Settings menu has been removed, since which books are present is now
+  governed entirely by what you choose to download. Every downloaded work
+  (and the bundled Pilgrim's Progress) is always listed in the reader and
+  is searchable.
+- UI tidy-ups: In the Help menu, "Settings" now opens the Settings dialog
+  directly, instead of going through an intermediate "Open Settings..."
+  item. The redundant Light/Dark theme selector was removed from the
+  Settings dialog; the theme is still toggled from the main window's
+  Light/Dark button as before.
+
+This release moves the optional "Other Works" library out of the
+installer and delivers it on demand: only Pilgrim's Progress is bundled,
+and additional books are chosen and downloaded individually from a
+separate content repository into your personal Abib folder, with a
+progress bar and automatic updates. Built with Python 3.15.0 and
+PySide6 6.12.0 (64-bit).
+
 Abib v417.37
 
 - Maintenance: Routine upkeep with no change to features or behaviour.

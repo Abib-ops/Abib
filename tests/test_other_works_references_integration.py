@@ -63,14 +63,14 @@ def test_other_work_text_search_activation_uses_reference_jump_path(qapp):
     assert jumped == [(12, 5)]
 
 
-def test_open_other_works_text_search_uses_current_show_work_settings(qapp, tmp_path):
+def test_open_other_works_text_search_includes_every_present_work(qapp, tmp_path):
     first = tmp_path / "First.txt"
     first.write_text("mercy", encoding="utf-8")
-    hidden = tmp_path / "Hidden.txt"
-    hidden.write_text("mercy", encoding="utf-8")
+    second = tmp_path / "Second.txt"
+    second.write_text("mercy", encoding="utf-8")
     window = SimpleNamespace(
-        settings={"show_work": {"First": True, "Hidden": False}},
-        other_works_map={"First": str(first), "Hidden": str(hidden)},
+        settings={},
+        other_works_map={"First": str(first), "Second": str(second)},
         other_works_text_search_service=None,
         other_works_text_search_window=None,
         _on_other_work_text_search_activated=lambda *_args: None,
@@ -81,14 +81,14 @@ def test_open_other_works_text_search_uses_current_show_work_settings(qapp, tmp_
 
     results = window.other_works_text_search_service.search("mercy")
 
-    assert [occ.work_stem for occ in results.occurrences] == ["First"]
+    assert [occ.work_stem for occ in results.occurrences] == ["First", "Second"]
 
 
 def test_open_other_works_text_search_clears_previous_search(qapp, tmp_path):
     work = tmp_path / "First.txt"
     work.write_text("mercy and mercy", encoding="utf-8")
     window = SimpleNamespace(
-        settings={"show_work": {"First": True}},
+        settings={},
         other_works_map={"First": str(work)},
         other_works_text_search_service=None,
         other_works_text_search_window=None,
@@ -111,7 +111,7 @@ def test_open_other_works_references_clears_previous_search(qapp, tmp_path):
     work = tmp_path / "First.txt"
     work.write_text("First has John 3:16 here.", encoding="utf-8")
     window = SimpleNamespace(
-        settings={"show_work": {"First": True}},
+        settings={},
         other_works_map={"First": str(work)},
         other_works_reference_index=None,
         other_works_references_window=None,

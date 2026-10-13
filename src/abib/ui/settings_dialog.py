@@ -11,7 +11,6 @@ from PySide6.QtCore import QRunnable, QThreadPool
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QCheckBox,
-    QComboBox,
     QDialog,
     QDialogButtonBox,
     QLabel,
@@ -63,11 +62,6 @@ class SettingsDialog(QDialog):
         self.unified_font_size_checkbox = QCheckBox("Use the same font size for all windows")
         self.unified_font_size_checkbox.setToolTip("If enabled, changing the font size in one window will change it in all windows.")
         self.layout.addWidget(self.unified_font_size_checkbox)
-
-        # Create theme combobox
-        self.theme_combobox = QComboBox()
-        self.theme_combobox.addItems(["Light", "Dark"])
-        self.layout.addWidget(self.theme_combobox)
 
         # Check for updates now (manual trigger)
         self.update_now_btn = QPushButton("Check for updates now")
@@ -125,7 +119,6 @@ class SettingsDialog(QDialog):
             self.unified_font_size_checkbox.setChecked(bool(self.settings.get("unified_font_size", False)))
         except (AttributeError, RuntimeError):
             pass
-        self.theme_combobox.setCurrentText(self.settings.get("theme", "Light"))
         # Gill: Show scripture popups
         try:
             self.gill_show_popups_checkbox.setChecked(bool(self.settings_service.get_gill_show_popups()))
@@ -217,14 +210,12 @@ class SettingsDialog(QDialog):
 
         if self.was_reset_to_defaults:
             defaults = self.settings_service.get_default_settings()
-            new_theme = defaults.get("theme", "Light")
             new_show_splash = bool(defaults.get("show_splash", False))
             new_unified_font_size = bool(defaults.get("unified_font_size", False))
             new_gill_show_popups = bool(defaults.get("gill_show_popups", True))
             new_gill_hover = int(defaults.get("gill_hover_delay_ms", 120))
             new_gill_hide = int(defaults.get("gill_hide_delay_ms", 160))
         else:
-            new_theme = self.theme_combobox.currentText()
             new_show_splash = self.splash_checkbox.isChecked()
             try:
                 new_unified_font_size = bool(self.unified_font_size_checkbox.isChecked())
@@ -244,7 +235,6 @@ class SettingsDialog(QDialog):
                 new_gill_hide = self.settings_service.get_gill_hide_delay_ms()
 
         # Update in-memory settings
-        self.main_window.settings["theme"] = new_theme
         self.main_window.settings["show_splash"] = new_show_splash
         self.main_window.settings["unified_font_size"] = new_unified_font_size
 

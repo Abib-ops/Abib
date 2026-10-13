@@ -33,6 +33,9 @@ class DummyMainWindow(QMainWindow):
     def open_other_works_text_search(self) -> None:
         pass
 
+    def update_other_works(self) -> None:
+        pass
+
     def copyright(self) -> None:
         pass
 

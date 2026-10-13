@@ -18,7 +18,6 @@ def make_window(tmp_path: Path) -> OtherWorksReferencesWindow:
     second.write_text("Second has Jn. 3:16 here and Jude 5 there.", encoding="utf-8")
     service = OtherWorksReferenceIndex(
         {"First": str(first), "Second": str(second)},
-        {"First": True, "Second": True},
         tmp_path / "companions",
     )
     return OtherWorksReferencesWindow(service)

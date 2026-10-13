@@ -41,7 +41,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.12.0 and python3.15.0 (64-bit).
 
-12/10/2026
+13/10/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --all-extras --upgrade
@@ -333,8 +333,6 @@ class MainWindow(QMainWindow):
         # Placeholder for the 4th-column vertical button layout added in init_ui
         self.side_buttons_col: QVBoxLayout | None = None
         self.other_works_map: dict[str, str] = {}
-        # Live map of Other Works checkboxes in the settings menu (populated in init_ui)
-        self._works_menu_checkboxes: dict[str, Any] = {}
         self.statusBar: Any = None
         self.okButton: Any = None
         self.dlg: Any = None  # No external window yet.
@@ -349,6 +347,12 @@ class MainWindow(QMainWindow):
         self.other_works_references_window: Any = None
         self.other_works_text_search_service: Any = None
         self.other_works_text_search_window: Any = None
+        # Progress dialog shown while books are downloading (menu-triggered).
+        self._download_progress_dialog: Any = None
+        # References to the background content-sync thread/worker, kept alive
+        # for the duration of a sync so they are not garbage-collected.
+        self._content_sync_thread: Any = None
+        self._content_sync_worker: Any = None
         # Guard flag to avoid recursive move/resize while repositioning the
         # separate Search Results window relative to the main window.
         self.positioning_search_results: bool = False
@@ -646,11 +650,7 @@ class MainWindow(QMainWindow):
         from abib.services.other_works_reference_index import OtherWorksReferenceIndex
         from abib.ui.other_works_references_window import OtherWorksReferencesWindow
 
-        show_work = dict(self.settings.get("show_work") or {}) if isinstance(self.settings, dict) else {}
-        if self.other_works_reference_index is None:
-            self.other_works_reference_index = OtherWorksReferenceIndex(self.other_works_map, show_work)
-        else:
-            self.other_works_reference_index = OtherWorksReferenceIndex(self.other_works_map, show_work)
+        self.other_works_reference_index = OtherWorksReferenceIndex(self.other_works_map)
 
         if self.other_works_references_window is None:
             parent = self if isinstance(self, QWidget) else None
@@ -682,8 +682,7 @@ class MainWindow(QMainWindow):
         from abib.services.other_works_text_search import OtherWorksTextSearchService
         from abib.ui.other_works_text_search_window import OtherWorksTextSearchWindow
 
-        show_work = dict(self.settings.get("show_work") or {}) if isinstance(self.settings, dict) else {}
-        self.other_works_text_search_service = OtherWorksTextSearchService(self.other_works_map, show_work)
+        self.other_works_text_search_service = OtherWorksTextSearchService(self.other_works_map)
 
         if self.other_works_text_search_window is None:
             parent = self if isinstance(self, QWidget) else None
@@ -929,11 +928,16 @@ class MainWindow(QMainWindow):
                 control: Any = wdg
                 control.setSizePolicy(expanding_fixed)
 
-        # Populate
-        other_works_dir = Path(sh.str_cwd) / "Other Works"
-        if other_works_dir.exists():
-            files = sorted([p for p in other_works_dir.glob("*.txt") if p.is_file()])
-            self.other_works_map = {p.stem: str(p) for p in files}
+        # Populate by merging the bundled and user Other Works directories.
+        # Later directories (the writable per-user dir) win over earlier ones,
+        # so a downloaded copy can override the bundled version (keyed on stem).
+        mapping: dict[str, str] = {}
+        for other_works_dir in sh.other_works_dirs():
+            for p in sorted(other_works_dir.glob("*.txt")):
+                if p.is_file():
+                    mapping[p.stem] = str(p)
+        self.other_works_map = mapping
+        if self.other_works_map:
             self._refresh_other_works_combo()
 
             last_work = self.settings.get("last_other_work") if isinstance(self.settings, dict) else None
@@ -967,156 +971,340 @@ class MainWindow(QMainWindow):
         self.apply_font_size()  # Set an initial font size from settings
 
     def _refresh_other_works_combo(self) -> None:
-        """Repopulate the Other Works combo according to settings['show_work'] filter."""
+        """Repopulate the Other Works combo with every available work.
+
+        The user chooses which optional works to download (via the "Update
+        Other Works…" dialog), so every present book - the bundled seed plus
+        any downloaded titles - is listed; there is no separate per-book
+        visibility toggle any more.
+        """
         if not self.other_works_combo:
             return
         self.other_works_combo.blockSignals(True)
         try:
             self.other_works_combo.clear()
-            allowed: list[str] = []
-            try:
-                show_map = dict(self.settings.get("show_work") or {})
-            except (TypeError, ValueError, AttributeError):
-                # If settings are not a mapping, or the value cannot be cast to dict,
-                # fall back to an empty mapping without swallowing unrelated errors.
-                show_map = {}
-            for stem in sorted(self.other_works_map.keys()):
-                if str(show_map.get(stem, "false")).lower() == "true":
-                    allowed.append(stem)
+            allowed = sorted(self.other_works_map.keys())
             if allowed:
                 self.other_works_combo.addItems(allowed)
         finally:
             self.other_works_combo.blockSignals(False)
 
-    def build_show_works_menu(self, settings_menu) -> None:
-        """Populate the given Settings submenu with a tickable list of Other Works.
+    def _reload_other_works(self) -> None:
+        """Re-scan the bundled + user Other Works directories and refresh the UI.
 
-        Toggling an item updates settings['show_work'] and refreshes the combo box.
+        Called after a content sync so newly downloaded (or removed) titles appear
+        without an application restart. Rebuilds the combo and recreates the
+        reference-index / text-search services (keyed on the updated map) so any
+        open browser windows pick up the changes.
         """
-        # Clear any prior dynamic actions after the first static action (Open Settings...)
-        # We'll rebuild from scratch to reflect file system and settings changes.
-        # Remove all actions after the first if the first is our 'Open Settings...' action
-        actions = settings_menu.actions()
-        # Keep the first (Open Settings...) if present, clear the rest
-        for act in actions[1:]:
-            settings_menu.removeAction(act)
+        mapping: dict[str, str] = {}
+        for other_works_dir in sh.other_works_dirs():
+            for p in sorted(other_works_dir.glob("*.txt")):
+                if p.is_file():
+                    mapping[p.stem] = str(p)
+        self.other_works_map = mapping
 
-        # Separator between Open Settings and the list
-        settings_menu.addSeparator()
-
-        # Convenience: Select all / Deselect all controls that keep the menu open
-        # Use QWidgetAction with a QPushButton so clicking doesn't close the menu,
-        # allowing multiple changes in one go.
+        self._refresh_other_works_combo()
         try:
-            from PySide6.QtWidgets import QPushButton, QWidgetAction
-
-            # Ensure we have a live map of checkboxes to update during bulk ops
-            if not hasattr(self, "_works_menu_checkboxes") or not isinstance(self._works_menu_checkboxes, dict):
-                self._works_menu_checkboxes = {}
-
-            def _set_all_works(visible: bool) -> None:
-                current_map = dict(self.settings.get("show_work") or {})
-                val = "true" if visible else "false"
-                # Use a distinct local name to avoid shadowing outer-scope variables
-                for work_stem in self.other_works_map:
-                    current_map[work_stem] = val
-                self.settings["show_work"] = current_map
-                # Update the checkbox widgets in-place without closing the menu
+            last_work = self.settings.get("last_other_work") if isinstance(self.settings, dict) else None
+            if self.other_works_combo is not None:
+                # Block signals while restoring the selection: unlike the initial
+                # setup (where the combo is populated before currentTextChanged is
+                # connected), here the signal is already wired to _open_other_work,
+                # so an unguarded setCurrentText would pop open the Other Works
+                # window after a download. The user just wants the list refreshed.
+                self.other_works_combo.blockSignals(True)
                 try:
-                    for work_stem, checkbox in getattr(self, "_works_menu_checkboxes", {}).items():
-                        # Block signals so we don't double-save while syncing UI
-                        bs = checkbox.blockSignals(True)
-                        try:
-                            checkbox.setChecked(visible)
-                        finally:
-                            checkbox.blockSignals(bs)
-                except (AttributeError, RuntimeError, TypeError, ValueError):
-                    logger.debug("Failed to sync Other Works checkbox states", exc_info=True)
-                # Persist and refresh combo
+                    if last_work and last_work in self.other_works_map:
+                        self.other_works_combo.setCurrentText(str(last_work or ""))
+                    elif "Pilgrims-Progress" in self.other_works_map:
+                        self.other_works_combo.setCurrentText("Pilgrims-Progress")
+                finally:
+                    self.other_works_combo.blockSignals(False)
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            logger.debug("Could not restore Other Works combo selection", exc_info=True)
+
+        # Recreate the reference index with the updated map so an open window
+        # reflects the new titles (rebuild() alone keeps the stale map).
+        if getattr(self, "other_works_reference_index", None) is not None:
+            try:
+                from abib.services.other_works_reference_index import (
+                    OtherWorksReferenceIndex,
+                )
+                self.other_works_reference_index = OtherWorksReferenceIndex(self.other_works_map)
+                if self.other_works_references_window is not None:
+                    self.other_works_references_window._service = self.other_works_reference_index
+                    self.other_works_references_window.clear_search()
+            except (AttributeError, RuntimeError, TypeError, ValueError):
+                logger.debug("Could not refresh Other Works reference index", exc_info=True)
+
+        # Recreate the text-search service likewise.
+        if getattr(self, "other_works_text_search_service", None) is not None:
+            try:
+                from abib.services.other_works_text_search import (
+                    OtherWorksTextSearchService,
+                )
+                self.other_works_text_search_service = OtherWorksTextSearchService(self.other_works_map)
+                if self.other_works_text_search_window is not None:
+                    self.other_works_text_search_window._service = self.other_works_text_search_service
+                    self.other_works_text_search_window.clear_search()
+            except (AttributeError, RuntimeError, TypeError, ValueError):
+                logger.debug("Could not refresh Other Works text search service", exc_info=True)
+
+    @staticmethod
+    def _format_sync_summary(summary: dict) -> str:
+        """Build a short status-bar message describing a content-sync result."""
+        status = str(summary.get("status", "")) if isinstance(summary, dict) else ""
+        if status == "offline":
+            return "Other Works update: could not reach the content server."
+        if status == "unchanged":
+            return "Other Works are already up to date."
+        if status == "error":
+            return str(summary.get("message") or "Other Works update failed.")
+        # Prefer book-only counts (companion index files are never counted),
+        # falling back to the raw file counts for older summaries.
+        added = int(summary.get("added_books", summary.get("added", 0)) or 0)
+        updated = int(summary.get("updated_books", summary.get("updated", 0)) or 0)
+        removed = int(summary.get("removed_books", summary.get("removed", 0)) or 0)
+        if not (added or updated or removed):
+            return "Other Works are already up to date."
+        parts: list[str] = []
+        if added:
+            parts.append(f"{added} book{'' if added == 1 else 's'} added")
+        if updated:
+            parts.append(f"{updated} book{'' if updated == 1 else 's'} updated")
+        if removed:
+            parts.append(f"{removed} book{'' if removed == 1 else 's'} removed")
+        prefix = "Other Works updated" if status == "ok" else "Other Works partially updated"
+        return f"{prefix}: {', '.join(parts)}."
+
+    def _on_content_sync_finished(self, summary: dict) -> None:
+        """Handle completion of a background content sync (menu or startup)."""
+        try:
+            changed = isinstance(summary, dict) and (
+                summary.get("added") or summary.get("updated") or summary.get("removed")
+            )
+            if changed:
+                self._reload_other_works()
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            logger.debug("Failed to reload Other Works after sync", exc_info=True)
+        # Show a brief status-bar message (menu-triggered syncs are the main
+        # beneficiary; the message is harmless on startup too).
+        try:
+            if getattr(self, "statusBar", None) is not None:
+                self.statusBar.showMessage(self._format_sync_summary(summary), 6000)
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            logger.debug("Could not display content-sync status message", exc_info=True)
+
+    def update_other_works(self) -> None:
+        """Menu action: let the user pick which Other Works to download, then sync.
+
+        Fetches the remote manifest, shows a checklist of available books
+        (pre-ticking the user's current subscription / already-installed
+        titles), persists the chosen set as ``subscribed_works`` and starts a
+        background sync restricted to that selection.
+        """
+        try:
+            if getattr(self, "statusBar", None) is not None:
+                self.statusBar.showMessage("Checking for Other Works updates…", 4000)
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            logger.debug("Could not display content-sync start message", exc_info=True)
+
+        available: Any = None
+        try:
+            from abib.core import content_sync
+            remote = content_sync.fetch_remote_manifest()
+            if remote is not None:
+                available = content_sync.list_available(remote)
+        except (ImportError, RuntimeError, AttributeError, TypeError, ValueError):
+            logger.debug("Could not fetch Other Works manifest", exc_info=True)
+            remote = None
+
+        if remote is None or available is None:
+            try:
+                if getattr(self, "statusBar", None) is not None:
+                    self.statusBar.showMessage(
+                        "Other Works update: could not reach the content server.", 6000
+                    )
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                logger.debug("Could not display content-sync offline message", exc_info=True)
+            return
+
+        # Pre-select: the user's saved subscription, falling back to whatever is
+        # already downloaded so an existing library stays ticked.
+        subscribed = set(self.settings.get("subscribed_works") or []) if isinstance(self.settings, dict) else set()
+        if not subscribed:
+            subscribed = {str(b.get("stem")) for b in available if b.get("downloaded")}
+
+        try:
+            from PySide6.QtWidgets import QDialog
+
+            from abib.ui.other_works_download_dialog import OtherWorksDownloadDialog
+            dialog = OtherWorksDownloadDialog(self, available, subscribed)
+            if dialog.exec() != QDialog.DialogCode.Accepted:
+                return
+            selected = dialog.selected_stems()
+        except (ImportError, RuntimeError, AttributeError, TypeError, ValueError):
+            logger.debug("Could not show Other Works download dialog", exc_info=True)
+            return
+
+        # Persist the user's choice so the throttled startup sync keeps exactly
+        # these titles current.
+        try:
+            if isinstance(self.settings, dict):
+                self.settings["subscribed_works"] = sorted(selected)
                 if getattr(self, "settings_service", None):
                     self.settings_service.save(self.settings)
-                self._refresh_other_works_combo()
-                if getattr(self, "other_works_reference_index", None) is not None:
-                    self.other_works_reference_index.rebuild()
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            logger.debug("Could not persist subscribed_works", exc_info=True)
 
-            # Build non-closing buttons inside the menu
-            select_all_btn = QPushButton("Select all Other Works", settings_menu)
-            select_all_btn.clicked.connect(lambda _=False: _set_all_works(True))
-            select_all_wa = QWidgetAction(settings_menu)
-            select_all_wa.setDefaultWidget(select_all_btn)
-            settings_menu.addAction(select_all_wa)
+        self._start_content_sync(force=True, selected_stems=selected, show_progress=True)
 
-            deselect_all_btn = QPushButton("Deselect all Other Works", settings_menu)
-            deselect_all_btn.clicked.connect(lambda _=False: _set_all_works(False))
-            deselect_all_wa = QWidgetAction(settings_menu)
-            deselect_all_wa.setDefaultWidget(deselect_all_btn)
-            settings_menu.addAction(deselect_all_wa)
-
-            # Separator between bulk actions and individual list
-            settings_menu.addSeparator()
-        except (ImportError, AttributeError, RuntimeError, TypeError, ValueError):
-            # If widget actions cannot be created, skip the bulk controls
-            logger.debug("Could not build bulk Other Works menu controls", exc_info=True)
-
-        show_map = dict(self.settings.get("show_work") or {})
-        # Ensure keys exist for current files
-        for stem in sorted(self.other_works_map.keys()):
-            if stem not in show_map:
-                show_map[stem] = "false"
-
-        # Build checkable items that do NOT close the menu on toggle
+    def maybe_auto_sync_content(self) -> None:
+        """Start a throttled (at most once/day) background content sync at startup."""
+        from datetime import datetime, timedelta
+        now = datetime.now()
         try:
-            from PySide6.QtWidgets import QCheckBox, QWidgetAction
+            last = str(self.settings.get("last_content_sync", "")) if isinstance(self.settings, dict) else ""
+        except (AttributeError, TypeError, ValueError):
+            last = ""
+        # TESTING: the once-per-day download throttle is temporarily disabled so
+        # the background content sync runs on every startup. To restore the limit,
+        # set ``throttle_enabled`` back to True (or remove this override).
+        throttle_enabled = False
+        due = True
+        if throttle_enabled and last:
+            try:
+                due = (now - datetime.fromisoformat(last)) >= timedelta(days=1)
+            except ValueError:
+                due = True
+        if not due:
+            return
+        # Only the books the user subscribed to are kept current automatically;
+        # nothing is downloaded until the user opts in via "Update Other Works…".
+        subscribed = set(self.settings.get("subscribed_works") or []) if isinstance(self.settings, dict) else set()
+        if not subscribed:
+            return
+        # Record the attempt now so the throttle holds even if the sync fails.
+        try:
+            if isinstance(self.settings, dict):
+                self.settings["last_content_sync"] = now.isoformat()
+                if getattr(self, "settings_service", None):
+                    self.settings_service.save(self.settings)
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            logger.debug("Could not persist last_content_sync timestamp", exc_info=True)
+        self._start_content_sync(force=False, selected_stems=subscribed)
 
-            # Reset and rebuild the checkbox map
-            self._works_menu_checkboxes = {}
+    def _start_content_sync(self, force: bool, selected_stems: Any = None,
+                            show_progress: bool = False) -> None:
+        """Kick off a background content sync, keeping worker/thread references alive.
 
-            for stem in sorted(self.other_works_map.keys()):
-                checked = str(show_map.get(stem, "false")).lower() == "true"
-                cb = QCheckBox(stem, settings_menu)
-                cb.setChecked(checked)
+        When ``show_progress`` is set (menu-triggered downloads), a green
+        progress bar is shown reporting the number of *books* downloaded
+        (companion index files are never counted).
+        """
+        try:
+            from abib.core import content_sync
+            # Create the worker/thread but DON'T start yet, so every GUI slot is
+            # connected before the worker can emit any signal. Starting first
+            # caused a race where the first progress (or even finished) could be
+            # emitted before the UI connected, leaving the bar stuck open and the
+            # Other Works list un-refreshed ("bar appears but nothing happens").
+            self._content_sync_thread, self._content_sync_worker = content_sync.start_background_sync(
+                self, force=force, selected_stems=selected_stems, autostart=False
+            )
+            if show_progress:
+                self._show_download_progress(self._content_sync_worker)
+            self._content_sync_worker.finished.connect(self._on_content_sync_finished)
+            # All slots connected — now it is safe to start the worker thread.
+            self._content_sync_thread.start()
+        except (ImportError, RuntimeError, AttributeError, TypeError, ValueError):
+            logger.debug("Could not start background content sync", exc_info=True)
 
-                def _make_toggle_cb(name: str):
-                    def _toggle(_checked: bool) -> None:
-                        show_map_local = dict(self.settings.get("show_work") or {})
-                        show_map_local[name] = "true" if _checked else "false"
-                        self.settings["show_work"] = show_map_local
-                        if getattr(self, "settings_service", None):
-                            self.settings_service.save(self.settings)
-                        self._refresh_other_works_combo()
-                        if getattr(self, "other_works_reference_index", None) is not None:
-                            self.other_works_reference_index.rebuild()
-                    return _toggle
+    def _show_download_progress(self, worker: Any) -> None:
+        """Show a green progress bar tracking the book downloads of ``worker``.
 
-                cb.toggled.connect(_make_toggle_cb(stem))
-                wa = QWidgetAction(settings_menu)
-                wa.setDefaultWidget(cb)
-                settings_menu.addAction(wa)
-                self._works_menu_checkboxes[stem] = cb
-        except (ImportError, AttributeError, RuntimeError, TypeError, ValueError):
-            # Fallback: if QWidgetAction/QCheckBox not available, use plain QActions
-            # (The menu will close on toggle)
-            from PySide6.QtGui import QAction
-            for stem in sorted(self.other_works_map.keys()):
-                checked = str(show_map.get(stem, "false")).lower() == "true"
-                act = QAction(stem, self)
-                act.setCheckable(True)
-                act.setChecked(checked)
+        The bar's range/value count *books only* (the ``(done, total)`` values
+        emitted by the worker already exclude companion index files), so the
+        number shown to the user never includes companions.
+        """
+        try:
+            from PySide6.QtCore import Qt
+            from PySide6.QtWidgets import QProgressBar, QProgressDialog
 
-                def _make_toggler(name: str):
-                    def _toggle(_checked: bool):
-                        show_map_local = dict(self.settings.get("show_work") or {})
-                        show_map_local[name] = "true" if _checked else "false"
-                        self.settings["show_work"] = show_map_local
-                        if getattr(self, "settings_service", None):
-                            self.settings_service.save(self.settings)
-                        self._refresh_other_works_combo()
-                        if getattr(self, "other_works_reference_index", None) is not None:
-                            self.other_works_reference_index.rebuild()
-                    return _toggle
+            # Start as a busy/indeterminate bar (0..0) so the dialog is visible
+            # immediately, before the first progress tick arrives.
+            dialog = QProgressDialog("Preparing to download Other Works…", "", 0, 0, self)
+            dialog.setWindowTitle("Downloading Other Works")
+            dialog.setWindowModality(Qt.WindowModality.WindowModal)
+            dialog.setMinimumDuration(0)
+            dialog.setAutoClose(False)
+            dialog.setAutoReset(False)
+            # No Cancel button: the sync cannot be safely interrupted mid-file.
+            dialog.setCancelButton(None)
 
-                act.toggled.connect(_make_toggler(stem))
-                settings_menu.addAction(act)
+            # A green progress bar (the "chunk" is the filled portion).
+            bar = QProgressBar(dialog)
+            bar.setTextVisible(True)
+            bar.setStyleSheet(
+                "QProgressBar {"
+                " border: 1px solid #3a3a3a;"
+                " border-radius: 4px;"
+                " text-align: center;"
+                " }"
+                "QProgressBar::chunk {"
+                " background-color: #2ecc40;"
+                " }"
+            )
+            dialog.setBar(bar)
+
+            self._download_progress_dialog = dialog
+            # Force the dialog to render now rather than relying on the
+            # auto-show timer (downloads may finish before it would appear).
+            dialog.show()
+            dialog.raise_()
+
+            # Connect the worker signals to *bound methods* of this window
+            # (which lives on the GUI thread). A cross-thread signal to a
+            # QObject slot is auto-delivered as a queued call on the receiver's
+            # (GUI) thread, so the bar actually updates/closes. Connecting to
+            # plain local functions — even with an explicit QueuedConnection —
+            # is unreliable because such slots have no thread affinity, which
+            # left the bar frozen and the sync looking like it never ran.
+            worker.progress.connect(self._on_download_progress)
+            worker.finished.connect(self._on_download_finished)
+        except (ImportError, RuntimeError, AttributeError, TypeError, ValueError):
+            logger.debug("Could not show download progress dialog", exc_info=True)
+
+    def _on_download_progress(self, done: int, total: int) -> None:
+        """GUI-thread slot: update the green download progress bar."""
+        dialog = self._download_progress_dialog
+        if dialog is None:
+            return
+        try:
+            if total <= 0:
+                # Nothing to download — don't leave an empty bar lingering.
+                dialog.close()
+                self._download_progress_dialog = None
+                return
+            dialog.setMaximum(int(total))
+            dialog.setValue(int(done))
+            dialog.setLabelText(
+                f"Downloading Other Works… {int(done)} of {int(total)} book"
+                f"{'' if total == 1 else 's'}"
+            )
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            logger.debug("Could not update download progress", exc_info=True)
+
+    def _on_download_finished(self, _summary: dict) -> None:
+        """GUI-thread slot: close the download progress bar when done."""
+        dialog = self._download_progress_dialog
+        if dialog is not None:
+            try:
+                dialog.close()
+            except (RuntimeError, AttributeError, TypeError, ValueError):
+                logger.debug("Could not close download progress dialog", exc_info=True)
+        self._download_progress_dialog = None
 
     def eventFilter(self, source: QObject, event: QEvent) -> bool:
         """Custom event filter to handle key events on QLineEdit."""
@@ -1629,21 +1817,26 @@ class MainWindow(QMainWindow):
         try:
             if not hasattr(self, "other_works_map"):
                 return
-            last_work = self.settings.get("last_other_work") if isinstance(self.settings, dict) else None
-            if not last_work:
-                return
-            if last_work not in self.other_works_map:
+            assert self.other_works_combo is not None
+
+            # Prefer the last read work, but fall back to whatever is currently
+            # displayed in the combo. This makes the "Open Work" button work on
+            # the first run (and after a change of books) when "last_other_work"
+            # is unset or points at a title that is no longer present.
+            target = self.settings.get("last_other_work") if isinstance(self.settings, dict) else None
+            if not target or target not in self.other_works_map:
+                target = self.other_works_combo.currentText()
+            if not target or target not in self.other_works_map:
                 return
 
             # Find the index in the combo for robustness
-            assert self.other_works_combo is not None
-            idx = self.other_works_combo.findText(str(last_work or ""))
+            idx = self.other_works_combo.findText(str(target or ""))
             if idx < 0:
                 return
 
             # If it's already selected, Qt won't emit signals; open explicitly
             if self.other_works_combo.currentIndex() == idx:
-                self._open_other_work(str(last_work or ""))
+                self._open_other_work(str(target or ""))
                 return
 
             # Otherwise, switch selection without emitting signals twice, then open explicitly
@@ -1656,7 +1849,7 @@ class MainWindow(QMainWindow):
                 except (RuntimeError, AttributeError, TypeError):
                     logger.debug("Could not re-enable Other Works combo signals", exc_info=True)
             # Ensure the reader opens even if a platform doesn't emit currentTextChanged
-            self._open_other_work(str(last_work or ""))
+            self._open_other_work(str(target or ""))
         except (RuntimeError, AttributeError, KeyError, TypeError, ValueError):
             logger.debug("Could not select/open the last Other Work", exc_info=True)
 

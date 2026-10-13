@@ -69,16 +69,20 @@ def reference_label_from_key(key: ReferenceKey) -> str:
 
 
 class OtherWorksReferenceIndex:
-    """Build and query a scripture-reference index for enabled Other Works."""
+    """Build and query a scripture-reference index for downloaded Other Works."""
 
     def __init__(
             self,
             other_works_map: dict[str, str],
-            show_work_settings: dict[str, bool] | None = None,
             companions_dir: str | Path | None = None) -> None:
         self._other_works_map = dict(other_works_map)
-        self._show_work_settings = show_work_settings or {}
-        self._companions_dir = Path(companions_dir) if companions_dir is not None else Path(sh.str_cwd) / "Other Works companions"
+        # When an explicit companions dir is given (e.g. tests) use only it;
+        # otherwise resolve companions from both the user and bundled dirs so
+        # downloaded companions are found alongside the bundled ones.
+        if companions_dir is not None:
+            self._companions_dirs: tuple[Path, ...] = (Path(companions_dir),)
+        else:
+            self._companions_dirs = (sh.user_companions_dir, sh.bundled_companions_dir)
         self._index: dict[ReferenceKey, list[OtherWorkReferenceOccurrence]] | None = None
 
     def rebuild(self) -> None:
@@ -124,12 +128,10 @@ class OtherWorksReferenceIndex:
         self._index = dict(by_key)
 
     def _enabled_works(self) -> tuple[tuple[str, str], ...]:
-        works: list[tuple[str, str]] = []
-        for work_stem, work_path in self._other_works_map.items():
-            visible = self._show_work_settings.get(work_stem, True)
-            if self._show_work_settings and str(visible).lower() == "false":
-                continue
-            works.append((work_stem, work_path))
+        # Every present (bundled or downloaded) work is indexed; the user chooses
+        # which optional works to download, so there is no separate per-book
+        # visibility toggle any more.
+        works = list(self._other_works_map.items())
         return tuple(sorted(works, key=lambda item: item[0].casefold()))
 
     def _load_companion_refs(self, text_path: Path, content: str) -> list[dict[str, Any]] | None:
@@ -152,12 +154,14 @@ class OtherWorksReferenceIndex:
 
     def _companion_candidates(self, text_path: Path) -> tuple[Path, ...]:
         base_name = text_path.name
-        return (
+        candidates: list[Path] = [
             text_path.parent / f"{base_name}.refs.json.gz",
             text_path.parent / f"{base_name}.refs.json",
-            self._companions_dir / f"{base_name}.refs.json.gz",
-            self._companions_dir / f"{base_name}.refs.json",
-        )
+        ]
+        for companions_dir in self._companions_dirs:
+            candidates.append(companions_dir / f"{base_name}.refs.json.gz")
+            candidates.append(companions_dir / f"{base_name}.refs.json")
+        return tuple(candidates)
 
     @staticmethod
     def _occurrence_from_ref(

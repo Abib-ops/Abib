@@ -4,7 +4,7 @@ requires-python = ">=3.15"
 
 [[package]]
 name = "abib"
-version = "417.37"
+version = "417.38"
 source = { editable = "." }
 dependencies = [
     { name = "pyside6" },

@@ -29,11 +29,10 @@ class OtherWorkTextSearchResults:
 
 
 class OtherWorksTextSearchService:
-    """Search enabled Other Works text files for literal text matches."""
+    """Search downloaded Other Works text files for literal text matches."""
 
-    def __init__(self, other_works_map: dict[str, str], show_work_settings: dict[str, bool] | None = None) -> None:
+    def __init__(self, other_works_map: dict[str, str]) -> None:
         self._other_works_map = dict(other_works_map)
-        self._show_work_settings = show_work_settings or {}
         self._text_cache: dict[str, str] = {}
 
     def rebuild(self) -> None:
@@ -64,12 +63,10 @@ class OtherWorksTextSearchService:
         return OtherWorkTextSearchResults(normalized_query, tuple(occurrences))
 
     def _enabled_works(self) -> tuple[tuple[str, Path], ...]:
-        works: list[tuple[str, Path]] = []
-        for work_stem, work_path in self._other_works_map.items():
-            visible = self._show_work_settings.get(work_stem, True)
-            if self._show_work_settings and str(visible).lower() == "false":
-                continue
-            works.append((work_stem, Path(work_path)))
+        # Every present (bundled or downloaded) work is searchable; the user
+        # chooses which optional works to download, so there is no separate
+        # per-book visibility toggle any more.
+        works = [(work_stem, Path(work_path)) for work_stem, work_path in self._other_works_map.items()]
         return tuple(sorted(works, key=lambda item: item[0].casefold()))
 
     def _read_text(self, work_path: Path) -> str | None:

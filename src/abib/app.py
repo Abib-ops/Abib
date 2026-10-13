@@ -7,7 +7,7 @@
 
 from typing import Any, cast
 
-from PySide6.QtCore import QObject, QRunnable, Qt, QThreadPool, Signal
+from PySide6.QtCore import QObject, QRunnable, Qt, QThreadPool, QTimer, Signal
 from PySide6.QtGui import QColor, QIcon, QPixmap
 from PySide6.QtWidgets import QApplication, QSplashScreen
 
@@ -198,6 +198,13 @@ def run() -> None:
     app.setWindowIcon(app_icon)
 
     w.show()
+
+    # Throttled, background Other Works content sync (at most once per day), deferred
+    # until after the window is shown so startup is never blocked.
+    try:
+        QTimer.singleShot(0, w.maybe_auto_sync_content)
+    except (RuntimeError, AttributeError, TypeError):
+        pass
 
     # Disable search in Other Works until indexes are ready, then load in the background
     try:

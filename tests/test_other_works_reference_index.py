@@ -47,13 +47,14 @@ def test_reference_key_normalizes_aliases_and_one_chapter_labels():
     assert reference_label_from_key(jude_key) == "Jude 5"
 
 
-def test_lookup_groups_enabled_work_occurrences_from_fallback_scan(tmp_path):
+def test_lookup_groups_all_work_occurrences_from_fallback_scan(tmp_path):
+    # Every present work is indexed now (there is no per-book visibility toggle),
+    # so a reference occurring in all three books is reported for all three.
     first = write_work(tmp_path, "First.txt", "Alpha John 3:16 text.")
     second = write_work(tmp_path, "Second.txt", "Beta Jn. 3:16 and Jude 5 text.")
-    hidden = write_work(tmp_path, "Hidden.txt", "Hidden John 3:16 text.")
+    third = write_work(tmp_path, "Third.txt", "Gamma John 3:16 text.")
     service = OtherWorksReferenceIndex(
-        {"First": str(first), "Second": str(second), "Hidden": str(hidden)},
-        {"First": True, "Second": True, "Hidden": False},
+        {"First": str(first), "Second": str(second), "Third": str(third)},
         tmp_path / "companions",
     )
 
@@ -61,7 +62,7 @@ def test_lookup_groups_enabled_work_occurrences_from_fallback_scan(tmp_path):
 
     assert group is not None
     assert group.reference_label == "John 3:16"
-    assert [occ.work_stem for occ in group.occurrences] == ["First", "Second"]
+    assert [occ.work_stem for occ in group.occurrences] == ["First", "Second", "Third"]
     assert all("John 3:16" in occ.snippet or "Jn. 3:16" in occ.snippet for occ in group.occurrences)
 
 
@@ -73,7 +74,7 @@ def test_valid_companion_records_are_used(tmp_path):
         "No live reference here.",
         [{"abs_start": 3, "length": 9, "book": "John", "chapter": 3, "verse": "16", "text": "John 3:16"}],
     )
-    service = OtherWorksReferenceIndex({"Companion": str(work)}, {"Companion": True}, tmp_path / "unused")
+    service = OtherWorksReferenceIndex({"Companion": str(work)}, tmp_path / "unused")
 
     group = service.lookup("John 3:16")
 
@@ -91,7 +92,7 @@ def test_stale_companion_falls_back_to_runtime_scan(tmp_path):
     }
     with gzip.open(tmp_path / "Stale.txt.refs.json.gz", "wt", encoding="utf-8") as f:
         json.dump(stale_payload, f)
-    service = OtherWorksReferenceIndex({"Stale": str(work)}, {"Stale": True}, tmp_path / "unused")
+    service = OtherWorksReferenceIndex({"Stale": str(work)}, tmp_path / "unused")
 
     assert service.lookup("John 3:16") is None
     group = service.lookup("Jude 5")

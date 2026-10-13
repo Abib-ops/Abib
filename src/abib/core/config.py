@@ -80,14 +80,16 @@ def get_default_settings() -> dict[str, Any]:
         "gill_hover_delay_ms": 120,
         "gill_hide_delay_ms": 160,
         "gill_show_popups": True,
-        # Map of the 'Other Works' file stems to string booleans "true"/"false" indicating
-        # whether they should be shown in the reader window combo box.
-        # This map is generated and kept in sync at the application startup based on
-        # the contents of the "Other Works" folder.
-        # Defaults are "false".
-        "show_work":{},
         "_comment": "This is a comment. It will be ignored by the program...",
         "last_other_work": "Pilgrims-Progress",
+        # ISO-8601 timestamp of the last successful/attempted Other Works content
+        # sync. Used to throttle the automatic startup sync to at most once per day.
+        "last_content_sync": "",
+        # List of Other Works file stems the user has chosen to download from the
+        # content repository. The startup auto-sync keeps only these titles current
+        # (an empty list means nothing optional is downloaded). The user edits this
+        # selection via the "Update Other Works…" menu action.
+        "subscribed_works": [],
         "last_read_positions": {
             "Pilgrims-Progress": [624, 50, 70, 736, 599],
             "Institutes": [0, 50, 70, 736, 599],
