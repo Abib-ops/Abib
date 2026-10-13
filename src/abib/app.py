@@ -8,7 +8,7 @@
 from typing import Any, cast
 
 from PySide6.QtCore import QObject, QRunnable, Qt, QThreadPool, QTimer, Signal
-from PySide6.QtGui import QColor, QIcon, QPixmap
+from PySide6.QtGui import QColor, QFontDatabase, QIcon, QPixmap
 from PySide6.QtWidgets import QApplication, QSplashScreen
 
 # We purposefully import the Abib module so we can assign globals
@@ -140,9 +140,31 @@ def _init_window_runtime_state(w: MainWindow) -> None:
     AbibModule.linetextcolor = QColor("#ffffff")
 
 
+def _register_bundled_font() -> None:
+    """Register the bundled Cascadia Mono font with the application.
+
+    Abib renders and prints its text in "Cascadia Mono", which is not installed
+    on every system. Without the real font, Qt substitutes a fallback that may
+    lack the Unicode characters present in the KJB text (e.g. the curly quotes
+    U+2018/U+2019/U+201C/U+201D), producing boxes/garbled ("corrupted") output
+    on screen and especially when printing. Registering the shipped TrueType
+    file guarantees a glyph-complete font is always available.
+    """
+    try:
+        if sh.font_path.is_file():
+            QFontDatabase.addApplicationFont(str(sh.font_path))
+    except (OSError, RuntimeError, AttributeError, TypeError):
+        # Never let font registration break startup; fall back to substitution.
+        pass
+
+
 def run() -> None:
     app: QApplication = QApplication()
     app.setApplicationName("Abib")
+
+    # Make the bundled Cascadia Mono font available so text (and printouts)
+    # render with the correct glyphs even when the font is not installed.
+    _register_bundled_font()
 
     # Initialise settings service and load settings
     settings_service = SettingsService()

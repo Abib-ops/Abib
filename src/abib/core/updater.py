@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import Any, cast
 
 import requests
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import QMessageBox
 
 from abib.core import fcs

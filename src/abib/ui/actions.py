@@ -85,7 +85,7 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
     # Print
     icon2_path = sh.images_dir / 'printer.png'
     print_action = QAction(QIcon(str(icon2_path)), "Print...", window)
-    print_action.setStatusTip("Print current page")
+    print_action.setStatusTip("Print the document, or the current selection")
     print_action.triggered.connect(window.file_print)
     file_menu.addAction(print_action)
     file_toolbar.addAction(print_action)

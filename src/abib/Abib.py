@@ -719,7 +719,7 @@ class MainWindow(QMainWindow):
         """Option 2: align the start of a combo's text via its line edit.
 
         Non-editable combo boxes do not expose a line edit, so we make the
-        combo editable-but-read-only to obtain one, then set its text margins
+        combo editable-but-read-only to get one, then set its text margins
         so the displayed text starts at the same x-position as button text.
         """
         try:
@@ -1174,10 +1174,10 @@ class MainWindow(QMainWindow):
             last = str(self.settings.get("last_content_sync", "")) if isinstance(self.settings, dict) else ""
         except (AttributeError, TypeError, ValueError):
             last = ""
-        # TESTING: the once-per-day download throttle is temporarily disabled so
+        # TESTING: the once-per-day download throttle is temporarily disabled, so
         # the background content sync runs on every startup. To restore the limit,
         # set ``throttle_enabled`` back to True (or remove this override).
-        throttle_enabled = False
+        throttle_enabled = True
         due = True
         if throttle_enabled and last:
             try:
@@ -1215,7 +1215,7 @@ class MainWindow(QMainWindow):
             # connected before the worker can emit any signal. Starting first
             # caused a race where the first progress (or even finished) could be
             # emitted before the UI connected, leaving the bar stuck open and the
-            # Other Works list un-refreshed ("bar appears but nothing happens").
+            # Other Works list unrefreshed ("bar appears but nothing happens").
             self._content_sync_thread, self._content_sync_worker = content_sync.start_background_sync(
                 self, force=force, selected_stems=selected_stems, autostart=False
             )
@@ -1828,7 +1828,7 @@ class MainWindow(QMainWindow):
                 return
             assert self.other_works_combo is not None
 
-            # Prefer the last read work, but fall back to whatever is currently
+            # Prefer the last read work but fall back to whatever is currently
             # displayed in the combo. This makes the "Open Work" button work on
             # the first run (and after a change of books) when "last_other_work"
             # is unset or points at a title that is no longer present.
@@ -2589,7 +2589,7 @@ class MainWindow(QMainWindow):
                 except (AttributeError, RuntimeError, sqlite3.Error):
                     tag_pairs = []
             # Highlight only the specific word occurrences tagged with *code*,
-            # so identically-spelled words tagged with a different Strong's
+            # so identically spelled words tagged with a different Strong's
             # number are not spuriously highlighted. Falls back to plain
             # escaped text when no tag data is available.
             html_text = highlight_tagged_words(verse_text, tag_pairs, code)

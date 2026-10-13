@@ -8,10 +8,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.39
+Abib v417.40
 ------------
 
 Changelog.
+Abib v417.40
+
+
+
 Abib v417.39
 
 - Smaller installer. The user-interface toolkit was switched from the full

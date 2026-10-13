@@ -45,7 +45,7 @@ def _get_version() -> str:
             continue
             
     # 2. Hardcoded fallback (should be updated per release)
-    return "417.39"
+    return "417.40"
 
 CURRENT_VERSION = _get_version()
 
@@ -79,6 +79,15 @@ user_settings_dir: Path = _resolve_user_settings_dir()
 # Construct the paths to assets regardless of the operating system.
 images_dir: Path = package_directory / "images"
 icon_path: Path = images_dir / "abib_icon0.ico"
+
+# Bundled application font. Abib renders (and prints) its text in "Cascadia
+# Mono", but that font is not installed on every system. Shipping and
+# registering the bundled TrueType file guarantees a glyph-complete font is
+# always available, so Unicode characters in the text (e.g. the curly quotes
+# U+2018/U+2019/U+201C/U+201D used in the KJB text) render and print correctly
+# instead of being substituted with a font that lacks those glyphs.
+font_dir: Path = package_directory / "font"
+font_path: Path = font_dir / "CascadiaMono.ttf"
 if not icon_path.is_file():
     # Fallback to images in package_directory if needed, but we moved it to src/abib/images
     pass
@@ -116,7 +125,7 @@ def companions_dirs() -> list[Path]:
 def resolve_companion(stem: str) -> Path | None:
     """Resolve a companion file for the given work stem.
 
-    The user directory wins over the bundled one so an updated copy can
+    The user directory wins over the bundled one, so an updated copy can
     override the bundled version. Returns None when no companion exists.
     """
     for d in (user_companions_dir, bundled_companions_dir):

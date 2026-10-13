@@ -28,7 +28,7 @@ class BibleSearchService:
         self.search_key: str = ""
 
     def run_regex_search(self, patterns: tuple, start_line: int, end_line: int) -> int:
-        """Run regex search and update state. Returns total found."""
+        """Run regex search and update the state. Returns total found."""
         self.last_results = search_domain.iterate_regex(patterns, start_line, end_line, self.kjv_data)
         self.occurrences_total = len(self.last_results)
         self.occurrence_index = 0

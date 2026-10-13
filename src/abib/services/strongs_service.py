@@ -20,7 +20,7 @@ Strong's lookup feature:
 
 The database file lives next to Abib's other runtime data (mirroring
 ``gill.cmt.sqlite``) and is resolved via ``Path(sh.str_cwd) / "strongs.sqlite"``.
-If the file is missing the service degrades gracefully: :func:`is_available`
+If the file is missing, the service degrades gracefully: :func:`is_available`
 returns ``False`` and every query returns an empty result rather than raising,
 so the UI can simply hide/grey the feature.
 

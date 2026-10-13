@@ -15,7 +15,7 @@
 ## bundled seed book (Pilgrim's Progress) ships with the installer.
 ##
 ## A ``manifest.json`` at the repo root lists every file with a ``content_version``
-## (fast "nothing changed" check) and per-file ``sha256`` (download only
+## (fast "nothing changed" check) and per-file ``sha256`` (download-only
 ## new/changed files). Downloads are written to a temp name, verified against
 ## the manifest ``sha256`` and then atomically ``os.replace``d into place so a
 ## partial/corrupt download can never clobber a good copy.
@@ -30,6 +30,8 @@ from typing import Any
 from urllib.parse import quote
 
 import requests
+
+# noinspection PyPackageRequirements
 from PySide6.QtCore import QObject, QThread, Signal
 
 from abib.core import shared as sh
@@ -140,7 +142,7 @@ def _normalise_selection(selected_stems: Iterable[str] | None) -> set[str] | Non
     """Return a set of selected stems, or ``None`` meaning "all titles".
 
     ``None`` keeps the original all-or-nothing behaviour (used by callers that
-    want the whole catalogue). A concrete (possibly empty) iterable restricts
+    want the whole catalogue). A concrete iterable (possibly empty) restricts
     the sync to those stems only; an empty set therefore means "nothing".
     """
     if selected_stems is None:
@@ -245,7 +247,7 @@ def _download_file(entry: dict[str, Any]) -> bool:
     """Download a single manifest entry atomically, verifying its SHA-256.
 
     Writes to a temp name in the target directory and ``os.replace``s on
-    success so a partial/corrupt download never overwrites a good copy.
+    success, so a partial/corrupt download never overwrites a good copy.
     """
     rel_path = str(entry.get("path", ""))
     if not rel_path:
@@ -335,7 +337,7 @@ def sync_content(
       4. Remove local works no longer listed (never the protected seed book).
       5. On full success, persist the fetched manifest.
 
-    When ``selected_stems`` is given, only those books are downloaded/kept and
+    When ``selected_stems`` is given, only those books are downloaded/kept, and
     any other (non-protected) local works are removed, so the user controls
     exactly which titles are present. ``None`` syncs the whole catalogue.
 
@@ -482,7 +484,7 @@ def start_background_sync(
     """Start a background content sync on a ``QThread``.
 
     Returns the ``(thread, worker)`` pair. The caller should keep a reference
-    to both (e.g. on ``self``) until the thread finishes, and may connect to
+    to both (e.g. on ``self``) until the thread finishes and may connect to
     ``worker.finished`` to refresh the UI. The thread cleans itself up on
     completion. ``selected_stems`` restricts the sync to the user's chosen
     books (see :func:`sync_content`).
@@ -492,7 +494,7 @@ def start_background_sync(
     / ``worker.finished`` *before* calling ``thread.start()``. This avoids a
     race where the worker emits its first progress (or even finishes) before
     the GUI has connected, leaving the progress bar stuck and the Other Works
-    list un-refreshed.
+    list unrefreshed.
     """
     thread = QThread(parent)
     worker = ContentSyncWorker(force=force, selected_stems=selected_stems)

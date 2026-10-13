@@ -77,7 +77,7 @@ class OtherWorksReferenceIndex:
             companions_dir: str | Path | None = None) -> None:
         self._other_works_map = dict(other_works_map)
         # When an explicit companions dir is given (e.g. tests) use only it;
-        # otherwise resolve companions from both the user and bundled dirs so
+        # otherwise resolve companions from both the user and bundled dirs, so
         # downloaded companions are found alongside the bundled ones.
         if companions_dir is not None:
             self._companions_dirs: tuple[Path, ...] = (Path(companions_dir),)

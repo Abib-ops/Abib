@@ -85,7 +85,7 @@ def get_default_settings() -> dict[str, Any]:
         # ISO-8601 timestamp of the last successful/attempted Other Works content
         # sync. Used to throttle the automatic startup sync to at most once per day.
         "last_content_sync": "",
-        # List of Other Works file stems the user has chosen to download from the
+        # A list of Other Works file stems the user has chosen to download from the
         # content repository. The startup auto-sync keeps only these titles current
         # (an empty list means nothing optional is downloaded). The user edits this
         # selection via the "Update Other Works…" menu action.

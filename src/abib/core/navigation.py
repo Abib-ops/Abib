@@ -26,7 +26,7 @@ class NavigationCore:
             pos = 0
         try:
             entry = sh.Info[pos]
-            # Info stores [book(0..65), chapter(0..), verse(0..)]
+            # Info stores [book (0..65), chapter (0..), verse (0..)]
             b = int(entry[0]) + 1
             c = int(entry[1]) + 1
             v = int(entry[2]) + 1
