@@ -96,7 +96,10 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any, cast
 
+# noinspection PyPackageRequirements
 from PySide6.QtCore import QEvent, QObject, QPoint, QRect, Qt
+
+# noinspection PyPackageRequirements
 from PySide6.QtGui import (
     QCloseEvent,
     QColor,
@@ -110,6 +113,8 @@ from PySide6.QtGui import (
     QTextCharFormat,
     QTextCursor,
 )
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import (
     QComboBox,
     QFileDialog,
@@ -1137,6 +1142,7 @@ class MainWindow(QMainWindow):
             subscribed = {str(b.get("stem")) for b in available if b.get("downloaded")}
 
         try:
+            # noinspection PyPackageRequirements
             from PySide6.QtWidgets import QDialog
 
             from abib.ui.other_works_download_dialog import OtherWorksDownloadDialog
@@ -1229,7 +1235,10 @@ class MainWindow(QMainWindow):
         number shown to the user never includes companions.
         """
         try:
+            # noinspection PyPackageRequirements
             from PySide6.QtCore import Qt
+
+            # noinspection PyPackageRequirements
             from PySide6.QtWidgets import QProgressBar, QProgressDialog
 
             # Start as a busy/indeterminate bar (0..0) so the dialog is visible

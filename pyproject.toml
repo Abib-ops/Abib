@@ -11,7 +11,12 @@ requires-python = ">=3.15"
 # FIX: Use a simple string for the licence to avoid the deprecation warning
 license = "GPL-3.0-or-later"
 dependencies = [
-    "PySide6-Essentials>=6.6.0",   # was: PySide6>=6.6.0 (drops the large PySide6-Addons/QtWebEngine)
+    # The application imports the top-level ``PySide6`` namespace. ``PySide6-Essentials``
+    # provides that namespace while dropping the large PySide6-Addons/QtWebEngine, but
+    # some tools only recognise the ``PySide6`` distribution as the provider of the
+    # ``PySide6`` module, so it is listed explicitly to keep the import satisfied.
+    # "PySide6>=6.6.0",
+    "PySide6-Essentials>=6.6.0",
     "roman>=5.2",
     "requests>=2.34.0",
     # Safe installer-size cut: the full "pywin32" package was removed. Abib never
