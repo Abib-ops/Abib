@@ -7,8 +7,13 @@
 
 from typing import Any
 
+# noinspection PyPackageRequirements
 from PySide6.QtCore import QEvent, QObject, QPoint, Qt
+
+# noinspection PyPackageRequirements
 from PySide6.QtGui import QWheelEvent
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import (
     QDialog,
     QLabel,
@@ -237,7 +242,7 @@ class SimpleScripturePopup:
     def _calculate_position(host_editor: QWidget, pos: QPoint, popup_h: int, y_offset: int = 60) -> tuple[int, int]:
         """Shared logic to calculate (x, y) coordinates for the popup."""
         try:
-            # host_editor is a QTextEdit/QPlainTextEdit; alias as Any so static
+            # host_editor is a QTextEdit/QPlainTextEdit; alias as Any, so static
             # analysers don't flag the QWidget subclass-specific attributes.
             editor: Any = host_editor
             cursor = editor.cursorForPosition(pos)

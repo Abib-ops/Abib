@@ -1,4 +1,6 @@
-This project is licensed under GPL‑3.0‑or‑later
+Abib
+Copyright (C) 2003–2026 <Contributors>
+SPDX-License-Identifier: GPL-3.0-or-later
 
 -*- coding: utf-8 -*-
 
@@ -8,13 +10,59 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.40
+Abib v417.42
 ------------
 
 Changelog.
+Abib v417.42
+
+- New feature: more powerful Other Works text search. The Study section's
+  "Other Works Text Search" was previously a plain, always case-insensitive
+  search. It now offers two tick boxes, "Whole words only" and "Case
+  sensitive", so you can, for example, find "mercy" on its own without also
+  matching "mercyful" or "commercy", or match exact capitalisation such as
+  "Mercy" but not "mercy". The options can be combined, take effect
+  immediately when toggled, and the existing behaviour (a case-insensitive
+  match of any occurrence, including hyphenated line breaks) is unchanged when
+  neither box is ticked.
+
+This release makes the Other Works text search more precise by adding
+whole-word and case-sensitive matching options. Built with Python 3.15.0 and
+PySide6 6.12.0 (64-bit).
+
+
+Abib v417.41 (unreleased)
+
+- Maintenance: Code-quality and housekeeping release with no change to
+  features or behaviour. Missing licence headers were added to the source
+  files and tools that lacked them, so every module now carries the same
+  "Abib / Copyright (C) 2003-2026 / SPDX-License-Identifier:
+  GPL-3.0-or-later" banner. The licence header in the main entry point was
+  also reordered so the SPDX identifier and encoding line sit alongside the
+  copyright notice.
+- Tidier imports. The PySide6 import lines throughout the application now
+  carry "# noinspection PyPackageRequirements" annotations, silencing a
+  large batch of spurious IDE warnings about the Qt packages without
+  touching any runtime code.
+- Documentation polish. A number of small grammar and punctuation
+  corrections were made to the in-app Help text and to code comments and
+  docstrings (serial commas, subject-verb agreement, and clearer phrasing),
+  with no change to the described behaviour.
+- Dependency refresh. The test-only "pluggy" dependency was updated to
+  1.7.0; this has no effect on the shipped application.
+
+This is a maintenance release that adds consistent licence headers across
+the codebase, quiets spurious IDE import warnings, and polishes the Help
+text and comments, with no change to features. Built with Python 3.15.0 and
+PySide6 6.12.0 (64-bit).
+
+
+
 Abib v417.40
 
-
+Printing improved, but only from the main window.
+Selected text there will print. Be careful not to print the whole Bible.
+If you want to print from other windows, copy and paste to a word processor.
 
 Abib v417.39
 
@@ -26,7 +74,7 @@ Abib v417.39
   reduce the download and installed size with no change to features.
 - Leaner build configuration. The packaging specification now explicitly
   excludes the Qt modules Abib does not use (WebEngine, QML/Quick, Charts,
-  3D, SQL, Network, OpenGL, PDF, Svg and others) and strips the Qt
+  3D, SQL, Network, OpenGL, PDF, Svg, and others) and strips the Qt
   translation catalogues and unused plugin categories from the bundle, so
   only the components the application actually needs are shipped.
 - "Open Work" button improvement. The "Open Work" button (and its Ctrl+L
@@ -45,7 +93,7 @@ and PySide6 6.12.0 (64-bit).
 Abib v417.38
 
 - New feature: On-demand "Other Works" library. The optional library of
-  additional texts (the Puritan, Reformed and reference works) is no
+  additional texts (the Puritan, Reformed, and reference works) is no
   longer bundled inside the installer. Only "The Pilgrim's Progress" now
   ships with Abib as an always-available seed book, so the application
   still works fully offline on first run. Every other title is downloaded
@@ -89,13 +137,13 @@ Abib v417.37
 
 - Maintenance: Routine upkeep with no change to features or behaviour.
   The application version was bumped to 417.37 and the build date
-  updated. The Python runtime was upgraded to 3.15.0 and the project's
+  updated. The Python runtime was upgraded to 3.15.0, and the project's
   minimum required Python was raised to 3.15. The user-interface toolkit
-  PySide6 (with its shiboken6, addons and essentials components) was
+  PySide6 (with its shiboken6, addons, and essentials components) was
   upgraded from 6.11.2 to 6.12.0, which also brought in the pyside6-pdf
   and pyside6-webengine 6.12.0.140 components. Other bundled dependencies
   were refreshed too - charset-normalizer to 3.5.2,
-  pyinstaller-hooks-contrib to 2026.8 and iniconfig to 2.3.1. TOML
+  pyinstaller-hooks-contrib to 2026.8, and iniconfig to 2.3.1. TOML
   configuration is now read with the standard-library "tomllib" module,
   so the third party "tomli" dependency is no longer required.
 - Code modernisation: Took advantage of the newer Python baseline to
@@ -109,7 +157,7 @@ Abib v417.37
   a shared "WordSet" type alias was introduced to replace the repeated
   "dict[str, set]" search annotations across several modules. The now
   redundant "from __future__ import annotations" import was removed from
-  every module across the source, tests and tools, since annotations
+  every module across the source, tests, and tools, since annotations
   evaluate lazily by default on this baseline. Several unnecessary
   "cast(Any, ...)" wrappers were trimmed now that the PySide6 6.12 type
   stubs make them redundant (the remaining casts cover genuine dynamic or
@@ -118,21 +166,21 @@ Abib v417.37
   use pathlib in place of os.path.
 
 This release is a small maintenance update that upgrades the runtime to
-Python 3.15, refreshes bundled dependencies and modernises the codebase,
+Python 3.15, refreshes bundled dependencies, and modernises the codebase,
 with no change to features or behaviour. Built with Python 3.15.0 and
 PySide6 6.12.0 (64-bit).
 
 Abib v417.36
 
 - UI polish: The start of the text in the main-window combo boxes (the
-  Book, Chapter and Verse selectors and the Other Works list) now lines
+  Book, Chapter, and Verse selectors and the Other Works list) now lines
   up vertically with the label text of the main-window buttons. Matching
   left padding was applied to the combo boxes and buttons, and the combo
   boxes use a read-only inner line edit with matching text margins so
   their text begins at the same horizontal position as the buttons.
 - Dark mode polish: The coloured main-window buttons and combo boxes
   (the green Book/Chapter/Verse and OK/Back/Forward controls, the orange
-  Find controls, the yellow Book/Chapter steppers and the pink Other
+  Find controls, the yellow Book/Chapter steppers, and the pink Other
   Works controls) now recolour correctly for the active theme. In dark
   mode they drop their pale light-mode backgrounds so they match the
   surrounding dark controls, and instead show their identifying colour as
@@ -157,7 +205,7 @@ Abib v417.35
   transliteration, pronunciation, short and long definitions, and how many
   times the number occurs in the Bible. The window follows the verse you
   move to in the Bible window and supports Ctrl++/Ctrl+- font zoom, with
-  its position, size and font size remembered between runs.
+  its position, size, and font size remembered between runs.
 - The lookup builds on the earlier StrongsService/strongs.sqlite work: a
   "Find all occurrences" button lists every verse containing a given
   Strong's number in the normal Search Results window, where each row is a
@@ -168,7 +216,7 @@ Abib v417.35
   OpenScriptures (HebrewLexicon and StrongsGreekDictionary), licensed
   CC BY-SA 4.0. See HELP.txt for details.
 - Maintenance: Upgraded bundled dependencies - idna to 3.20, PyInstaller
-  to 6.22.3 and urllib3 to 2.8.0.
+  to 6.22.3, and urllib3 to 2.8.0.
 
 This release adds a Strong's / original-language lookup window for
 exploring the Hebrew and Greek behind the KJV, including per-word
@@ -197,14 +245,14 @@ Python 3.14.7 and PySide6 6.11.2 (64-bit).
 Abib v417.33
 
 - Bug fix: Scripture references in the "Other Works" library that use the
-  older roman-numeral style (for example "Rom. xii. 17") are now detected
+  older roman-numeral style (for example, "Rom. xii. 17") are now detected
   even when the chapter and verse are split across a line break. Previously
   the reference parser refused to cross a line break between the chapter
   and the verse, so these older typeset references were silently ignored
   and never became clickable. The parser now allows a single line break at
   that point, while still refusing to join text across a blank line so
   unrelated numbers in the following paragraph are not swallowed.
-- Maintenance: The reference parser version was bumped and the precomputed
+- Maintenance: The reference parser version was bumped, and the precomputed
   "Other Works" reference companion files were regenerated so the newly
   detected roman-style references appear throughout the library.
 
@@ -217,7 +265,7 @@ Abib v417.32
 - New feature: Other Works references. A new "Other Works References"
   entry on the "Study" menu opens a window that finds every place in
   your enabled "Other Works" library that cites a given Bible reference.
-  Enter a book, chapter and verse and the window searches across all
+  Enter a book, chapter and verse, and the window searches across all
   enabled works (using their precomputed reference companions) and lists
   the matching occurrences grouped by verse. Clicking an occurrence opens
   the relevant work and jumps straight to the cited passage, selecting the
@@ -232,11 +280,11 @@ Abib v417.32
   multi-word phrases), listing each occurrence with a concise snippet of
   the surrounding text. Clicking an occurrence opens the relevant work and
   jumps straight to the matched text, selecting its exact character range
-  in the reader. Like the references browser, it honours the current "show
+  in the reader. Like the reference browser, it honours the current "show
   work" selection so disabled works are skipped.
 - Tests: Added coverage for the Other Works reference index (building,
-  reference-key handling, occurrence extraction), the references window
-  (searching, grouping, empty state and occurrence payloads), the reader's
+  reference-key handling, occurrence extraction), the reference window
+  (searching, grouping, empty state, and occurrence payloads), the reader's
   jump-to-reference-offset behaviour, and the main-window integration that
   opens a work and navigates to the cited range. Also added coverage for
   the Other Works text-search service (case-insensitive and phrase
@@ -265,7 +313,7 @@ Abib v417.31
   current location onto the Back history so you can return with Back (F5).
 - Tests: Added coverage for the concordance service (word and phrase
   indexing, stop-word handling, reference formatting), the concordance
-  window (filtering, entry selection and reference activation), and the
+  window (filtering, entry selection, and reference activation), and the
   main-window integration that navigates to a clicked reference.
 
 This release adds a Bible concordance for browsing and searching every
@@ -298,7 +346,7 @@ Abib v417.29
 
 - Runtime: Python upgraded from 3.14.6 to 3.14.7 (64-bit).
 - Maintenance: Dependency and build-tooling refresh. PySide6 (and its
-  shiboken6, pyside6-essentials and pyside6-addons components) upgraded from
+  shiboken6, pyside6-essentials, and pyside6-addons components) upgraded from
   6.11.1 to 6.11.2, charset-normalizer from 3.5.0 to 3.5.1, idna from 3.18 to
   3.19, pygments from 2.20.0 to 2.21.0, and pyinstaller from 6.22.0 to 6.22.2.
   Dependencies refreshed via uv sync --all-extras --upgrade.
@@ -316,7 +364,7 @@ Abib v417.28
   see). This applies to the Book/Chapter/Verse drop-downs, the F2
   verse-entry box, and it's OK button, the Find/Find Next buttons, the
   dual-purpose Back/Forward buttons, the Book/Chapter navigation buttons,
-  and the "Other Works" controls (the works drop-down, Last Work and
+  and the "Other Works" controls (the works drop-down, Last Work, and
   Search Work).
 
 This release fixes Dark-mode readability of the coloured toolbar controls.
@@ -325,9 +373,9 @@ Built with Python 3.14.6 and PySide6 6.11.1 (64-bit).
 Abib v417.27
 
 - UI: The main-window controls are now colour-coded into visual groups to
-  make the toolbar easier to scan. The Book, Chapter and Verse drop-downs,
+  make the toolbar easier to scan. The Book, Chapter, and Verse drop-downs,
   the F2 verse-entry box, and it's OK button share a pale green shade; the
-  Find and Find Next buttons are light orange; the Back and Forward buttons
+  Find and Find Next buttons are light-orange; the Back and Forward buttons
   use a slightly darker green to signal their dual-purpose nature; the
   Book-, Book+, Chapter- and Chapter+ navigation buttons are light yellow;
   and the bottom-line "Other Works" controls (the works drop-down, Last Work
@@ -390,7 +438,7 @@ Built with Python 3.14.6 and PySide6 6.11.1 (64-bit).
 Abib v417.24
 
 - Maintenance: Project-wide code-quality clean-up. Resolved a large batch of
-  Ruff lint findings across the application, tools and tests without changing
+  Ruff lint findings across the application, tools, and tests without changing
   any user-facing behaviour. This included narrowing broad "except Exception"
   handlers to the specific errors that can actually occur (BLE001),
   collapsing nested "if" statements into single combined conditions (SIM102),

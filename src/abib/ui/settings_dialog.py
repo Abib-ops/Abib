@@ -7,8 +7,13 @@
 
 from typing import TYPE_CHECKING, Any
 
+# noinspection PyPackageRequirements
 from PySide6.QtCore import QRunnable, QThreadPool
+
+# noinspection PyPackageRequirements
 from PySide6.QtGui import QPixmap
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
@@ -284,6 +289,7 @@ class SettingsDialog(QDialog):
 
     @staticmethod
     def _update_splash_visibility(prev_show: bool, new_show: bool) -> None:
+        # noinspection PyPackageRequirements
         from PySide6.QtWidgets import QWidget
 
         from abib import Abib

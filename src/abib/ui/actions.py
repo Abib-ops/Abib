@@ -7,8 +7,13 @@
 
 from dataclasses import dataclass
 
+# noinspection PyPackageRequirements
 from PySide6.QtCore import QSize
+
+# noinspection PyPackageRequirements
 from PySide6.QtGui import QAction, QIcon, QKeySequence, QShortcut
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import QToolBar
 
 from abib.core import shared as sh

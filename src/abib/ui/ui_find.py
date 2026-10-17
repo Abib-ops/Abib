@@ -17,7 +17,9 @@
 ################################################################################
 
 from typing import Any
+# noinspection PyPackageRequirements
 from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect)
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QComboBox, QDialogButtonBox, QFrame,
                                QLabel, QLineEdit, QPushButton, QRadioButton, QWidget)
 

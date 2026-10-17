@@ -8,7 +8,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 ABIB HELP:
 **********
 
-Abib Bible Reader v417.40
+Abib Bible Reader v417.42
 
 *************************
 ATTRIBUTION & LICENSE:
@@ -47,14 +47,14 @@ You can start from the beginning and follow the instructions below.
 
 First, uninstall any previous version of the program.
 
-Get the "Abib_setup_417.40_win.exe" file from 'Abib-ops' on GitHub,
+Get the "Abib_setup_417.42_win.exe" file from 'Abib-ops' on GitHub,
 find it in the 'Abib' repository.
 
 **************************************************
 * See: https://github.com/Abib-ops/Abib/releases *
 **************************************************
 
-Next, double-click the "Abib_setup_417.40_win.exe" installer and follow
+Next, double-click the "Abib_setup_417.42_win.exe" installer and follow
 the instructions, mostly click Next a few times, agree to the
 licence, and Abib will install. Please ignore any negative windows that
 claim that Abib is from an unknown author.
@@ -220,7 +220,7 @@ What you’ll see
   its dictionary entry in the detail panel below: the original‑script
   lemma, transliteration, pronunciation, definitions, and how many times
   the number occurs in the Bible.
-- The entry box accepts flexible forms such as H430, h0430 or G3056.
+- The entry box accepts flexible forms such as H430, h0430, or G3056.
 
 Find all occurrences
 - With an entry shown, click “Find all occurrences” to list every verse
@@ -233,7 +233,7 @@ Zooming the font
   The chosen size is remembered between runs.
 
 Auto‑follow
-- While the window is open it follows the verse you move to in the Bible
+- While the window is open, it follows the verse you move to in the Bible
   window, so the tagged words always match the verse on screen. Use its
   Prev/Next buttons to step through verses independently.
 
@@ -248,7 +248,7 @@ Saved settings
   settings.json under the keys “strongs_window” and “strongs_font_size”.
 
 Missing data
-- If strongs.sqlite is not present, the button/window report that the
+- If strongs.sqlite is not present, the button/window reports that the
   data is unavailable rather than failing; the rest of Abib is unaffected.
 
 (There is no need to type a colon in the text entry box used to display a
@@ -641,7 +641,7 @@ Installing Abib on Linux.
 -------------------------
 (You can try, but it will need quite a bit of modification to make it work.)
 
-Get the "Abib_linux_417.40.tar.bz2" file from the author.
+Get the "Abib_linux_417.42.tar.bz2" file from the author.
 
     If you can get it, then it may be an earlier version because of
     recent changes that work on Windows only, and the direction of
@@ -649,7 +649,7 @@ Get the "Abib_linux_417.40.tar.bz2" file from the author.
     But with some modifications, it could be made to work on Linux.
 
 Move it to your home folder or desired location and navigate there.
-Expand the compressed archive with: tar -jxvf Abib_linux_417.40.tar.bz2
+Expand the compressed archive with: tar -jxvf Abib_linux_417.42.tar.bz2
 
 $ chmod +x Abib will make sure that the executable flag is set.
 

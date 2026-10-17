@@ -12,8 +12,13 @@ from itertools import islice
 from pathlib import Path
 from typing import Any
 
+# noinspection PyPackageRequirements
 from PySide6.QtCore import QEvent, QPoint, Qt
+
+# noinspection PyPackageRequirements
 from PySide6.QtGui import QKeySequence, QMouseEvent, QShortcut, QWheelEvent
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import QGridLayout, QPushButton, QTextEdit, QWidget
 
 from abib.core import shared as sh
@@ -177,6 +182,7 @@ class GillCommentaryWindow(QWidget):
         self._is_dark: bool = False
         # Debounced hide timer for popup
         try:
+            # noinspection PyPackageRequirements
             from PySide6.QtCore import QTimer as _QTimer
             self._hide_timer = _QTimer(self)
             self._hide_timer.setSingleShot(True)
@@ -700,6 +706,7 @@ class GillCommentaryWindow(QWidget):
         self._pending_hover_pos = pos
         try:
             if self._hover_timer is None:
+                # noinspection PyPackageRequirements
                 from PySide6.QtCore import QTimer
                 self._hover_timer = QTimer(self)
                 self._hover_timer.setSingleShot(True)

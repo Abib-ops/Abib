@@ -10,7 +10,10 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
+# noinspection PyPackageRequirements
 from PySide6.QtCore import QCoreApplication, QEvent, QPoint, Qt, QTimer, Signal
+
+# noinspection PyPackageRequirements
 from PySide6.QtGui import (
     QColor,
     QFont,
@@ -23,6 +26,8 @@ from PySide6.QtGui import (
     QTextDocument,
     QWheelEvent,
 )
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
@@ -405,6 +410,7 @@ class TextDocumentWindow(QDialog):
 
         # Unified font size support: notify the main window
         try:
+            # noinspection PyPackageRequirements
             from PySide6.QtWidgets import QApplication
             for widget in QApplication.topLevelWidgets():
                 if widget.__class__.__name__ == "MainWindow":
@@ -1614,7 +1620,7 @@ class TextDocumentWindow(QDialog):
                     self._pending_restore_value = int(last_position)
 
                     def _after_restore():
-                        # The content is loaded and the saved-position restore has finished;
+                        # The content is loaded, and the saved-position restore has finished;
                         # clear loading before applying any queued precise jump so it moves now.
                         self._is_loading_file = False
                         # After the content-anchored restore finalises, begin highlighting
@@ -2197,7 +2203,7 @@ class TextDocumentWindow(QDialog):
         except (RuntimeError, AttributeError):
             whole_words = False
 
-        # Search over the original document text, but allow any run of whitespace
+        # Search over the original document text but allow any run of whitespace
         # (including CR/LF line breaks) in the document to match a single space in
         # the search term. This lets a term like "as many lives as a cat" match
         # text where a line break separates "lives" and "as". QPlainTextEdit.find
@@ -2527,7 +2533,7 @@ class TextDocumentWindow(QDialog):
         visible_start = max(0, top_pos)
         visible_end = bot_pos
 
-        # Ensure refs sorted once
+        # Ensure refs are sorted once
         self._ensure_refs_sorted()
 
         refs = self._all_references
@@ -2616,7 +2622,7 @@ class TextDocumentWindow(QDialog):
         return min(top, bottom), max(top, bottom)
 
     def _check_popup_overlap(self, ref: dict[str, Any], pos: QPoint, text: str) -> bool:
-        """Check if the popup at current position would overlap the reference."""
+        """Check if the popup at the current position would overlap the reference."""
         # Check if the feature is disabled in settings
         if not self.settings.get("reader_auto_scroll_popups", True):
             return False
@@ -2841,6 +2847,7 @@ class TextDocumentWindow(QDialog):
         self._auto_scroll_timer.start()
 
     def _do_auto_scroll(self):
+        # noinspection PyPackageRequirements
         from PySide6.QtGui import QCursor
         if not self._scrolling_reference:
             self._stop_auto_scroll()

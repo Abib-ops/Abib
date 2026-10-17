@@ -16,6 +16,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 @pytest.fixture(scope="session", autouse=True)
 def qapp():
     """Provide a session-wide QApplication for tests that touch Qt objects."""
+    # noinspection PyPackageRequirements
     from PySide6.QtWidgets import QApplication
 
     app = QApplication.instance() or QApplication([])

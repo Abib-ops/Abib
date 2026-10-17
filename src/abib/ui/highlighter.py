@@ -7,6 +7,7 @@
 
 from typing import Any
 
+# noinspection PyPackageRequirements
 from PySide6.QtGui import QSyntaxHighlighter, QTextCharFormat
 
 

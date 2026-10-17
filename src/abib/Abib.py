@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
-# Abib — Copyright © 2003–2026 The Abib Contributors
+# Abib
+# Copyright (C) 2003–2026 <Contributors>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# -*- coding: utf-8 -*-
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +19,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# SPDX-License-Identifier: GPL-3.0-or-later
-
-# -*- coding: utf-8 -*-
 
 r"""
 Third-party materials and attributions:
@@ -41,7 +42,7 @@ Abib Bible Reader אביב
 
 Using PySide6-6.12.0 and python3.15.0 (64-bit).
 
-13/10/2026
+17/10/2026
 
 # Automatically upgrade all packages to their latest versions
 uv sync --all-extras --upgrade

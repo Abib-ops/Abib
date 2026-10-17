@@ -131,3 +131,58 @@ def test_search_finds_hyphenated_name_with_hyphen(tmp_path):
     assert [(occ.work_stem, occ.matched_text) for occ in results.occurrences] == [
         ("Names", "Hephzi-bah"),
     ]
+
+
+def test_search_case_sensitive_matches_exact_case_only(tmp_path):
+    service = make_service(tmp_path)
+
+    results = service.search("mercy", case_sensitive=True)
+
+    assert [(occ.work_stem, occ.matched_text) for occ in results.occurrences] == [
+        ("First", "mercy"),
+        ("First", "mercy"),
+    ]
+
+
+def test_search_case_sensitive_matches_capitalized_query(tmp_path):
+    service = make_service(tmp_path)
+
+    results = service.search("Mercy", case_sensitive=True)
+
+    assert [(occ.work_stem, occ.matched_text) for occ in results.occurrences] == [
+        ("Second", "Mercy"),
+    ]
+
+
+def test_search_whole_words_excludes_substring_matches(tmp_path):
+    path = tmp_path / "Words.txt"
+    path.write_text("mercy is not mercyful nor commercy.", encoding="utf-8")
+    service = OtherWorksTextSearchService({"Words": str(path)})
+
+    results = service.search("mercy", whole_words=True)
+
+    assert [(occ.abs_start, occ.matched_text) for occ in results.occurrences] == [
+        (0, "mercy"),
+    ]
+
+
+def test_search_whole_words_without_option_includes_substring_matches(tmp_path):
+    path = tmp_path / "Words.txt"
+    path.write_text("mercy is not mercyful nor commercy.", encoding="utf-8")
+    service = OtherWorksTextSearchService({"Words": str(path)})
+
+    results = service.search("mercy")
+
+    assert [occ.matched_text for occ in results.occurrences] == ["mercy", "mercy", "mercy"]
+
+
+def test_search_whole_words_and_case_sensitive_combined(tmp_path):
+    path = tmp_path / "Words.txt"
+    path.write_text("Mercy and mercy and mercyful.", encoding="utf-8")
+    service = OtherWorksTextSearchService({"Words": str(path)})
+
+    results = service.search("mercy", whole_words=True, case_sensitive=True)
+
+    assert [(occ.abs_start, occ.matched_text) for occ in results.occurrences] == [
+        (10, "mercy"),
+    ]

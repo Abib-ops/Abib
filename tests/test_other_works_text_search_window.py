@@ -63,6 +63,31 @@ def test_window_shows_no_result_state(qapp, tmp_path):
     assert "No enabled Other Works contain faith" in window.summary_label.text()
 
 
+def test_window_case_sensitive_checkbox_filters_results(qapp, tmp_path):
+    window = make_window(tmp_path)
+
+    window.set_query("mercy")
+    assert "3 occurrences" in window.summary_label.text()
+
+    window.case_sensitive_checkbox.setChecked(True)
+
+    assert "2 occurrences" in window.summary_label.text()
+
+
+def test_window_whole_words_checkbox_filters_results(qapp, tmp_path):
+    path = tmp_path / "Only.txt"
+    path.write_text("mercy and mercyful mercy.", encoding="utf-8")
+    service = OtherWorksTextSearchService({"Only": str(path)})
+    window = OtherWorksTextSearchWindow(service)
+
+    window.set_query("mercy")
+    assert "3 occurrences" in window.summary_label.text()
+
+    window.whole_words_checkbox.setChecked(True)
+
+    assert "2 occurrences" in window.summary_label.text()
+
+
 def test_window_emits_occurrence_payload(qapp, tmp_path):
     window = make_window(tmp_path)
     activations: list[tuple[str, int, int]] = []

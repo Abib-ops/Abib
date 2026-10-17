@@ -9,6 +9,7 @@ import unittest
 from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
+# noinspection PyPackageRequirements
 from PySide6.QtGui import QColor, QPalette
 
 from abib.services.settings import SettingsService
@@ -194,6 +195,7 @@ class TestReaderFind(unittest.TestCase):
     def test_build_flags_returns_qt_find_flag(self):
         # Regression: build_flags previously returned a plain int (0), which
         # newer PySide6 rejects for QPlainTextEdit.find(), raising TypeError.
+        # noinspection PyPackageRequirements
         from PySide6.QtGui import QTextDocument
         window = self._make_reader()
         try:
@@ -312,6 +314,7 @@ class TestUIHelpers(unittest.TestCase):
             utils.get_screen_size = orig_get_screen_size
 
     def test_no_zoom_plain_text_edit_ignores_ctrl_wheel(self):
+        # noinspection PyPackageRequirements
         from PySide6.QtCore import Qt
 
         # The code uses: Qt.KeyboardModifier.ControlModifier in event.modifiers()
@@ -324,7 +327,10 @@ class TestUIHelpers(unittest.TestCase):
         event.ignore.assert_called_once()
 
     def test_no_zoom_plain_text_edit_allows_normal_wheel(self):
+        # noinspection PyPackageRequirements
         from PySide6.QtCore import Qt
+
+        # noinspection PyPackageRequirements
         from PySide6.QtWidgets import QPlainTextEdit
 
         event = MagicMock()

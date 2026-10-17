@@ -6,7 +6,6 @@ A compact and fast Bible reader for your desktop or laptop.
 Abib helps you follow Scripture while listening to an online sermon or during personal study.
 It takes little room and has separate windows for the various parts.
 
-Not this crowded normally.
 
 ![Abib screenshot](src/abib/images/Screenshot.jpg)
 
@@ -22,15 +21,19 @@ Not this crowded normally.
 - **Other Works References (new):** find every place in your "Other Works"
   library that cites a given Bible reference, grouped by verse — then click to
   open the work at the exact passage.
-- **Other Works Text Search (new):** search the full text of your "Other Works"
-  library for a word or phrase and jump straight to the match, even when it
-  wraps across a line break.
+- **Other Works Text Search (improved):** search the full text of your "Other
+  Works" library for a word or phrase and jump straight to the match, even when
+  it wraps across a line break. Now with optional **Whole words only** and
+  **Case sensitive** tick boxes so you can, for example, find "mercy" on its own
+  without also matching "mercyful", or match exact capitalisation such as
+  "Mercy" but not "mercy". The options can be combined and take effect as soon as
+  you toggle them.
 - **Smarter reference detection:** clickable scripture links now recognise older
   roman‑numeral references (e.g. "Rom. xii. 17"), even when split across a line.
 - Built‑in daily readings: Spurgeon’s Morning & Evening, and Daily Light on the
   Daily Path.
 - John Gill Exposition of the Entire Bible — click the Commentary button.
-- Extras: Pilgrim’s Progress and other classic works included.
+- Extras: Pilgrim’s Progress and other classic works are included.
 - Light or Dark theme; font size you can adjust with Ctrl++ and Ctrl+-.
 - Works offline; no accounts, no telemetry.
 
@@ -122,46 +125,6 @@ These Public Domain PDFs are distributed separately and can be downloaded from h
 - [The Trinity—John Owen](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Trinity.-.John.Owen.pdf)
 - [The Works of Thomas Brooks—Thomas Brooks](https://github.com/Abib-ops/Abib/releases/download/414.15/The.Works.of.Thomas.Brooks.-.Thomas.Brooks.pdf)
 - [Torrey's New Topical Textbook—R. A. Torrey](https://github.com/Abib-ops/Abib/releases/download/414.15/Torrey.s.New.Topical.Textbook.pdf)
-
-## Development
-
-Abib uses [uv](https://docs.astral.sh/uv/) for dependency management and build workflows.
-
-### Prerequisites
-- Python 3.10 or later
-- [uv](https://docs.astral.sh/uv/)
-
-### Getting Started
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Abib-ops/Abib.git
-   cd Abib
-   ```
-2. Sync dependencies:
-   ```bash
-   uv sync
-   ```
-3. Run the application:
-   ```bash
-   uv run src/abib/app.py
-   ```
-
-### Project Structure
-The project follows a modular package structure:
-- `src/abib/`: Core application package
-  - `core/`: Constants and foundational logic
-  - `data/`: Bible texts, dictionaries, and devotions
-  - `domain/`: Business logic (search, scripture references, reading plans)
-  - `services/`: Infrastructure services (data loading, audio, settings)
-  - `ui/`: User interface components and dialogs
-  - `utils/`: General-purpose utility functions (text, files, UI)
-- `tests/`: Automated test suite
-- `tools/`: Development and maintenance scripts
-
-### Linux Support (Experimental)
-While Abib is primarily focused on Windows, it can be run on Linux from source:
-1. Ensure you have the required dependencies for PySide6 (e.g., `libxcb-cursor0`).
-2. Follow the "Getting Started" steps above.
 
 ## Credits (Most are in the "Other Works" section of the application and not listed above.)
 - Bible text: King James Version (Pure Cambridge Edition, from Matthew Verschuur)

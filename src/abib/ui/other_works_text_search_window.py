@@ -4,8 +4,13 @@
 
 # -*- coding: utf-8 -*-
 
+# noinspection PyPackageRequirements
 from PySide6.QtCore import Qt, Signal
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import (
+    QCheckBox,
+    QHBoxLayout,
     QLabel,
     QLineEdit,
     QTreeWidget,
@@ -43,6 +48,17 @@ class OtherWorksTextSearchWindow(QWidget):
         self.query_edit.textChanged.connect(self._clear_if_empty)
         layout.addWidget(self.query_edit)
 
+        options_layout = QHBoxLayout()
+        options_layout.setContentsMargins(0, 0, 0, 0)
+        self.whole_words_checkbox = QCheckBox("Whole words only", self)
+        self.whole_words_checkbox.toggled.connect(self._on_options_changed)
+        options_layout.addWidget(self.whole_words_checkbox)
+        self.case_sensitive_checkbox = QCheckBox("Case sensitive", self)
+        self.case_sensitive_checkbox.toggled.connect(self._on_options_changed)
+        options_layout.addWidget(self.case_sensitive_checkbox)
+        options_layout.addStretch(1)
+        layout.addLayout(options_layout)
+
         self.summary_label = QLabel("Enter text to search enabled Other Works.", self)
         self.summary_label.setWordWrap(True)
         layout.addWidget(self.summary_label)
@@ -76,7 +92,11 @@ class OtherWorksTextSearchWindow(QWidget):
             self.summary_label.setText("Enter text to search enabled Other Works.")
             return
 
-        results = self._service.search(query)
+        results = self._service.search(
+            query,
+            whole_words=self.whole_words_checkbox.isChecked(),
+            case_sensitive=self.case_sensitive_checkbox.isChecked(),
+        )
         if not results.occurrences:
             self.summary_label.setText(f"No enabled Other Works contain {query}.")
             return
@@ -89,6 +109,10 @@ class OtherWorksTextSearchWindow(QWidget):
             results.query,
             lambda occurrence: [occurrence.matched_text, occurrence.matched_text, occurrence.snippet],
         )
+
+    def _on_options_changed(self) -> None:
+        if self.query_edit.text().strip():
+            self.search()
 
     def _clear_if_empty(self) -> None:
         if not self.query_edit.text().strip():

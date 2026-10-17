@@ -8,7 +8,10 @@ from collections import defaultdict
 from collections.abc import Callable, Sequence
 from typing import Any
 
+# noinspection PyPackageRequirements
 from PySide6.QtCore import Qt
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import QLabel, QTreeWidget, QTreeWidgetItem
 
 

@@ -8,8 +8,13 @@
 from collections.abc import Callable
 from typing import Any
 
+# noinspection PyPackageRequirements
 from PySide6.QtCore import Qt
+
+# noinspection PyPackageRequirements
 from PySide6.QtGui import QFont, QKeySequence
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -124,6 +129,7 @@ class SecondaryWindow(NoZoomDialog):
         self._shortcuts.append(self._make_shortcut(decrease_shortcut, self.decrease_font_size))
 
     def _make_shortcut(self, seq: QKeySequence, slot):
+        # noinspection PyPackageRequirements
         from PySide6.QtGui import QShortcut
         sc = QShortcut(seq, self)
         sc.activated.connect(slot)
@@ -155,6 +161,7 @@ class SecondaryWindow(NoZoomDialog):
             self.settings_service.update_devotional_font_size(self.fontsize)
 
             # Unified font size support: notify the main window
+            # noinspection PyPackageRequirements
             from PySide6.QtWidgets import QApplication
             for widget in QApplication.topLevelWidgets():
                 # Check for MainWindow by class name to avoid circular imports
@@ -282,6 +289,7 @@ class AboutWindow(QMainWindow):
         label_license.setFont(font_license)
 
         # Set the QLabel as the central widget
+        # noinspection PyPackageRequirements
         from PySide6.QtWidgets import QWidget
         container = QWidget(self)
         layout = QVBoxLayout(container)

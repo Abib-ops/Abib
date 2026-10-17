@@ -8,7 +8,7 @@
 
 Holds all light/dark theme logic (palette application, control-height
 normalisation, persistence and refresh of open dialogs/windows). ``MainWindow``
-keeps thin delegators so external callers (settings dialog, theme toggle button)
+keeps thin delegators, so external callers (settings dialog, theme toggle button)
 are unaffected.
 """
 
@@ -30,7 +30,7 @@ class ThemeController:
         re-theme any open dialogs/windows.
          Centralised to avoid duplication."""
         win = self._win
-        # Apply application-wide palette first so dialogs/menus follow suit
+        # Apply application-wide palette first, so dialogs/menus follow suit
         win.theme.apply_app_palette()
         # Apply to the main editor and secondary window
         win.theme.apply_to_editor(win.textEditor)
@@ -136,7 +136,7 @@ class ThemeController:
         """Restyle the coloured pushbuttons for the active theme.
 
         In light mode the button uses its base colour as the background with
-        black text. In dark mode the background is left to the palette so it
+        black text. In dark mode the background is left to the palette, so it
         matches the plain buttons in the right-hand column exactly, and a
         brighter variant of the base colour is used for the text instead.
         """
@@ -163,7 +163,7 @@ class ThemeController:
 
         In light mode the combobox uses its base colour as the background with
         black text. In dark mode the background matches the plain controls
-        (a dark grey) and a brighter variant of the base colour is used for
+        (a dark grey), and a brighter variant of the base colour is used for
         the text instead.
         """
         self._apply_coloured_theme(

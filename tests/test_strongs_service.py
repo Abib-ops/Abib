@@ -114,7 +114,7 @@ def test_tag_at(service: StrongsService):
 
 
 def test_lookup_strongs(service: StrongsService):
-    entry = service.lookup_strongs("H430")  # accepts un-padded form
+    entry = service.lookup_strongs("H430")  # accepts unpadded form
     assert isinstance(entry, StrongsEntry)
     assert entry.strongs == "H0430"
     assert entry.lemma == "אֱלֹהִים"

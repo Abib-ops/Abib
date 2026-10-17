@@ -7,8 +7,13 @@
 
 from typing import Any, cast
 
+# noinspection PyPackageRequirements
 from PySide6.QtCore import QObject, QRunnable, Qt, QThreadPool, QTimer, Signal
+
+# noinspection PyPackageRequirements
 from PySide6.QtGui import QColor, QFontDatabase, QIcon, QPixmap
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import QApplication, QSplashScreen
 
 # We purposefully import the Abib module so we can assign globals

@@ -7,6 +7,7 @@
 
 from typing import cast
 
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import QApplication
 
 

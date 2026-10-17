@@ -4,7 +4,10 @@
 
 # -*- coding: utf-8 -*-
 
+# noinspection PyPackageRequirements
 from PySide6.QtCore import Qt, Signal
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,

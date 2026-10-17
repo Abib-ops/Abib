@@ -11,13 +11,19 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol, cast
 
 if TYPE_CHECKING:
+    # noinspection PyPackageRequirements
     from PySide6.QtGui import QColor, QPalette
+
+    # noinspection PyPackageRequirements
     from PySide6.QtWidgets import QApplication, QWidget
     QPaletteT = QPalette
     QColorT = QColor
 else:
     try:
+        # noinspection PyPackageRequirements
         from PySide6.QtGui import QColor, QPalette
+
+        # noinspection PyPackageRequirements
         from PySide6.QtWidgets import QApplication, QPlainTextEdit, QWidget
     except ImportError:
         QPlainTextEdit = object  # type: ignore

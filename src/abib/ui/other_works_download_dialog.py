@@ -18,7 +18,10 @@ from __future__ import annotations
 from collections.abc import Iterable, Sequence
 from typing import Any
 
+# noinspection PyPackageRequirements
 from PySide6.QtCore import Qt
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,

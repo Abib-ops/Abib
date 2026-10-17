@@ -38,18 +38,25 @@ class OtherWorksTextSearchService:
     def rebuild(self) -> None:
         self._text_cache.clear()
 
-    def search(self, query: str) -> OtherWorkTextSearchResults:
+    def search(
+        self,
+        query: str,
+        *,
+        whole_words: bool = False,
+        case_sensitive: bool = False,
+    ) -> OtherWorkTextSearchResults:
         normalized_query = normalize_text(query).strip()
         if not normalized_query:
             return OtherWorkTextSearchResults(normalized_query, ())
 
         occurrences: list[OtherWorkTextSearchOccurrence] = []
-        query_pattern = _literal_whitespace_pattern(normalized_query.casefold())
+        pattern_query = normalized_query if case_sensitive else normalized_query.casefold()
+        query_pattern = _literal_whitespace_pattern(pattern_query, whole_words=whole_words)
         for work_stem, work_path in self._enabled_works():
             content = self._read_text(work_path)
             if content is None:
                 continue
-            for abs_start, length in _literal_casefold_spans(content, query_pattern):
+            for abs_start, length in _literal_spans(content, query_pattern, case_sensitive=case_sensitive):
                 matched_text = content[abs_start:abs_start + length]
                 occurrences.append(OtherWorkTextSearchOccurrence(
                     work_stem=work_stem,
@@ -81,6 +88,24 @@ class OtherWorksTextSearchService:
         return content
 
 
+def _literal_spans(
+    content: str,
+    query_pattern: re.Pattern[str],
+    *,
+    case_sensitive: bool = False,
+) -> tuple[tuple[int, int], ...]:
+    if not query_pattern.pattern:
+        return ()
+
+    if case_sensitive:
+        spans: list[tuple[int, int]] = []
+        for match in query_pattern.finditer(content):
+            spans.append((match.start(), match.end() - match.start()))
+        return tuple(spans)
+
+    return _literal_casefold_spans(content, query_pattern)
+
+
 def _literal_casefold_spans(content: str, query_pattern: re.Pattern[str]) -> tuple[tuple[int, int], ...]:
     if not query_pattern.pattern:
         return ()
@@ -103,9 +128,9 @@ def _literal_casefold_spans(content: str, query_pattern: re.Pattern[str]) -> tup
     return tuple(spans)
 
 
-def _literal_whitespace_pattern(query_folded: str) -> re.Pattern[str]:
+def _literal_whitespace_pattern(query_text: str, *, whole_words: bool = False) -> re.Pattern[str]:
     parts: list[str] = []
-    for token in query_folded.split():
+    for token in query_text.split():
         # Drop hyphens from the query and allow an optional hyphen (possibly
         # followed by a line break/whitespace) between characters, so that both
         # "Hephzibah" and "Hephzi-bah" match source text such as "Hephzi-bah".
@@ -113,4 +138,11 @@ def _literal_whitespace_pattern(query_folded: str) -> re.Pattern[str]:
         if not chars:
             continue
         parts.append(r"(?:-\s*)?".join(chars))
-    return re.compile(r"\s+".join(parts))
+    if not parts:
+        return re.compile("")
+    pattern = r"\s+".join(parts)
+    if whole_words:
+        # Require a non-word boundary on both sides so that, for example,
+        # "mercy" does not match inside "mercyful" or "commercy".
+        pattern = rf"(?<!\w)(?:{pattern})(?!\w)"
+    return re.compile(pattern)

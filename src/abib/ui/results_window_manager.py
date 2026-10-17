@@ -78,6 +78,7 @@ class SearchResultsWindowManager:
             try:
                 screen = win.screen().availableGeometry()
             except (AttributeError, RuntimeError):
+                # noinspection PyPackageRequirements
                 from PySide6.QtWidgets import QApplication
                 screen = QApplication.primaryScreen().availableGeometry()
 

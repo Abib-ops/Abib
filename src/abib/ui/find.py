@@ -14,6 +14,7 @@
 
 from typing import cast
 
+# noinspection PyPackageRequirements
 from PySide6 import QtCore, QtWidgets
 
 

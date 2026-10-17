@@ -14,7 +14,7 @@ theme awareness).  It is driven by :class:`~abib.services.strongs_service.Strong
 The window shows, for the current verse, every Strong's-tagged word as a
 clickable link.  Clicking a word (or typing a code such as ``H0430`` in the
 lookup box) shows the full dictionary entry — lemma in the original script,
-transliteration, pronunciation, short/long definitions and the total number of
+transliteration, pronunciation, short/long definitions, and the total number of
 occurrences across the Bible.
 
 If ``strongs.sqlite`` is missing the service degrades gracefully and the window
@@ -25,8 +25,13 @@ simply reports that the data is unavailable rather than crashing.
 from html import escape
 from typing import Any
 
+# noinspection PyPackageRequirements
 from PySide6.QtCore import Qt
+
+# noinspection PyPackageRequirements
 from PySide6.QtGui import QKeySequence, QMouseEvent, QShortcut
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import (
     QGridLayout,
     QLineEdit,

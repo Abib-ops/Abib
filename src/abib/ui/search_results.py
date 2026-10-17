@@ -10,7 +10,10 @@ import re
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 
+# noinspection PyPackageRequirements
 from PySide6.QtCore import Qt, Signal
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,

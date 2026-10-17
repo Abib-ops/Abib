@@ -5,6 +5,7 @@
 # -*- coding: utf-8 -*-
 
 
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import QMainWindow, QMenu, QTextEdit
 
 from abib.ui.actions import setup_menus_and_toolbars

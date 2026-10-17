@@ -7,8 +7,13 @@
 
 from typing import Any
 
+# noinspection PyPackageRequirements
 from PySide6.QtCore import Qt
+
+# noinspection PyPackageRequirements
 from PySide6.QtGui import QFontMetrics
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QLabel, QStyle
 
 from abib.services.settings import SettingsService
@@ -142,6 +147,7 @@ class FindDialog(QDialog):
 
         # Schedule a post-layout alignment to account for any geometry changes after show
         try:
+            # noinspection PyPackageRequirements
             from PySide6.QtCore import (
                 QTimer,  # local import to avoid polluting the module top
             )
