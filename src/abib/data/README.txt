@@ -10,10 +10,25 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.42
+Abib v417.43
 ------------
 
 Changelog.
+Abib v417.43
+
+- Security: Dependency update to address a critical-severity vulnerability
+  flagged by GitHub's Dependabot. The "certifi" certificate bundle was
+  upgraded from 2026.7.22 to 2026.10.23; all other dependencies were
+  refreshed to their latest compatible versions at the same time. This is a
+  supporting dependency and brings no change to Abib's features or
+  behaviour.
+
+This is a security maintenance release that updates the bundled "certifi"
+certificates to close a critical-severity advisory, with no change to
+features. Built with Python 3.15.0 and PySide6 6.12.0 (64-bit).
+
+
+
 Abib v417.42
 
 - New feature: more powerful Other Works text search. The Study section's
@@ -55,8 +70,6 @@ This is a maintenance release that adds consistent licence headers across
 the codebase, quiets spurious IDE import warnings, and polishes the Help
 text and comments, with no change to features. Built with Python 3.15.0 and
 PySide6 6.12.0 (64-bit).
-
-
 
 Abib v417.40
 
