@@ -21,3 +21,11 @@ def qapp():
 
     app = QApplication.instance() or QApplication([])
     yield app
+
+    # Deterministic teardown so PySide6/Qt objects are destroyed while the
+    # interpreter is still alive, avoiding a segfault at shutdown.
+    for widget in QApplication.topLevelWidgets():
+        widget.close()
+        widget.deleteLater()
+    app.processEvents()
+    app.quit()

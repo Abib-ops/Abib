@@ -77,14 +77,18 @@ def test_search_includes_every_present_work(tmp_path):
 
 def test_search_returns_offsets_against_normalized_text(tmp_path):
     path = tmp_path / "First.txt"
-    path.write_text("Alpha mercy. MERCY again.\r\nA tender mercy phrase.", encoding="utf-8")
+    path.write_text(
+        "Alpha mercy. MERCY again.\r\nA tender mercy phrase.",
+        encoding="utf-8",
+        newline="",          # write the \r\n verbatim, no OS translation
+    )
     service = OtherWorksTextSearchService({"First": str(path)})
 
     results = service.search("A tender")
     occurrence = results.occurrences[0]
 
     assert occurrence.work_stem == "First"
-    assert occurrence.abs_start == 27
+    assert occurrence.abs_start == 26   # \r\n normalized to a single \n
     assert occurrence.length == 8
 
 

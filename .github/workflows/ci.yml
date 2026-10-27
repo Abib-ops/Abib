@@ -62,16 +62,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Exercise all three desktop platforms so cross-platform regressions
-        # (path handling, the sys.platform branches behind utils/platform.py,
-        # Qt start-up) are caught in CI rather than only on a developer's box.
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
     env:
-      # PySide6 widgets require a platform plugin; run head-less in CI.
       QT_QPA_PLATFORM: offscreen
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Install Qt system libraries (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 \
+            libgl1 \
+            libglib2.0-0 \
+            libxkbcommon0 \
+            libdbus-1-3 \
+            libxcb-cursor0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -81,9 +89,6 @@ jobs:
       - name: Install project (with dev tooling)
         run: uv sync
 
-      # Coverage is measured and reported (term-missing). No minimum threshold is
-      # enforced yet so the suite stays green while coverage is established; a
-      # `--cov-fail-under` gate can be added once a baseline is agreed.
       - name: Run tests with coverage
         run: uv run pytest --cov --cov-report=term-missing --cov-report=xml
 

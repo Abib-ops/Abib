@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "abib"
-version = "417.45"
+version = "417.46"
 description = "A Bible study application"
 readme = "README.md"
 # Minimum supported Python. 3.14 is the real floor: the code relies on PEP 649
@@ -65,6 +65,7 @@ exclude_lines = [
 
 [tool.mypy]
 python_version = "3.14"
+platform = "win32"
 # The codebase is a large, historically untyped Qt application. Start with a
 # lenient baseline that still catches real errors on the already-modularised,
 # non-UI packages (core/domain/services/utils) and widen the scope

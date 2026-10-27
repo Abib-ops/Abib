@@ -10,11 +10,40 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.45
+Abib v417.46
 ------------
 
 Changelog.
-Abib v417.45
+Abib v417.46
+
+- Maintenance: Code-quality, continuous-integration, and test-stability
+  release with no change to features or on-screen behaviour. It rolls up the
+  v417.44 and v417.45 maintenance work, neither of which was released on its
+  own, and adds the fixes needed to make the automated checks pass reliably on
+  every platform.
+- Continuous integration made green. The type-checking job now analyses the
+  Windows-only code paths as Windows (fixing spurious "module has no
+  attribute" errors for winsound, subprocess, and ctypes symbols on Linux).
+  The Linux test job now installs the Qt system libraries (libEGL and
+  friends) that the Ubuntu runners no longer ship by default, so the test
+  suite can load PySide6 head-less again.
+- Reliable test teardown. The shared test QApplication is now shut down
+  deterministically while the interpreter is still alive, preventing the
+  PySide6/Qt segfault at process exit that had been failing the Windows and
+  macOS test jobs despite all tests passing.
+- Platform-robust test. An Other Works text-search test that depended on
+  operating-system newline translation was made deterministic, so it reports
+  the same normalised offset on Windows, macOS, and Linux.
+- Documentation. The changelog clarifies that v417.44 and v417.45 were never
+  released separately but are folded into this release.
+
+This is a maintenance release that stabilises the continuous-integration
+pipeline (platform-correct type checking, Qt libraries on the Linux runner,
+deterministic Qt teardown, and a platform-robust test) and incorporates the
+unreleased v417.44 and v417.45 maintenance work, with no change to features.
+Built with Python 3.15.0 and PySide6 6.12.0 (64-bit).
+
+Abib v417.45 (not released separately; combined into v417.46)
 
 - Maintenance: Code-quality and housekeeping release with no change to
   features or on-screen behaviour, continuing the main-window modularisation
@@ -44,7 +73,7 @@ a duplicated navigation preamble, and clears the Linux lint EXE001 warnings,
 with no change to features. Built with Python 3.15.0 and PySide6 6.12.0
 (64-bit).
 
-Abib v417.44
+Abib v417.44 (not released separately; combined into v417.46)
 
 - Maintenance: Code-quality, structure, and cross-platform release with no
   change to features or on-screen behaviour. The work focuses on making Abib
