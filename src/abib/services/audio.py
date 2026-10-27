@@ -5,12 +5,12 @@
 # -*- coding: utf-8 -*-
 
 
-import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from abib.core import shared as sh
+from abib.utils import platform as plat
 
 # Prefer Qt's own lightweight audio for short UI sounds
 try:  # pragma: no cover - import guarded for environments without Qt
@@ -113,7 +113,7 @@ class AudioService:
     def _play_fallback(self) -> None:
         """Best-effort, non-blocking sound without PySide6.QtMultimedia."""
         # On Windows, play the bundled WAV asynchronously via winsound.
-        if sys.platform.startswith("win"):
+        if plat.is_windows():
             try:
                 import winsound
                 sound_path = self._sound_path

@@ -452,11 +452,12 @@ def check_count_sort(liszt: list[str], r_list: list | tuple, win: MainWindow) ->
     for i in range(lo):
         win.count.append(len(win.occur[i]))
 
-    win.count, win.occurs, win.occur = zip(
+    sorted_count, sorted_occurs, sorted_occur = zip(
         *sorted(zip(win.count, win.occurs, win.occur), reverse=True))
 
-    win.occur = list(win.occur)
-    win.occurs = list(win.occurs)
+    win.count = list(sorted_count)
+    win.occur = list(sorted_occur)
+    win.occurs = list(sorted_occurs)
 
     newt: list = []
     newts: list = []

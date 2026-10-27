@@ -9,7 +9,7 @@
 Owns the separate Search Results window: its creation, width handling and the
 geometry logic that keeps it glued to the right of the main window. ``MainWindow``
 keeps thin delegators (including the ``moveEvent``/``resizeEvent`` hooks and the
-``_update_search_results_panel`` entry point used by the search flow).
+``update_search_results_panel`` entry point used by the search flow).
 """
 
 

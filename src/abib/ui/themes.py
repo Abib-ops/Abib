@@ -5,10 +5,10 @@
 # -*- coding: utf-8 -*-
 
 
-import platform
-import sys
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol, cast
+
+from abib.utils import platform as plat
 
 if TYPE_CHECKING:
     # noinspection PyPackageRequirements
@@ -116,28 +116,10 @@ class ThemeManager:
             app = None
         if not app:
             return
-        # Detect Windows 10 (heuristic: build < 22000)
-        def _is_windows_10() -> bool:
-            try:
-                if sys.platform != "win32":
-                    return False
-                try:
-                    build = int(platform.version().split(".")[-1])
-                except (ValueError, AttributeError, IndexError, TypeError):
-                    build = 0
-                if build and build < 22000:
-                    return True
-            except (ValueError, AttributeError, TypeError):
-                pass
-            try:
-                winver = sys.getwindowsversion()  # type: ignore[attr-defined]
-                return getattr(winver, "major", 0) == 10 and getattr(winver, "build", 0) < 22000
-            except (AttributeError, RuntimeError):
-                return False
-
         # On Windows 10 in dark mode, force Fusion style so button stylesheets take effect
+        # (the Windows-version heuristic now lives in the shared platform helper).
         try:
-            if self.state.is_dark_mode and _is_windows_10():
+            if self.state.is_dark_mode and plat.is_windows_10():
                 if not self._original_style_name:
                     try:
                         self._original_style_name = cast("QApplication", app).style().objectName()
@@ -256,7 +238,7 @@ class ThemeManager:
 
             # Apply a button stylesheet to all Windows versions (10 and 11), since
             # native widgets can render grey buttons in dark mode and ignore the palette.
-            styles = dark_base_styles + (button_styles if sys.platform == "win32" else "")
+            styles = dark_base_styles + (button_styles if plat.is_windows() else "")
             cast("QApplication", app).setStyleSheet(styles)
         else:
             # Light mode: ensure consistent darker-than-default shade for buttons, combos, and line edits

@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+# Allow a running workflow to be cancelled when a newer commit is pushed.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Ruff (lint + format)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install project (with dev tooling)
+        run: uv sync
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      # NOTE: `ruff format --check` is intentionally omitted for now. The existing
+      # codebase is not yet auto-formatted, and reformatting it would create a large,
+      # noisy diff that conflicts with the planned MainWindow refactor. Enable this
+      # once the code has been formatted in a dedicated change.
+
+  typecheck:
+    name: Mypy (type checking)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install project (with dev tooling)
+        run: uv sync
+
+      # Type checking is currently scoped (in pyproject.toml) to the modularised
+      # non-UI packages. The UI layer and the monolithic Abib.py are excluded for
+      # now and will be re-added as they are cleaned up during the refactor.
+      - name: Mypy
+        run: uv run mypy
+
+  test:
+    name: Pytest (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Exercise all three desktop platforms so cross-platform regressions
+        # (path handling, the sys.platform branches behind utils/platform.py,
+        # Qt start-up) are caught in CI rather than only on a developer's box.
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      # PySide6 widgets require a platform plugin; run head-less in CI.
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install project (with dev tooling)
+        run: uv sync
+
+      # Coverage is measured and reported (term-missing). No minimum threshold is
+      # enforced yet so the suite stays green while coverage is established; a
+      # `--cov-fail-under` gate can be added once a baseline is agreed.
+      - name: Run tests with coverage
+        run: uv run pytest --cov --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.os }}
+          path: coverage.xml
+          if-no-files-found: ignore

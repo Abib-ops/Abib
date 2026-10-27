@@ -10,6 +10,7 @@ from typing import cast
 
 # noinspection PyPep8Naming
 from abib import Abib as app
+from abib.ui.search_controller import SearchController
 
 
 class FakeHighlighter:
@@ -183,6 +184,8 @@ def test_find_next_history_uses_top_verse_shown_in_main_window(monkeypatch):
     monkeypatch.setattr(app.history, "back_push", lambda win, current_position: pushed_positions.append(current_position))
     monkeypatch.setattr(app, "get_next_occurrence", lambda: 20)
 
-    app.MainWindow.find_f4_alt(cast(app.MainWindow, cast(object, fake_self)))
+    # ``find_f4_alt`` now lives on ``SearchController``; drive it through the
+    # controller with the fake dispatch object standing in for the window.
+    SearchController(cast(app.MainWindow, cast(object, fake_self))).find_f4_alt()
 
     assert pushed_positions == [99]

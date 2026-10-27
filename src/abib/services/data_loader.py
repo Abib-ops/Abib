@@ -68,14 +68,14 @@ class DataLoader:
 
         # KJV text and copyright trimming
         KJB_PCE_LASTLINE = 36199
-        KJV = fcs.readio("KJB_PCE.txt", KJB_PCE_LASTLINE)
+        KJV_lines = fcs.readio("KJB_PCE.txt", KJB_PCE_LASTLINE)
 
         EOTNOC = '****END OF THE NOTICE OF COPYRIGHT****\n'
         try:
-            i_ = KJV.index(EOTNOC)
+            i_ = KJV_lines.index(EOTNOC)
         except ValueError as e:
             raise SystemExit('Failed to find copyright marker; reinstall may resolve.') from e
-        KJV = tuple(KJV[i_ + 1:])
+        KJV: tuple[str, ...] = tuple(KJV_lines[i_ + 1:])
 
         # Amap
         Amap_raw = sh.readfile("Amap.txt", sh.EOF_AMAP, self.base_dir)

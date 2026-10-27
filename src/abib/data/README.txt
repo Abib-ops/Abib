@@ -10,10 +10,48 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.43
+Abib v417.44
 ------------
 
 Changelog.
+Abib v417.44
+
+- Maintenance: Code-quality, structure, and cross-platform release with no
+  change to features or on-screen behaviour. The work focuses on making Abib
+  easier to maintain and contribute to.
+- Continuous integration. A GitHub Actions workflow now runs on every push,
+  linting the code with "ruff", type-checking it with "mypy", and running the
+  full "pytest" test suite head-less on Linux, Windows, and macOS, so
+  regressions are caught automatically.
+- Type checking and coverage. Static type checking ("mypy") and test-coverage
+  reporting ("pytest-cov") were introduced for the modular core, domain,
+  services, and utils packages, and several latent type issues uncovered in
+  those packages were fixed.
+- Internal refactor of the main window. The large "MainWindow" class was
+  broken up one concern at a time into focused controllers for content
+  download/sync, verse navigation, and search, with new unit tests for each.
+  "MainWindow" is now a thinner coordinator; the menus, shortcuts, and
+  behaviour are unchanged.
+- Dependency and version hygiene. The duplicated development-dependency lists
+  were consolidated into a single source of truth with aligned version pins,
+  and the declared minimum Python version was corrected from an arbitrary
+  "3.15" down to the honest floor the code actually requires, "3.14".
+- Cross-platform handling. The scattered operating-system checks were
+  centralised behind a small, tested "abib.utils.platform" helper
+  (is_windows / is_macos / is_linux / is_windows_10), and the test suite now
+  also runs on macOS in CI.
+- Documentation. A new "CONTRIBUTING.md" describes the development setup, the
+  ruff/mypy/pytest checks, and the build/packaging flow; the long developer
+  and Linux notes were moved out of the main source header into "README.md"
+  and "CONTRIBUTING.md", and small Help-text wording was polished.
+
+This is a maintenance release that adds a continuous-integration safety net
+(ruff, mypy, pytest across Linux, Windows, and macOS), begins modularising
+the main window into tested controllers, tidies the dependency and Python
+version declarations, centralises cross-platform checks, and improves the
+contributor documentation, with no change to features. Built with Python
+3.15.0 and PySide6 6.12.0 (64-bit).
+
 Abib v417.43
 
 - Security: Dependency update to address a critical-severity vulnerability
@@ -26,8 +64,6 @@ Abib v417.43
 This is a security maintenance release that updates the bundled "certifi"
 certificates to close a critical-severity advisory, with no change to
 features. Built with Python 3.15.0 and PySide6 6.12.0 (64-bit).
-
-
 
 Abib v417.42
 
@@ -42,11 +78,12 @@ Abib v417.42
   neither box is ticked.
 
 This release makes the Other Works text search more precise by adding
-whole-word and case-sensitive matching options. Built with Python 3.15.0 and
-PySide6 6.12.0 (64-bit).
+whole-word and case-sensitive matching options. It also incorporates the
+v417.41 maintenance changes below, which were never released on their own but
+folded into this release. Built with Python 3.15.0 and PySide6 6.12.0
+(64-bit).
 
-
-Abib v417.41 (unreleased)
+Abib v417.41 (not released separately; combined into v417.42)
 
 - Maintenance: Code-quality and housekeeping release with no change to
   features or behaviour. Missing licence headers were added to the source
@@ -440,7 +477,7 @@ Abib v417.25
   window is being shown and positioned programmatically, save_width() and
   resizeEvent() now skip persisting the width, so only genuine, user-driven
   resizes are saved. The flag is set around the show()/positioning sequence in
-  Abib._update_search_results_panel() and always reset afterwards.
+  Abib.update_search_results_panel() and always reset afterwards.
 - Dependencies: charset-normalizer upgraded from 3.4.9 to 3.5.0, pyinstaller
   upgraded from 6.21.0 to 6.22.0, and setuptools upgraded from 83.0.0 to
   84.0.0. Dependencies refreshed via uv sync --all-extras --upgrade.

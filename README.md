@@ -14,7 +14,7 @@ It takes little room and has separate windows for the various parts.
 - which is John 3:16 or 1th5.28 for 1 Thessalonians 5:28.
 - Compact: a tidy window that sits neatly beside video or notes.
 - Simple 'Find': find words and phrases fast in the Bible.
-- Search the Books, Commentaries, and Dictionaries, with the 'Search' button.
+- Search the Books, Commentaries and Dictionaries, with the 'Search' button.
 - **Concordance (new):** browse every word of the KJV alphabetically with its
   occurrence count, or type two or more words for an instant whole‑word phrase
   search across the whole Bible. Click any result to jump straight to the verse.
@@ -42,6 +42,40 @@ It takes little room and has separate windows for the various parts.
    - https://github.com/Abib-ops/Abib/releases
 2) Run the installer and follow the prompts.
 3) Launch “Abib” from your Start menu.
+
+## Running on Linux / macOS
+
+Abib is developed primarily on Windows, but it is a pure PySide6 application and
+runs on Linux and macOS from source. Cross-platform behaviour (paths, per-user
+settings directories and the few operating-system branches) is centralised and
+tested, and CI runs the test suite on Linux, Windows and macOS.
+
+Run from source (using [uv](https://docs.astral.sh/uv/)):
+
+```bash
+uv sync
+uv run python src/abib/Abib.py
+```
+
+Or with a plain virtual environment:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate          # macOS/Linux
+python3 -m pip install --upgrade pip
+python3 -m pip install -e .
+python3 -m abib.Abib
+```
+
+If you see Qt start-up errors on Linux, install your distribution's Qt/XCB
+packages (e.g. `libxcb`, `xcb-util`, `xcb-util-keysyms`, and the X11/Wayland
+platform plugins). For headless environments set `QT_QPA_PLATFORM=offscreen`.
+
+## Contributing
+
+Contributions — including Linux/macOS improvements — are welcome. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, how to run the
+`ruff`/`mypy`/`pytest` checks and the build/packaging flow.
 
 
 ## Quick start
@@ -143,7 +177,7 @@ These Public Domain PDFs are distributed separately and can be downloaded from h
 - John Flavel — A Saint Indeed			
 - John Owen — A Display of Arminianism; Catechisms, Of Communion with God the Father, 
 -  Pneumatologia, The Doctrine of the Saints' Perseverance, 
--  The Death of Death in the Death of Christ, Son, and Holy Ghost,			
+-  The Death of Death in the Death of Christ, Son and Holy Ghost,			
 -  The Doctrine of Justification by Faith, The Mystery of the Gospel Vindicated and Socinianism Examined,
 -  The Sermons of John Owen	
 - Jonathan Edwards — The Works of Jonathan Edwards Volumes 1 & 2			
@@ -153,7 +187,7 @@ These Public Domain PDFs are distributed separately and can be downloaded from h
 - Reuben Archer Torrey — Torrey's New Topical Textbook			
 - Rev. Dr. Horatius Bonar, D.D. — God's Way of Peace			
 - Richard Baxter — A Call to the Unconverted to Turn and Live			
-- Robert Jamieson, A. R. Fausset, and David Brown — Commentary Critical and Explanatory on the Whole Bible			
+- Robert Jamieson, A. R. Fausset and David Brown — Commentary Critical and Explanatory on the Whole Bible			
 - Sadhu Sundar Singh — At The Master's Feet			
 		
 - Many public-domain texts were sourced via the Christian Classics Ethereal Library (CCEL, ccel.org).

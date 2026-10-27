@@ -20,72 +20,18 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-r"""
+"""Abib Bible Reader (אביב) — application entry point.
+
+A compact PySide6 Bible reader. This module hosts ``MainWindow`` and wires the
+widgets to the controllers/services extracted into the ``abib`` sub-packages.
+
+Developer and cross-platform notes (running on Linux/macOS, the dev setup, and
+the build/packaging flow) now live in ``README.md`` and ``CONTRIBUTING.md``
+rather than in this header.
+
 Third-party materials and attributions:
 - Pure Cambridge Edition of the KJV — see source and terms at bibleprotector.com
 - Spurgeon resources — see spurgeon.org and Eternal Life Ministries for terms
-
-                      .
-               .               .
-            .                      .                      .
-          .                            .             .
-        .      O                           .     .
-       .                                      .
-        .                                  .     .
-          .                            .             .
-            .                      .                      .
-               .               .
-                       .
-
-
-Abib Bible Reader אביב
-
-Using PySide6-6.12.0 and python3.15.0 (64-bit).
-
-25/10/2026
-
-# Automatically upgrade all packages to their latest versions
-uv sync --all-extras --upgrade
-
-----------------------------------------------------------------------------------------------------------------
-Linux users — a sincere apology and quick guidance
-We’re sorry: Abib is currently Windows‑centric, and our small team hasn’t kept multi‑platform support up to date.
-We appreciate your patience, and we welcome improvements from Linux contributors.
-
-Quick start on Linux (unofficial)
-•
-Copy the Abib folder to your home directory.
-•
-In a terminal, from that folder:
-
-# (optional but recommended)
-python3 -m venv .venv && source .venv/bin/activate
-python3 -m pip install --upgrade pip wheel
-python3 -m pip install pyside6
-
-# make the main script executable if needed
-chmod +x Abib.py
-
-# run it
-python3 Abib.py
-# or, if it has a shebang
-./Abib.py
-
-If Qt errors occur, install system Qt/XCB deps (e.g. libxcb, xcb-util, xcb-util-keysyms,
-Wayland/X11 plugins) via your distro’s package manager.
-
-Tips for porting (small but high‑impact)
-•
-Replace Windows paths (backslashes, drive letters) with pathlib.Path throughout;
-avoid hard‑coded C:\… and use relative paths.
-•
-Gate platform code with sys.platform.startswith('win') and provide Linux alternatives.
-•
-Use forward‑slash paths or Path methods when building file locations.
-•
-Avoid shell‑only Windows commands; prefer Python equivalents (file I/O, env vars).
-•
-Test with QT_QPA_PLATFORM=xcb (X11) or ensure Wayland plugins are present.
 """
 
 import logging
@@ -353,12 +299,10 @@ class MainWindow(QMainWindow):
         self.other_works_references_window: Any = None
         self.other_works_text_search_service: Any = None
         self.other_works_text_search_window: Any = None
-        # Progress dialog shown while books are downloading (menu-triggered).
-        self._download_progress_dialog: Any = None
         # References to the background content-sync thread/worker, kept alive
         # for the duration of a sync so they are not garbage-collected.
-        self._content_sync_thread: Any = None
-        self._content_sync_worker: Any = None
+        self.content_sync_thread: Any = None
+        self.content_sync_worker: Any = None
         # Guard flag to avoid recursive move/resize while repositioning the
         # separate Search Results window relative to the main window.
         self.positioning_search_results: bool = False
@@ -372,6 +316,27 @@ class MainWindow(QMainWindow):
         # Theming controller (owns palette/refresh logic; MainWindow delegates to it)
         from abib.ui.theme_controller import ThemeController  # local import (deferred)
         self.theme_ctrl = ThemeController(self)
+
+        # Content-sync controller (owns Other Works download/sync logic; MainWindow
+        # delegates to it)
+        from abib.ui.content_sync_controller import (
+            ContentSyncController,  # local import (deferred)
+        )
+        self.content_sync = ContentSyncController(self)
+
+        # Navigation controller (owns verse navigation / history; MainWindow
+        # delegates to it)
+        from abib.ui.navigation_controller import (
+            NavigationController,  # local import (deferred)
+        )
+        self.nav_ctrl = NavigationController(self)
+
+        # Search controller (owns the Find dialog lifecycle and find-next
+        # orchestration; MainWindow delegates to it)
+        from abib.ui.search_controller import (
+            SearchController,  # local import (deferred)
+        )
+        self.search_ctrl = SearchController(self)
 
         # Search Results window manager (owns the results panel lifecycle/geometry)
         from abib.ui.results_window_manager import (
@@ -590,7 +555,7 @@ class MainWindow(QMainWindow):
 
         self.results_manager.position_search_results_window()
 
-    def _update_search_results_panel(self) -> None:
+    def update_search_results_panel(self) -> None:
         """Delegate to the Search Results window manager."""
 
         self.results_manager.update_search_results_panel()
@@ -944,7 +909,7 @@ class MainWindow(QMainWindow):
                     mapping[p.stem] = str(p)
         self.other_works_map = mapping
         if self.other_works_map:
-            self._refresh_other_works_combo()
+            self.refresh_other_works_combo()
 
             last_work = self.settings.get("last_other_work") if isinstance(self.settings, dict) else None
             if last_work and last_work in self.other_works_map:
@@ -976,7 +941,7 @@ class MainWindow(QMainWindow):
 
         self.apply_font_size()  # Set an initial font size from settings
 
-    def _refresh_other_works_combo(self) -> None:
+    def refresh_other_works_combo(self) -> None:
         """Repopulate the Other Works combo with every available work.
 
         The user chooses which optional works to download (via the "Update
@@ -995,326 +960,25 @@ class MainWindow(QMainWindow):
         finally:
             self.other_works_combo.blockSignals(False)
 
-    def _reload_other_works(self) -> None:
-        """Re-scan the bundled + user Other Works directories and refresh the UI.
-
-        Called after a content sync so newly downloaded (or removed) titles appear
-        without an application restart. Rebuilds the combo and recreates the
-        reference-index / text-search services (keyed on the updated map) so any
-        open browser windows pick up the changes.
-        """
-        mapping: dict[str, str] = {}
-        for other_works_dir in sh.other_works_dirs():
-            for p in sorted(other_works_dir.glob("*.txt")):
-                if p.is_file():
-                    mapping[p.stem] = str(p)
-        self.other_works_map = mapping
-
-        self._refresh_other_works_combo()
-        try:
-            last_work = self.settings.get("last_other_work") if isinstance(self.settings, dict) else None
-            if self.other_works_combo is not None:
-                # Block signals while restoring the selection: unlike the initial
-                # setup (where the combo is populated before currentTextChanged is
-                # connected), here the signal is already wired to _open_other_work,
-                # so an unguarded setCurrentText would pop open the Other Works
-                # window after a download. The user just wants the list refreshed.
-                self.other_works_combo.blockSignals(True)
-                try:
-                    if last_work and last_work in self.other_works_map:
-                        self.other_works_combo.setCurrentText(str(last_work or ""))
-                    elif "Pilgrims-Progress" in self.other_works_map:
-                        self.other_works_combo.setCurrentText("Pilgrims-Progress")
-                finally:
-                    self.other_works_combo.blockSignals(False)
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            logger.debug("Could not restore Other Works combo selection", exc_info=True)
-
-        # Recreate the reference index with the updated map so an open window
-        # reflects the new titles (rebuild() alone keeps the stale map).
-        if getattr(self, "other_works_reference_index", None) is not None:
-            try:
-                from abib.services.other_works_reference_index import (
-                    OtherWorksReferenceIndex,
-                )
-                self.other_works_reference_index = OtherWorksReferenceIndex(self.other_works_map)
-                if self.other_works_references_window is not None:
-                    self.other_works_references_window._service = self.other_works_reference_index
-                    self.other_works_references_window.clear_search()
-            except (AttributeError, RuntimeError, TypeError, ValueError):
-                logger.debug("Could not refresh Other Works reference index", exc_info=True)
-
-        # Recreate the text-search service likewise.
-        if getattr(self, "other_works_text_search_service", None) is not None:
-            try:
-                from abib.services.other_works_text_search import (
-                    OtherWorksTextSearchService,
-                )
-                self.other_works_text_search_service = OtherWorksTextSearchService(self.other_works_map)
-                if self.other_works_text_search_window is not None:
-                    self.other_works_text_search_window._service = self.other_works_text_search_service
-                    self.other_works_text_search_window.clear_search()
-            except (AttributeError, RuntimeError, TypeError, ValueError):
-                logger.debug("Could not refresh Other Works text search service", exc_info=True)
-
-    @staticmethod
-    def _format_sync_summary(summary: dict) -> str:
-        """Build a short status-bar message describing a content-sync result."""
-        status = str(summary.get("status", "")) if isinstance(summary, dict) else ""
-        if status == "offline":
-            return "Other Works update: could not reach the content server."
-        if status == "unchanged":
-            return "Other Works are already up to date."
-        if status == "error":
-            return str(summary.get("message") or "Other Works update failed.")
-        # Prefer book-only counts (companion index files are never counted),
-        # falling back to the raw file counts for older summaries.
-        added = int(summary.get("added_books", summary.get("added", 0)) or 0)
-        updated = int(summary.get("updated_books", summary.get("updated", 0)) or 0)
-        removed = int(summary.get("removed_books", summary.get("removed", 0)) or 0)
-        if not (added or updated or removed):
-            return "Other Works are already up to date."
-        parts: list[str] = []
-        if added:
-            parts.append(f"{added} book{'' if added == 1 else 's'} added")
-        if updated:
-            parts.append(f"{updated} book{'' if updated == 1 else 's'} updated")
-        if removed:
-            parts.append(f"{removed} book{'' if removed == 1 else 's'} removed")
-        prefix = "Other Works updated" if status == "ok" else "Other Works partially updated"
-        return f"{prefix}: {', '.join(parts)}."
-
-    def _on_content_sync_finished(self, summary: dict) -> None:
-        """Handle completion of a background content sync (menu or startup)."""
-        try:
-            changed = isinstance(summary, dict) and (
-                summary.get("added") or summary.get("updated") or summary.get("removed")
-            )
-            if changed:
-                self._reload_other_works()
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            logger.debug("Failed to reload Other Works after sync", exc_info=True)
-        # Show a brief status-bar message (menu-triggered syncs are the main
-        # beneficiary; the message is harmless on startup too).
-        try:
-            if getattr(self, "statusBar", None) is not None:
-                self.statusBar.showMessage(self._format_sync_summary(summary), 6000)
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            logger.debug("Could not display content-sync status message", exc_info=True)
+    def on_content_sync_finished(self, summary: dict) -> None:
+        """GUI-thread slot: delegate to the content-sync controller."""
+        self.content_sync.on_content_sync_finished(summary)
 
     def update_other_works(self) -> None:
-        """Menu action: let the user pick which Other Works to download, then sync.
-
-        Fetches the remote manifest, shows a checklist of available books
-        (pre-ticking the user's current subscription / already-installed
-        titles), persists the chosen set as ``subscribed_works`` and starts a
-        background sync restricted to that selection.
-        """
-        try:
-            if getattr(self, "statusBar", None) is not None:
-                self.statusBar.showMessage("Checking for Other Works updates…", 4000)
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            logger.debug("Could not display content-sync start message", exc_info=True)
-
-        available: Any = None
-        try:
-            from abib.core import content_sync
-            remote = content_sync.fetch_remote_manifest()
-            if remote is not None:
-                available = content_sync.list_available(remote)
-        except (ImportError, RuntimeError, AttributeError, TypeError, ValueError):
-            logger.debug("Could not fetch Other Works manifest", exc_info=True)
-            remote = None
-
-        if remote is None or available is None:
-            try:
-                if getattr(self, "statusBar", None) is not None:
-                    self.statusBar.showMessage(
-                        "Other Works update: could not reach the content server.", 6000
-                    )
-            except (RuntimeError, AttributeError, TypeError, ValueError):
-                logger.debug("Could not display content-sync offline message", exc_info=True)
-            return
-
-        # Pre-select: the user's saved subscription, falling back to whatever is
-        # already downloaded so an existing library stays ticked.
-        subscribed = set(self.settings.get("subscribed_works") or []) if isinstance(self.settings, dict) else set()
-        if not subscribed:
-            subscribed = {str(b.get("stem")) for b in available if b.get("downloaded")}
-
-        try:
-            # noinspection PyPackageRequirements
-            from PySide6.QtWidgets import QDialog
-
-            from abib.ui.other_works_download_dialog import OtherWorksDownloadDialog
-            dialog = OtherWorksDownloadDialog(self, available, subscribed)
-            if dialog.exec() != QDialog.DialogCode.Accepted:
-                return
-            selected = dialog.selected_stems()
-        except (ImportError, RuntimeError, AttributeError, TypeError, ValueError):
-            logger.debug("Could not show Other Works download dialog", exc_info=True)
-            return
-
-        # Persist the user's choice so the throttled startup sync keeps exactly
-        # these titles current.
-        try:
-            if isinstance(self.settings, dict):
-                self.settings["subscribed_works"] = sorted(selected)
-                if getattr(self, "settings_service", None):
-                    self.settings_service.save(self.settings)
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            logger.debug("Could not persist subscribed_works", exc_info=True)
-
-        self._start_content_sync(force=True, selected_stems=selected, show_progress=True)
+        """Menu action: delegate to the content-sync controller."""
+        self.content_sync.update_other_works()
 
     def maybe_auto_sync_content(self) -> None:
-        """Start a throttled (at most once/day) background content sync at startup."""
-        from datetime import datetime, timedelta
-        now = datetime.now()
-        try:
-            last = str(self.settings.get("last_content_sync", "")) if isinstance(self.settings, dict) else ""
-        except (AttributeError, TypeError, ValueError):
-            last = ""
-        # TESTING: the once-per-day download throttle is temporarily disabled, so
-        # the background content sync runs on every startup. To restore the limit,
-        # set ``throttle_enabled`` back to True (or remove this override).
-        throttle_enabled = True
-        due = True
-        if throttle_enabled and last:
-            try:
-                due = (now - datetime.fromisoformat(last)) >= timedelta(days=1)
-            except ValueError:
-                due = True
-        if not due:
-            return
-        # Only the books the user subscribed to are kept current automatically;
-        # nothing is downloaded until the user opts in via "Update Other Works…".
-        subscribed = set(self.settings.get("subscribed_works") or []) if isinstance(self.settings, dict) else set()
-        if not subscribed:
-            return
-        # Record the attempt now so the throttle holds even if the sync fails.
-        try:
-            if isinstance(self.settings, dict):
-                self.settings["last_content_sync"] = now.isoformat()
-                if getattr(self, "settings_service", None):
-                    self.settings_service.save(self.settings)
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            logger.debug("Could not persist last_content_sync timestamp", exc_info=True)
-        self._start_content_sync(force=False, selected_stems=subscribed)
+        """Startup hook: delegate to the content-sync controller."""
+        self.content_sync.maybe_auto_sync_content()
 
-    def _start_content_sync(self, force: bool, selected_stems: Any = None,
-                            show_progress: bool = False) -> None:
-        """Kick off a background content sync, keeping worker/thread references alive.
+    def on_download_progress(self, done: int, total: int) -> None:
+        """GUI-thread slot: delegate to the content-sync controller."""
+        self.content_sync.on_download_progress(done, total)
 
-        When ``show_progress`` is set (menu-triggered downloads), a green
-        progress bar is shown reporting the number of *books* downloaded
-        (companion index files are never counted).
-        """
-        try:
-            from abib.core import content_sync
-            # Create the worker/thread but DON'T start yet, so every GUI slot is
-            # connected before the worker can emit any signal. Starting first
-            # caused a race where the first progress (or even finished) could be
-            # emitted before the UI connected, leaving the bar stuck open and the
-            # Other Works list unrefreshed ("bar appears but nothing happens").
-            self._content_sync_thread, self._content_sync_worker = content_sync.start_background_sync(
-                self, force=force, selected_stems=selected_stems, autostart=False
-            )
-            if show_progress:
-                self._show_download_progress(self._content_sync_worker)
-            self._content_sync_worker.finished.connect(self._on_content_sync_finished)
-            # All slots connected — now it is safe to start the worker thread.
-            self._content_sync_thread.start()
-        except (ImportError, RuntimeError, AttributeError, TypeError, ValueError):
-            logger.debug("Could not start background content sync", exc_info=True)
-
-    def _show_download_progress(self, worker: Any) -> None:
-        """Show a green progress bar tracking the book downloads of ``worker``.
-
-        The bar's range/value count *books only* (the ``(done, total)`` values
-        emitted by the worker already exclude companion index files), so the
-        number shown to the user never includes companions.
-        """
-        try:
-            # noinspection PyPackageRequirements
-            from PySide6.QtCore import Qt
-
-            # noinspection PyPackageRequirements
-            from PySide6.QtWidgets import QProgressBar, QProgressDialog
-
-            # Start as a busy/indeterminate bar (0..0) so the dialog is visible
-            # immediately, before the first progress tick arrives.
-            dialog = QProgressDialog("Preparing to download Other Works…", "", 0, 0, self)
-            dialog.setWindowTitle("Downloading Other Works")
-            dialog.setWindowModality(Qt.WindowModality.WindowModal)
-            dialog.setMinimumDuration(0)
-            dialog.setAutoClose(False)
-            dialog.setAutoReset(False)
-            # No Cancel button: the sync cannot be safely interrupted mid-file.
-            dialog.setCancelButton(None)
-
-            # A green progress bar (the "chunk" is the filled portion).
-            bar = QProgressBar(dialog)
-            bar.setTextVisible(True)
-            bar.setStyleSheet(
-                "QProgressBar {"
-                " border: 1px solid #3a3a3a;"
-                " border-radius: 4px;"
-                " text-align: center;"
-                " }"
-                "QProgressBar::chunk {"
-                " background-color: #2ecc40;"
-                " }"
-            )
-            dialog.setBar(bar)
-
-            self._download_progress_dialog = dialog
-            # Force the dialog to render now rather than relying on the
-            # auto-show timer (downloads may finish before it would appear).
-            dialog.show()
-            dialog.raise_()
-
-            # Connect the worker signals to *bound methods* of this window
-            # (which lives on the GUI thread). A cross-thread signal to a
-            # QObject slot is auto-delivered as a queued call on the receiver's
-            # (GUI) thread, so the bar actually updates/closes. Connecting to
-            # plain local functions — even with an explicit QueuedConnection —
-            # is unreliable because such slots have no thread affinity, which
-            # left the bar frozen and the sync looking like it never ran.
-            worker.progress.connect(self._on_download_progress)
-            worker.finished.connect(self._on_download_finished)
-        except (ImportError, RuntimeError, AttributeError, TypeError, ValueError):
-            logger.debug("Could not show download progress dialog", exc_info=True)
-
-    def _on_download_progress(self, done: int, total: int) -> None:
-        """GUI-thread slot: update the green download progress bar."""
-        dialog = self._download_progress_dialog
-        if dialog is None:
-            return
-        try:
-            if total <= 0:
-                # Nothing to download — don't leave an empty bar lingering.
-                dialog.close()
-                self._download_progress_dialog = None
-                return
-            dialog.setMaximum(int(total))
-            dialog.setValue(int(done))
-            dialog.setLabelText(
-                f"Downloading Other Works… {int(done)} of {int(total)} book"
-                f"{'' if total == 1 else 's'}"
-            )
-        except (RuntimeError, AttributeError, TypeError, ValueError):
-            logger.debug("Could not update download progress", exc_info=True)
-
-    def _on_download_finished(self, _summary: dict) -> None:
-        """GUI-thread slot: close the download progress bar when done."""
-        dialog = self._download_progress_dialog
-        if dialog is not None:
-            try:
-                dialog.close()
-            except (RuntimeError, AttributeError, TypeError, ValueError):
-                logger.debug("Could not close download progress dialog", exc_info=True)
-        self._download_progress_dialog = None
+    def on_download_finished(self, _summary: dict) -> None:
+        """GUI-thread slot: delegate to the content-sync controller."""
+        self.content_sync.on_download_finished(_summary)
 
     def eventFilter(self, source: QObject, event: QEvent) -> bool:
         """Custom event filter to handle key events on QLineEdit."""
@@ -1925,37 +1589,16 @@ class MainWindow(QMainWindow):
     # Create a slot for launching the find dialog box.
 
     def on_find_button_clicked(self) -> None:
-        """Launch the Find dialog box."""
-
-        self.reload()  # Reload KJB_PCE.txt if another file loaded.
-
-        if self.dlg is None:
-            from abib.ui.find_dialog import FindDialog  # deferred import
-            self.dlg = FindDialog(self, settings_service=self.settings_service)
-            # Apply the theme palette to the Find dialog (apply_widget is internally safe)
-            self.theme.apply_widget(self.dlg)
-            self.dlg.exec()
-        else:
-            self.show_find_window()
+        """Launch the Find dialog box (delegates to SearchController)."""
+        self.search_ctrl.on_find_button_clicked()
 
     def show_find_window(self) -> None:
-        """Show the Find window."""
-
-        if self.dlg is None:
-            from abib.ui.find_dialog import FindDialog  # deferred import
-            self.dlg = FindDialog(self, settings_service=self.settings_service)
-            # Apply the theme palette to the Find dialog (apply_widget is internally safe)
-            self.theme.apply_widget(self.dlg)
-            self.dlg.show()
-        else:
-            # Ensure the theme is applied before showing
-            self.theme.apply_widget(self.dlg)
-            self.dlg.show()
+        """Show the Find window (delegates to SearchController)."""
+        self.search_ctrl.show_find_window()
 
     def close_find_window(self) -> None:
-        """Close the Find window."""
-
-        self.dlg.hide()
+        """Close the Find window (delegates to SearchController)."""
+        self.search_ctrl.close_find_window()
 
     def toggle_fullscreen(self) -> None:
         """Fullscreen."""
@@ -1967,17 +1610,8 @@ class MainWindow(QMainWindow):
 
     # ENTRY POINT FOR F4 FIND NEXT.
     def find_next(self) -> None:
-        """Spaghetti Junction."""
-
-        self.display_verse_input.setFocus()
-
-        if self.dlg.checks[0] != 1 or self.dlg.checks[2] == 6:
-            self.find_f4_alt()
-        elif self.dlg.checks[0] == 1:
-            if self.gent is None:
-                self.search_current_word()
-            else:
-                self.find_f4()
+        """Spaghetti Junction (delegates to SearchController)."""
+        self.search_ctrl.find_next()
 
     def make_key_whole(self, _key: str, _dict: dict, _set: sh.WordSet) -> tuple[int, str]:
         """Delegate to the search engine."""
@@ -1990,73 +1624,8 @@ class MainWindow(QMainWindow):
         search_service.prepare_key_for_find(self)
 
     def find_in_range(self, x_start: int, x_end: int) -> None:
-        """Find function."""
-
-        # 1. Create a local reference with a type hint to satisfy the linter
-        win: Any = self
-
-        #self.display_verse_input.setFocus()
-        current_position = self.get_line_number()
-        savedx = current_position
-        error_flag = False
-
-        self.prepare_key_for_find()
-        try:
-            x1 = int(book_bounds[x_start])
-        except (IndexError, TypeError, ValueError):
-            x1 = 0
-        try:
-            x2 = int(book_bounds[x_end + 1]) - 1
-        except (IndexError, TypeError, ValueError):
-            x2 = sh.LAST_VERSE_IN_BIBLE
-        current_position = x1
-
-        win.no_f3_yet = 1
-
-        win.keym = win.key
-        if win.key == '' or win.key == ' ':
-            win.y = -1
-            win.no_f3_yet = 0
-            win.occurring = 0
-            self.statusBar.clearMessage()
-            self.statusBar.repaint()
-        else:
-            self.statusBar.showMessage('Finding...')
-            self.statusBar.repaint()
-            keylow = win.key.lower()
-            win.y = 0
-            win.occurring = 0
-
-            if self.dlg.checks[2] == 6:
-                self.iterate_regex(search_service.get_search_data().Rnew, x1, x2)
-                if win.occurring != 0:
-                    win.y = win.occur[0][0][0]
-                    win.occurrence = 0
-                    win.verse = 0
-                    win.finding = -1
-                    current_position = get_next_occurrence()
-                    if win.message:
-                        self.statusBar.showMessage(win.message)
-                    self.statusBar.repaint()
-            else:
-                tv = self.dlg.checks[0] == 1   # Raw
-                if not tv:
-                    current_position = self.find_whole_word(x1, x2)
-                elif tv:
-                    # Raw.
-                    current_position = self.find_raw(current_position, x1, x2, keylow)
-
-        if win.occurring == 0:
-            current_position = savedx
-            self.on_error('Not found...', 2000, True)
-            error_flag = True
-
-        if win.key in ('q', 'Q'):
-            self.display_verse_input.clear()
-            sys.exit()
-        if not error_flag:
-            self.goto_line_find(current_position)
-        self._update_search_results_panel()
+        """Find function (delegates to SearchController)."""
+        self.search_ctrl.find_in_range(x_start, x_end)
 
     def iterate_regex(self, r: tuple, x1: int, x2: int) -> None:
         """Delegate to the search engine."""
@@ -2089,71 +1658,12 @@ class MainWindow(QMainWindow):
         return search_service.occurrent(self, x1, x2)
 
     def find_f4(self) -> None:
-        """Repeat find frontend for raw search."""
-
-        # 1. Create a local reference with a type hint to satisfy the linter
-        win: Any = self
-
-        if win.occurrence < win.occurring:
-            current_position = self.get_line_number()
-
-            if forward:
-                history.back_push(self, current_position)
-                while forward:
-                    b_ = forward.pop()
-                    back.append(b_)
-            else:
-                forward.clear()
-                history.back_push(self, current_position)
-
-            # Ensure self.gent is a valid generator
-            gent = self.gent
-            if gent is None:
-                raise ValueError(
-                    "self.gent has not been initialized. It must be assigned a valid generator before calling find_f4.")
-
-            try:
-                current_position, win.y, win.occurrence = next(gent)
-            except StopIteration:
-                # Handle generator exhaustion if needed
-                self.statusBar.showMessage("Search completed: no more matches.")
-                return
-
-            # Set the status bar message and other UI updates.
-            win.statusBar.showMessage(win.nav.get_status_message(current_position))
-            if win.message:
-                self.statusBar.showMessage(win.message)
-            self.statusBar.repaint()
-            self.goto_line_find(current_position)
+        """Repeat find frontend for raw search (delegates to SearchController)."""
+        self.search_ctrl.find_f4()
 
     def find_f4_alt(self) -> None:
-        """Repeat find frontend for Whole words."""
-
-        # 1. Create a local reference with a type hint to satisfy the linter
-        win: Any = self
-
-        if len(win.occurs) > 0 and win.occurrence < win.occurring:
-            current_position = self.get_line_number()
-            if forward:
-                history.back_push(self, current_position)
-                while forward:
-                    b_ = forward.pop()
-                    back.append(b_)
-            else:
-                forward.clear()
-                history.back_push(self, current_position)
-
-            if self.dlg.checks[0] in (3, 4):
-                win.verse += 1
-                current_position = win.occurs[win.verse]
-                win.finding = -1
-            if self.dlg.checks[0] in (2, 3, 4) or self.dlg.checks[2] == 6:
-                current_position = get_next_occurrence()
-
-            if win.message:
-                self.statusBar.showMessage(win.message)
-            self.statusBar.repaint()
-            self.goto_line_find(current_position)
+        """Repeat find frontend for Whole words (delegates to SearchController)."""
+        self.search_ctrl.find_f4_alt()
 
     def gen(self, key: str, x1: int, x2: int):
         """Delegate to the search engine."""
@@ -2618,163 +2128,24 @@ class MainWindow(QMainWindow):
 
     # ENTRY POINT FOR F2 DISPLAY VERSE.
     def goto_line(self, ref: str = '') -> None:
-        """Move the display to the line requested."""
+        """Move the display to the line requested (delegates to NavigationController)."""
+        self.nav_ctrl.goto_line(ref)
 
-        self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        current_position: int = self.get_line_number()
-        forward.clear()
-        history.back_push(self, current_position)
-        reset_attributes()
-        if not ref:
-            ref = self.display_verse_input.text()
-        ref = fcs.remove_junk(ref)
-        if ref in ('q', 'Q'):
-            self.display_verse_input.clear()
-            sys.exit()
-
-        current_position = self.reference_to_line_number(ref)
-        if current_position == -1:
-            self.display_verse_input.clear()
-        else:
-            current_position = max(current_position, 0)
-            current_position = min(current_position, sh.LAST_VERSE_IN_BIBLE)
-            self.display_verse(current_position)
-
-    def  goto_book(self, _index: int) -> None:
-        """Move the display to the line requested by comboBox_1."""
-
-        # 1. Create a local reference with a type hint to satisfy the linter
-        win: Any = self
-
-        self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        current_position = self.get_line_number()
-        forward.clear()
-        history.back_push(self, current_position)
-        reset_attributes()
-        book: int = self.comboBox_1.currentIndex()
-        # book is an index 0-65
-        if book == sh.BOOKS_IN_THE_BIBLE - 1:
-            b = 22  # Number of chapters in Revelation
-        else:
-            a: int = sh.Info.index((book + 1, 0, 0))
-            b: int = sh.Info[a - 1][1] + 1  # No. of chapters in the book.
-        win.nchapters = []
-        for _ in range(1, b + 1):
-            win.nchapters.append(str(_))
-        self.comboBox_2.clear()
-        self.comboBox_2.addItems(self.nchapters)
-        self.comboBox_3.clear()
-        self.nverses = ['1']
-        self.comboBox_3.addItems(self.nverses)
-        ref = win.nwin[book]
-        ref = ref.replace(' ', '')
-        current_position = self.reference_to_line_number(ref, book)
-        current_position = max(current_position, 0)
-        current_position = min(current_position, sh.LAST_VERSE_IN_BIBLE)
-        self.display_verse(current_position)
-        self.goto_chapter(_index)
+    def goto_book(self, _index: int) -> None:
+        """Combo-box handler: delegate to the navigation controller."""
+        self.nav_ctrl.goto_book(_index)
 
     def goto_chapter(self, _index: int) -> None:
-        """Move the display to the line requested by comboBox_2."""
-
-        # 1. Create a local reference with a type hint to satisfy the linter
-        win: Any = self
-
-        self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        current_position: int = self.get_line_number()
-        forward.clear()
-        history.back_push(self, current_position)
-        reset_attributes()
-        book: int = self.comboBox_1.currentIndex()
-        chapter: int = self.comboBox_2.currentIndex()
-        if chapter == int(win.nchapters[-1]) - 1:
-            # No. of verses in the chapter.
-            if book == sh.BOOKS_IN_THE_BIBLE - 1:
-                d = 21
-            else:
-                c: int = sh.Info.index((book + 1, 0, 0)) - 1
-                d: int = sh.Info[c][2] + 1
-        else:
-            try:
-                c = sh.Info.index((book, chapter + 1, 0)) - 1
-            except ValueError:
-                c = sh.Info.index((book + 1, 0, 0)) - 1
-            d = sh.Info[c][2] + 1
-        win.nverses = []
-        for _ in range(1, d + 1):
-            win.nverses.append(str(_))
-        self.comboBox_3.clear()
-        self.comboBox_3.addItems(self.nverses)
-
-        ref = win.nwin[book]
-        ref = ref.replace(' ', '')
-        ref = f"{ref} {chapter + 1!s}"
-
-        current_position = self.reference_to_line_number(ref, book, chapter)
-        current_position = max(current_position, 0)
-        current_position = min(current_position, sh.LAST_VERSE_IN_BIBLE)
-        self.display_verse(current_position)
+        """Combo-box handler: delegate to the navigation controller."""
+        self.nav_ctrl.goto_chapter(_index)
 
     def goto_verse(self, _index: int) -> None:
-        """Move the display to the line requested by comboBox_3."""
-
-        # 1. Create a local reference with a type hint to satisfy the linter
-        win: Any = self
-
-        self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        current_position: int = self.get_line_number()
-        forward.clear()
-        history.back_push(self, current_position)
-        reset_attributes()
-        book: int = self.comboBox_1.currentIndex()
-        chapter: int = self.comboBox_2.currentIndex()
-        verse: int = self.comboBox_3.currentIndex()
-
-        ref = win.nwin[book]
-        ref = ref.replace(' ', '')
-        ref = f"{ref} {chapter + 1!s}.{verse + 1}"
-        current_position = self.reference_to_line_number(ref, book, chapter)
-        current_position = max(current_position, 0)
-        current_position = min(current_position, sh.LAST_VERSE_IN_BIBLE)
-        self.display_verse(current_position)
+        """Combo-box handler: delegate to the navigation controller."""
+        self.nav_ctrl.goto_verse(_index)
 
     def reference_to_line_number(self, reference_text: str, book: int = 0, chapter: int = 0) -> int:
-        """Convert reference text to a line number in the Bible."""
-        from abib.domain.scripture_refs import normalize_reference
-
-        current_line = self.get_line_number()
-        normalized = normalize_reference(reference_text, book, chapter)
-
-        if not normalized:
-            self.on_error("Invalid format. Please enter a valid reference.", 750, True)
-            return -1
-
-        # Handle numeric-only (verse in current chapter)
-        if normalized.isdigit():
-            verse = int(normalized) - 1
-            return self.calculate_position(current_line, verse)
-
-        # Handle floating point-style (e.g. "23.7" -> current book)
-        if fcs.is_float_re(normalized):
-             normalized = fcs.attach_book_name(normalized, current_line)
-
-        bits = fcs.split_reference(normalized)
-        book_num, chapter, verse = self.nav.resolve_reference(bits)
-
-        if not book_num:
-            self.error_invalid_book()
-
-        if book_num is None or chapter is None or verse is None:
-            return -1
-
-        try:
-            position = self.nav.calculate_line(book_num, chapter, verse, current_line)
-            if position is not None:
-                return position
-        except ValueError:
-            self.error_invalid_verse_or_position()
-
-        return -1
+        """Convert reference text to a line number (delegates to NavigationController)."""
+        return self.nav_ctrl.reference_to_line_number(reference_text, book, chapter)
 
     # Helper Methods
 
@@ -2913,53 +2284,20 @@ class MainWindow(QMainWindow):
         self.statusBar.clearMessage()
 
     def search_current_word(self) -> None:
-        """F3 key for find key entry."""
-
-        self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        current_position: int = self.get_line_number()
-        forward.clear()
-        history.back_push(self, current_position)
-        self.on_find_button_clicked()
+        """F3 key for find key entry (delegates to SearchController)."""
+        self.search_ctrl.search_current_word()
 
     def repeat_find_forward(self) -> None:
-        """Find the next key F4."""
-
-        # 1. Create a local reference with a type hint to satisfy the linter
-        win: Any = self
-
-        self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        if win.key == ' ' or win.no_f3_yet == 0:
-            pass
-        else:
-            self.textEditor.setFocus()
-            self.find_next()
+        """Find the next key F4 (delegates to SearchController)."""
+        self.search_ctrl.repeat_find_forward()
 
     def history_back(self) -> None:
-        """Back key."""
-
-        self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        # If we have just returned from an auxiliary file (README/COPYING/HELP),
-        # skip one Back action to keep the restored verse position, rather than
-        # popping history to an unrelated location (often Genesis 1:1).
-        if getattr(self, "_just_restored_from_aux", False):
-            self._just_restored_from_aux = False
-            return
-        self.message = ''
-        if len(back) > 0:
-            current_position: int = self.get_line_number()
-            history.forward_push(self, current_position)
-            current_position = history.back_pop(self)
-            self.display_verse_from_history(current_position)
+        """Back key: delegate to the navigation controller."""
+        self.nav_ctrl.history_back()
 
     def history_forward(self) -> None:
-        """Forward key."""
-
-        self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        if len(forward) > 0:
-            current_position: int = self.get_line_number()
-            history.back_push(self, current_position)
-            current_position = history.forward_pop(self)
-            self.display_verse_from_history(current_position)
+        """Forward key: delegate to the navigation controller."""
+        self.nav_ctrl.history_forward()
 
     def open_commentary_window_shortcut(self) -> None:
         """F9 Fullscreen toggle key."""
@@ -2984,92 +2322,20 @@ class MainWindow(QMainWindow):
         self.feature()
 
     def earlier_book(self) -> None:
-        """Move to the earlier book."""
-
-        self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        current_position: int = self.get_line_number()
-        book: int = sh.Info[current_position][0]
-        newbook: int = book - 1
-        if newbook < 0:
-            self.on_error('No earlier book!', 3000, True)
-        else:
-            forward.clear()
-            history.back_push(self, current_position)
-            reset_attributes()
-            current_position = sh.Info.index((newbook, 0, 0))
-            self.display_verse(current_position)
+        """Move to the earlier book: delegate to the navigation controller."""
+        self.nav_ctrl.earlier_book()
 
     def later_book(self) -> None:
-        """Move to the later book."""
-
-        self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        current_position: int = self.get_line_number()
-        book: int = sh.Info[current_position][0]
-        newbook: int = book + 1
-        if newbook > sh.BOOKS_IN_THE_BIBLE - 1:
-            self.on_error('No later book!', 3000, True)
-        else:
-            forward.clear()
-            history.back_push(self, current_position)
-            reset_attributes()
-            current_position = sh.Info.index((newbook, 0, 0))
-            self.display_verse(current_position)
+        """Move to the later book: delegate to the navigation controller."""
+        self.nav_ctrl.later_book()
 
     def earlier_chapter(self) -> None:
-        """Move to the earlier chapter."""
-
-        self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        current_position: int = self.get_line_number()
-        old_position = current_position
-        book: int = sh.Info[current_position][0]
-        chapter: int = sh.Info[current_position][1]
-        newchapter: int = chapter - 1
-        if newchapter < 0:
-            newbook: int = book - 1
-            if newbook < 0:
-                self.on_error('No earlier chapter!', 3000, True)
-                return
-            while True:
-                if sh.Info[current_position][0] == book:
-                    current_position -= 1
-                else:
-                    break
-            newchapter = sh.Info[current_position][1]
-            book = newbook
-        current_position = sh.Info.index((book, newchapter, 0))
-        forward.clear()
-        history.back_push(self, old_position)
-        reset_attributes()
-        self.display_verse(current_position)
+        """Move to the earlier chapter: delegate to the navigation controller."""
+        self.nav_ctrl.earlier_chapter()
 
     def later_chapter(self) -> None:
-        """Move to the later chapter."""
-
-        self.reload()  # Reload KJB_PCE.txt if another file loaded.
-        current_position: int = self.get_line_number()
-        old_position = current_position
-        book: int = sh.Info[current_position][0]
-        chapter: int = sh.Info[current_position][1]
-        newchapter: int = chapter + 1
-        try:
-            current_position = sh.Info.index((book, newchapter, 0))
-        except ValueError:
-            newbook: int = book + 1
-            if newbook > sh.BOOKS_IN_THE_BIBLE - 1:
-                self.on_error('No later chapter!', 3000, True)
-                return
-            while True:
-                if sh.Info[current_position][0] == book:
-                    current_position += 1
-                else:
-                    break
-            newchapter = sh.Info[current_position][1]
-            book = newbook
-        current_position = sh.Info.index((book, newchapter, 0))
-        forward.clear()
-        history.back_push(self, old_position)
-        reset_attributes()
-        self.display_verse(current_position)
+        """Move to the later chapter: delegate to the navigation controller."""
+        self.nav_ctrl.later_chapter()
 
     def on_error(self, message: str, millisecond_delay: int, clearbool: bool) -> None:
         """Error message handler."""

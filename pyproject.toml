@@ -4,10 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "abib"
-version = "417.43"
+version = "417.44"
 description = "A Bible study application"
 readme = "README.md"
-requires-python = ">=3.15"
+# Minimum supported Python. 3.14 is the real floor: the code relies on PEP 649
+# deferred evaluation of annotations (the default from 3.14), e.g. forward/
+# TYPE_CHECKING-only annotations in Abib.py and the UI modules are written
+# WITHOUT ``from __future__ import annotations`` and would raise at import on
+# 3.12/3.13. (It also uses a PEP 695 ``type`` alias, 3.12+, and reads its
+# version via the stdlib ``tomllib`` module, 3.11+.) This replaces the previous
+# arbitrary ``>=3.15`` pin with the lowest interpreter the code actually runs on.
+requires-python = ">=3.14"
 # FIX: Use a simple string for the licence to avoid the deprecation warning
 license = "GPL-3.0-or-later"
 dependencies = [
@@ -28,12 +35,6 @@ dependencies = [
     "pywin32-ctypes==0.2.3; sys_platform == 'win32'",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0.0",
-    "pyinstaller>=6.0.0",
-]
-
 # FIX: Explicitly define which folders and files are part of your package
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -46,13 +47,58 @@ packages = {find = {where = ["src"]}}
 testpaths = ["tests"]
 pythonpath = ["src"]
 
+[tool.coverage.run]
+branch = true
+source = ["abib"]
+omit = ["*/tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+# Lines/constructs that are not meaningful to cover.
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.mypy]
+python_version = "3.14"
+# The codebase is a large, historically untyped Qt application. Start with a
+# lenient baseline that still catches real errors on the already-modularised,
+# non-UI packages (core/domain/services/utils) and widen the scope
+# incrementally. The UI layer and the monolithic Abib.py are intentionally
+# left out for now: they are heavy PySide6 code slated for the planned
+# MainWindow refactor and would otherwise flood the baseline with Qt-specific
+# noise. Re-add them (and drop the lenient flags) as each area is cleaned up.
+files = [
+    "src/abib/core",
+    "src/abib/domain",
+    "src/abib/services",
+    "src/abib/utils",
+]
+ignore_missing_imports = true
+warn_redundant_casts = true
+warn_unused_ignores = false
+no_implicit_optional = true
+check_untyped_defs = false
+
 [tool.ruff.lint.per-file-ignores]
 # Abib.py is the main module, intentionally named in CamelCase; renaming it would break
 # the application's imports and packaging, so the module-name check is ignored.
 "src/abib/Abib.py" = ["N999"]
 
+# Single source of truth for development tooling. uv installs the ``dev`` group
+# by default for ``uv run``/``uv sync``; CI runs plain ``uv sync``. (The previous
+# duplicate ``[project.optional-dependencies].dev`` list, which pinned a
+# different pyinstaller version and omitted pytest, has been removed.)
 [dependency-groups]
 dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=7.1.0",
     "pyinstaller>=6.20.0",
+    "ruff>=0.6.0",
+    "mypy>=2.4.0",
 ]
 

@@ -24,7 +24,7 @@ def readfile(input_filename: str, file_length: int, base_dir: Path | None = None
         with open(path_to_open, 'r', encoding="utf-8") as f_read:
             # Bulk read all lines and slice to the required length
             lines = f_read.read().splitlines()[:file_length]
-            output_listname = []
+            output_listname: list[int | str] = []
             for line in lines:
                 # Faster than try-except for non-numeric strings
                 if line.isdigit() or (line.startswith('-') and line[1:].isdigit()):

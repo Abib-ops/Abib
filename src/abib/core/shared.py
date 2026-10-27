@@ -45,7 +45,7 @@ def _get_version() -> str:
             continue
             
     # 2. Hardcoded fallback (should be updated per release)
-    return "417.43"
+    return "417.44"
 
 CURRENT_VERSION = _get_version()
 
@@ -53,7 +53,7 @@ _meipass: str = getattr(sys, '_MEIPASS', '')
 if getattr(sys, 'frozen', False) and _meipass:
     package_directory: Path = Path(_meipass) / "abib"
 else:
-    package_directory: Path = Path(__file__).resolve().parent.parent
+    package_directory = Path(__file__).resolve().parent.parent
 
 current_directory: Path = package_directory / "data"
 str_cwd: str = str(current_directory)

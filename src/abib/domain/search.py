@@ -31,7 +31,7 @@ def find_words_any(_x1: int, _x2: int, _set_dict: WordSet, _kjv: Sequence[str]) 
     # This is a simplified version of find_whole_word_any
     # In practice, it usually intersects sets of line numbers
     # But for a direct port from what was in Abib.py:
-    results = []
+    results: list[int] = []
     # Implementation depends on how set_dict is used in the app
     # Usually it's word -> {set of line indices}
     return results

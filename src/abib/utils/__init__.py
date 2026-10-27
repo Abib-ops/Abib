@@ -4,6 +4,12 @@ from .files import (
     readfile,
     readio,
 )
+from .platform import (
+    is_linux,
+    is_macos,
+    is_windows,
+    is_windows_10,
+)
 from .roman_utils import (
     convert_roman_to_integer,
     isRoman,
@@ -30,6 +36,10 @@ __all__ = [
     'get_screen_size',
     'isRoman',
     'is_float_re',
+    'is_linux',
+    'is_macos',
+    'is_windows',
+    'is_windows_10',
     'load_json_dict',
     'load_list_set_dict',
     'punctuation_counter',
