@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "abib"
-version = "417.44"
+version = "417.45"
 description = "A Bible study application"
 readme = "README.md"
 # Minimum supported Python. 3.14 is the real floor: the code relies on PEP 649

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # Abib
 # Copyright (C) 2003–2026 <Contributors>
 # SPDX-License-Identifier: GPL-3.0-or-later

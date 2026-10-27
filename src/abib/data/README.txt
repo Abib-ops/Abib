@@ -10,10 +10,40 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.44
+Abib v417.45
 ------------
 
 Changelog.
+Abib v417.45
+
+- Maintenance: Code-quality and housekeeping release with no change to
+  features or on-screen behaviour, continuing the main-window modularisation
+  begun in v417.44 and tidying a few lint/CI issues.
+- Encapsulated controller state. The download progress dialog, previously
+  reached across classes as a protected attribute of the main window, now
+  lives entirely inside the content-download/sync controller that creates and
+  uses it, removing cross-class access to protected members.
+- Public controller interface. The main window's delegating slots for
+  download progress, download completion, and refreshing the search-results
+  panel were made public to match the other public delegators, so the
+  controllers no longer reach into protected members.
+- Reduced duplication in navigation. The repeated preamble shared by the
+  "goto line/book/chapter/verse" actions (reload, record history, clear the
+  forward stack, reset display attributes) was extracted into a single helper,
+  removing a duplicated block without changing navigation behaviour.
+- Lint and continuous integration. The unused "#!/usr/bin/env" shebang lines
+  were removed from the application entry point and the developer tools so the
+  Linux "ruff" lint job no longer reports EXE001 (shebang present but file not
+  executable); the files are always launched through the interpreter.
+- Documentation. The in-app changelog wording was tidied, including clarifying
+  that v417.41 was never released on its own but folded into v417.42.
+
+This is a maintenance release that encapsulates the download-dialog state in
+its controller, makes the controller-facing main-window methods public, removes
+a duplicated navigation preamble, and clears the Linux lint EXE001 warnings,
+with no change to features. Built with Python 3.15.0 and PySide6 6.12.0
+(64-bit).
+
 Abib v417.44
 
 - Maintenance: Code-quality, structure, and cross-platform release with no
