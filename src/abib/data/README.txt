@@ -10,10 +10,27 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.46
+Abib v417.47
 ------------
 
 Changelog.
+Abib v417.47
+
+- Maintenance: Continuous-integration release with no change to features or
+  on-screen behaviour. It keeps the automated build pipeline healthy as GitHub
+  retires older runner components.
+- Continuous-integration actions updated. The GitHub Actions used by the
+  pipeline were bumped to their current major versions that run on Node.js 24
+  (checkout, the uv installer, and the coverage-artifact upload), clearing the
+  "Node.js 20 is deprecated" deprecation warnings and future-proofing the
+  workflow before the Node 20 runtime is removed. The inputs and behaviour of
+  every job (lint, type check, and the Linux/Windows/macOS test matrix) are
+  unchanged.
+
+This is a maintenance release that refreshes the continuous-integration action
+versions to the Node.js 24 runtime, with no change to features. Built with
+Python 3.15.0 and PySide6 6.12.0 (64-bit).
+
 Abib v417.46
 
 - Maintenance: Code-quality, continuous-integration, and test-stability
