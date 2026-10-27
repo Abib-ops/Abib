@@ -16,7 +16,24 @@ Abib v417.48
 Changelog.
 Abib v417.48
 
+- Maintenance: Project-governance and continuous-integration release with no
+  change to features or on-screen behaviour. It adds a security policy and a
+  pull-request helper workflow to the repository.
+- Security policy. A "SECURITY.md" was added to the repository root. It lists
+  the supported versions (only the latest release receives security fixes),
+  directs reporters to GitHub's private "Report a vulnerability" flow instead
+  of public issues, sets out what to expect after a report, and scopes the
+  policy to the Abib application while pointing bundled third-party materials
+  and dependencies upstream.
+- Pull-request workflow. A new "my-workflow.yml" GitHub Actions workflow runs
+  on pull requests and posts a short summary comment (title, author, changed
+  files, additions/deletions) using a least-privilege token (read contents,
+  write pull requests). It runs independently of the existing "ci.yml" lint,
+  type-check, and test pipeline, which is unchanged.
 
+This is a maintenance release that adds a repository security policy and a
+pull-request summary workflow, with no change to features. Built with Python
+3.15.0 and PySide6 6.12.0 (64-bit).
 
 Abib v417.47
 
