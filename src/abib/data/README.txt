@@ -10,10 +10,14 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.47
+Abib v417.48
 ------------
 
 Changelog.
+Abib v417.48
+
+
+
 Abib v417.47
 
 - Maintenance: Continuous-integration release with no change to features or
@@ -31,7 +35,7 @@ This is a maintenance release that refreshes the continuous-integration action
 versions to the Node.js 24 runtime, with no change to features. Built with
 Python 3.15.0 and PySide6 6.12.0 (64-bit).
 
-Abib v417.46
+Abib v417.46 (not released separately; combined into v417.47)
 
 - Maintenance: Code-quality, continuous-integration, and test-stability
   release with no change to features or on-screen behaviour. It rolls up the
@@ -60,7 +64,7 @@ deterministic Qt teardown, and a platform-robust test) and incorporates the
 unreleased v417.44 and v417.45 maintenance work, with no change to features.
 Built with Python 3.15.0 and PySide6 6.12.0 (64-bit).
 
-Abib v417.45 (not released separately; combined into v417.46)
+Abib v417.45 (not released separately; combined into v417.46) → ...combined into v417.47
 
 - Maintenance: Code-quality and housekeeping release with no change to
   features or on-screen behaviour, continuing the main-window modularisation
@@ -90,7 +94,7 @@ a duplicated navigation preamble, and clears the Linux lint EXE001 warnings,
 with no change to features. Built with Python 3.15.0 and PySide6 6.12.0
 (64-bit).
 
-Abib v417.44 (not released separately; combined into v417.46)
+Abib v417.44 (not released separately; combined into v417.46) → ...combined into v417.47
 
 - Maintenance: Code-quality, structure, and cross-platform release with no
   change to features or on-screen behaviour. The work focuses on making Abib

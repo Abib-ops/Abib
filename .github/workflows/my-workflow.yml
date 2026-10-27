@@ -1,0 +1,48 @@
+name: "My workflow"
+
+on:
+  pull_request:
+    branches: ["**"]
+
+# Least-privilege token: read the repository contents and write to the
+# pull request (e.g. to post a comment). Add more scopes only if a step
+# genuinely needs them.
+permissions:
+  contents: read
+  pull-requests: write
+
+# Allow a running workflow to be cancelled when the PR is updated.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pr-summary:
+    name: Comment a PR summary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Post a summary comment on the pull request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = [
+              '👋 Thanks for the pull request!',
+              '',
+              `- **Title:** ${pr.title}`,
+              `- **Author:** @${pr.user.login}`,
+              `- **Changed files:** ${pr.changed_files}`,
+              `- **Additions / Deletions:** +${pr.additions} / -${pr.deletions}`,
+              '',
+              'The CI workflow (`ci.yml`) will run `ruff`, `mypy`, and `pytest` on this branch.',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body,
+            });
