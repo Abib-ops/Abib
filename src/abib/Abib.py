@@ -31,7 +31,7 @@ Third-party materials and attributions:
 - Pure Cambridge Edition of the KJV — see source and terms at bibleprotector.com
 - Spurgeon resources — see spurgeon.org and Eternal Life Ministries for terms
 
-RELEASE DATE: 27/10/2026
+RELEASE DATE: 29/10/2026
 """
 
 import logging

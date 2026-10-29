@@ -10,10 +10,23 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.48
+Abib v417.49
 ------------
 
-Changelog.
+- New feature: Optional automatic update checks. Abib can now check GitHub for
+  a newer release shortly after the main window opens and prompt you to download
+  and install it when one is available. The startup check is quiet when you are
+  already up to date, so it does not interrupt normal use.
+- Settings option. A new "Check for updates on startup" tick box in Settings
+  lets you turn the automatic check on or off. It is enabled by default, while
+  the existing "Check for updates now" button remains available for a manual
+  check at any time.
+
+This release adds an optional startup update prompt, controlled from Settings,
+so users can be notified when a newer Abib version is available without seeing
+unnecessary "up-to-date" messages. Built with Python 3.15.2 and PySide6 6.12.0
+(64-bit).
+
 Abib v417.48
 
 - Maintenance: Project-governance and continuous-integration release with no

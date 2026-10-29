@@ -188,7 +188,7 @@ def run() -> None:
     w: MainWindow = MainWindow()
 
     # Provide the settings path to windows that need to persist user settings.
-    # Alias as Any so static analysers don't flag this dynamically-assigned
+    # Alias as 'Any' so static analysers don't flag this dynamically assigned
     # attribute (user_settings_path is not declared on MainWindow).
     w_any: Any = w
     w_any.user_settings_path = str(settings_service.user_settings_path)
@@ -197,7 +197,7 @@ def run() -> None:
     AbibModule.w = w
 
     # Register empty search data until the background loader completes. This
-    # matches the previous empty module-level placeholders so any early access
+    # matches the previous empty module-level placeholders, so any early access
     # by highlighting helpers behaves as before (empty tables) rather than
     # raising because no context has been registered yet.
     search_service.set_search_data(
@@ -227,11 +227,20 @@ def run() -> None:
     w.show()
 
     # Throttled, background Other Works content sync (at most once per day), deferred
-    # until after the window is shown so startup is never blocked.
+    # until after the window is shown, so startup is never blocked.
     try:
         QTimer.singleShot(0, w.maybe_auto_sync_content)
     except (RuntimeError, AttributeError, TypeError):
         pass
+
+    # Optional update check, deferred until after the main window is visible so
+    # the user sees the prompt as part of the normal UI rather than during startup.
+    if bool(settings.get("check_for_updates_on_startup", True)):
+        try:
+            from abib.core.updater import update_abib_if_enabled
+            QTimer.singleShot(2000, lambda: update_abib_if_enabled(parent=w, settings=settings))
+        except (RuntimeError, AttributeError, TypeError):
+            pass
 
     # Disable search in Other Works until indexes are ready, then load in the background
     try:

@@ -16,6 +16,7 @@ def get_default_settings() -> dict[str, Any]:
         # (older machines benefit from faster startup).
         # This is a boolean.
         "show_splash": False,
+        "check_for_updates_on_startup": True,
         "unified_font_size": False,
         "devotional_font_size": 12,
         "bible_font_size": 12,

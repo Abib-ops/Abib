@@ -27,7 +27,7 @@ uninstaller_path = r"C:\Program Files\Abib\unins000.exe"
 GITHUB_API_URL = "https://api.github.com/repos/Abib-ops/Abib/releases/latest"
 
 
-def check_for_updates(parent=None):
+def check_for_updates(parent=None, *, notify_no_update: bool = True):
     """
     Check for updates on GitHub. Returns a tuple (update_available: bool, version: str, exe_url: str)
     or None on network/format issues. If the user declines the update, returns (False, "", "").
@@ -84,15 +84,16 @@ def check_for_updates(parent=None):
                     return False, "", ""
             elif output >= 0:
                 # Already on the latest or newer (dev) version — inform the user
-                try:
-                    QMessageBox.information(
-                        parent,
-                        "Up to date",
-                        f"You are already on the latest version (current: {sh.CURRENT_VERSION}).",
-                    )
-                except (RuntimeError, AttributeError, TypeError):
-                    # Keep silent if the UI is unavailable or the widget state is invalid
-                    pass
+                if notify_no_update:
+                    try:
+                        QMessageBox.information(
+                            parent,
+                            "Up to date",
+                            f"You are already on the latest version (current: {sh.CURRENT_VERSION}).",
+                        )
+                    except (RuntimeError, AttributeError, TypeError):
+                        # Keep silent if the UI is unavailable or the widget state is invalid
+                        pass
                 return False, "", ""
             return None
         else:
@@ -337,4 +338,22 @@ def update_abib():
     if not update_available:
         return
     # Delegate to the shared implementation to avoid duplicated logic
+    perform_update(version, exe_url)
+
+
+def update_abib_if_enabled(parent=None, settings: dict[str, Any] | None = None) -> None:
+    """Check for updates at startup when the user has enabled it in Settings."""
+    if settings is not None and not bool(settings.get("check_for_updates_on_startup", True)):
+        return
+
+    try:
+        result = check_for_updates(parent=parent, notify_no_update=False)
+        if result is None:
+            return
+        update_available, version, exe_url = result
+    except (RuntimeError, TypeError, ValueError):
+        return
+
+    if not update_available:
+        return
     perform_update(version, exe_url)

@@ -68,6 +68,11 @@ class SettingsDialog(QDialog):
         self.unified_font_size_checkbox.setToolTip("If enabled, changing the font size in one window will change it in all windows.")
         self.layout.addWidget(self.unified_font_size_checkbox)
 
+        # Automatic update checks
+        self.check_updates_on_startup_checkbox = QCheckBox("Check for updates on startup")
+        self.check_updates_on_startup_checkbox.setToolTip("If enabled, Abib will prompt you when a newer version is available.")
+        self.layout.addWidget(self.check_updates_on_startup_checkbox)
+
         # Check for updates now (manual trigger)
         self.update_now_btn = QPushButton("Check for updates now")
         self.update_now_btn.setToolTip("Run the updater once now without waiting for next startup.")
@@ -122,6 +127,10 @@ class SettingsDialog(QDialog):
         self.splash_checkbox.setChecked(bool(self.settings.get("show_splash", False)))
         try:
             self.unified_font_size_checkbox.setChecked(bool(self.settings.get("unified_font_size", False)))
+        except (AttributeError, RuntimeError):
+            pass
+        try:
+            self.check_updates_on_startup_checkbox.setChecked(bool(self.settings.get("check_for_updates_on_startup", True)))
         except (AttributeError, RuntimeError):
             pass
         # Gill: Show scripture popups
@@ -216,12 +225,17 @@ class SettingsDialog(QDialog):
         if self.was_reset_to_defaults:
             defaults = self.settings_service.get_default_settings()
             new_show_splash = bool(defaults.get("show_splash", False))
+            new_check_updates_on_startup = bool(defaults.get("check_for_updates_on_startup", True))
             new_unified_font_size = bool(defaults.get("unified_font_size", False))
             new_gill_show_popups = bool(defaults.get("gill_show_popups", True))
             new_gill_hover = int(defaults.get("gill_hover_delay_ms", 120))
             new_gill_hide = int(defaults.get("gill_hide_delay_ms", 160))
         else:
             new_show_splash = self.splash_checkbox.isChecked()
+            try:
+                new_check_updates_on_startup = bool(self.check_updates_on_startup_checkbox.isChecked())
+            except (RuntimeError, AttributeError):
+                new_check_updates_on_startup = bool(self.main_window.settings.get("check_for_updates_on_startup", True))
             try:
                 new_unified_font_size = bool(self.unified_font_size_checkbox.isChecked())
             except (AttributeError, RuntimeError):
@@ -241,6 +255,7 @@ class SettingsDialog(QDialog):
 
         # Update in-memory settings
         self.main_window.settings["show_splash"] = new_show_splash
+        self.main_window.settings["check_for_updates_on_startup"] = new_check_updates_on_startup
         self.main_window.settings["unified_font_size"] = new_unified_font_size
 
         # If unified font size was just enabled, sync all font sizes
