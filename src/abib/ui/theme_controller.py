@@ -145,8 +145,8 @@ class ThemeController:
         self._apply_coloured_theme(
             self._win,
             self._COLOURED_BUTTONS,
-            "QPushButton {{ text-align: left; background-color: {base_colour}; color: #000000; }}",
-            "QPushButton {{ text-align: left; color: {dark_text}; }}",
+            "QPushButton {{ text-align: left; padding-left: 6px; background-color: {base_colour}; color: #000000; }}",
+            "QPushButton {{ text-align: left; padding-left: 6px; color: {dark_text}; }}",
         )
 
     # Mapping of coloured combobox attribute names to their theme colours.

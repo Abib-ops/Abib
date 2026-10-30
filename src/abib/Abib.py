@@ -31,7 +31,18 @@ Third-party materials and attributions:
 - Pure Cambridge Edition of the KJV — see source and terms at bibleprotector.com
 - Spurgeon resources — see spurgeon.org and Eternal Life Ministries for terms
 
-RELEASE DATE: 29/10/2026
+RELEASE DATE: 30/10/2026
+arch linux
+Notes for developers.
+---------------------
+sudo pacman -S python-roman
+sudo pacman -S python-requests
+
+If using IDLE,
+export PYTHONPATH="/home/your-username/Abib-417.49*/src"
+# *Folder where an Abib project and pyproject.toml are.
+idle
+
 """
 
 import logging
@@ -44,7 +55,7 @@ from pathlib import Path
 from typing import Any, cast
 
 # noinspection PyPackageRequirements
-from PySide6.QtCore import QEvent, QObject, QPoint, QRect, Qt
+from PySide6.QtCore import QByteArray, QEvent, QObject, QPoint, QRect, Qt
 
 # noinspection PyPackageRequirements
 from PySide6.QtGui import (
@@ -245,6 +256,18 @@ class MainWindow(QMainWindow):
         self.settings_service: SettingsService = settings_service if settings_service is not None else SettingsService()
         x6, y6, width6, height6 = self.settings_service.get_window_geometry("main_window")
         self.setGeometry(x6, y6, width6, height6)
+        # Restore the exact, frame-aware window geometry when available. Using
+        # QWidget.restoreGeometry() (rather than relying solely on setGeometry
+        # with plain x/y/w/h) keeps the window where the user left it across
+        # restarts, notably on Linux/X11 where the window-manager frame offset
+        # otherwise makes the position drift. Falls back silently to the plain
+        # geometry set above when no blob is stored, or it cannot be applied.
+        try:
+            state_hex = self.settings_service.get_window_state("main_window")
+            if state_hex:
+                self.restoreGeometry(QByteArray.fromHex(state_hex.encode("ascii")))
+        except (RuntimeError, ValueError, TypeError, AttributeError):
+            logger.debug("Could not restore main window geometry state", exc_info=True)
 
         # self.feature = None
         self.text_edit_window = None
@@ -1131,6 +1154,16 @@ class MainWindow(QMainWindow):
             "main_window",
             geometry.x(), geometry.y(), geometry.width(), geometry.height()
         )
+        # Also persist the frame-aware Qt geometry blob so the window can be
+        # restored to its exact previous position on the next launch. This is
+        # what fixes the Linux/X11 "window does not stay where it was left"
+        # behaviour; the plain coordinates above remain for backward
+        # compatibility and as a fallback.
+        try:
+            state_hex = bytes(self.saveGeometry().toHex().data()).decode("ascii")
+            self.settings_service.save_window_state("main_window", state_hex)
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            logger.debug("Could not save main window geometry state on close", exc_info=True)
 
         # Persist last Bible position
         try:

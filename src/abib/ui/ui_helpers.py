@@ -206,6 +206,7 @@ class SimpleScripturePopup:
             max_h = 600
 
         # Determine target height based on content
+        final_h: int | None = None
         try:
             # Use heightForWidth to get the required height for the given width.
             # The inner width available for content is w - 4 (due to 2px borders).
@@ -217,22 +218,28 @@ class SimpleScripturePopup:
             # Account for 2px border on top and bottom (total 4px)
             needed_h = hfw + 4
             
-            if needed_h > max_h:
-                self._widget.setFixedHeight(max_h)
-            else:
-                # Set to the exact necessary height
-                self._widget.setFixedHeight(needed_h)
+            target_h = int(min(needed_h, max_h))
+            self._widget.setFixedHeight(target_h)
+            final_h = target_h
         except (RuntimeError, AttributeError, TypeError, ValueError):
             # Fallback to previous behaviour if calculation fails
             try:
                 self._widget.adjustSize()
                 if self._widget.height() > max_h:
                     self._widget.setFixedHeight(max_h)
+                    final_h = max_h
+                else:
+                    final_h = self._widget.height()
             except (RuntimeError, AttributeError):
                 pass
 
-        # Position after final sizing so flip/clamp uses the final height
-        self.move_to(host_editor, pos)
+        # Position after final sizing so flip/clamp uses the final height.
+        # Pass the freshly computed height explicitly: on the first show the
+        # widget's own height() may not yet reflect the setFixedHeight() call
+        # (notably on Linux/X11 and macOS, where geometry is applied lazily),
+        # which previously made the popup appear in the wrong place until it
+        # had been shown once.
+        self.move_to(host_editor, pos, popup_h=final_h)
         try:
             self._widget.show()
         except (RuntimeError, AttributeError, TypeError, ValueError):
@@ -318,16 +325,19 @@ class SimpleScripturePopup:
             except (RuntimeError, AttributeError):
                 pass
 
-    def move_to(self, host_editor: QWidget, pos: QPoint, y_offset: int = 60) -> None:
+    def move_to(self, host_editor: QWidget, pos: QPoint, y_offset: int = 60, popup_h: int | None = None) -> None:
         if self._widget is None:
             return
         # Compute target position based on cursor rect and editor origin
         try:
-            # Measure popup height safely
-            try:
-                popup_h = int(self._widget.height())
-            except (RuntimeError, AttributeError, TypeError, ValueError):
-                popup_h = 0
+            # Use the explicitly provided height when available (it reflects the
+            # intended final size even before the widget has been realised);
+            # otherwise fall back to the widget's current height.
+            if popup_h is None:
+                try:
+                    popup_h = int(self._widget.height())
+                except (RuntimeError, AttributeError, TypeError, ValueError):
+                    popup_h = 0
 
             popup_x, popup_y = SimpleScripturePopup._calculate_position(host_editor, pos, popup_h, y_offset)
             self._widget.move(popup_x, popup_y)

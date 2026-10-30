@@ -10,8 +10,33 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.49
+Abib v417.50
 ------------
+
+- Bug fix: The main window remembers its position on Linux. On Linux (X11) the
+  main window did not return to where it was left after a restart, because the
+  saved position drifted by the window-manager frame decorations. Abib now
+  stores and restores a frame-aware window geometry so the window reopens in
+  its exact previous location, while the earlier plain coordinates remain as a
+  safe fallback.
+- Bug fix: Scripture popups appear in the right place first time. On Linux and
+  macOS the pop-up scripture boxes could appear in the wrong position on the
+  very first hover and only correct themselves after one had been shown. The
+  popup now positions itself using its final height, so it lands in the correct
+  place from the first display.
+- Bug fix: Dark-mode main-window buttons match. On Linux (and macOS) the
+  pushbuttons in the lower part of the main window were a different height with
+  misaligned text in dark mode compared with light mode. The button border and
+  padding are now applied consistently in both themes on every platform, so all
+  the lower buttons share the same height and text alignment.
+
+This release fixes three platform-specific display issues: the Linux main-window
+position is now restored reliably across restarts, scripture popups appear in
+the correct place on the first hover on Linux and macOS, and the dark-mode
+main-window buttons now match their light-mode height and alignment. Built with
+Python 3.15.2 and PySide6 6.12.0 (64-bit).
+
+Abib v417.49
 
 - New feature: Optional automatic update checks. Abib can now check GitHub for
   a newer release shortly after the main window opens and prompt you to download

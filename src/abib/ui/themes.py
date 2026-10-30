@@ -219,7 +219,15 @@ class ThemeManager:
             """
         )
 
-            # Extra button styles for Windows platforms where native style may ignore palette
+            # Button styles applied on every platform in dark mode. In light mode
+            # the equivalent QPushButton rules (border + padding) are applied on
+            # all platforms, so they must be here too. Any button that carries its
+            # own per-widget stylesheet (e.g. the main-window buttons which set
+            # "text-align: left; padding-left: 6px") switches to Qt's CSS box model
+            # and loses its native frame metrics; without these global rules those
+            # buttons would render with no border/vertical padding in dark mode on
+            # Linux/macOS, making them a different height and misaligning their
+            # text compared with light mode.
             button_styles = (
                 """
                 QPushButton, QDialogButtonBox QPushButton, QToolButton {
@@ -236,9 +244,12 @@ class ThemeManager:
                 """
             )
 
-            # Apply a button stylesheet to all Windows versions (10 and 11), since
-            # native widgets can render grey buttons in dark mode and ignore the palette.
-            styles = dark_base_styles + (button_styles if plat.is_windows() else "")
+            # Apply the button stylesheet on all platforms so that dark mode matches
+            # light mode: native widgets can render grey buttons and ignore the
+            # palette (notably on Windows), and on Linux/macOS the main-window
+            # buttons with their own stylesheet need these border/padding rules to
+            # keep the same height and text alignment as in light mode.
+            styles = dark_base_styles + button_styles
             cast("QApplication", app).setStyleSheet(styles)
         else:
             # Light mode: ensure consistent darker-than-default shade for buttons, combos, and line edits

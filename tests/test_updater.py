@@ -19,11 +19,11 @@ class _Response:
     # noinspection PyMethodMayBeStatic
     def json(self) -> dict[str, object]:
         return {
-            "tag_name": "417.49",
+            "tag_name": "417.50",
             "assets": [
                 {
-                    "name": "Abib_setup_417.49_win.exe",
-                    "browser_download_url": "https://example.test/Abib_setup_417.49_win.exe",
+                    "name": "Abib_setup_417.50_win.exe",
+                    "browser_download_url": "https://example.test/Abib_setup_417.50_win.exe",
                 }
             ],
         }

@@ -65,6 +65,26 @@ class TestSettingsService(unittest.TestCase):
         saved_data = cast(MagicMock, self.service.save).call_args[0][0]
         self.assertEqual(saved_data["main_window"], {"x": 50, "y": 60, "width": 800, "height": 600})
 
+    def test_save_window_geometry_preserves_state_blob(self):
+        # Saving plain x/y/w/h must not wipe an existing frame-aware state blob.
+        self.service._cached_settings = {"main_window": {"state": "deadbeef"}}
+        self.service.save_window_geometry("main_window", 50, 60, 800, 600)
+        saved_data = cast(MagicMock, self.service.save).call_args[0][0]
+        self.assertEqual(
+            saved_data["main_window"],
+            {"state": "deadbeef", "x": 50, "y": 60, "width": 800, "height": 600},
+        )
+
+    def test_save_and_get_window_state(self):
+        self.service.save_window_state("main_window", "cafe")
+        saved_data = cast(MagicMock, self.service.save).call_args[0][0]
+        self.assertEqual(saved_data["main_window"]["state"], "cafe")
+        # Reading back from the cached settings returns the stored blob.
+        self.assertEqual(self.service.get_window_state("main_window"), "cafe")
+
+    def test_get_window_state_defaults_to_none(self):
+        self.assertIsNone(self.service.get_window_state("main_window"))
+
     def test_get_devotional_font_size(self):
         self.assertEqual(self.service.get_devotional_font_size(), 12)
 

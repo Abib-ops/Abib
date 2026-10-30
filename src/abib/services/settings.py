@@ -137,12 +137,46 @@ class SettingsService:
     def save_window_geometry(self, window_name: str, x: int, y: int, width: int, height: int) -> None:
         """Save window geometry to settings."""
         data = self.settings
-        data[window_name] = {
+        win = data.get(window_name)
+        if not isinstance(win, dict):
+            win = {}
+        win.update({
             "x": x,
             "y": y,
             "width": width,
-            "height": height
-        }
+            "height": height,
+        })
+        data[window_name] = win
+        self.save(data)
+
+    def get_window_state(self, window_name: str) -> str | None:
+        """Return the stored Qt geometry/state blob (hex string) for a window.
+
+        This is the frame-aware geometry produced by ``QWidget.saveGeometry()``
+        and is used to restore the window reliably across platforms (notably on
+        Linux/X11 where ``setGeometry`` before ``show`` drifts due to window
+        frame decorations). Returns ``None`` when nothing is stored.
+        """
+        win = self.settings.get(window_name, {})
+        if not isinstance(win, dict):
+            return None
+        state = win.get("state")
+        if isinstance(state, str) and state:
+            return state
+        return None
+
+    def save_window_state(self, window_name: str, state_hex: str) -> None:
+        """Persist the Qt geometry/state blob (hex string) for a window.
+
+        The blob is stored alongside any existing ``x``/``y``/``width``/``height``
+        values so older code paths and the plain-coordinate fallback keep working.
+        """
+        data = self.settings
+        win = data.get(window_name)
+        if not isinstance(win, dict):
+            win = {}
+        win["state"] = state_hex
+        data[window_name] = win
         self.save(data)
 
     def get_last_bible_position(self) -> int:
