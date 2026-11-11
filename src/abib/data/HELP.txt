@@ -8,7 +8,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 ABIB HELP:
 **********
 
-Abib Bible Reader v417.50
+Abib Bible Reader v417.51
 
 *************************
 ATTRIBUTION & LICENSE:
@@ -47,14 +47,14 @@ You can start from the beginning and follow the instructions below.
 
 First, uninstall any previous version of the program.
 
-Get the "Abib_setup_417.50_win.exe" file from 'Abib-ops' on GitHub,
+Get the "Abib_setup_417.51_win.exe" file from 'Abib-ops' on GitHub,
 find it in the 'Abib' repository.
 
 **************************************************
 * See: https://github.com/Abib-ops/Abib/releases *
 **************************************************
 
-Next, double-click the "Abib_setup_417.50_win.exe" installer and follow
+Next, double-click the "Abib_setup_417.51_win.exe" installer and follow
 the instructions, mostly click Next a few times, agree to the
 licence, and Abib will install. Please ignore any negative windows that
 claim that Abib is from an unknown author.
@@ -637,34 +637,51 @@ It also takes care of the italic words, so you can enter plain
 text in the "Find ?:" box.
 
 
-Installing Abib on Linux.
--------------------------
-(You can try, but it will need quite a bit of modification to make it work.)
+Running Abib on Linux and macOS.
+--------------------------------
+Abib runs from the same source code on Windows 10/11, Arch Linux and
+macOS. There is no installer for Linux or macOS; run it from source.
+Get the source from GitHub, user Abib-ops, repository Abib.
 
-Get the "Abib_linux_417.50.tar.bz2" file from the author.
+Arch Linux prerequisites (system packages)
+Ensure Python and the Qt/XCB libraries (for X11/Xwayland) are installed:
 
-    If you can get it, then it may be an earlier version because of
-    recent changes that work on Windows only, and the direction of
-    the project has moved away from cross-platform to Windows 11.
-    But with some modifications, it could be made to work on Linux.
+$ sudo pacman -S python git libxcb xcb-util xcb-util-keysyms \
+    xcb-util-cursor xcb-util-image xcb-util-renderutil xcb-util-wm
 
-Move it to your home folder or desired location and navigate there.
-Expand the compressed archive with: tar -jxvf Abib_linux_417.50.tar.bz2
+Option A: Running with uv (recommended)
+On Arch, install uv with: sudo pacman -S uv
+On macOS, see https://docs.astral.sh/uv/ for how to install uv.
+Then, in the Abib folder:
 
-$ chmod +x Abib will make sure that the executable flag is set.
+$ uv sync
+$ uv run python -m abib.Abib
 
-The command "./Abib" will now start the program; however, it
-needs to be in the same folder as all of its dependencies.
+Option B: Running with a standard virtual environment and pip
+In the Abib folder:
 
-Alternatively, if you have the Windows version installed, go to
-C:\Program Files\ and copy the Abib folder onto a USB pen drive.
+$ python -m venv .venv
+$ source .venv/bin/activate
+$ pip install --upgrade pip
+$ pip install -e .
+$ python -m abib.Abib
 
-Copy the Abib folder from the USB drive to your home directory.
-Now run Abib.py the Python script within the folder, with:
+Window positions under Wayland / X11
+Under Wayland, Qt's native Wayland protocol does not allow programs
+to store or restore exact screen coordinates. On Linux, Abib therefore
+sets QT_QPA_PLATFORM="xcb;wayland" when you have not set it yourself,
+so that window positions saved in ~/.config/Abib/settings.json are
+restored through Xwayland/XCB. If you set QT_QPA_PLATFORM yourself,
+Abib leaves your value alone.
 
-$ python Abib.py
+Settings are stored in ~/.config/Abib on Linux and in
+~/Library/Application Support/Abib on macOS.
 
-You can also get the Python source from GitHub, user Abib-ops.
+Updates on Linux and macOS
+"Check for updates" tells you when a newer version is available and
+offers to open the download page in your browser. Nothing is
+downloaded or installed automatically; update your copy of the source
+yourself. On Windows the new installer is downloaded and run for you.
 
 # Copyright 2025 Andrew Kingston
 #

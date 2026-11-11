@@ -65,3 +65,50 @@ def test_is_windows_10_false_for_windows_11_build(monkeypatch):
 
     monkeypatch.setattr(sys, "getwindowsversion", lambda: _WinVer(), raising=False)
     assert plat.is_windows_10() is False
+
+
+def test_configure_qt_logging_suppresses_wayland_textinput(monkeypatch):
+    import os
+
+    from abib.app import _configure_qt_logging
+
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.delenv("QT_LOGGING_RULES", raising=False)
+    _configure_qt_logging()
+    assert "qt.qpa.wayland.textinput*=false" in os.environ.get("QT_LOGGING_RULES", "")
+
+
+def test_configure_qt_platform_defaults_to_xcb_wayland_on_linux(monkeypatch):
+    import os
+
+    from abib.app import _configure_qt_platform
+
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.delenv("QT_QPA_PLATFORM", raising=False)
+    _configure_qt_platform()
+    assert os.environ.get("QT_QPA_PLATFORM") == "xcb;wayland"
+
+
+def test_configure_qt_platform_preserves_existing_env(monkeypatch):
+    import os
+
+    from abib.app import _configure_qt_platform
+
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    _configure_qt_platform()
+    assert os.environ.get("QT_QPA_PLATFORM") == "offscreen"
+
+
+def test_configure_qt_platform_no_op_on_non_linux(monkeypatch):
+    import os
+
+    from abib.app import _configure_qt_logging, _configure_qt_platform
+
+    monkeypatch.setattr(sys, "platform", "win32")
+    monkeypatch.delenv("QT_QPA_PLATFORM", raising=False)
+    monkeypatch.delenv("QT_LOGGING_RULES", raising=False)
+    _configure_qt_platform()
+    _configure_qt_logging()
+    assert "QT_QPA_PLATFORM" not in os.environ
+    assert "QT_LOGGING_RULES" not in os.environ

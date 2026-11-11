@@ -17,7 +17,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-import abib.Abib as abib_module
+import abib.Abib as AbibModule
 from abib.ui.search_controller import SearchController
 
 
@@ -30,9 +30,9 @@ def _make_window() -> MagicMock:
 
 def _patch_history(monkeypatch) -> None:
     """Replace the module-level history/forward/back stacks."""
-    monkeypatch.setattr(abib_module, "history", MagicMock())
-    monkeypatch.setattr(abib_module, "forward", [])
-    monkeypatch.setattr(abib_module, "back", [])
+    monkeypatch.setattr(AbibModule, "history", MagicMock())
+    monkeypatch.setattr(AbibModule, "forward", [])
+    monkeypatch.setattr(AbibModule, "back", [])
 
 
 def test_close_find_window_hides_dialog():
@@ -143,7 +143,7 @@ def test_search_current_word_opens_find(monkeypatch):
 
 def test_find_in_range_empty_key_clears_status(monkeypatch):
     _patch_history(monkeypatch)
-    monkeypatch.setattr(abib_module, "book_bounds", [0, 10, 20, 30])
+    monkeypatch.setattr(AbibModule, "book_bounds", [0, 10, 20, 30])
     win = _make_window()
     win.get_line_number.return_value = 0
     win.key = ' '  # empty key -> no search performed, "Not found" path

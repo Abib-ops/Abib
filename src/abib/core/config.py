@@ -75,6 +75,30 @@ def get_default_settings() -> dict[str, Any]:
             "width": 500,
             "height": 100
         },
+        "gill_commentary_window": {
+            "x": 100,
+            "y": 100,
+            "width": 820,
+            "height": 640
+        },
+        "concordance_window": {
+            "x": 100,
+            "y": 100,
+            "width": 640,
+            "height": 500
+        },
+        "other_works_references_window": {
+            "x": 100,
+            "y": 100,
+            "width": 520,
+            "height": 360
+        },
+        "other_works_text_search_window": {
+            "x": 100,
+            "y": 100,
+            "width": 520,
+            "height": 360
+        },
         "last_bible_position": 0,
         # Width (in pixels) of the dockable Search Results panel.
         "search_results_width": 400,

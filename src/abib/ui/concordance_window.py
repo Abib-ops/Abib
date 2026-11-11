@@ -23,19 +23,33 @@ from abib.services.concordance_service import (
     ConcordanceHit,
     ConcordanceService,
 )
+from abib.services.settings import SettingsService
 
 
 class ConcordanceWindow(QWidget):
     """Separate top-level window for browsing Bible concordance entries."""
 
-    referenceActivated = Signal(int)
+    referenceActivated = Signal(int, str)
 
-    def __init__(self, service: ConcordanceService, parent=None) -> None:
+    def __init__(
+        self,
+        service: ConcordanceService,
+        parent=None,
+        settings_service: SettingsService | None = None,
+    ) -> None:
         super().__init__(parent, Qt.WindowType.Window)
         self.setWindowTitle("Concordance")
         self._service = service
+        self._settings_service = settings_service if settings_service is not None else SettingsService()
         self._entries: tuple[ConcordanceEntry, ...] = ()
         self._current_hits: tuple[ConcordanceHit, ...] = ()
+        self._current_term: str = ""
+
+        try:
+            gx, gy, gw, gh = self._settings_service.get_window_geometry("concordance_window")
+            self.setGeometry(gx, gy, gw, gh)
+        except (RuntimeError, TypeError, ValueError):
+            self.resize(640, 500)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(4, 4, 4, 4)
@@ -107,13 +121,16 @@ class ConcordanceWindow(QWidget):
         self.reference_list.clear()
         self._current_hits = ()
         if item is None:
+            self._current_term = ""
             self.summary_label.setText("No concordance entries match the filter.")
             return
 
         term = item.data(Qt.ItemDataRole.UserRole)
         if not isinstance(term, str):
+            self._current_term = ""
             self.summary_label.setText("Select an entry to view references.")
             return
+        self._current_term = term
         entry = self._service.get_entry(term)
         if entry is None:
             self.summary_label.setText("No references found.")
@@ -131,4 +148,34 @@ class ConcordanceWindow(QWidget):
     def _activate_reference(self, item: QListWidgetItem) -> None:
         position = item.data(Qt.ItemDataRole.UserRole)
         if isinstance(position, int):
-            self.referenceActivated.emit(position)
+            self.referenceActivated.emit(position, self._current_term)
+
+    def _persist_geometry(self) -> None:
+        try:
+            geom = self.geometry()
+            self._settings_service.save_window_geometry(
+                "concordance_window", int(geom.x()), int(geom.y()), int(geom.width()), int(geom.height())
+            )
+        except (RuntimeError, TypeError, ValueError, AttributeError):
+            pass
+
+    def moveEvent(self, event):  # type: ignore[override]
+        self._persist_geometry()
+        try:
+            return super().moveEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
+    def resizeEvent(self, event):  # type: ignore[override]
+        self._persist_geometry()
+        try:
+            return super().resizeEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
+    def closeEvent(self, event):  # type: ignore[override]
+        self._persist_geometry()
+        try:
+            return super().closeEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None

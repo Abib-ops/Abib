@@ -14,7 +14,7 @@ agree your changes are offered under the same licence.
   tools. (You can use a plain `venv` + `pip` instead, but the commands below
   assume `uv`.)
 - A desktop Qt stack for running the GUI. On Linux you may need system Qt/XCB
-  packages (see "Running on Linux / macOS" below).
+  packages (see "Running on Linux / macOS" in `README.md`).
 
 ## Getting started
 
@@ -77,6 +77,10 @@ to the non-UI packages where it can be type-checked and unit-tested.
 
 ### Cross-platform code
 
+Abib is a single source tree for Windows 10/11, Arch Linux and macOS. There are
+no per-platform copies: a fix made on one system must work on all three, and CI
+runs the tests on each.
+
 Avoid bare `sys.platform` string checks. Use the helpers in
 `abib.utils.platform` instead:
 
@@ -90,6 +94,16 @@ if plat.is_windows():
 Always build paths with `pathlib.Path` (never hard-coded `C:\...` or `/`
 separators). Per-user writable locations are resolved for each OS in
 `abib.core.shared` (`user_settings_dir`).
+
+Code that needs a Windows-only API (`ctypes.windll`, `cmd.exe`, installer paths)
+goes in its own module that is imported only on Windows. The updater is the
+model: `core/updater.py` is portable and imports `core/updater_windows.py`
+inside an `if plat.is_windows():` branch. Never import such a module at the top
+of a portable file.
+
+Test platform branches by monkeypatching the platform check, as
+`tests/test_updater.py` and `tests/test_platform.py` do, so each branch runs on
+every CI system.
 
 ## Building the installer (Windows)
 

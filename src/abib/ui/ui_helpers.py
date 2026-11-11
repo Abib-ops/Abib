@@ -91,12 +91,24 @@ class SimpleScripturePopup:
         self._scroll: QScrollArea | None = None
         self._is_dark: bool | None = None
 
-    def ensure_created(self) -> None:
+    def ensure_created(self, host_editor: QWidget | None = None) -> None:
+        parent_win = None
+        if host_editor is not None:
+            try:
+                parent_win = host_editor.window()
+            except (RuntimeError, AttributeError):
+                parent_win = None
+
         if self._widget is None:
             # Use ToolTip + Frameless to avoid native frame double-borders
-            self._widget = QWidget(None, Qt.WindowType.ToolTip | Qt.WindowType.FramelessWindowHint)
+            self._widget = QWidget(parent_win, Qt.WindowType.ToolTip | Qt.WindowType.FramelessWindowHint)
             assert self._widget is not None
             self._widget.setObjectName("ScripturePopup")
+            try:
+                self._widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+                self._widget.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating, True)
+            except (RuntimeError, AttributeError):
+                pass
             # Default stylesheet (will be updated by apply_theme)
             self._widget.setStyleSheet("#ScripturePopup { background-color: #ffffff; border: 2px solid #2160FF; }")
             try:
@@ -131,6 +143,14 @@ class SimpleScripturePopup:
             
             self._scroll.setWidget(self._text)
             lay.addWidget(self._scroll)
+        elif parent_win is not None and self._widget.parentWidget() != parent_win:
+            try:
+                self._widget.setParent(parent_win, Qt.WindowType.ToolTip | Qt.WindowType.FramelessWindowHint)
+                self._widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+                self._widget.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating, True)
+                self._widget.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+            except (RuntimeError, AttributeError):
+                pass
 
     def apply_theme(self, is_dark: bool) -> None:
         """Update the popup colours to match the theme (dark or light)."""
@@ -164,7 +184,7 @@ class SimpleScripturePopup:
             pass
 
     def show(self, host_editor: QWidget, text: str, pos: QPoint, font, is_dark: bool | None = None) -> None:
-        self.ensure_created()
+        self.ensure_created(host_editor)
         assert self._widget is not None and self._text is not None and self._scroll is not None
         
         # Determine theme if not provided
@@ -199,11 +219,7 @@ class SimpleScripturePopup:
             w = 400  # Default fallback width
             
         # Limit height to avoid covering too much screen (max 60% of screen height)
-        try:
-            _screen_w, screen_h = get_screen_size()
-            max_h = int(screen_h * 0.6)
-        except (RuntimeError, AttributeError):
-            max_h = 600
+        max_h = SimpleScripturePopup._calculate_max_height(host_editor)
 
         # Determine target height based on content
         final_h: int | None = None
@@ -246,6 +262,27 @@ class SimpleScripturePopup:
             pass
 
     @staticmethod
+    def _calculate_max_height(host_editor: QWidget) -> int:
+        """Limit popup height to 60% of the screen containing its host window."""
+        try:
+            target_screen: Any = None
+            screen_method = getattr(host_editor, "screen", None)
+            if callable(screen_method):
+                target_screen = screen_method()
+            if target_screen is None:
+                host_window = host_editor.window()
+                screen_method = getattr(host_window, "screen", None)
+                if callable(screen_method):
+                    target_screen = screen_method()
+            if target_screen is not None:
+                screen_h = target_screen.size().height()
+            else:
+                _screen_w, screen_h = get_screen_size()
+            return int(screen_h * 0.6)
+        except (RuntimeError, AttributeError):
+            return 600
+
+    @staticmethod
     def _calculate_position(host_editor: QWidget, pos: QPoint, popup_h: int, y_offset: int = 60) -> tuple[int, int]:
         """Shared logic to calculate (x, y) coordinates for the popup."""
         try:
@@ -280,7 +317,7 @@ class SimpleScripturePopup:
 
     def predict_geometry(self, host_editor: QWidget, text: str, pos: QPoint, font) -> tuple[int, int, int, int]:
         """Calculate where the popup would be positioned and its size without showing it."""
-        self.ensure_created()
+        self.ensure_created(host_editor)
         
         # 1. Calculate width matched to the editor
         try:
@@ -290,8 +327,7 @@ class SimpleScripturePopup:
             
         # 2. Calculate height based on content
         try:
-            _screen_w, screen_h = get_screen_size()
-            max_h = int(screen_h * 0.6)
+            max_h = SimpleScripturePopup._calculate_max_height(host_editor)
             
             # Temporarily set text/font to measure
             if self._text:

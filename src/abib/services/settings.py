@@ -83,8 +83,8 @@ class SettingsService:
     def _merge_defaults(data: dict[str, Any], defaults: dict[str, Any]) -> None:
         for key, value in defaults.items():
             if isinstance(value, dict):
-                if key not in data:
-                    data[key] = value
+                if key not in data or not isinstance(data[key], dict):
+                    data[key] = dict(value)
                 else:
                     for sub_key, sub_value in value.items():
                         data[key].setdefault(sub_key, sub_value)
@@ -109,13 +109,35 @@ class SettingsService:
 
     def get_window_geometry(self, window_name: str) -> tuple[int, int, int, int]:
         """Helper to get window geometry with sensible defaults and multi-monitor aware clamping."""
+        defaults = self.get_default_settings().get(window_name, {})
+        if not isinstance(defaults, dict):
+            defaults = {}
+        def_x = defaults.get("x", 100)
+        def_y = defaults.get("y", 100)
+        def_w = defaults.get("width", 737)
+        def_h = defaults.get("height", 518)
+
         data = self.settings
-        win = data.get(window_name, {})
-        
-        rx = win.get("x", 100)
-        ry = win.get("y", 100)
-        rw = win.get("width", 737)
-        rh = win.get("height", 518)
+        win = data.get(window_name) if isinstance(data, dict) else {}
+        if not isinstance(win, dict):
+            win = {}
+
+        try:
+            rx = int(win.get("x", def_x))
+        except (TypeError, ValueError):
+            rx = def_x
+        try:
+            ry = int(win.get("y", def_y))
+        except (TypeError, ValueError):
+            ry = def_y
+        try:
+            rw = int(win.get("width", def_w))
+        except (TypeError, ValueError):
+            rw = def_w
+        try:
+            rh = int(win.get("height", def_h))
+        except (TypeError, ValueError):
+            rh = def_h
 
         # Relaxed multi-monitor aware clamping (from fcs.py):
         # 1. Allow negative X/Y (secondary monitors to the left/top)
@@ -124,13 +146,13 @@ class SettingsService:
         VIRTUAL_LIMIT = 10000 
         
         if not (-VIRTUAL_LIMIT < rx < VIRTUAL_LIMIT):
-            rx = 100
+            rx = def_x
         if not (-VIRTUAL_LIMIT < ry < VIRTUAL_LIMIT):
-            ry = 100
+            ry = def_y
         if rw <= 0 or rw > VIRTUAL_LIMIT:
-            rw = 737
+            rw = def_w
         if rh <= 0 or rh > VIRTUAL_LIMIT:
-            rh = 518
+            rh = def_h
             
         return rx, ry, rw, rh
 
@@ -141,10 +163,10 @@ class SettingsService:
         if not isinstance(win, dict):
             win = {}
         win.update({
-            "x": x,
-            "y": y,
-            "width": width,
-            "height": height,
+            "x": int(x),
+            "y": int(y),
+            "width": int(width),
+            "height": int(height),
         })
         data[window_name] = win
         self.save(data)

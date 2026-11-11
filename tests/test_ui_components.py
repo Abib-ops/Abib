@@ -6,7 +6,7 @@
 
 
 import unittest
-from typing import Any, cast
+from typing import cast
 from unittest.mock import MagicMock, patch
 
 # noinspection PyPackageRequirements
@@ -74,6 +74,25 @@ class TestSettingsService(unittest.TestCase):
             saved_data["main_window"],
             {"state": "deadbeef", "x": 50, "y": 60, "width": 800, "height": 600},
         )
+
+    def test_get_window_geometry_uses_defaults_for_malformed_values(self):
+        self.service._cached_settings = {
+            "main_window": {"x": "bad", "y": None, "width": "bad", "height": None}
+        }
+
+        self.assertEqual(self.service.get_window_geometry("main_window"), (10, 20, 100, 200))
+
+    def test_get_window_geometry_uses_defaults_for_non_dict_value(self):
+        self.service._cached_settings = {"main_window": "invalid"}
+
+        self.assertEqual(self.service.get_window_geometry("main_window"), (10, 20, 100, 200))
+
+    def test_get_window_geometry_uses_defaults_for_out_of_range_values(self):
+        self.service._cached_settings = {
+            "main_window": {"x": 10000, "y": -10000, "width": 0, "height": 10001}
+        }
+
+        self.assertEqual(self.service.get_window_geometry("main_window"), (10, 20, 100, 200))
 
     def test_save_and_get_window_state(self):
         self.service.save_window_state("main_window", "cafe")
@@ -166,7 +185,7 @@ class TestSearchResultsWindow(unittest.TestCase):
         try:
             self.assertFalse(window.isVisible())
             window.save_width()
-            cast(MagicMock, service.update_search_results_width).assert_not_called()
+            service.update_search_results_width.assert_not_called()
         finally:
             window.deleteLater()
 
@@ -176,7 +195,7 @@ class TestSearchResultsWindow(unittest.TestCase):
             window.show()
             window._positioning = True
             window.save_width()
-            cast(MagicMock, service.update_search_results_width).assert_not_called()
+            service.update_search_results_width.assert_not_called()
         finally:
             window.close()
             window.deleteLater()
@@ -187,8 +206,8 @@ class TestSearchResultsWindow(unittest.TestCase):
             window.resize(650, 400)
             window.show()
             window.save_width()
-            cast(MagicMock, service.update_search_results_width).assert_called_once()
-            args, _ = cast(MagicMock, service.update_search_results_width).call_args
+            service.update_search_results_width.assert_called_once()
+            args, _ = service.update_search_results_width.call_args
             self.assertEqual(args[0], window.width())
         finally:
             window.close()
@@ -222,7 +241,8 @@ class TestReaderFind(unittest.TestCase):
             window.show_find_dialog()
             dlg = window._find_dlg
             self.assertIsNotNone(dlg)
-            flags = cast(Any, dlg).build_flags()
+            assert dlg is not None
+            flags = dlg.build_flags()
             self.assertIsInstance(flags, QTextDocument.FindFlag)
         finally:
             window.close()
@@ -233,7 +253,8 @@ class TestReaderFind(unittest.TestCase):
         try:
             self._reset_cursor_to_start(window)
             window.show_find_dialog()
-            dlg = cast(Any, window._find_dlg)
+            dlg = window._find_dlg
+            assert dlg is not None
             dlg.edit.setText("beta")
 
             window.find_next()
@@ -253,7 +274,8 @@ class TestReaderFind(unittest.TestCase):
         try:
             self._reset_cursor_to_start(window)
             window.show_find_dialog()
-            dlg = cast(Any, window._find_dlg)
+            dlg = window._find_dlg
+            assert dlg is not None
             dlg.case_box.setChecked(True)
             dlg.edit.setText("BETA")
             window.find_next()
@@ -380,6 +402,170 @@ class TestUIHelpers(unittest.TestCase):
         popup.apply_theme(is_dark=False)
         args, _ = cast(MagicMock, popup._widget).setStyleSheet.call_args
         self.assertIn("background-color: #ffffff", args[0])
+
+
+    def test_simple_scripture_popup_parented_to_host_window(self):
+        from PySide6.QtCore import Qt
+        from PySide6.QtWidgets import QDialog, QPlainTextEdit
+
+        from abib.ui.ui_helpers import SimpleScripturePopup
+
+        parent_window = QDialog()
+        editor = QPlainTextEdit(parent_window)
+        popup = SimpleScripturePopup()
+        popup.ensure_created(editor)
+
+        assert popup._widget is not None
+        self.assertEqual(popup._widget.parentWidget(), parent_window)
+        self.assertEqual(popup._widget.focusPolicy(), Qt.FocusPolicy.NoFocus)
+        self.assertTrue(popup._widget.testAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating))
+
+    def test_simple_scripture_popup_reparents_when_host_changes(self):
+        from PySide6.QtWidgets import QDialog, QPlainTextEdit
+
+        from abib.ui.ui_helpers import SimpleScripturePopup
+
+        first_window = QDialog()
+        first_editor = QPlainTextEdit(first_window)
+        second_window = QDialog()
+        second_editor = QPlainTextEdit(second_window)
+        popup = SimpleScripturePopup()
+
+        popup.ensure_created(first_editor)
+        assert popup._widget is not None
+        self.assertEqual(popup._widget.parentWidget(), first_window)
+
+        popup.ensure_created(second_editor)
+        self.assertEqual(popup._widget.parentWidget(), second_window)
+
+    def test_simple_scripture_popup_uses_host_screen_for_sizing(self):
+        from PySide6.QtCore import QPoint, QSize
+        from PySide6.QtGui import QFont
+        from PySide6.QtWidgets import QDialog, QPlainTextEdit
+
+        from abib.ui.ui_helpers import SimpleScripturePopup
+
+        parent_window = QDialog()
+        parent_window.resize(600, 800)
+        editor = QPlainTextEdit(parent_window)
+        editor.setPlainText("In the beginning God created the heaven and the earth.\nGenesis 1:1")
+        editor.resize(500, 700)
+
+        mock_screen = MagicMock()
+        mock_screen.size.return_value = QSize(1440, 900)
+        editor.screen = MagicMock(return_value=mock_screen)
+
+        popup = SimpleScripturePopup()
+        _x, _y, width, height = popup.predict_geometry(
+            editor, "Genesis 1:1 KJV\nIn the beginning", QPoint(10, 10), QFont()
+        )
+        self.assertEqual(width, 500)
+        self.assertGreater(height, 0)
+        self.assertLessEqual(height, int(900 * 0.6))
+        assert popup._widget is not None
+        self.assertEqual(popup._widget.parentWidget(), parent_window)
+
+        popup.show(editor, "Genesis 1:1 KJV\nIn the beginning", QPoint(10, 10), QFont(), is_dark=False)
+        self.assertEqual(popup._widget.parentWidget(), parent_window)
+        self.assertEqual(popup._widget.width(), 500)
+        self.assertLessEqual(popup._widget.height(), int(900 * 0.6))
+
+
+class TestWindowGeometryPersistence(unittest.TestCase):
+    def test_gill_window_geometry_persistence(self):
+        from pathlib import Path
+
+        from abib.ui.gill_window import GillCommentaryWindow
+
+        settings_service = MagicMock()
+        settings_service.get_window_geometry.return_value = (170, 180, 820, 640)
+        settings_service.get_commentary_font_size.return_value = 12
+        window = GillCommentaryWindow(Path("unused.sqlite"), settings_service=settings_service)
+        try:
+            settings_service.get_window_geometry.assert_called_with("gill_commentary_window")
+            self.assertEqual((window.x(), window.y(), window.width(), window.height()), (170, 180, 820, 640))
+
+            window._persist_geometry()
+            settings_service.save_window_geometry.assert_called_with(
+                "gill_commentary_window",
+                window.geometry().x(),
+                window.geometry().y(),
+                window.geometry().width(),
+                window.geometry().height(),
+            )
+        finally:
+            window.close()
+            window.deleteLater()
+
+    def test_concordance_window_geometry_persistence(self):
+        from abib.ui.concordance_window import ConcordanceWindow
+
+        concordance_service = MagicMock()
+        concordance_service.entries.return_value = ()
+        settings_service = MagicMock()
+        settings_service.get_window_geometry.return_value = (150, 160, 700, 550)
+
+        window = ConcordanceWindow(concordance_service, settings_service=settings_service)
+        try:
+            settings_service.get_window_geometry.assert_called_with("concordance_window")
+            self.assertEqual((window.x(), window.y(), window.width(), window.height()), (150, 160, 700, 550))
+
+            window._persist_geometry()
+            settings_service.save_window_geometry.assert_called_with(
+                "concordance_window",
+                window.geometry().x(),
+                window.geometry().y(),
+                window.geometry().width(),
+                window.geometry().height(),
+            )
+        finally:
+            window.close()
+            window.deleteLater()
+
+    def test_other_works_references_window_geometry_persistence(self):
+        from abib.ui.other_works_references_window import OtherWorksReferencesWindow
+
+        settings_service = MagicMock()
+        settings_service.get_window_geometry.return_value = (110, 120, 550, 380)
+        window = OtherWorksReferencesWindow(MagicMock(), settings_service=settings_service)
+        try:
+            settings_service.get_window_geometry.assert_called_with("other_works_references_window")
+            self.assertEqual((window.x(), window.y(), window.width(), window.height()), (110, 120, 550, 380))
+
+            window._persist_geometry()
+            settings_service.save_window_geometry.assert_called_with(
+                "other_works_references_window",
+                window.geometry().x(),
+                window.geometry().y(),
+                window.geometry().width(),
+                window.geometry().height(),
+            )
+        finally:
+            window.close()
+            window.deleteLater()
+
+    def test_other_works_text_search_window_geometry_persistence(self):
+        from abib.ui.other_works_text_search_window import OtherWorksTextSearchWindow
+
+        settings_service = MagicMock()
+        settings_service.get_window_geometry.return_value = (130, 140, 560, 390)
+        window = OtherWorksTextSearchWindow(MagicMock(), settings_service=settings_service)
+        try:
+            settings_service.get_window_geometry.assert_called_with("other_works_text_search_window")
+            self.assertEqual((window.x(), window.y(), window.width(), window.height()), (130, 140, 560, 390))
+
+            window._persist_geometry()
+            settings_service.save_window_geometry.assert_called_with(
+                "other_works_text_search_window",
+                window.geometry().x(),
+                window.geometry().y(),
+                window.geometry().width(),
+                window.geometry().height(),
+            )
+        finally:
+            window.close()
+            window.deleteLater()
+
 
 class TestScriptureLogic(unittest.TestCase):
     def test_lookup_scripture_dangling_hyphen(self):

@@ -456,13 +456,13 @@ class TextDocumentWindow(QDialog):
     @staticmethod
     def _safe_geometry_tuple(x: int | None, y: int | None, w: int | None, h: int | None) -> tuple[int, int, int, int] | None:
         try:
-            if None in (x, y, w, h):
+            if x is None or y is None or w is None or h is None:
                 return None
 
             # Use relaxed multi-monitor aware clamping similar to fcs.get_window_geometry
             VIRTUAL_LIMIT = 10000
 
-            gx, gy, gw, gh = int(cast(Any, x)), int(cast(Any, y)), int(cast(Any, w)), int(cast(Any, h))
+            gx, gy, gw, gh = int(x), int(y), int(w), int(h)
 
             if not (-VIRTUAL_LIMIT < gx < VIRTUAL_LIMIT):
                 gx = 100
@@ -493,15 +493,25 @@ class TextDocumentWindow(QDialog):
                 return int(entry), None
             # New format: list/tuple with at least 5 numbers
             if isinstance(entry, (list, tuple)) and len(entry) >= 5:
-                scroll = int(entry[0])
-                geom = self._safe_geometry_tuple(int(entry[1]), int(entry[2]), int(entry[3]), int(entry[4]))
+                scroll_value: Any = entry[0]
+                x_value: Any = entry[1]
+                y_value: Any = entry[2]
+                w_value: Any = entry[3]
+                h_value: Any = entry[4]
+                scroll = int(scroll_value)
+                geom = self._safe_geometry_tuple(int(x_value), int(y_value), int(w_value), int(h_value))
                 return scroll, geom
             # Some partially migrated forms: try to coerce the first value as scroll
             if isinstance(entry, (list, tuple)) and len(entry) >= 1:
-                scroll = int(entry[0])
+                scroll_value: Any = entry[0]
+                scroll = int(scroll_value)
                 geom = None
                 if len(entry) >= 5:
-                    geom = self._safe_geometry_tuple(entry[1], entry[2], entry[3], entry[4])
+                    x_value: Any = entry[1]
+                    y_value: Any = entry[2]
+                    w_value: Any = entry[3]
+                    h_value: Any = entry[4]
+                    geom = self._safe_geometry_tuple(int(x_value), int(y_value), int(w_value), int(h_value))
                 return scroll, geom
         except (ValueError, TypeError, AttributeError):
             pass
@@ -1091,7 +1101,7 @@ class TextDocumentWindow(QDialog):
             value = getattr(self, "_pending_save_value", None)
             if stem is None or value is None:
                 return
-            self._save_scroll_for(cast(Any, stem), int(cast(Any, value)))
+            self._save_scroll_for(stem, int(value))
         except (ValueError, TypeError, AttributeError):
             pass
         finally:
@@ -1110,8 +1120,7 @@ class TextDocumentWindow(QDialog):
             return
         try:
             # Set scroll to 0, preserve geometry
-            s: str = cast(str, stem)
-            self._write_entry(s, scroll=0, geometry=None)
+            self._write_entry(stem, scroll=0, geometry=None)
         except (ValueError, TypeError, OSError):
             # Non-fatal: if persisting fails, still attempt to scroll to the top
             pass
@@ -1139,7 +1148,7 @@ class TextDocumentWindow(QDialog):
                     self._is_loading = False
             else:
                 # Use the async restorer to apply 0 once the layout is ready
-                self._restore_scroll_position_async(cast(str, stem), 0)
+                self._restore_scroll_position_async(stem, 0)
         except (AttributeError, RuntimeError):
             self._is_loading = False
 
@@ -1162,7 +1171,7 @@ class TextDocumentWindow(QDialog):
             stem = getattr(self, "current_file_stem", None)
             if stem:
                 # _write_entry also persists in the whole settings dict, including our "reader_window" update
-                self._write_entry(cast(str, stem), geometry=(int(g.x()), int(g.y()), int(g.width()), int(g.height())))
+                self._write_entry(stem, geometry=(int(g.x()), int(g.y()), int(g.width()), int(g.height())))
             else:
                 # No work loaded, just persist global settings (theme, reader_window, etc.)
                 try:
@@ -1214,6 +1223,7 @@ class TextDocumentWindow(QDialog):
         super().showEvent(event)
 
     def hideEvent(self, event):
+        self._save_current_geometry()
         try:
             self.displayedChanged.emit(False)
         except (RuntimeError, AttributeError, TypeError):
@@ -1437,7 +1447,6 @@ class TextDocumentWindow(QDialog):
             try:
                 prev_stem = getattr(self, "current_file_stem", None)
                 if prev_stem:
-                    p_stem: str = cast(str, prev_stem)
                     sb_prev = self.text_edit.verticalScrollBar()
                     try:
                         prev_value = int(sb_prev.value())
@@ -1446,13 +1455,13 @@ class TextDocumentWindow(QDialog):
                         prev_value, prev_max = 0, 0
                     if prev_max > 0:
                         # Avoid overwriting a good non-zero with an early zero
-                        existing = self._get_saved_position(p_stem)
+                        existing = self._get_saved_position(prev_stem)
                         if (prev_value != 0) or (existing == 0):
-                            self._save_scroll_for(p_stem, prev_value)
+                            self._save_scroll_for(prev_stem, prev_value)
                     # Always capture the current geometry for the previous stem
                     try:
                         gprev = self.geometry()
-                        self._write_entry(p_stem, geometry=(int(gprev.x()), int(gprev.y()), int(gprev.width()), int(gprev.height())))
+                        self._write_entry(prev_stem, geometry=(int(gprev.x()), int(gprev.y()), int(gprev.width()), int(gprev.height())))
                     except (ValueError, TypeError, AttributeError, RuntimeError, OSError):
                         pass
             except (ValueError, TypeError, OSError, AttributeError, RuntimeError):
@@ -2126,9 +2135,9 @@ class TextDocumentWindow(QDialog):
                 # from a bare integer here.
                 flags: Any = QTextDocument.FindFlag(0)
                 if self.case_box.isChecked():
-                    flags |= cast(Any, getattr(QTextDocument.FindFlag, "FindCaseSensitively", QTextDocument.FindFlag(0)))
+                    flags |= getattr(QTextDocument.FindFlag, "FindCaseSensitively", QTextDocument.FindFlag(0))
                 if self.whole_box.isChecked():
-                    flags |= cast(Any, getattr(QTextDocument.FindFlag, "FindWholeWords", QTextDocument.FindFlag(0)))
+                    flags |= getattr(QTextDocument.FindFlag, "FindWholeWords", QTextDocument.FindFlag(0))
                 return flags
             except (AttributeError, TypeError, RuntimeError, ValueError):
                 # Fallback to integer flags using helper if enums are unavailable
@@ -2687,8 +2696,8 @@ class TextDocumentWindow(QDialog):
                 book_v: Any = book
                 normalized_book: Any = self.normalize_book_input(book_v) if isinstance(book_v, str) else book_v
                 book_id = sh.bibledict.get(normalized_book)
-                full_book = self.canonical_books.get(int(cast(Any, book_id)), cast(str, book))
-                if book_id and (int(cast(Any, book_id)) - 1) in sh.onechapterbooks:
+                full_book = self.canonical_books.get(book_id, cast(str, book)) if book_id is not None else cast(str, book)
+                if book_id is not None and (book_id - 1) in sh.onechapterbooks:
                     nav_ref = f"{full_book} {first_verse}"
                 else:
                     nav_ref = f"{full_book} {chapter}:{first_verse}"
@@ -2716,16 +2725,15 @@ class TextDocumentWindow(QDialog):
                 self._pending_hover_pos = pos
                 if not self._hover_timer.isActive():
                     self._hover_timer.start()
-        elif event.type() == QEvent.Type.Wheel:
+        elif event.type() == QEvent.Type.Wheel and hasattr(self, '_popup_helper') and isinstance(self._popup_helper, SimpleScripturePopup):
             # If the popup helper is showing a long reference, scroll it instead of the document
-            if hasattr(self, '_popup_helper') and isinstance(self._popup_helper, SimpleScripturePopup):
-                try:
-                    if self._popup_helper.is_visible() and isinstance(event, QWheelEvent):
-                        # Forward the vertical delta
-                        self._popup_helper.scroll_by(event.angleDelta().y())
-                        return True
-                except (RuntimeError, AttributeError):
-                    pass
+            try:
+                if self._popup_helper.is_visible() and isinstance(event, QWheelEvent):
+                    # Forward the vertical delta
+                    self._popup_helper.scroll_by(event.angleDelta().y())
+                    return True
+            except (RuntimeError, AttributeError):
+                pass
         return super().eventFilter(obj, event)
 
     def handle_hover(self, pos: QPoint):

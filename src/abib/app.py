@@ -5,10 +5,19 @@
 # -*- coding: utf-8 -*-
 
 
+import os
 from typing import Any, cast
 
 # noinspection PyPackageRequirements
-from PySide6.QtCore import QObject, QRunnable, Qt, QThreadPool, QTimer, Signal
+from PySide6.QtCore import (
+    QLoggingCategory,
+    QObject,
+    QRunnable,
+    Qt,
+    QThreadPool,
+    QTimer,
+    Signal,
+)
 
 # noinspection PyPackageRequirements
 from PySide6.QtGui import QColor, QFontDatabase, QIcon, QPixmap
@@ -24,6 +33,7 @@ from abib.core import shared as sh
 from abib.services import search_service
 from abib.services.data_loader import DataLoader, SearchData
 from abib.services.settings import SettingsService
+from abib.utils import platform as plat
 
 
 def _show_splash_if_enabled(settings: dict[str, Any]) -> QSplashScreen | None:
@@ -163,7 +173,33 @@ def _register_bundled_font() -> None:
         pass
 
 
+def _configure_qt_platform() -> None:
+    """Set a Linux Qt platform default that supports window positioning."""
+    if plat.is_linux() and "QT_QPA_PLATFORM" not in os.environ:
+        os.environ["QT_QPA_PLATFORM"] = "xcb;wayland"
+
+
+def _configure_qt_logging() -> None:
+    """Suppress harmless Wayland text-input warnings on Linux."""
+    if not plat.is_linux():
+        return
+
+    wayland_rule = "qt.qpa.wayland.textinput*=false"
+    existing_rules = os.environ.get("QT_LOGGING_RULES", "")
+    if wayland_rule not in existing_rules:
+        os.environ["QT_LOGGING_RULES"] = f"{existing_rules};{wayland_rule}".lstrip(";")
+
+    try:
+        QLoggingCategory.setFilterRules(
+            "qt.qpa.wayland.textinput*=false\nqt.qpa.wayland.textinput=false"
+        )
+    except (AttributeError, RuntimeError):
+        pass
+
+
 def run() -> None:
+    _configure_qt_platform()
+    _configure_qt_logging()
     app: QApplication = QApplication()
     app.setApplicationName("Abib")
 

@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
 
 from abib.core import shared as sh
 from abib.services.settings import SettingsService
+from abib.utils import platform as plat
 
 if TYPE_CHECKING:
     from abib.Abib import MainWindow
@@ -205,6 +206,14 @@ class SettingsDialog(QDialog):
             return
 
         if not update_available:
+            return
+
+        if not plat.is_windows():
+            # Opening the release page must happen on the GUI thread.
+            try:
+                _perform_update(new_version, new_exe_url)
+            except (OSError, RuntimeError, ValueError):
+                pass
             return
 
         try:

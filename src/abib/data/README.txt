@@ -10,8 +10,48 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.50
+Abib v417.51
 ------------
+
+- Bug fix: Concordance search highlight positioning. Clicking a reference in
+  the Concordance now highlights the exact word or phrase at its true location
+  in the verse within the main window, rather than defaulting to the start of
+  the line.
+- Cross-platform: One source tree for Windows 10/11, Arch Linux and macOS. The
+  Linux fixes that lived in a separate Arch copy are merged in. On Linux, Abib
+  now defaults QT_QPA_PLATFORM to "xcb;wayland" when you have not set it, so
+  window positions are restored under Wayland, and it silences harmless Wayland
+  text-input warnings. Linux and macOS run from source; the Windows installer
+  remains the only packaged build.
+- Window positions: The Concordance, Gill commentary, Other Works References
+  and Other Works Text Search windows now remember their position and size.
+  Damaged window values in settings.json fall back to the defaults instead of
+  causing an error.
+- Scripture popups: Popups now belong to the window they were opened from and
+  are sized for the monitor that window is on.
+- Updates on Linux and macOS: "Check for updates" now works on every platform.
+  On Linux and macOS it reports a newer version and offers to open the download
+  page in your browser; nothing is downloaded or installed. Windows still
+  downloads and runs the installer as before.
+- Maintenance: Code-quality and dependency update, with no new user-facing
+  features. Type annotations and Qt handling were cleaned up in the search,
+  reader, printing, and update code, along with related test code.
+- Platform and printing safeguards. The Windows application ID is now set
+  only on Windows. Printing checks the editor's font and text before using
+  them, and sets the document page size from the printer's page dimensions.
+- Scripture-reference handling. A defensive fallback retains the original book
+  text when a clicked reference has no mapped book ID.
+- Development dependencies updated. The lockfile refreshes coverage, Ruff,
+  and mypy-extensions. Package and Windows installer version information was
+  updated to v417.51.
+
+This release makes Abib a single cross-platform codebase for Windows, Arch
+Linux and macOS and remembers the position of the study windows. It also
+fixes Concordance navigation highlighting, tidies the code and
+tests, refreshes development dependencies, and adds defensive handling for
+printing and references.
+
+Abib v417.50
 
 - Bug fix: The main window remembers its position on Linux. On Linux (X11) the
   main window did not return to where it was left after a restart, because the
@@ -1786,7 +1826,7 @@ warned with a message and can cancel.
 
 For Windows 11: Do nothing, the CascadiaMono font is built in.
 
-For arch-based linux distros.
+For arch-based Linux distros.
 -----------------------------
 Do:
 
@@ -1831,13 +1871,13 @@ enter this command:
 cp -r "$s_dir"/Abib /home/andrew/.Abib
 
 Possibly /home/username/.Abib where 'username' is replaced with your
-linux username.
+Linux username.
 
 Now you can run it by navigating to that folder and doing:
 
 $ python Abib.py
 
-You will need to change a few things to make it work on linux.
+You will need to change a few things to make it work on Linux.
 
 God Bless you.
 

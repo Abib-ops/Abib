@@ -15,7 +15,7 @@ of ``MainWindow``.
 import types
 from unittest.mock import MagicMock
 
-import abib.Abib as abib_module
+import abib.Abib as AbibModule
 from abib.core import shared as sh
 from abib.ui.navigation_controller import NavigationController
 
@@ -32,10 +32,10 @@ def _patch_module_state(monkeypatch) -> None:
     fake_history = MagicMock()
     fake_forward = MagicMock()
     fake_back = MagicMock()
-    monkeypatch.setattr(abib_module, "history", fake_history)
-    monkeypatch.setattr(abib_module, "forward", fake_forward)
-    monkeypatch.setattr(abib_module, "back", fake_back)
-    monkeypatch.setattr(abib_module, "reset_attributes", MagicMock())
+    monkeypatch.setattr(AbibModule, "history", fake_history)
+    monkeypatch.setattr(AbibModule, "forward", fake_forward)
+    monkeypatch.setattr(AbibModule, "back", fake_back)
+    monkeypatch.setattr(AbibModule, "reset_attributes", MagicMock())
 
 
 def test_earlier_book_at_genesis_reports_error(monkeypatch):
@@ -82,7 +82,7 @@ def test_later_book_moves_to_next_book(monkeypatch):
 def test_history_forward_empty_stack_does_nothing(monkeypatch):
     _patch_module_state(monkeypatch)
     # An empty forward stack: len(forward) == 0, so no navigation happens.
-    monkeypatch.setattr(abib_module, "forward", [])
+    monkeypatch.setattr(AbibModule, "forward", [])
     win = _make_window()
 
     NavigationController(win).history_forward()

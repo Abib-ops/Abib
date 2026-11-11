@@ -78,7 +78,6 @@ class SyntaxHighlighter(QSyntaxHighlighter):
                 for pos, length in self._multi_highlights[blockNumber]:
                     self.setFormat(pos, length, self.fmt)
             else:
-                # noinspection PyTypeChecker
                 self.position = win.y + self.lineinc
                 if win.dlg is not None:
                     if win.dlg.checks[2] != 6:

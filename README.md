@@ -45,10 +45,17 @@ It takes little room and has separate windows for the various parts.
 
 ## Running on Linux / macOS
 
-Abib is developed primarily on Windows, but it is a pure PySide6 application and
-runs on Linux and macOS from source. Cross-platform behaviour (paths, per-user
-settings directories and the few operating-system branches) is centralised and
-tested, and CI runs the test suite on Linux, Windows and macOS.
+Abib is one codebase for **Windows 10/11, Arch Linux and macOS**. Windows has an
+installer; on Linux and macOS you run Abib from source. Cross-platform behaviour
+(paths, per-user settings directories and the few operating-system branches) is
+centralised and tested, and CI runs the test suite on Linux, Windows and macOS.
+
+On Arch Linux, install the system packages first:
+
+```bash
+sudo pacman -S python git uv libxcb xcb-util xcb-util-keysyms xcb-util-cursor \
+  xcb-util-image xcb-util-renderutil xcb-util-wm
+```
 
 Run from source (using [uv](https://docs.astral.sh/uv/)):
 
@@ -67,9 +74,16 @@ python3 -m pip install -e .
 python3 -m abib.Abib
 ```
 
-If you see Qt start-up errors on Linux, install your distribution's Qt/XCB
+If you see Qt start-up errors on another Linux distribution, install its Qt/XCB
 packages (e.g. `libxcb`, `xcb-util`, `xcb-util-keysyms`, and the X11/Wayland
 platform plugins). For headless environments set `QT_QPA_PLATFORM=offscreen`.
+
+Wayland does not let applications restore exact window positions, so on Linux
+Abib sets `QT_QPA_PLATFORM=xcb;wayland` when you have not set it yourself. Window
+positions are then restored through Xwayland. A value you set is left unchanged.
+
+Settings are stored in `~/.config/Abib` on Linux and
+`~/Library/Application Support/Abib` on macOS.
 
 ## Contributing
 
@@ -90,8 +104,9 @@ Contributions — including Linux/macOS improvements — are welcome. See
 For tips and shortcuts, see HELP.txt in the repository or the installed folder.
 
 ## Questions
-- Updates: Abib can check for updates and offer to download when a new version is available
-- but only when you want it to.
+- Updates: Abib can check for updates when you want it to. On Windows it offers to
+  download and install the new version. On Linux and macOS it offers to open the
+  Releases page in your browser; nothing is downloaded or installed automatically.
 - Privacy: Abib works offline. It only accesses the internet to check for updates when requested.
 - License: Abib is free software (GPL‑3.0 or later). See LICENSE for details.
 

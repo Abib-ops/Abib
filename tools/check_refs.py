@@ -17,7 +17,7 @@ from abib.core import scripture
 
 # Path to the target file
 data_dir = PROJECT_ROOT / "src" / "abib" / "data"
-NAME = "Call to the Unconverted.txt"
+NAME = "MHCC.txt"
 TARGET = data_dir / "Other Works" / NAME
 print(f"Target file: {TARGET}")
 if not TARGET.is_file():

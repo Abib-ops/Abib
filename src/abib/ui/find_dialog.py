@@ -94,11 +94,11 @@ class FindDialog(QDialog):
 
             # Account for the radio indicator and label spacing from the current style
             style = self.style()
-            indicator_w = style.pixelMetric(QStyle.PixelMetric.PM_ExclusiveIndicatorWidth, None, radios[0])
-            spacing = style.pixelMetric(QStyle.PixelMetric.PM_CheckBoxLabelSpacing, None, radios[0])
+            indicator_w = int(style.pixelMetric(QStyle.PixelMetric.PM_ExclusiveIndicatorWidth, None, radios[0]))
+            spacing = int(style.pixelMetric(QStyle.PixelMetric.PM_CheckBoxLabelSpacing, None, radios[0]))
 
             # All radios share the same x; take the first
-            radios_x = min(rb.geometry().x() for rb in radios)
+            radios_x = min(int(rb.geometry().x()) for rb in radios)
             text_start_x = radios_x + max(0, indicator_w) + max(0, spacing)
             column_x = int(text_start_x + max_left_px + gutter_px + extra_pad_px)
 
@@ -251,9 +251,9 @@ class FindDialog(QDialog):
             gutter_px = max(6, fm.horizontalAdvance("  "))
             extra_pad_px = max(12, fm.horizontalAdvance("    "))
             style = self.style()
-            indicator_w = style.pixelMetric(QStyle.PixelMetric.PM_ExclusiveIndicatorWidth, None, radios[0])
-            spacing = style.pixelMetric(QStyle.PixelMetric.PM_CheckBoxLabelSpacing, None, radios[0])
-            radios_x = min(rb.geometry().x() for rb in radios)
+            indicator_w = int(style.pixelMetric(QStyle.PixelMetric.PM_ExclusiveIndicatorWidth, None, radios[0]))
+            spacing = int(style.pixelMetric(QStyle.PixelMetric.PM_CheckBoxLabelSpacing, None, radios[0]))
+            radios_x = min(int(rb.geometry().x()) for rb in radios)
             text_start_x = radios_x + max(0, indicator_w) + max(0, spacing)
             column_x = int(text_start_x + max_left_px + gutter_px + extra_pad_px)
             # Move labels
@@ -271,6 +271,7 @@ class FindDialog(QDialog):
             pass
 
     def resizeEvent(self, event) -> None:  # type: ignore[override]
+        self._save_current_geometry()
         super().resizeEvent(event)
         self._reposition_right_labels()
 
@@ -426,8 +427,8 @@ class FindDialog(QDialog):
         self.radiobutton1_4_changed()
         self.radiobutton5_6_changed()
 
-    def closeEvent(self, event):
-        """Handle window close event - save geometry"""
+    def _save_current_geometry(self) -> None:
+        """Persist current geometry to settings."""
         try:
             geometry = self.geometry()
             self.settings_service.save_window_geometry(
@@ -439,4 +440,23 @@ class FindDialog(QDialog):
             )
         except (RuntimeError, TypeError, ValueError, AttributeError):
             pass
+
+    def moveEvent(self, event):
+        self._save_current_geometry()
+        try:
+            return super().moveEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
+    def hideEvent(self, event):
+        self._save_current_geometry()
+        try:
+            return super().hideEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
+    def closeEvent(self, event):
+        """Handle window close event - save geometry"""
+        self._save_current_geometry()
+        super().closeEvent(event)
         super().closeEvent(event)

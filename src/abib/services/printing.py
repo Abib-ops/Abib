@@ -71,9 +71,6 @@ class PrintingService:
             try:
                 get_cursor = getattr(editor, "textCursor", None)
                 if callable(get_cursor):
-                    # get_cursor is guaranteed callable here (checked above), but
-                    # its getattr default of None makes static checkers warn.
-                    # noinspection PyCallingNonCallable
                     cursor = get_cursor()
                     has_selection = bool(cursor is not None and cursor.hasSelection())
             except (RuntimeError, AttributeError, TypeError):
@@ -136,11 +133,12 @@ class PrintingService:
             # print as coloured/near-white, unreadable ("corrupted") output.
             # Using plain text on a default document guarantees clean black
             # glyphs on a white page while keeping the editor's font.
-            doc = QTextDocument()
+            doc: Any = QTextDocument()
 
             # Use an explicit, readable print font rather than relying on the
             # on-screen font being resolvable by the print engine. Keep the
             # editor's font (and point size) when it is available.
+            font: Any
             try:
                 font = QFont("Cascadia Mono")
             except (RuntimeError, TypeError):
@@ -148,25 +146,27 @@ class PrintingService:
             try:
                 get_doc = getattr(editor, "document", None)
                 if callable(get_doc):
-                    # get_doc is guaranteed callable here (checked above), but
-                    # its getattr default of None makes static checkers warn.
-                    # noinspection PyCallingNonCallable
                     src_doc = get_doc()
                     if src_doc is not None:
-                        font = QFont(src_doc.defaultFont())
+                        get_default_font = getattr(src_doc, "defaultFont", None)
+                        if callable(get_default_font):
+                            src_font = get_default_font()
+                            if isinstance(src_font, QFont):
+                                font = src_font
             except (RuntimeError, AttributeError, TypeError):
                 pass
             if font is not None:
                 doc.setDefaultFont(font)
 
             if want_selection and cursor is not None:
-                text = cursor.selection().toPlainText()
+                text = str(cursor.selection().toPlainText())
             else:
                 text = ""
                 get_text = getattr(editor, "toPlainText", None)
                 if callable(get_text):
-                    # noinspection PyCallingNonCallable
-                    text = get_text()
+                    editor_text = get_text()
+                    if isinstance(editor_text, str):
+                        text = editor_text
             doc.setPlainText(text)
 
             # CRITICAL: lay the document out against the real printer page.
@@ -178,9 +178,9 @@ class PrintingService:
                 layout = doc.documentLayout()
                 if layout is not None:
                     layout.setPaintDevice(printer)
-                # noinspection PyUnresolvedReferences
-                page = printer.pageRect(QPrinter.Unit.DevicePixel)
-                doc.setPageSize(QSizeF(page.size()))
+                page = printer.pageRect(printer.Unit.DevicePixel)
+                page_size: Any = QSizeF(float(page.width()), float(page.height()))
+                doc.setPageSize(page_size)
                 doc.setTextWidth(page.width())
             except (RuntimeError, AttributeError, TypeError):
                 pass

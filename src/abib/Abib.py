@@ -31,28 +31,18 @@ Third-party materials and attributions:
 - Pure Cambridge Edition of the KJV — see source and terms at bibleprotector.com
 - Spurgeon resources — see spurgeon.org and Eternal Life Ministries for terms
 
-RELEASE DATE: 30/10/2026
-arch linux
-Notes for developers.
----------------------
-sudo pacman -S python-roman
-sudo pacman -S python-requests
-
-If using IDLE,
-export PYTHONPATH="/home/your-username/Abib-417.49*/src"
-# *Folder where an Abib project and pyproject.toml are.
-idle
-
+RELEASE DATE: 11/11/2026
 """
 
 import logging
+import re
 import sqlite3
 import sys
 import time
 import webbrowser
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 # noinspection PyPackageRequirements
 from PySide6.QtCore import QByteArray, QEvent, QObject, QPoint, QRect, Qt
@@ -151,27 +141,24 @@ half_height: float = 0.0
 linehighlightcolor = None
 linetextcolor = None
 
-try:
-    from ctypes import windll  # Only exists on Windows.
-except ImportError:
-    windll = None  # Linux or Mac if here.
-
 CURRENT_VERSION = sh.CURRENT_VERSION
 
-try:
-    myappid = f"Abib Bible Reader.{CURRENT_VERSION}"
-    if windll:
-        cast(Any, windll).shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-except (AttributeError, OSError) as e:
-    # AttributeError: non-Windows (windll is None); OSError: Windows API failure
-    print(f"Error setting APP ID: {e}")
+if sys.platform == "win32":
+    try:
+        from ctypes import windll
+
+        myappid = f"Abib Bible Reader.{CURRENT_VERSION}"
+        windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+    except (AttributeError, OSError) as e:
+        # AttributeError: Windows API unavailable; OSError: Windows API failure
+        print(f"Error setting APP ID: {e}")
 
 
 def get_next_occurrence() -> int:
     """Delegate to the search engine, operating on the global window handle."""
 
     assert w is not None
-    return search_service.get_next_occurrence(cast("MainWindow", w))
+    return search_service.get_next_occurrence(w)
 
 
 def find_whole_word_any(x1: int, x2: int, _set: sh.WordSet, r_list: list, win: MainWindow) -> None:
@@ -624,19 +611,74 @@ class MainWindow(QMainWindow):
 
         if self.concordance_window is None:
             from abib.ui.concordance_window import ConcordanceWindow
-            self.concordance_window = ConcordanceWindow(self.concordance_service, self)
+            self.concordance_window = ConcordanceWindow(
+                self.concordance_service,
+                self,
+                settings_service=getattr(self, "settings_service", None),
+            )
             self.concordance_window.referenceActivated.connect(self._on_concordance_reference_activated)
 
         self.concordance_window.show()
         self.concordance_window.raise_()
         self.concordance_window.activateWindow()
 
-    def _on_concordance_reference_activated(self, current_position: int) -> None:
+    def _sync_concordance_state_for_result(self, current_position: int, term: str) -> None:
+        """Sync search and highlight state for a concordance occurrence."""
+        clean_term = term.strip() if isinstance(term, str) else ""
+        if not clean_term:
+            return
+
+        try:
+            search_data = search_service.get_search_data()
+        except RuntimeError:
+            return
+
+        matches: list[tuple[int, int]] = []
+        if 0 <= current_position < len(search_data.Rlsp):
+            text = search_data.Rlsp[current_position]
+            if " " in clean_term:
+                parts = [re.escape(part) for part in clean_term.lower().split() if part]
+                pattern = re.compile(r"\b" + r"\s+".join(parts) + r"\b")
+            else:
+                pattern = re.compile(fcs.create_pattern(re.escape(clean_term.lower())))
+            matches = [(m.start(), m.end()) for m in pattern.finditer(text)]
+            if not matches and " " not in clean_term:
+                pattern_fallback = re.compile(rf"\b{re.escape(clean_term.lower())}\b")
+                matches = [(m.start(), m.end()) for m in pattern_fallback.finditer(text)]
+
+        if not matches:
+            return
+
+        self.key = clean_term
+        self.keym = clean_term
+        self.store = clean_term
+        self.occurs = [current_position]
+        self.occur = [matches]
+        self.verse = 0
+        self.finding = 0
+        self.occurrence = 1
+        self.occurring = len(matches)
+        self.y = matches[0][0]
+        self.yend = matches[0][1]
+
+        if self.dlg is None:
+            from types import SimpleNamespace
+            self.dlg = SimpleNamespace(checks=[3 if len(matches) > 1 else 2, 0, 5])
+        else:
+            self.dlg.checks[0] = 3 if len(matches) > 1 else 2
+            self.dlg.checks[1] = 0
+            if len(self.dlg.checks) > 2 and self.dlg.checks[2] == 6:
+                self.dlg.checks[2] = 5
+
+    def _on_concordance_reference_activated(self, current_position: int, term: str = "") -> None:
         """Jump to the clicked concordance reference."""
         current_line = self.get_line_number()
         if current_line != current_position:
             forward.clear()
             history.back_push(self, current_line)
+        sync_method = getattr(self, "_sync_concordance_state_for_result", None)
+        if sync_method is not None:
+            sync_method(current_position, term)
         self.display_verse_from_history(current_position)
 
     def open_other_works_references(self) -> None:
@@ -648,7 +690,11 @@ class MainWindow(QMainWindow):
 
         if self.other_works_references_window is None:
             parent = self if isinstance(self, QWidget) else None
-            self.other_works_references_window = OtherWorksReferencesWindow(self.other_works_reference_index, parent)
+            self.other_works_references_window = OtherWorksReferencesWindow(
+                self.other_works_reference_index,
+                parent,
+                settings_service=getattr(self, "settings_service", None),
+            )
             self.other_works_references_window.occurrenceActivated.connect(self._on_other_work_reference_activated)
         else:
             self.other_works_references_window._service = self.other_works_reference_index
@@ -680,7 +726,11 @@ class MainWindow(QMainWindow):
 
         if self.other_works_text_search_window is None:
             parent = self if isinstance(self, QWidget) else None
-            self.other_works_text_search_window = OtherWorksTextSearchWindow(self.other_works_text_search_service, parent)
+            self.other_works_text_search_window = OtherWorksTextSearchWindow(
+                self.other_works_text_search_service,
+                parent,
+                settings_service=getattr(self, "settings_service", None),
+            )
             self.other_works_text_search_window.occurrenceActivated.connect(self._on_other_work_text_search_activated)
         else:
             self.other_works_text_search_window._service = self.other_works_text_search_service
@@ -1193,6 +1243,13 @@ class MainWindow(QMainWindow):
                 references_window.close()
         except (AttributeError, RuntimeError, TypeError, ValueError):
             logger.debug("Could not close Other Works references window on close", exc_info=True)
+
+        try:
+            text_search_window: Any = getattr(self, "other_works_text_search_window", None)
+            if text_search_window is not None:
+                text_search_window.close()
+        except (AttributeError, RuntimeError, TypeError, ValueError):
+            logger.debug("Could not close Other Works text search window on close", exc_info=True)
         
         # Explicitly close secondary windows to ensure they trigger their own closeEvent/save logic
         try:
@@ -1727,7 +1784,8 @@ class MainWindow(QMainWindow):
             win.y += 2
             end = win.y
         search_data = search_service.get_search_data()
-        if self.dlg.checks[1] == 0:
+        checks = getattr(self.dlg, "checks", [2, 0, 5]) if self.dlg is not None else [2, 0, 5]
+        if checks[1] == 0:
             add = fcs.repeat_find(search_data.Rlow[current_position], start, end)
         else:
             add = fcs.repeat_find(search_data.Rnew[current_position], start, end)
@@ -1741,7 +1799,8 @@ class MainWindow(QMainWindow):
 
         add: int
         search_data = search_service.get_search_data()
-        if self.dlg.checks[1] == 0:
+        checks = getattr(self.dlg, "checks", [2, 0, 5]) if self.dlg is not None else [2, 0, 5]
+        if checks[1] == 0:
             add = fcs.repeat_find_keyinc(search_data.Rlow[current_position], start, end)
         else:
             add = fcs.repeat_find_keyinc(search_data.Rnew[current_position], start, end)
@@ -1755,15 +1814,16 @@ class MainWindow(QMainWindow):
         win: Any = self
 
         add = 0
+        checks = getattr(self.dlg, "checks", [2, 0, 5]) if self.dlg is not None else [2, 0, 5]
         # In multi-word modes (3 and 4) we highlight individual spans; rely on provided win.key and win.y
-        if self.dlg.checks[2] == 6:
+        if len(checks) > 2 and checks[2] == 6:
             # File/other view mode uses explicit y/yend
             lkey = win.yend - win.y
             win.hiLita.length = lkey
         else:
             lkey = len(win.key)
 
-        if self.dlg.checks[0] != 1:
+        if checks[0] != 1:
             start = 0
             assert isinstance(win.y, int)
             end: int = win.y
@@ -1793,7 +1853,8 @@ class MainWindow(QMainWindow):
         litz = []
         assert isinstance(win.y, int)
         start = win.y + add
-        if self.dlg.checks[0] != 1:  # Not Raw
+        checks = getattr(self.dlg, "checks", [2, 0, 5]) if self.dlg is not None else [2, 0, 5]
+        if checks[0] != 1:  # Not Raw
             end = start + len(win.key)  # change win.yend
             num = self.stripped_punctuation_adjust_ki(current_position, start, end)
         lav = len(KJV[ln])

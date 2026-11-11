@@ -23,6 +23,7 @@ from abib.services.other_works_text_search import (
     OtherWorksTextSearchService,
     OtherWorkTextSearchOccurrence,
 )
+from abib.services.settings import SettingsService
 from abib.ui.other_works_results_view import populate_results_tree
 
 
@@ -31,13 +32,24 @@ class OtherWorksTextSearchWindow(QWidget):
 
     occurrenceActivated = Signal(str, int, int)
 
-    def __init__(self, service: OtherWorksTextSearchService, parent=None) -> None:
+    def __init__(
+        self,
+        service: OtherWorksTextSearchService,
+        parent=None,
+        settings_service: SettingsService | None = None,
+    ) -> None:
         super().__init__(parent, Qt.WindowType.Window)
         self.setWindowTitle("Other Works Text Search")
         self.setMinimumSize(520, 360)
-        self.resize(520, 360)
         self._service = service
+        self._settings_service = settings_service if settings_service is not None else SettingsService()
         self._occurrences: tuple[OtherWorkTextSearchOccurrence, ...] = ()
+
+        try:
+            gx, gy, gw, gh = self._settings_service.get_window_geometry("other_works_text_search_window")
+            self.setGeometry(gx, gy, gw, gh)
+        except (RuntimeError, TypeError, ValueError):
+            self.resize(520, 360)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(6, 6, 6, 6)
@@ -123,3 +135,33 @@ class OtherWorksTextSearchWindow(QWidget):
         occurrence = item.data(0, Qt.ItemDataRole.UserRole)
         if isinstance(occurrence, OtherWorkTextSearchOccurrence):
             self.occurrenceActivated.emit(occurrence.work_path, occurrence.abs_start, occurrence.length)
+
+    def _persist_geometry(self) -> None:
+        try:
+            geom = self.geometry()
+            self._settings_service.save_window_geometry(
+                "other_works_text_search_window", int(geom.x()), int(geom.y()), int(geom.width()), int(geom.height())
+            )
+        except (RuntimeError, TypeError, ValueError, AttributeError):
+            pass
+
+    def moveEvent(self, event):  # type: ignore[override]
+        self._persist_geometry()
+        try:
+            return super().moveEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
+    def resizeEvent(self, event):  # type: ignore[override]
+        self._persist_geometry()
+        try:
+            return super().resizeEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
+
+    def closeEvent(self, event):  # type: ignore[override]
+        self._persist_geometry()
+        try:
+            return super().closeEvent(event)
+        except (RuntimeError, AttributeError, TypeError):
+            return None
