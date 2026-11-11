@@ -40,13 +40,18 @@ class SearchController:
     def __init__(self, window: MainWindow) -> None:
         self._win = window
 
+    def _needs_find_dialog(self) -> bool:
+        """Return whether the current dialog value is only a search-state placeholder."""
+        dlg = self._win.dlg
+        return dlg is None or not callable(getattr(dlg, "show", None))
+
     # ENTRY POINT FOR F3 FIND.
     def on_find_button_clicked(self) -> None:
         """Launch the Find dialog box."""
         win = self._win
         win.reload()  # Reload KJB_PCE.txt if another file loaded.
 
-        if win.dlg is None:
+        if self._needs_find_dialog():
             from abib.ui.find_dialog import FindDialog  # deferred import
             win.dlg = FindDialog(win, settings_service=win.settings_service)
             # Apply the theme palette to the Find dialog (apply_widget is internally safe)
@@ -58,7 +63,7 @@ class SearchController:
     def show_find_window(self) -> None:
         """Show the Find window."""
         win = self._win
-        if win.dlg is None:
+        if self._needs_find_dialog():
             from abib.ui.find_dialog import FindDialog  # deferred import
             win.dlg = FindDialog(win, settings_service=win.settings_service)
             # Apply the theme palette to the Find dialog (apply_widget is internally safe)
@@ -71,7 +76,8 @@ class SearchController:
 
     def close_find_window(self) -> None:
         """Close the Find window."""
-        self._win.dlg.hide()
+        if not self._needs_find_dialog():
+            self._win.dlg.hide()
 
     # ENTRY POINT FOR F4 FIND NEXT.
     def find_next(self) -> None:

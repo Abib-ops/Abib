@@ -10,8 +10,20 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
-Abib v417.51
+Abib v417.52
 ------------
+
+- Bug fix: The Find button works after using the Concordance. If you clicked a
+  reference in the Concordance before the Find window had ever been opened,
+  pressing Find (or F3) did nothing and raised an error instead of opening the
+  Find window. The Find window now opens normally. The fault was introduced by
+  the v417.51 Concordance highlight fix and could occur on any platform; it
+  was reported on Arch Linux.
+
+This release fixes the Find button failing to open the Find window after a
+Concordance reference had been clicked.
+
+Abib v417.51
 
 - Bug fix: Concordance search highlight positioning. Clicking a reference in
   the Concordance now highlights the exact word or phrase at its true location

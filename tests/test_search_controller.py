@@ -54,6 +54,41 @@ def test_on_find_button_clicked_shows_existing_dialog():
     ctrl.show_find_window.assert_called_once()
 
 
+def test_on_find_button_clicked_replaces_concordance_placeholder(monkeypatch):
+    win = _make_window()
+    win.dlg = types.SimpleNamespace(checks=[1, 0, 5])
+    dialog = MagicMock()
+    find_dialog = MagicMock(return_value=dialog)
+    monkeypatch.setattr("abib.ui.find_dialog.FindDialog", find_dialog)
+
+    SearchController(win).on_find_button_clicked()
+
+    find_dialog.assert_called_once_with(win, settings_service=win.settings_service)
+    assert win.dlg is dialog
+    dialog.exec.assert_called_once()
+
+
+def test_show_find_window_replaces_concordance_placeholder(monkeypatch):
+    win = _make_window()
+    win.dlg = types.SimpleNamespace(checks=[1, 0, 5])
+    dialog = MagicMock()
+    find_dialog = MagicMock(return_value=dialog)
+    monkeypatch.setattr("abib.ui.find_dialog.FindDialog", find_dialog)
+
+    SearchController(win).show_find_window()
+
+    find_dialog.assert_called_once_with(win, settings_service=win.settings_service)
+    assert win.dlg is dialog
+    dialog.show.assert_called_once()
+
+
+def test_close_find_window_ignores_concordance_placeholder():
+    win = _make_window()
+    win.dlg = types.SimpleNamespace(checks=[1, 0, 5])
+
+    SearchController(win).close_find_window()
+
+
 def test_find_next_whole_word_routes_to_find_f4_alt():
     win = _make_window()
     win.dlg.checks = [3, 0, 5]  # checks[0] != 1 -> whole-word path
