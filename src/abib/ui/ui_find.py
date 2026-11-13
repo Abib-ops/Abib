@@ -214,7 +214,7 @@ class UiDialog(object):
         self.radiobutton_6.setText(QCoreApplication.translate("dialog", u"Regular expression", None))
         self.label_1.setText(QCoreApplication.translate("dialog", u"Mode", None))
         self.checkBox.setText(QCoreApplication.translate("dialog", u"Match case", None))
-        self.label.setText(QCoreApplication.translate("dialog", u"&Find what:", None))
+        self.label.setText(QCoreApplication.translate("dialog", u"&Find:", None))
         self.pushButton_1.setText(QCoreApplication.translate("dialog", u"X", None))
         self.label_2.setText(QCoreApplication.translate("dialog", u"Search Limits", None))
         self.radiobutton_1.setText(QCoreApplication.translate(

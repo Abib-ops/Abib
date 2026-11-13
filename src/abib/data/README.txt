@@ -10,8 +10,47 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
+Abib v417.53
+
+- New feature: Copy Verse with Reference. The Edit menu can copy the current
+  verse, selected verses or selected part of a verse as quoted text with its
+  scripture reference. Press Ctrl+Shift+C; Gill commentary now uses
+  Ctrl+Shift+G.
+- New feature: Matthew Henry on This Verse. The Study menu can now open
+  Matthew Henry's Concise Commentary (MHCC) at the passage covering the verse
+  currently selected in the Bible. Abib builds and caches its structural index
+  from the local MHCC.txt file, so no additional index file is needed.
+- Other Works Reference Search now includes available Gill and Matthew Henry
+  commentary for the searched verse. Selecting Gill opens its commentary
+  window; selecting Matthew Henry opens the matching passage in the Other
+  Works reader.
+- New feature: Study This Verse. Press Ctrl+Alt+S to open Other Works Scripture
+  reference search for the current verse, with Gill, Matthew Henry, and enabled
+  Other Works results together. The existing Strong's lookup shortcut remains
+  Ctrl+Shift+S.
+- New feature: Bookmarks and verse notes. Save a note for the current verse
+  with Study → Bookmark This Verse… or Ctrl+D, then find and revisit saved
+  verses in Study → Bookmarks and Notes or with Ctrl+Shift+B. Bookmarks are
+  stored separately in the user's settings folder.
+- New feature: Search History. The Find window remembers up to 20 distinct
+  recent searches. Click its history arrow or press Down in the Find box to
+  reuse a term; search history is stored in settings.json and can be cleared
+  from the history menu.
+- New feature: Cross References. Study → Cross References (Ctrl+Shift+X)
+  lists verses related to the current verse, strongest first, from the
+  OpenBible.info cross-reference data (about 340,000 references, based mainly
+  on the Treasury of Scripture Knowledge, CC BY). Click a reference to open
+  it in the main window. A "Minimum votes" filter hides weaker references.
+  The data is an optional download: tick "Cross References (OpenBible.info)"
+  in Study → Update Other Works.
+
+This release adds verse bookmarks and notes, recent search history,
+cross-references, one-step study results for the current verse, verse-based
+access to Matthew Henry's Concise Commentary, combined commentary search
+results, and copying Bible text with its reference.
+
+
 Abib v417.52
-------------
 
 - Bug fix: The Find button works after using the Concordance. If you clicked a
   reference in the Concordance before the Find window had ever been opened,

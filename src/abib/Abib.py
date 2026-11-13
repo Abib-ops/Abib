@@ -31,7 +31,7 @@ Third-party materials and attributions:
 - Pure Cambridge Edition of the KJV — see source and terms at bibleprotector.com
 - Spurgeon resources — see spurgeon.org and Eternal Life Ministries for terms
 
-RELEASE DATE: 11/11/2026
+RELEASE DATE: 13/11/2026
 """
 
 import logging
@@ -64,9 +64,11 @@ from PySide6.QtGui import (
 
 # noinspection PyPackageRequirements
 from PySide6.QtWidgets import (
+    QApplication,
     QComboBox,
     QFileDialog,
     QGridLayout,
+    QInputDialog,
     QLineEdit,
     QMainWindow,
     QMessageBox,
@@ -303,6 +305,10 @@ class MainWindow(QMainWindow):
         # Predeclare actions bundle to satisfy linters (assigned in init_ui)
         self.actions_bundle = None
         self.search_results_window: Any = None
+        self.bookmark_store: Any = None
+        self.bookmarks_window: Any = None
+        self.cross_reference_service: Any = None
+        self.cross_references_window: Any = None
         self.concordance_service: Any = None
         self.concordance_window: Any = None
         self.other_works_reference_index: Any = None
@@ -622,6 +628,157 @@ class MainWindow(QMainWindow):
         self.concordance_window.raise_()
         self.concordance_window.activateWindow()
 
+    def _get_bookmark_store(self):
+        from abib.services.bookmarks import BookmarkStore
+
+        store = getattr(self, "bookmark_store", None)
+        if store is None:
+            store = BookmarkStore(Path(sh.user_settings_dir) / "bookmarks.json")
+            self.bookmark_store = store
+        return store
+
+    def bookmark_current_verse(self) -> None:
+        """Add or edit a bookmark and note for the verse under the cursor."""
+        from abib.services.verse_copy import format_reference_range
+
+        cursor = self.textEditor.textCursor()
+        block = cursor.block()
+        line_number = int(block.blockNumber())
+        position = Amap_rev.get(line_number)
+        if (
+            position is None
+            or not 0 <= line_number < len(KJV)
+            or block.text() != str(KJV[line_number]).rstrip("\r\n")
+        ):
+            position = int(self.get_line_number())
+        position = max(0, min(int(position), sh.LAST_VERSE_IN_BIBLE))
+
+        try:
+            reference = format_reference_range(position, position, sh.Info, sh.onechapterbooks)
+        except (IndexError, TypeError, ValueError):
+            reference = f"Verse {position + 1}"
+
+        store = self._get_bookmark_store()
+        existing = store.get(position)
+        note, accepted = QInputDialog.getMultiLineText(
+            self,
+            "Bookmark Verse",
+            f"Note for {reference}:",
+            existing.note if existing is not None else "",
+        )
+        if not accepted:
+            return
+
+        try:
+            store.set(position, note)
+        except (OSError, TypeError, ValueError):
+            logger.exception("Could not save bookmark for %s", reference)
+            QMessageBox.warning(self, "Bookmarks", "The bookmark could not be saved.")
+            return
+
+        bookmarks_window = getattr(self, "bookmarks_window", None)
+        if bookmarks_window is not None:
+            bookmarks_window.refresh(position)
+        self.statusBar.showMessage(f"Bookmark saved for {reference}.")
+
+    def open_bookmarks(self) -> None:
+        """Show the bookmarks and notes window."""
+        from abib.ui.bookmarks_window import BookmarksWindow
+
+        if getattr(self, "bookmarks_window", None) is None:
+            self.bookmarks_window = BookmarksWindow(
+                self._get_bookmark_store(),
+                self,
+                settings_service=getattr(self, "settings_service", None),
+            )
+            self.bookmarks_window.bookmarkActivated.connect(self._on_bookmark_activated)
+        else:
+            self.bookmarks_window.refresh()
+
+        self.bookmarks_window.show()
+        self.bookmarks_window.raise_()
+        self.bookmarks_window.activateWindow()
+
+    def _on_bookmark_activated(self, position: int) -> None:
+        """Navigate to a selected bookmark and add the current verse to history."""
+        current_position = self.get_line_number()
+        if current_position != position:
+            forward.clear()
+            history.back_push(self, current_position)
+        self.display_verse_from_history(position)
+
+    def _cursor_verse_position(self) -> int:
+        """Return the Bible verse under the cursor, falling back to the current line."""
+        cursor = self.textEditor.textCursor()
+        block = cursor.block()
+        line_number = int(block.blockNumber())
+        position = Amap_rev.get(line_number)
+        if (
+            position is None
+            or not 0 <= line_number < len(KJV)
+            or block.text() != str(KJV[line_number]).rstrip("\r\n")
+        ):
+            position = int(self.get_line_number())
+        return max(0, min(int(position), sh.LAST_VERSE_IN_BIBLE))
+
+    def open_cross_references(self) -> None:
+        """Show the OpenBible.info cross-references for the current verse."""
+        from abib.services.cross_references import CrossReferenceService
+        from abib.services.verse_copy import format_reference_range
+        from abib.ui.cross_references_window import CrossReferencesWindow
+        from abib.ui.search_results import result_verse_text
+
+        service = getattr(self, "cross_reference_service", None)
+        if service is None:
+            service = CrossReferenceService()
+            self.cross_reference_service = service
+        if not service.is_available():
+            answer = QMessageBox.question(
+                self,
+                "Cross References",
+                "The cross-reference data has not been downloaded yet.\n\n"
+                "Tick \"Cross References (OpenBible.info)\" in Update Other Works to "
+                "download it.\n\nOpen Update Other Works now?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.Yes,
+            )
+            if answer == QMessageBox.StandardButton.Yes:
+                self.update_other_works()
+            return
+
+        try:
+            position = MainWindow._cursor_verse_position(self)
+        except (AttributeError, IndexError, RuntimeError, TypeError, ValueError):
+            logger.debug("Could not determine the current verse for cross-references", exc_info=True)
+            self.statusBar.showMessage("Could not determine the current Bible verse.")
+            return
+
+        window = getattr(self, "cross_references_window", None)
+        if window is None:
+            window = CrossReferencesWindow(
+                service,
+                lambda verse: result_verse_text(verse, KJV, Amap),
+                lambda start, end: format_reference_range(start, end, sh.Info, sh.onechapterbooks),
+                self,
+                settings_service=getattr(self, "settings_service", None),
+            )
+            window.referenceActivated.connect(self._on_cross_reference_activated)
+            self.cross_references_window = window
+
+        window.set_position(position)
+        try:
+            window.apply_theme(self.theme.state.is_dark_mode)
+            self.theme.apply_widget(window)
+        except (RuntimeError, AttributeError):
+            logger.debug("Could not apply theme to Cross References window", exc_info=True)
+        window.show()
+        window.raise_()
+        window.activateWindow()
+
+    def _on_cross_reference_activated(self, position: int) -> None:
+        """Open a chosen cross-reference in the main window, recording history."""
+        MainWindow._on_bookmark_activated(self, position)
+
     def _sync_concordance_state_for_result(self, current_position: int, term: str) -> None:
         """Sync search and highlight state for a concordance occurrence."""
         clean_term = term.strip() if isinstance(term, str) else ""
@@ -683,10 +840,15 @@ class MainWindow(QMainWindow):
 
     def open_other_works_references(self) -> None:
         """Open the Other Works scripture-reference index browser."""
+        from abib.services.commentary_lookup import CommentaryLookup
         from abib.services.other_works_reference_index import OtherWorksReferenceIndex
         from abib.ui.other_works_references_window import OtherWorksReferencesWindow
 
         self.other_works_reference_index = OtherWorksReferenceIndex(self.other_works_map)
+        self.other_works_commentary_lookup = CommentaryLookup(
+            self.other_works_map,
+            Path(sh.str_cwd) / "gill.cmt.sqlite",
+        )
 
         if self.other_works_references_window is None:
             parent = self if isinstance(self, QWidget) else None
@@ -694,15 +856,51 @@ class MainWindow(QMainWindow):
                 self.other_works_reference_index,
                 parent,
                 settings_service=getattr(self, "settings_service", None),
+                commentary=self.other_works_commentary_lookup,
             )
             self.other_works_references_window.occurrenceActivated.connect(self._on_other_work_reference_activated)
+            self.other_works_references_window.commentaryActivated.connect(self._on_commentary_reference_activated)
         else:
             self.other_works_references_window._service = self.other_works_reference_index
+            self.other_works_references_window._commentary_service = self.other_works_commentary_lookup
             self.other_works_references_window.clear_search()
 
         self.other_works_references_window.show()
         self.other_works_references_window.raise_()
         self.other_works_references_window.activateWindow()
+
+    def study_current_verse(self) -> None:
+        """Show commentaries and Other Works references for the current verse."""
+        from abib.core import scripture
+
+        try:
+            cursor = self.textEditor.textCursor()
+            block = cursor.block()
+            line_number = int(block.blockNumber())
+            position = Amap_rev.get(line_number)
+            if (
+                position is None
+                or not 0 <= line_number < len(KJV)
+                or block.text() != str(KJV[line_number]).rstrip("\r\n")
+            ):
+                position = int(self.get_line_number())
+            position = max(0, min(int(position), sh.LAST_VERSE_IN_BIBLE))
+            entry = sh.Info[position]
+            book_number, chapter, verse = (int(entry[0]) + 1, int(entry[1]) + 1, int(entry[2]) + 1)
+            book_name = scripture.CANONICAL_BOOKS.get(book_number)
+        except (AttributeError, IndexError, RuntimeError, TypeError, ValueError):
+            logger.debug("Could not determine the current Bible reference", exc_info=True)
+            self.statusBar.showMessage("Could not determine the current Bible verse.")
+            return
+
+        if book_name is None:
+            self.statusBar.showMessage("Could not determine the current Bible verse.")
+            return
+
+        reference = f"{book_name} {chapter}:{verse}"
+        self.open_other_works_references()
+        self.other_works_references_window.set_reference(reference)
+        self.statusBar.showMessage(f"Study results for {reference}.")
 
     def _on_other_work_reference_activated(self, work_path: str, abs_start: int, length: int) -> None:
         """Open an indexed Other Work occurrence and jump to its character range."""
@@ -716,6 +914,142 @@ class MainWindow(QMainWindow):
                 reader.jump_to_reference_offset(abs_start, length)
         except (AttributeError, RuntimeError, TypeError, ValueError):
             logger.debug("Failed to jump to Other Works reference offset", exc_info=True)
+
+    def _on_commentary_reference_activated(self, book: int, chapter: int, verse: int) -> None:
+        """Open Gill commentary at the selected reference."""
+        db_path = Path(sh.str_cwd) / "gill.cmt.sqlite"
+        if not db_path.is_file():
+            try:
+                QMessageBox.warning(self, "Commentary", f"Database not found:\n{db_path}")
+            except (RuntimeError, TypeError):
+                logger.debug("Could not show commentary database-not-found warning", exc_info=True)
+            return
+        MainWindow._show_gill_reference(self, db_path, book, chapter, verse)
+
+    def open_mhcc_for_current_verse(self) -> None:
+        """Open Matthew Henry's commentary at the passage for the current verse."""
+        from abib.core import scripture
+        from abib.services.mhcc_index import MhccIndex
+
+        try:
+            current_position = int(self.get_line_number())
+        except (RuntimeError, AttributeError, TypeError, ValueError):
+            try:
+                current_position = int(self._last_bible_position)
+            except (AttributeError, TypeError, ValueError):
+                current_position = 0
+        current_position = max(0, min(current_position, sh.LAST_VERSE_IN_BIBLE))
+
+        try:
+            entry = sh.Info[current_position]
+            book_number, chapter, verse = (int(entry[0]) + 1, int(entry[1]) + 1, int(entry[2]) + 1)
+        except (IndexError, TypeError, ValueError):
+            try:
+                book_number, chapter, verse = self.nav.get_current_bcv()
+            except (AttributeError, RuntimeError, TypeError, ValueError):
+                logger.debug("Could not determine the current Bible reference for MHCC", exc_info=True)
+                QMessageBox.warning(self, "Matthew Henry", "Could not determine the current Bible verse.")
+                return
+
+        work_path: str | None = None
+        for stem, candidate in getattr(self, "other_works_map", {}).items():
+            if stem.casefold() == "mhcc" and Path(candidate).is_file():
+                work_path = candidate
+                break
+        if work_path is None:
+            for directory in sh.other_works_dirs():
+                candidate_path = directory / "MHCC.txt"
+                if candidate_path.is_file():
+                    work_path = str(candidate_path)
+                    break
+        if work_path is None:
+            QMessageBox.warning(
+                self,
+                "Matthew Henry",
+                "MHCC.txt is not available. Download it from Study → Update Other Works…",
+            )
+            return
+
+        try:
+            passage = MhccIndex(work_path).lookup(book_number, chapter, verse)
+        except (OSError, UnicodeError, ValueError):
+            logger.warning("Could not index MHCC text at %s", work_path, exc_info=True)
+            QMessageBox.warning(self, "Matthew Henry", "Could not read the MHCC text file.")
+            return
+        if passage is None:
+            book_name = scripture.CANONICAL_BOOKS.get(book_number, str(book_number))
+            QMessageBox.warning(
+                self,
+                "Matthew Henry",
+                f"No MHCC passage was found for {book_name} {chapter}:{verse}.",
+            )
+            return
+
+        self._on_other_work_reference_activated(work_path, passage.start, passage.length)
+        book_name = scripture.CANONICAL_BOOKS.get(book_number, str(book_number))
+        self.statusBar.showMessage(f"Matthew Henry on {book_name} {chapter}:{verse} — {passage.label}")
+
+    def copy_verse_with_reference(self) -> None:
+        """Copy the current verse or selected Bible text with its reference."""
+        from abib.services.verse_copy import (
+            clean_verse_text,
+            format_citation,
+            format_reference_range,
+        )
+
+        cursor = self.textEditor.textCursor()
+        has_selection = cursor.hasSelection()
+        selection_start = int(cursor.selectionStart())
+        selection_end = int(cursor.selectionEnd())
+        document = self.textEditor.document()
+        block = document.findBlock(selection_start) if has_selection else cursor.block()
+        copied: list[tuple[int, str]] = []
+
+        while block.isValid():
+            block_position = int(block.position())
+            if has_selection and block_position >= selection_end:
+                break
+
+            line_number = int(block.blockNumber())
+            verse_position = Amap_rev.get(line_number)
+            if verse_position is not None and 0 <= line_number < len(KJV):
+                block_text = block.text()
+                if block_text == str(KJV[line_number]).rstrip("\r\n"):
+                    if has_selection:
+                        start_in_block = max(0, selection_start - block_position)
+                        end_in_block = min(len(block_text), selection_end - block_position)
+                        selected_text = block_text[start_in_block:end_in_block]
+                        strip_verse_number = start_in_block == 0
+                    else:
+                        selected_text = block_text
+                        strip_verse_number = True
+
+                    verse_text = clean_verse_text(
+                        selected_text,
+                        strip_verse_number=strip_verse_number,
+                    )
+                    if verse_text:
+                        copied.append((int(verse_position), verse_text))
+
+            if not has_selection:
+                break
+            block = block.next()
+
+        if not copied:
+            self.statusBar.showMessage("No Bible verse text to copy.")
+            return
+
+        try:
+            reference = format_reference_range(
+                copied[0][0], copied[-1][0], sh.Info, sh.onechapterbooks
+            )
+        except (IndexError, TypeError, ValueError):
+            self.statusBar.showMessage("Could not determine the selected Bible reference.")
+            return
+
+        citation = format_citation(" ".join(text for _, text in copied), reference)
+        QApplication.clipboard().setText(citation)
+        self.statusBar.showMessage(f"Copied {reference} to the clipboard.")
 
     def open_other_works_text_search(self) -> None:
         """Open the Other Works text-search browser."""
@@ -902,15 +1236,27 @@ class MainWindow(QMainWindow):
         self.buttonf13 = QPushButton("Gill's Commentary")
         self.buttonf13.setStyleSheet("QPushButton { text-align: left; padding-left: 6px; }")
         self.buttonf13.clicked.connect(self.open_commentary_window)
-        self.buttonf13.setToolTip("Open Gill's Commentaries (Ctrl+Shift+C)")
+        self.buttonf13.setToolTip("Open Gill's Commentaries (Ctrl+Shift+G)")
         self.buttonf13.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         grid.addWidget(self.buttonf13, 3, 4)
 
         try:
-            shortcut_cmt = QShortcut(QKeySequence("Ctrl+Shift+C"), self)
+            shortcut_cmt = QShortcut(QKeySequence("Ctrl+Shift+G"), self)
             shortcut_cmt.activated.connect(self.open_commentary_window)
         except (RuntimeError, TypeError, AttributeError):
-            logger.debug("Could not create Ctrl+Shift+C commentary shortcut", exc_info=True)
+            logger.debug("Could not create Ctrl+Shift+G commentary shortcut", exc_info=True)
+
+        try:
+            shortcut_copy_verse = QShortcut(QKeySequence("Ctrl+Shift+C"), self)
+            shortcut_copy_verse.activated.connect(self.copy_verse_with_reference)
+        except (RuntimeError, TypeError, AttributeError):
+            logger.debug("Could not create Ctrl+Shift+C copy-verse shortcut", exc_info=True)
+
+        try:
+            shortcut_mhcc = QShortcut(QKeySequence("Ctrl+Shift+M"), self)
+            shortcut_mhcc.activated.connect(self.open_mhcc_for_current_verse)
+        except (RuntimeError, TypeError, AttributeError):
+            logger.debug("Could not create Ctrl+Shift+M MHCC shortcut", exc_info=True)
 
         self.buttonf14 = QPushButton("Strong's Lookup")
         self.buttonf14.setStyleSheet("QPushButton { text-align: left; padding-left: 6px; }")
@@ -1250,6 +1596,20 @@ class MainWindow(QMainWindow):
                 text_search_window.close()
         except (AttributeError, RuntimeError, TypeError, ValueError):
             logger.debug("Could not close Other Works text search window on close", exc_info=True)
+
+        try:
+            bookmarks_window: Any = getattr(self, "bookmarks_window", None)
+            if bookmarks_window is not None:
+                bookmarks_window.close()
+        except (AttributeError, RuntimeError, TypeError, ValueError):
+            logger.debug("Could not close bookmarks window on close", exc_info=True)
+
+        try:
+            cross_references_window: Any = getattr(self, "cross_references_window", None)
+            if cross_references_window is not None:
+                cross_references_window.close()
+        except (AttributeError, RuntimeError, TypeError, ValueError):
+            logger.debug("Could not close Cross References window on close", exc_info=True)
         
         # Explicitly close secondary windows to ensure they trigger their own closeEvent/save logic
         try:
@@ -2022,7 +2382,6 @@ class MainWindow(QMainWindow):
 
     def open_commentary_window(self) -> None:
         """Open or focus the Gill commentary window centered on the current verse."""
-        from abib.ui.gill_window import GillCommentaryWindow  # deferred import
         # Resolve DB path in the application folder
         db_path = Path(sh.str_cwd) / "gill.cmt.sqlite"
         if not db_path.exists():
@@ -2051,12 +2410,20 @@ class MainWindow(QMainWindow):
         except (IndexError, TypeError, ValueError):
             b, c, v = self.nav.get_current_bcv()
 
+        MainWindow._show_gill_reference(self, db_path, b, c, v)
+
+    def _show_gill_reference(self, db_path: str | Path, book: int, chapter: int, verse: int) -> None:
+        """Show Gill's commentary window at a one-based Bible reference."""
+        from abib.ui.gill_window import GillCommentaryWindow  # deferred import
+
         # Lazily create the window
         if self.gill_win is None:
             try:
                 # Create as a true top-level window (no parent) so it can be viewed independently
                 # Share the same settings service to avoid cache divergence
-                self.gill_win = GillCommentaryWindow(db_path=db_path, parent=None, settings_service=self.settings_service)
+                self.gill_win = GillCommentaryWindow(
+                    db_path=db_path, parent=None, settings_service=self.settings_service,
+                )
             except (RuntimeError, TypeError, sqlite3.Error) as exc:
                 try:
                     QMessageBox.critical(self, "Commentary", f"Unable to open commentary window.\n{exc}")
@@ -2069,7 +2436,7 @@ class MainWindow(QMainWindow):
         try:
             # Use (book, chapter, fromverse) lookups per current DB access strategy
             if isinstance(self.gill_win, GillCommentaryWindow):
-                self.gill_win.set_reference(b, c, v)
+                self.gill_win.set_reference(book, chapter, verse)
                 # Apply the current theme
                 try:
                     self.gill_win.apply_theme(self.theme.state.is_dark_mode)

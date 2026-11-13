@@ -117,6 +117,11 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
     edit_toolbar.addAction(copy_action)
     edit_menu.addAction(copy_action)
 
+    copy_verse_action = QAction("Copy Verse with Reference", window)
+    copy_verse_action.setStatusTip("Copy the current verse or selection with its scripture reference (Ctrl+Shift+C)")
+    copy_verse_action.triggered.connect(window.copy_verse_with_reference)
+    edit_menu.addAction(copy_verse_action)
+
     # Select All
     icon5_path = sh.images_dir / 'selection-input.png'
     select_action = QAction(QIcon(str(icon5_path)), "Select all", window)
@@ -136,10 +141,39 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
     other_works_references_action.triggered.connect(window.open_other_works_references)
     study_menu.addAction(other_works_references_action)
 
+    study_action = QAction("Study This Verse", window)
+    study_action.setShortcut(QKeySequence("Ctrl+Alt+S"))
+    study_action.setStatusTip("Show commentaries and Other Works references for the current verse")
+    study_action.triggered.connect(window.study_current_verse)
+    study_menu.addAction(study_action)
+
     other_works_text_search_action = QAction("Other Works Text Search      ", window)
     other_works_text_search_action.setStatusTip("Search text in enabled Other Works")
     other_works_text_search_action.triggered.connect(window.open_other_works_text_search)
     study_menu.addAction(other_works_text_search_action)
+
+    cross_references_action = QAction("Cross References", window)
+    cross_references_action.setShortcut(QKeySequence("Ctrl+Shift+X"))
+    cross_references_action.setStatusTip("Show OpenBible.info cross-references for the current verse")
+    cross_references_action.triggered.connect(window.open_cross_references)
+    study_menu.addAction(cross_references_action)
+
+    mhcc_action = QAction("Matthew Henry on This Verse      ", window)
+    mhcc_action.setStatusTip("Open Matthew Henry's Concise Commentary at the current verse (Ctrl+Shift+M)")
+    mhcc_action.triggered.connect(window.open_mhcc_for_current_verse)
+    study_menu.addAction(mhcc_action)
+
+    bookmark_action = QAction("Bookmark This Verse…", window)
+    bookmark_action.setShortcut(QKeySequence("Ctrl+D"))
+    bookmark_action.setStatusTip("Add or edit a note for the current Bible verse")
+    bookmark_action.triggered.connect(window.bookmark_current_verse)
+    study_menu.addAction(bookmark_action)
+
+    bookmarks_action = QAction("Bookmarks and Notes", window)
+    bookmarks_action.setShortcut(QKeySequence("Ctrl+Shift+B"))
+    bookmarks_action.setStatusTip("Open saved Bible verse bookmarks and notes")
+    bookmarks_action.triggered.connect(window.open_bookmarks)
+    study_menu.addAction(bookmarks_action)
 
     study_menu.addSeparator()
     update_other_works_action = QAction("Update Other Works…", window)
@@ -191,8 +225,10 @@ def setup_menus_and_toolbars(window) -> ActionsBundle:
 
     actions = [
         github_action, open_file_action, print_action, exit_action,
-        copy_action, select_action,
-        concordance_action, other_works_references_action, other_works_text_search_action,
+        copy_action, copy_verse_action, select_action,
+        concordance_action, other_works_references_action, study_action,
+        other_works_text_search_action, cross_references_action, mhcc_action,
+        bookmark_action, bookmarks_action,
         update_other_works_action,
         copyright_action, help_action, readme_action, about_action, settings_action,
     ]

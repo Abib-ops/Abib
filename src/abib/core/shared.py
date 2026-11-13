@@ -45,7 +45,7 @@ def _get_version() -> str:
             continue
             
     # 2. Hardcoded fallback (should be updated per release)
-    return "417.52"
+    return "417.53"
 
 CURRENT_VERSION = _get_version()
 
@@ -110,6 +110,7 @@ bundled_other_works_dir: Path = current_directory / "Other Works"
 bundled_companions_dir: Path = current_directory / "Other Works companions"
 user_other_works_dir: Path = user_settings_dir / "Other Works"
 user_companions_dir: Path = user_settings_dir / "Other Works companions"
+user_crossrefs_dir: Path = user_settings_dir / "Cross References"
 
 
 def other_works_dirs() -> list[Path]:

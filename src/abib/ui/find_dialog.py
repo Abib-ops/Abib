@@ -8,13 +8,20 @@
 from typing import Any
 
 # noinspection PyPackageRequirements
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QEvent, QPoint, Qt
 
 # noinspection PyPackageRequirements
-from PySide6.QtGui import QFontMetrics
+from PySide6.QtGui import QAction, QFontMetrics
 
 # noinspection PyPackageRequirements
-from PySide6.QtWidgets import QDialog, QDialogButtonBox, QLabel, QStyle
+from PySide6.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QLabel,
+    QMenu,
+    QStyle,
+    QToolButton,
+)
 
 from abib.services.settings import SettingsService
 from abib.ui.ui_find import UiDialog
@@ -65,6 +72,19 @@ class FindDialog(QDialog):
         chk: Any = self.ui.checkBox
         pb1: Any = self.ui.pushButton_1
         bb: Any = self.ui.buttonBox
+
+        # Reserve space beside the Find box for its clear and search-history buttons.
+        le1.setGeometry(70, 10, 277, 21)
+        pb1.setGeometry(326, 10, 21, 21)
+        self.history_button = QToolButton(self)
+        self.history_button.setObjectName("searchHistoryButton")
+        self.history_button.setText("▾")
+        self.history_button.setToolTip("Show recent searches")
+        self.history_button.setAccessibleName("Recent searches")
+        self.history_button.setAutoRaise(True)
+        self.history_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.history_button.setGeometry(350, 10, 21, 21)
+        self._history_menu: QMenu | None = None
 
         # Robust alignment: split each radio button into a left label (on the radio)
         # and a separate right-hand QLabel for the bracketed description.
@@ -171,6 +191,9 @@ class FindDialog(QDialog):
         le1.returnPressed.connect(self.getter)
         le1.setClearButtonEnabled(False)
         le1.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        le1.installEventFilter(self)
+        self.history_button.clicked.connect(self.show_history_menu)
+        self._update_history_button()
         # Associate label mnemonic with the line edit (moved from ui_find.py)
         lab_buddy.setBuddy(le1)
 
@@ -292,6 +315,9 @@ class FindDialog(QDialog):
         assert self.ui.lineEdit_1 is not None
         le1: Any = self.ui.lineEdit_1
         key = le1.text()
+        if key.strip():
+            self.settings_service.add_search_history(key)
+            self._update_history_button()
         i, j = self.get_scope()
         self.get_checks()
         if hasattr(self._main, "find_in_range"):
@@ -300,6 +326,44 @@ class FindDialog(QDialog):
             self._main.find_in_range(i, j)
         if hasattr(self._main, "close_find_window"):
             self._main.close_find_window()
+
+    def _update_history_button(self) -> None:
+        self.history_button.setEnabled(bool(self.settings_service.get_search_history()))
+
+    def _select_history_item(self, term: str) -> None:
+        assert self.ui.lineEdit_1 is not None
+        self.ui.lineEdit_1.setText(term)
+        self.ui.lineEdit_1.setFocus()
+
+    def show_history_menu(self) -> None:
+        """Show recent searches and an action to clear the saved history."""
+        history = self.settings_service.get_search_history()
+        self._update_history_button()
+        if not history:
+            return
+
+        menu = QMenu(self)
+        self._history_menu = menu
+        for term in history:
+            action: QAction = menu.addAction(term)
+            action.triggered.connect(lambda _checked=False, selected=term: self._select_history_item(selected))
+        menu.addSeparator()
+        clear_action: QAction = menu.addAction("Clear History")
+        clear_action.triggered.connect(self._clear_search_history)
+        menu.popup(self.history_button.mapToGlobal(QPoint(0, self.history_button.height())))
+
+    def _clear_search_history(self) -> None:
+        self.settings_service.clear_search_history()
+        self._update_history_button()
+
+    def eventFilter(self, watched: Any, event: QEvent) -> bool:  # type: ignore[override]
+        if watched is self.ui.lineEdit_1 and event.type() == QEvent.Type.KeyPress:
+            key_event: Any = event
+            if key_event.key() == Qt.Key.Key_Down and self.settings_service.get_search_history():
+                self.show_history_menu()
+                event.accept()
+                return True
+        return super().eventFilter(watched, event)
 
     def get_scope(self) -> tuple[int, int]:
         """Get the scope from the comboboxes."""

@@ -6,12 +6,14 @@
 
 import hashlib
 import json
+import re
 
 import pytest
 import requests
 
 from abib.core import content_sync as cs
 from abib.core import shared as sh
+from tools.build_content_manifest import build_manifest
 
 
 def _sha256(data: bytes) -> str:
@@ -24,9 +26,11 @@ def user_dirs(tmp_path, monkeypatch):
     settings_dir = tmp_path / "Abib"
     other = settings_dir / "Other Works"
     comps = settings_dir / "Other Works companions"
+    crossrefs = settings_dir / "Cross References"
     monkeypatch.setattr(sh, "user_settings_dir", settings_dir)
     monkeypatch.setattr(sh, "user_other_works_dir", other)
     monkeypatch.setattr(sh, "user_companions_dir", comps)
+    monkeypatch.setattr(sh, "user_crossrefs_dir", crossrefs, raising=False)
     monkeypatch.setattr(cs, "LOCAL_MANIFEST_PATH", settings_dir / "content_manifest.json")
     return settings_dir, other, comps
 
@@ -190,6 +194,28 @@ def test_list_available_reports_titles_and_downloaded(user_dirs):
     assert bar["downloaded"] is False
 
 
+def test_list_available_includes_cross_reference_dataset(user_dirs):
+    settings_dir, _other, _comps = user_dirs
+    crossrefs_dir = settings_dir / "Cross References"
+    crossrefs_dir.mkdir(parents=True)
+    (crossrefs_dir / "openbible-crossrefs.sqlite").write_bytes(b"sqlite")
+    remote = _manifest({
+        "Cross References/openbible-crossrefs.sqlite": b"sqlite",
+    })
+    remote["files"][0]["title"] = "Cross References (OpenBible.info)"
+
+    available = cs.list_available(remote)
+
+    assert available == [
+        {
+            "stem": "openbible-crossrefs",
+            "title": "Cross References (OpenBible.info)",
+            "downloaded": True,
+            "kind": "dataset",
+        }
+    ]
+
+
 def test_download_list_respects_selection(user_dirs):
     remote = _manifest({
         "Other Works/Foo.txt": b"foo",
@@ -207,6 +233,70 @@ def test_download_list_respects_selection(user_dirs):
 
     # None -> everything (backward compatible).
     assert len(cs.compute_download_list(remote, selected_stems=None)) == 3
+
+
+def test_download_list_includes_selected_dataset(user_dirs):
+    dataset_path = "Cross References/openbible-crossrefs.sqlite"
+    remote = _manifest({
+        dataset_path: b"cross-reference data",
+        "Other Works/Foo.txt": b"foo",
+    })
+
+    assert [entry["path"] for entry in cs.compute_download_list(
+        remote, selected_stems={"openbible-crossrefs"}
+    )] == [dataset_path]
+
+
+def test_dataset_sync_counts_progress_and_downloads_to_crossrefs_dir(user_dirs, monkeypatch):
+    settings_dir, _other, _comps = user_dirs
+    dataset_path = "Cross References/openbible-crossrefs.sqlite"
+    files = {dataset_path: b"cross-reference data"}
+    manifest = _manifest(files)
+    manifest["files"][0]["title"] = "Cross References (OpenBible.info)"
+    monkeypatch.setattr("requests.get", _make_fake_get(files, manifest))
+    events: list[tuple[int, int]] = []
+
+    result = cs.sync_content(
+        selected_stems={"openbible-crossrefs"},
+        progress_callback=lambda done, total: events.append((done, total)),
+    )
+
+    assert result["status"] == "ok"
+    assert result["added"] == 1
+    assert result["added_books"] == 1
+    assert events == [(0, 1), (1, 1)]
+    assert (settings_dir / dataset_path).read_bytes() == files[dataset_path]
+
+
+def test_deletions_include_unselected_and_withdrawn_datasets(user_dirs):
+    settings_dir, _other, _comps = user_dirs
+    crossrefs_dir = settings_dir / "Cross References"
+    crossrefs_dir.mkdir(parents=True)
+    dataset = crossrefs_dir / "openbible-crossrefs.sqlite"
+    dataset.write_bytes(b"old data")
+    dataset_path = "Cross References/openbible-crossrefs.sqlite"
+
+    assert cs.compute_deletions(_manifest({}), selected_stems=None) == [dataset]
+    assert cs.compute_deletions(
+        _manifest({dataset_path: b"old data"}), selected_stems=set()
+    ) == [dataset]
+
+
+def test_withdrawing_dataset_increments_removed_title_count(user_dirs, monkeypatch):
+    settings_dir, _other, _comps = user_dirs
+    crossrefs_dir = settings_dir / "Cross References"
+    crossrefs_dir.mkdir(parents=True)
+    dataset_path = "Cross References/openbible-crossrefs.sqlite"
+    dataset = crossrefs_dir / "openbible-crossrefs.sqlite"
+    dataset.write_bytes(b"old data")
+    files = {dataset_path: b"old data"}
+    monkeypatch.setattr("requests.get", _make_fake_get(files, _manifest(files)))
+
+    result = cs.sync_content(selected_stems=set())
+
+    assert result["removed"] == 1
+    assert result["removed_books"] == 1
+    assert not dataset.exists()
 
 
 def test_sync_with_selection_downloads_only_selected(user_dirs, monkeypatch):
@@ -230,6 +320,64 @@ def test_is_text_book_excludes_companions():
     assert cs._is_text_book("Other Works/Foo.txt") is True
     assert cs._is_text_book("Other Works companions/Foo.txt.refs.json.gz") is False
     assert cs._is_text_book("Other Works companions/Foo.txt.refs.json") is False
+    assert cs._is_text_book("Cross References/openbible-crossrefs.sqlite") is True
+
+
+def test_build_manifest_normalizes_files_preserves_titles_and_lists_dataset(tmp_path):
+    repo = tmp_path / "Abib-OtherWorks"
+    works = repo / "Other Works"
+    companions = repo / "Other Works companions"
+    crossrefs = repo / "Cross References"
+    works.mkdir(parents=True)
+    companions.mkdir()
+    crossrefs.mkdir()
+
+    text_path = works / "MHCC.txt"
+    text_path.write_bytes(b"line one\r\nline two\r")
+    companion_path = companions / "MHCC.txt.refs.json.gz"
+    companion_data = b"compressed companion"
+    companion_path.write_bytes(companion_data)
+    dataset_path = crossrefs / "openbible-crossrefs.sqlite"
+    dataset_data = b"sqlite database bytes"
+    dataset_path.write_bytes(dataset_data)
+    (repo / "manifest.json").write_text(json.dumps({
+        "content_version": "old",
+        "files": [
+            {"path": "Other Works/MHCC.txt", "title": "Matthew Henry"},
+            {
+                "path": "Other Works companions/MHCC.txt.refs.json.gz",
+                "title": "MHCC companion title",
+            },
+            {
+                "path": "Cross References/openbible-crossrefs.sqlite",
+                "title": "Old dataset title",
+            },
+            {"path": "Other Works/withdrawn.txt", "title": "Withdrawn"},
+        ],
+    }), encoding="utf-8")
+
+    manifest = build_manifest(repo)
+
+    assert re.fullmatch(r"\d{4}\.\d{2}\.\d{2}\.\d{6}", manifest["content_version"])
+    assert text_path.read_bytes() == b"line one\nline two\n"
+    entries = {entry["path"]: entry for entry in manifest["files"]}
+    assert set(entries) == {
+        "Other Works/MHCC.txt",
+        "Other Works companions/MHCC.txt.refs.json.gz",
+        "Cross References/openbible-crossrefs.sqlite",
+    }
+    text = entries["Other Works/MHCC.txt"]
+    assert text["title"] == "Matthew Henry"
+    assert text["sha256"] == _sha256(b"line one\nline two\n")
+    assert text["size"] == len(b"line one\nline two\n")
+    companion = entries["Other Works companions/MHCC.txt.refs.json.gz"]
+    assert companion["title"] == "MHCC companion title"
+    assert companion["sha256"] == _sha256(companion_data)
+    dataset = entries["Cross References/openbible-crossrefs.sqlite"]
+    assert dataset["title"] == "Cross References (OpenBible.info)"
+    assert dataset["sha256"] == _sha256(dataset_data)
+    assert dataset["size"] == len(dataset_data)
+    assert json.loads((repo / "manifest.json").read_text(encoding="utf-8")) == manifest
 
 
 def test_progress_callback_counts_books_not_companions(user_dirs, monkeypatch):

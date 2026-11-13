@@ -8,7 +8,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 ABIB HELP:
 **********
 
-Abib Bible Reader v417.52
+Abib Bible Reader v417.53
 
 *************************
 ATTRIBUTION & LICENSE:
@@ -31,6 +31,10 @@ Third-Party Attributions:
 - Strong's Hebrew and Greek dictionaries: OpenScriptures
   HebrewLexicon and StrongsGreekDictionary
   (github.com/openscriptures), licensed CC BY-SA 4.0.
+- Cross-references: OpenBible.info
+  (www.openbible.info/labs/cross-references/), based mainly on the
+  Treasury of Scripture Knowledge, licensed Creative Commons
+  Attribution (CC BY).
 *************************
 
 Follow Scripture on your PC while listening to a sermon or message.
@@ -47,14 +51,14 @@ You can start from the beginning and follow the instructions below.
 
 First, uninstall any previous version of the program.
 
-Get the "Abib_setup_417.52_win.exe" file from 'Abib-ops' on GitHub,
+Get the "Abib_setup_417.53_win.exe" file from 'Abib-ops' on GitHub,
 find it in the 'Abib' repository.
 
 **************************************************
 * See: https://github.com/Abib-ops/Abib/releases *
 **************************************************
 
-Next, double-click the "Abib_setup_417.52_win.exe" installer and follow
+Next, double-click the "Abib_setup_417.53_win.exe" installer and follow
 the instructions, mostly click Next a few times, agree to the
 licence, and Abib will install. Please ignore any negative windows that
 claim that Abib is from an unknown author.
@@ -199,6 +203,58 @@ Notes
 - The Gill commentary window is independent; you can keep it open while
   navigating elsewhere. At the very start of the Bible (Genesis 1:1),
   Prev has no effect; Next moves to Genesis 1:2 as expected.
+
+Matthew Henry's Concise Commentary
+----------------------------------
+
+To look up Matthew Henry's comments on the Bible verse currently selected in
+the main window, choose Study → Matthew Henry on This Verse or press
+Ctrl+Shift+M. Abib opens the matching passage in the Other Works reader. Since
+MHCC often discusses several verses together, the reader opens the section
+that covers the selected verse. If MHCC.txt is not installed, download it
+through Study → Update Other Works.
+
+When you search a verse in Other Works Scripture reference search, available
+Gill and Matthew Henry comments also appear in a Commentaries group. Select
+Gill to open the Gill window at that verse, or Matthew Henry to open the
+matching MHCC passage in the Other Works reader.
+
+To see Gill, Matthew Henry, and enabled Other Works that cite the current
+verse together, choose Study → Study This Verse or press Ctrl+Alt+S. Abib opens
+Other Works Scripture reference search with the current verse already searched.
+
+To save a personal note for the current Bible verse, choose Study → Bookmark
+This Verse… or press Ctrl+D. Enter or edit the note in the dialog and confirm.
+Choose Study → Bookmarks and Notes, or press Ctrl+Shift+B, to see saved verses,
+edit their notes, delete bookmarks, or go to a verse. Bookmarks are stored
+separately in your user settings folder and are not cleared by resetting Abib's
+general settings.
+
+To copy a verse with its reference, place the cursor in the verse and choose
+Edit → Copy Verse with Reference, or press Ctrl+Shift+C. To copy multiple
+verses or only part of a verse, select the text first. The copied text includes
+the scripture reference in parentheses.
+
+Cross References
+----------------
+
+To see verses related to the current Bible verse, choose Study → Cross
+References or press Ctrl+Shift+X. The cross-references come from
+OpenBible.info and are an optional download: if they are not installed,
+Abib offers to open Study → Update Other Works, where you tick
+"Cross References (OpenBible.info)". Unticking it removes the file again.
+
+The window lists each related verse or range with its reader vote count and
+verse text, strongest first. A range shows its first verse followed by "…";
+hover over it to see up to ten verses of the range. Click a row to open that
+verse in the main window; Back returns you to where you were, and the Cross
+References window keeps showing the verse you started from. Choose the menu
+item again to show the verse you have moved to.
+
+Use "Minimum votes" to hide weaker references. The default of 0 hides
+references that readers have voted down. The setting, and the window's
+position and size, are saved in settings.json under "crossref_min_votes" and
+"cross_references_window".
 
 Strong's / Original-Language Lookup window.
 -------------------------------------------
@@ -430,6 +486,12 @@ The Find Options window will open.
 There is a text entry box next to 'Find ?' here you can enter what
 it is that you would like to search for.  Confirm your entry by
 pressing Enter or clicking the 'OK' button.
+
+To repeat a recent search, click the small arrow beside the Find box or
+press the Down arrow while the box has focus. Choose a term to put it back
+in the box, then press Enter or click OK to search again. Abib remembers up
+to 20 distinct search terms in settings.json; choose Clear History in the menu
+to remove them. Resetting Abib's settings also clears the search history.
 
 
 There are four basic types of searches available to you. 

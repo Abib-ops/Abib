@@ -11,6 +11,8 @@ from typing import Any
 
 from abib.core import shared as sh
 
+SEARCH_HISTORY_LIMIT = 20
+
 
 class SettingsService:
     """Service to handle application settings persistence and migration."""
@@ -199,6 +201,29 @@ class SettingsService:
             win = {}
         win["state"] = state_hex
         data[window_name] = win
+        self.save(data)
+
+    def get_search_history(self) -> list[str]:
+        """Return valid recent search terms, newest first."""
+        history = self.settings.get("search_history", [])
+        if not isinstance(history, list):
+            return []
+        return [term for term in history if isinstance(term, str) and term.strip()]
+
+    def add_search_history(self, term: str) -> None:
+        """Add a non-blank term to the front of the bounded search history."""
+        if not isinstance(term, str) or not term.strip():
+            return
+        history = [existing for existing in self.get_search_history() if existing != term]
+        history.insert(0, term)
+        data = self.settings
+        data["search_history"] = history[:SEARCH_HISTORY_LIMIT]
+        self.save(data)
+
+    def clear_search_history(self) -> None:
+        """Remove all saved search terms."""
+        data = self.settings
+        data["search_history"] = []
         self.save(data)
 
     def get_last_bible_position(self) -> int:

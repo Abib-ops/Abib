@@ -87,6 +87,13 @@ class ThemeController:
             except (RuntimeError, AttributeError):
                 pass
             win.theme.apply_widget(sw)
+        if getattr(win, 'cross_references_window', None):
+            cw: Any = win.cross_references_window
+            try:
+                cw.apply_theme(win.theme.state.is_dark_mode)
+            except (RuntimeError, AttributeError):
+                pass
+            win.theme.apply_widget(cw)
 
     # Mapping of coloured pushbutton attribute names to their theme colours.
     # Each entry is (light background / base colour, brighter dark-mode text colour).

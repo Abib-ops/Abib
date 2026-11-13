@@ -17,6 +17,9 @@ def get_default_settings() -> dict[str, Any]:
         # This is a boolean.
         "show_splash": False,
         "check_for_updates_on_startup": True,
+        "search_history": [],
+        # Cross References window: hide references with fewer votes than this.
+        "crossref_min_votes": 0,
         "unified_font_size": False,
         "devotional_font_size": 12,
         "bible_font_size": 12,
@@ -98,6 +101,18 @@ def get_default_settings() -> dict[str, Any]:
             "y": 100,
             "width": 520,
             "height": 360
+        },
+        "bookmarks_window": {
+            "x": 100,
+            "y": 100,
+            "width": 520,
+            "height": 440
+        },
+        "cross_references_window": {
+            "x": 120,
+            "y": 120,
+            "width": 560,
+            "height": 520
         },
         "last_bible_position": 0,
         # Width (in pixels) of the dockable Search Results panel.

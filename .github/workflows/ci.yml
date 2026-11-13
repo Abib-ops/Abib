@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: ["**"]
 
+# Least-privilege token: every job only needs to read the repository contents.
+permissions:
+  contents: read
+
 # Allow a running workflow to be cancelled when a newer commit is pushed.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

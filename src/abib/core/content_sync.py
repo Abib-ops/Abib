@@ -126,6 +126,16 @@ def _stem_of(rel_path: str) -> str:
     return Path(name).stem
 
 
+def _is_dataset(rel_path: str) -> bool:
+    """Return True for a SQLite dataset in the Cross References folder."""
+    path = Path(rel_path)
+    return (
+        len(path.parts) == 2
+        and path.parts[0] == "Cross References"
+        and path.suffix == ".sqlite"
+    )
+
+
 def _sha256_of_file(path: Path) -> str:
     """Return the lowercase hex SHA-256 of a file, or "" if unreadable."""
     try:
@@ -151,17 +161,18 @@ def _normalise_selection(selected_stems: Iterable[str] | None) -> set[str] | Non
 
 
 def list_available(remote: dict[str, Any]) -> list[dict[str, Any]]:
-    """List the optional books offered by the remote manifest.
+    """List the optional books and datasets offered by the remote manifest.
 
-    Returns one entry per *text* file (companions are grouped under the same
-    stem) as a dict with ``stem``, ``title`` (human-readable, falling back to
-    the stem) and ``downloaded`` (whether the text already exists locally).
-    The list is sorted by title (case-insensitively) for stable display.
+    Returns one entry per text file or dataset (companions are grouped under
+    the same stem) as a dict with ``stem``, ``title`` and ``downloaded``.
+    Dataset entries also carry ``kind: "dataset"``. The list is sorted by
+    title (case-insensitively) for stable display.
     """
     books: list[dict[str, Any]] = []
     for path, entry in _manifest_files_by_path(remote).items():
         name = Path(path).name
-        if not name.endswith(".txt"):
+        is_dataset = _is_dataset(path)
+        if not name.endswith(".txt") and not is_dataset:
             continue
         stem = _stem_of(path)
         if stem in PROTECTED_STEMS:
@@ -169,7 +180,10 @@ def list_available(remote: dict[str, Any]) -> list[dict[str, Any]]:
             continue
         title = str(entry.get("title") or "").strip() or stem
         downloaded = _target_path(path).is_file()
-        books.append({"stem": stem, "title": title, "downloaded": downloaded})
+        item = {"stem": stem, "title": title, "downloaded": downloaded}
+        if is_dataset:
+            item["kind"] = "dataset"
+        books.append(item)
     books.sort(key=lambda b: str(b["title"]).casefold())
     return books
 
@@ -183,7 +197,7 @@ def compute_download_list(
     A file is downloaded when it is missing on disk or its on-disk SHA-256
     does not match the manifest entry. When ``selected_stems`` is given, only
     files belonging to those stems (plus any protected seed) are considered,
-    so the user downloads just the books they chose.
+    so the user downloads just the titles they chose.
     """
     selection = _normalise_selection(selected_stems)
     to_download: list[dict[str, Any]] = []
@@ -206,7 +220,7 @@ def compute_deletions(
     remote: dict[str, Any],
     selected_stems: Iterable[str] | None = None,
 ) -> list[Path]:
-    """Find local user-dir works/companions that should be removed.
+    """Find local user-dir works, companions and datasets that should be removed.
 
     Without ``selected_stems`` a file is removed only when it is no longer
     listed in the manifest (withdrawn upstream). With ``selected_stems`` a file
@@ -222,6 +236,7 @@ def compute_deletions(
     for directory, pattern in (
         (sh.user_other_works_dir, "*.txt"),
         (sh.user_companions_dir, "*.refs.json.gz"),
+        (sh.user_crossrefs_dir, "*.sqlite"),
     ):
         if not directory.exists():
             continue
@@ -310,12 +325,14 @@ def _write_local_manifest(manifest: dict[str, Any]) -> None:
 
 
 def _is_text_book(rel_path: str) -> bool:
-    """Return True if a manifest path is a book *text* file (not a companion).
+    """Return True if a manifest path is a progress-counted title.
 
     Companions end with ``.txt.refs.json.gz`` / ``.txt.refs.json``; only the
-    plain ``.txt`` books are counted for download progress so the number the
-    user sees reflects books, never the hidden companion index files.
+    plain ``.txt`` books and optional datasets are counted for progress so the
+    number the user sees reflects titles, never hidden companion index files.
     """
+    if _is_dataset(rel_path):
+        return True
     name = Path(rel_path).name
     if name.endswith((".txt.refs.json.gz", ".txt.refs.json")):
         return False
@@ -337,18 +354,18 @@ def sync_content(
       4. Remove local works no longer listed (never the protected seed book).
       5. On full success, persist the fetched manifest.
 
-    When ``selected_stems`` is given, only those books are downloaded/kept, and
+    When ``selected_stems`` is given, only those titles are downloaded/kept, and
     any other (non-protected) local works are removed, so the user controls
     exactly which titles are present. ``None`` syncs the whole catalogue.
 
     ``progress_callback`` (if given) is called as ``(done, total)`` where both
-    counts refer to *book text files only* (companion index files are never
-    counted), so a progress bar reflects books, not hidden companions.
+    counts refer to book text files and datasets (companion index files are
+    never counted), so a progress bar reflects titles, not hidden companions.
 
     Returns a small summary dict with ``status`` and ``added`` / ``updated`` /
     ``removed`` (all files) plus ``added_books`` / ``updated_books`` /
-    ``removed_books`` (book text files only, excluding companions) counts for
-    UI feedback.
+    ``removed_books`` (book text files and datasets, excluding companions)
+    counts for UI feedback.
     """
     summary: dict[str, Any] = {
         "status": "ok",
@@ -380,13 +397,14 @@ def sync_content(
     try:
         sh.user_other_works_dir.mkdir(parents=True, exist_ok=True)
         sh.user_companions_dir.mkdir(parents=True, exist_ok=True)
+        sh.user_crossrefs_dir.mkdir(parents=True, exist_ok=True)
     except OSError as exc:
         summary["status"] = "error"
         summary["message"] = f"Could not create content folders: {exc}"
         return summary
 
     to_download = compute_download_list(remote, selected_stems)
-    # Count only book text files for progress — never the companions.
+    # Count book text files and datasets for progress — never companions.
     total_books = sum(1 for e in to_download if _is_text_book(str(e.get("path", ""))))
     done_books = 0
     if progress_callback is not None:
@@ -424,7 +442,7 @@ def sync_content(
         try:
             path.unlink()
             summary["removed"] += 1
-            if _is_text_book(str(path.name)):
+            if _is_text_book(f"{path.parent.name}/{path.name}"):
                 summary["removed_books"] += 1
         except OSError:
             all_ok = False
@@ -443,7 +461,7 @@ def sync_content(
 class ContentSyncWorker(QObject):
     """Runs :func:`sync_content` off the UI thread.
 
-    Emits :pyattr:`progress` as ``(done, total)`` book counts (companions are
+    Emits :pyattr:`progress` as ``(done, total)`` title counts (companions are
     never counted) during the download, and :pyattr:`finished` with the summary
     dict (or an empty dict on an unexpected error) so the UI can show a progress
     bar and refresh the Other Works list without blocking startup.
