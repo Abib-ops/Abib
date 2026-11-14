@@ -67,7 +67,8 @@ def _known_chapter_counts() -> dict[int, int]:
     return _CHAPTER_COUNTS
 
 
-def _parse_section(label: str) -> tuple[tuple[int, int], ...] | None:
+def parse_section_label(label: str) -> tuple[tuple[int, int], ...] | None:
+    """Parse a ``Verse 3`` / ``Verses 1-5`` / ``Verses 1, 2`` heading into verse ranges."""
     match = SECTION_RE.fullmatch(label)
     if match is None:
         return None
@@ -84,11 +85,10 @@ def _parse_section(label: str) -> tuple[tuple[int, int], ...] | None:
     return tuple(ranges) if ranges else None
 
 
-def _parse_text(text: str) -> dict[int, _Book]:
+def find_book_titles(lines: list[str]) -> dict[int, tuple[int, str]]:
+    """Find recognized book-title lines following MHCC separator rules."""
     from abib.core.scripture import CANONICAL_BOOKS
 
-    text = text.replace("\r\n", "\n").replace("\r", "\n")
-    lines = text.splitlines(keepends=True)
     aliases = {_normalise_book_title(key): value for key, value in sh.bibledict.items()}
     title_rows: dict[int, tuple[int, str]] = {}
     for index, line in enumerate(lines):
@@ -103,6 +103,19 @@ def _parse_text(text: str) -> dict[int, _Book]:
         book_number = aliases.get(_normalise_book_title(title))
         if book_number is not None and book_number in CANONICAL_BOOKS:
             title_rows[title_index] = (book_number, title)
+    return title_rows
+
+
+def parse_chapter_heading(label: str) -> int | None:
+    """Return the chapter number from a ``Chapter N`` heading, if present."""
+    match = CHAPTER_RE.fullmatch(label)
+    return int(match.group(1)) if match is not None else None
+
+
+def _parse_text(text: str) -> dict[int, _Book]:
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    lines = text.splitlines(keepends=True)
+    title_rows = find_book_titles(lines)
 
     books: dict[int, _Book] = {}
     current_book: _Book | None = None
@@ -122,9 +135,8 @@ def _parse_text(text: str) -> dict[int, _Book]:
 
         if current_book is not None:
             label = clean_line.strip()
-            chapter_match = CHAPTER_RE.fullmatch(label)
-            if chapter_match is not None:
-                chapter_number = int(chapter_match.group(1))
+            chapter_number = parse_chapter_heading(label)
+            if chapter_number is not None:
                 passage = MhccPassage(offset, len(clean_line), label, "chapter")
                 chapter = current_book.chapters.get(chapter_number)
                 if chapter is None:
@@ -135,7 +147,7 @@ def _parse_text(text: str) -> dict[int, _Book]:
                     chapter.implicit = False
                 current_chapter = chapter
             else:
-                ranges = _parse_section(label)
+                ranges = parse_section_label(label)
                 if ranges is not None:
                     passage = MhccPassage(offset, len(clean_line), label, "section")
                     if current_chapter is None:

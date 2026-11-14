@@ -116,8 +116,8 @@ class OtherWorksReferencesWindow(QWidget):
         else:
             reference_label = reference
 
+        names = ", ".join(entry.label for entry in commentaries)
         if commentaries:
-            names = ", ".join(entry.label for entry in commentaries)
             parent = QTreeWidgetItem([f"Commentaries on {reference_label} ({len(commentaries)})", "", ""])
             parent.setFirstColumnSpanned(True)
             self.results_tree.addTopLevelItem(parent)

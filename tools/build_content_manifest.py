@@ -67,7 +67,7 @@ def _file_entry(path: str, data: bytes, titles: dict[str, str]) -> dict[str, Any
 
 
 def build_manifest(repo_path: Path) -> dict[str, Any]:
-    """Normalize content files and rebuild the repository's manifest."""
+    """Normalise content files and rebuild the repository's manifest."""
     repo_path = repo_path.expanduser().resolve()
     manifest_path = repo_path / "manifest.json"
     titles = _existing_titles(manifest_path)
@@ -103,7 +103,7 @@ def build_manifest(repo_path: Path) -> dict[str, Any]:
                 entry["title"] = DATASET_TITLE
             entries.append(entry)
 
-    entries.sort(key=lambda entry: str(entry["path"]))
+    entries.sort(key=lambda item: str(item["path"]))
     manifest: dict[str, Any] = {
         "content_version": datetime.now().strftime("%Y.%m.%d.%H%M%S"),
         "files": entries,

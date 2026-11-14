@@ -5,7 +5,7 @@
 # -*- coding: utf-8 -*-
 
 
-from types import SimpleNamespace
+from types import MethodType, SimpleNamespace
 from typing import cast
 
 # noinspection PyPackageRequirements
@@ -14,6 +14,7 @@ from PySide6.QtWidgets import QPlainTextEdit
 from abib import Abib as AbibModule
 from abib.core import shared as sh
 from abib.services.bookmarks import BookmarkStore
+from abib.services.settings import SettingsService
 from abib.ui.bookmarks_window import BookmarksWindow
 
 
@@ -21,6 +22,7 @@ class _MemorySettingsService:
     def __init__(self) -> None:
         self.saved_geometry: tuple[str, tuple[int, ...]] | None = None
 
+    # noinspection PyMethodMayBeStatic
     def get_window_geometry(self, _window_name: str) -> tuple[int, int, int, int]:
         return 100, 100, 520, 440
 
@@ -86,7 +88,7 @@ def test_bookmarks_window_lists_navigates_saves_and_deletes(qapp, tmp_path, monk
     store.set(0, "Remember this")
     store.set(1, "Next verse")
     settings_service = _MemorySettingsService()
-    window = BookmarksWindow(store, settings_service=settings_service)
+    window = BookmarksWindow(store, settings_service=cast(SettingsService, cast(object, settings_service)))
     activations: list[int] = []
     window.bookmarkActivated.connect(activations.append)
 
@@ -96,7 +98,9 @@ def test_bookmarks_window_lists_navigates_saves_and_deletes(qapp, tmp_path, monk
 
     window.note_edit.setPlainText("Updated note")
     window._save_note()
-    assert store.get(0) is not None and store.get(0).note == "Updated note"
+    saved = store.get(0)
+    assert saved is not None
+    assert saved.note == "Updated note"
 
     window._delete_selected()
     assert store.get(0) is None
@@ -120,7 +124,8 @@ def _copy_window(text: str, position: int = 0) -> SimpleNamespace:
         bookmark_store=None,
         bookmarks_window=None,
     )
-    window._get_bookmark_store = AbibModule.MainWindow._get_bookmark_store.__get__(window)
+    # noinspection PyProtectedMember
+    window._get_bookmark_store = MethodType(AbibModule.MainWindow._get_bookmark_store, window)
     return window
 
 
@@ -140,14 +145,15 @@ def test_bookmark_current_verse_saves_note_and_refreshes_open_window(qapp, tmp_p
     window = _copy_window("CHAPTER 3\n16 For God so loved", len("CHAPTER 3\n") + 2)
     bookmarks_window = BookmarksWindow(
         BookmarkStore(tmp_path / "bookmarks.json"),
-        settings_service=_MemorySettingsService(),
+        settings_service=cast(SettingsService, cast(object, _MemorySettingsService())),
     )
     window.bookmarks_window = bookmarks_window
 
     AbibModule.MainWindow.bookmark_current_verse(cast(AbibModule.MainWindow, cast(object, window)))
 
-    assert BookmarkStore(tmp_path / "bookmarks.json").get(0) is not None
-    assert BookmarkStore(tmp_path / "bookmarks.json").get(0).note == "Prayer note"
+    saved = BookmarkStore(tmp_path / "bookmarks.json").get(0)
+    assert saved is not None
+    assert saved.note == "Prayer note"
     assert bookmarks_window.bookmark_list.count() == 1
     assert bookmarks_window.bookmark_list.item(0).text() == "John 3:16 — Prayer note"
     bookmarks_window.close()
@@ -167,25 +173,7 @@ def test_canceling_bookmark_dialog_does_not_save(qapp, tmp_path, monkeypatch):
     assert not (tmp_path / "bookmarks.json").exists()
 
 
-def test_bookmark_activation_pushes_current_position_and_displays_target(monkeypatch):
-    history: list[tuple[object, int]] = []
-    cleared: list[bool] = []
-    displayed: list[int] = []
-    monkeypatch.setattr(AbibModule, "forward", SimpleNamespace(clear=lambda: cleared.append(True)))
-    monkeypatch.setattr(
-        AbibModule.history,
-        "back_push",
-        lambda window, position: history.append((window, position)),
-    )
-    window = SimpleNamespace(
-        get_line_number=lambda: 4,
-        display_verse_from_history=displayed.append,
-    )
+def test_bookmark_activation_pushes_current_position_and_displays_target(navigation_recorder):
+    AbibModule.MainWindow._on_bookmark_activated(navigation_recorder.window, 9)
 
-    AbibModule.MainWindow._on_bookmark_activated(
-        cast(AbibModule.MainWindow, cast(object, window)), 9,
-    )
-
-    assert history == [(window, 4)]
-    assert cleared == [True]
-    assert displayed == [9]
+    navigation_recorder.assert_navigated_to(9)

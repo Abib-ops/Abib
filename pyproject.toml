@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "abib"
-version = "417.53"
-description = "A Bible study application"
+version = "417.54"
+description = "Free, offline KJV Bible reader for Windows/Linux/macOS with Gill's and Matthew Henry's commentaries, Strong's, cross-references and Puritan classics."
 readme = "README.md"
 # Minimum supported Python. 3.14 is the real floor: the code relies on PEP 649
 # deferred evaluation of annotations (the default from 3.14), e.g. forward/
@@ -78,12 +78,13 @@ files = [
     "src/abib/domain",
     "src/abib/services",
     "src/abib/utils",
+    "tests",
 ]
 ignore_missing_imports = true
 warn_redundant_casts = true
 warn_unused_ignores = false
 no_implicit_optional = true
-check_untyped_defs = false
+check_untyped_defs = true
 
 [tool.ruff.lint.per-file-ignores]
 # Abib.py is the main module, intentionally named in CamelCase; renaming it would break

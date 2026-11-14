@@ -41,17 +41,18 @@ def test_close_find_window_hides_dialog():
     win.dlg.hide.assert_called_once()
 
 
-def test_on_find_button_clicked_shows_existing_dialog():
+def test_on_find_button_clicked_shows_existing_dialog(monkeypatch):
     win = _make_window()
     # dlg already exists -> should route to show_find_window, not create a new one.
     win.dlg = MagicMock()
     ctrl = SearchController(win)
-    ctrl.show_find_window = MagicMock()
+    show_find_window = MagicMock()
+    monkeypatch.setattr(ctrl, "show_find_window", show_find_window)
 
     ctrl.on_find_button_clicked()
 
     win.reload.assert_called_once()
-    ctrl.show_find_window.assert_called_once()
+    show_find_window.assert_called_once()
 
 
 def test_on_find_button_clicked_replaces_concordance_placeholder(monkeypatch):
@@ -89,17 +90,19 @@ def test_close_find_window_ignores_concordance_placeholder():
     SearchController(win).close_find_window()
 
 
-def test_find_next_whole_word_routes_to_find_f4_alt():
+def test_find_next_whole_word_routes_to_find_f4_alt(monkeypatch):
     win = _make_window()
     win.dlg.checks = [3, 0, 5]  # checks[0] != 1 -> whole-word path
     ctrl = SearchController(win)
-    ctrl.find_f4_alt = MagicMock()
-    ctrl.find_f4 = MagicMock()
+    find_f4_alt = MagicMock()
+    find_f4 = MagicMock()
+    monkeypatch.setattr(ctrl, "find_f4_alt", find_f4_alt)
+    monkeypatch.setattr(ctrl, "find_f4", find_f4)
 
     ctrl.find_next()
 
-    ctrl.find_f4_alt.assert_called_once()
-    ctrl.find_f4.assert_not_called()
+    find_f4_alt.assert_called_once()
+    find_f4.assert_not_called()
 
 
 def test_find_next_raw_without_generator_opens_find():
@@ -113,16 +116,17 @@ def test_find_next_raw_without_generator_opens_find():
     win.search_current_word.assert_called_once()
 
 
-def test_find_next_raw_with_generator_routes_to_find_f4():
+def test_find_next_raw_with_generator_routes_to_find_f4(monkeypatch):
     win = _make_window()
     win.dlg.checks = [1, 0, 5]  # raw search
     win.gent = iter([(1, 2, 3)])
     ctrl = SearchController(win)
-    ctrl.find_f4 = MagicMock()
+    find_f4 = MagicMock()
+    monkeypatch.setattr(ctrl, "find_f4", find_f4)
 
     ctrl.find_next()
 
-    ctrl.find_f4.assert_called_once()
+    find_f4.assert_called_once()
 
 
 def test_find_f4_raises_without_generator(monkeypatch):
@@ -137,30 +141,32 @@ def test_find_f4_raises_without_generator(monkeypatch):
         SearchController(win).find_f4()
 
 
-def test_repeat_find_forward_noop_when_no_key():
+def test_repeat_find_forward_noop_when_no_key(monkeypatch):
     win = _make_window()
     win.key = ' '
     win.no_f3_yet = 1
     ctrl = SearchController(win)
-    ctrl.find_next = MagicMock()
+    find_next = MagicMock()
+    monkeypatch.setattr(ctrl, "find_next", find_next)
 
     ctrl.repeat_find_forward()
 
     win.reload.assert_called_once()
-    ctrl.find_next.assert_not_called()
+    find_next.assert_not_called()
 
 
-def test_repeat_find_forward_runs_find_next_when_key_present():
+def test_repeat_find_forward_runs_find_next_when_key_present(monkeypatch):
     win = _make_window()
     win.key = 'love'
     win.no_f3_yet = 1
     ctrl = SearchController(win)
-    ctrl.find_next = MagicMock()
+    find_next = MagicMock()
+    monkeypatch.setattr(ctrl, "find_next", find_next)
 
     ctrl.repeat_find_forward()
 
     win.textEditor.setFocus.assert_called_once()
-    ctrl.find_next.assert_called_once()
+    find_next.assert_called_once()
 
 
 def test_search_current_word_opens_find(monkeypatch):
@@ -168,12 +174,13 @@ def test_search_current_word_opens_find(monkeypatch):
     win = _make_window()
     win.get_line_number.return_value = 5
     ctrl = SearchController(win)
-    ctrl.on_find_button_clicked = MagicMock()
+    on_find_button_clicked = MagicMock()
+    monkeypatch.setattr(ctrl, "on_find_button_clicked", on_find_button_clicked)
 
     ctrl.search_current_word()
 
     win.reload.assert_called_once()
-    ctrl.on_find_button_clicked.assert_called_once()
+    on_find_button_clicked.assert_called_once()
 
 
 def test_find_in_range_empty_key_clears_status(monkeypatch):

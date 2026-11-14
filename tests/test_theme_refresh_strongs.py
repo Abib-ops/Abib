@@ -1,3 +1,9 @@
+# Abib
+# Copyright (C) 2003–2026 <Contributors>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# -*- coding: utf-8 -*-
+
 """Regression test: an open Strong's window follows the theme when it changes.
 
 Previously ``ThemeController.refresh_theme_across_ui`` re-themed the dialog,

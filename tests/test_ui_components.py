@@ -35,8 +35,12 @@ class TestSettingsService(unittest.TestCase):
         
         self.service = SettingsService("test_settings.json")
         # Mock load/save to avoid disk I/O
-        self.service.load = MagicMock(return_value=self.mock_defaults.return_value.copy())
-        self.service.save = MagicMock()
+        load_patcher = patch.object(self.service, "load", return_value=self.mock_defaults.return_value.copy())
+        load_patcher.start()
+        self.addCleanup(load_patcher.stop)
+        save_patcher = patch.object(self.service, "save")
+        save_patcher.start()
+        self.addCleanup(save_patcher.stop)
 
     def tearDown(self):
         self.patcher.stop()
@@ -157,9 +161,9 @@ class TestSettingsService(unittest.TestCase):
         cast(MagicMock, self.service.save).assert_not_called()
 
     def test_get_search_results_width_ignores_invalid_stored(self):
-        self.service.load = MagicMock(return_value={"search_results_width": -5})
-        self.service._cached_settings = None
-        self.assertEqual(self.service.get_search_results_width(), 400)
+        with patch.object(self.service, "load", return_value={"search_results_width": -5}):
+            self.service._cached_settings = None
+            self.assertEqual(self.service.get_search_results_width(), 400)
 
     def test_get_gill_show_popups(self):
         self.assertTrue(self.service.get_gill_show_popups())
@@ -391,21 +395,25 @@ class TestUIHelpers(unittest.TestCase):
         popup = SimpleScripturePopup()
         
         # Mock the widgets
-        popup._widget = MagicMock()
+        widget = MagicMock()
+        popup._widget = widget
         popup._text = MagicMock()
         
         popup.apply_theme(is_dark=True)
-        cast(MagicMock, popup._widget).setStyleSheet.assert_called()
-        args, _ = cast(MagicMock, popup._widget).setStyleSheet.call_args
+        widget.setStyleSheet.assert_called()
+        args, _ = widget.setStyleSheet.call_args
         self.assertIn("background-color: #121212", args[0])
         
         popup.apply_theme(is_dark=False)
-        args, _ = cast(MagicMock, popup._widget).setStyleSheet.call_args
+        args, _ = widget.setStyleSheet.call_args
         self.assertIn("background-color: #ffffff", args[0])
 
 
     def test_simple_scripture_popup_parented_to_host_window(self):
+        # noinspection PyPackageRequirements
         from PySide6.QtCore import Qt
+
+        # noinspection PyPackageRequirements
         from PySide6.QtWidgets import QDialog, QPlainTextEdit
 
         from abib.ui.ui_helpers import SimpleScripturePopup
@@ -421,6 +429,7 @@ class TestUIHelpers(unittest.TestCase):
         self.assertTrue(popup._widget.testAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating))
 
     def test_simple_scripture_popup_reparents_when_host_changes(self):
+        # noinspection PyPackageRequirements
         from PySide6.QtWidgets import QDialog, QPlainTextEdit
 
         from abib.ui.ui_helpers import SimpleScripturePopup
@@ -439,8 +448,13 @@ class TestUIHelpers(unittest.TestCase):
         self.assertEqual(popup._widget.parentWidget(), second_window)
 
     def test_simple_scripture_popup_uses_host_screen_for_sizing(self):
+        # noinspection PyPackageRequirements
         from PySide6.QtCore import QPoint, QSize
+
+        # noinspection PyPackageRequirements
         from PySide6.QtGui import QFont
+
+        # noinspection PyPackageRequirements
         from PySide6.QtWidgets import QDialog, QPlainTextEdit
 
         from abib.ui.ui_helpers import SimpleScripturePopup
@@ -453,22 +467,21 @@ class TestUIHelpers(unittest.TestCase):
 
         mock_screen = MagicMock()
         mock_screen.size.return_value = QSize(1440, 900)
-        editor.screen = MagicMock(return_value=mock_screen)
+        with patch.object(editor, "screen", return_value=mock_screen):
+            popup = SimpleScripturePopup()
+            _x, _y, width, height = popup.predict_geometry(
+                editor, "Genesis 1:1 KJV\nIn the beginning", QPoint(10, 10), QFont()
+            )
+            self.assertEqual(width, 500)
+            self.assertGreater(height, 0)
+            self.assertLessEqual(height, int(900 * 0.6))
+            assert popup._widget is not None
+            self.assertEqual(popup._widget.parentWidget(), parent_window)
 
-        popup = SimpleScripturePopup()
-        _x, _y, width, height = popup.predict_geometry(
-            editor, "Genesis 1:1 KJV\nIn the beginning", QPoint(10, 10), QFont()
-        )
-        self.assertEqual(width, 500)
-        self.assertGreater(height, 0)
-        self.assertLessEqual(height, int(900 * 0.6))
-        assert popup._widget is not None
-        self.assertEqual(popup._widget.parentWidget(), parent_window)
-
-        popup.show(editor, "Genesis 1:1 KJV\nIn the beginning", QPoint(10, 10), QFont(), is_dark=False)
-        self.assertEqual(popup._widget.parentWidget(), parent_window)
-        self.assertEqual(popup._widget.width(), 500)
-        self.assertLessEqual(popup._widget.height(), int(900 * 0.6))
+            popup.show(editor, "Genesis 1:1 KJV\nIn the beginning", QPoint(10, 10), QFont(), is_dark=False)
+            self.assertEqual(popup._widget.parentWidget(), parent_window)
+            self.assertEqual(popup._widget.width(), 500)
+            self.assertLessEqual(popup._widget.height(), int(900 * 0.6))
 
 
 class TestWindowGeometryPersistence(unittest.TestCase):

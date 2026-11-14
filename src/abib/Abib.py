@@ -31,7 +31,7 @@ Third-party materials and attributions:
 - Pure Cambridge Edition of the KJV — see source and terms at bibleprotector.com
 - Spurgeon resources — see spurgeon.org and Eternal Life Ministries for terms
 
-RELEASE DATE: 13/11/2026
+RELEASE DATE: 14/11/2026
 """
 
 import logging
@@ -312,6 +312,7 @@ class MainWindow(QMainWindow):
         self.concordance_service: Any = None
         self.concordance_window: Any = None
         self.other_works_reference_index: Any = None
+        self.other_works_commentary_lookup: Any = None
         self.other_works_references_window: Any = None
         self.other_works_text_search_service: Any = None
         self.other_works_text_search_window: Any = None
@@ -2422,7 +2423,7 @@ class MainWindow(QMainWindow):
                 # Create as a true top-level window (no parent) so it can be viewed independently
                 # Share the same settings service to avoid cache divergence
                 self.gill_win = GillCommentaryWindow(
-                    db_path=db_path, parent=None, settings_service=self.settings_service,
+                    db_path=Path(db_path), parent=None, settings_service=self.settings_service,
                 )
             except (RuntimeError, TypeError, sqlite3.Error) as exc:
                 try:

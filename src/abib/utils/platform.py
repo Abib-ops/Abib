@@ -9,7 +9,7 @@
 Historically, the codebase scattered bare ``sys.platform`` string checks across
 the UI and service layers. Centralising them here keeps the operating-system
 branches in one tested place, makes the intent of each call site explicit
-(``is_windows()`` reads better than ``sys.platform == 'win32'``) and gives the
+(``is_windows()`` reads better than ``sys.platform == 'win32'``). It gives the
 rest of the application a single, portable seam to reason about cross-platform
 behaviour.
 """

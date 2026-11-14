@@ -10,6 +10,29 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
+Abib v417.54
+
+- Maintenance: Matthew Henry index consistency. The MHCC indexing tool now
+  uses the same book-title, chapter-heading and verse-section parsing as
+  Abib's built-in Matthew Henry index, so the two can no longer drift apart
+  in how they read MHCC.txt. There is no change to how Matthew Henry on This
+  Verse behaves.
+- Maintenance: Stricter type checking. mypy now also checks the test suite
+  and the bodies of unannotated functions. The Gill commentary window is now
+  given a proper file path, and the main window declares its commentary
+  lookup up front.
+- Tests: Test helpers were tidied, with a shared navigation recorder and
+  typed stand-ins for the main window in place of loose ad-hoc objects. A
+  missing licence header was added to one test file.
+- Minor code and wording tidy-ups in the Other Works References window, the
+  platform helpers and the content manifest tool.
+- Package, lockfile, help text and Windows installer version information was
+  updated to v417.54.
+
+This is a maintenance release with no new user-facing features. It makes
+the Matthew Henry indexing more consistent, enforces stricter type checking
+across the code and tests, and tidies the test suite.
+
 Abib v417.53
 
 - New feature: Copy Verse with Reference. The Edit menu can copy the current
@@ -48,7 +71,6 @@ This release adds verse bookmarks and notes, recent search history,
 cross-references, one-step study results for the current verse, verse-based
 access to Matthew Henry's Concise Commentary, combined commentary search
 results, and copying Bible text with its reference.
-
 
 Abib v417.52
 

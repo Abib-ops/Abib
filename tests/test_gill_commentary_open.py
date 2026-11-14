@@ -8,7 +8,7 @@
 import sqlite3
 import sys
 from types import ModuleType, SimpleNamespace
-from typing import cast
+from typing import Any, cast
 
 from abib import Abib as AbibModule
 from tests._window_open_helpers import make_window_open_env
@@ -42,7 +42,8 @@ def test_open_commentary_window_uses_current_bible_line_not_stale_context(monkey
         def activateWindow(self) -> None:
             pass
 
-    fake_module = ModuleType("abib.ui.gill_window")
+    # Typed as Any so the stand-in class can be added to the module object.
+    fake_module: Any = ModuleType("abib.ui.gill_window")
     fake_module.GillCommentaryWindow = FakeGillCommentaryWindow
     monkeypatch.setitem(sys.modules, "abib.ui.gill_window", fake_module)
     window = make_window_open_env(monkeypatch, tmp_path)

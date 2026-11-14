@@ -24,13 +24,28 @@ def _settings_service(tmp_path, monkeypatch) -> SettingsService:
     return SettingsService("search_history_settings.json")
 
 
-def _find_dialog(settings_service: SettingsService) -> tuple[QMainWindow, FindDialog, list]:
-    parent = QMainWindow()
-    parent.nwin = []
-    searches: list[tuple[str, int, int]] = []
-    parent.find_in_range = lambda start, end: searches.append((parent.key, start, end))
-    parent.close_find_window = lambda: None
-    return parent, FindDialog(parent, settings_service), searches
+class _FindParent(QMainWindow):
+    """Stands in for MainWindow: the attributes and methods FindDialog uses."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.nwin: list[str] = []
+        self.key = ""
+        self.searches: list[tuple[str, int, int]] = []
+
+    def find_in_range(self, start: int, end: int) -> None:
+        self.searches.append((self.key, start, end))
+
+    # noinspection PyMethodMayBeStatic
+    def close_find_window(self) -> None:
+        return None
+
+
+def _find_dialog(
+    settings_service: SettingsService,
+) -> tuple[_FindParent, FindDialog, list[tuple[str, int, int]]]:
+    parent = _FindParent()
+    return parent, FindDialog(parent, settings_service), parent.searches
 
 
 def test_search_history_deduplicates_caps_skips_blanks_and_persists(tmp_path, monkeypatch):
@@ -89,6 +104,8 @@ def test_find_history_menu_selects_search_and_clears_history(qapp, tmp_path, mon
     dialog.show_history_menu()
 
     menu = dialog._history_menu
+    assert menu is not None
+    assert dialog.ui.lineEdit_1 is not None
     actions = menu.actions()
     assert [action.text() for action in actions[:2]] == ["recent", "older"]
     assert actions[-2].isSeparator()
@@ -113,7 +130,9 @@ def test_down_arrow_opens_find_history_menu(qapp, tmp_path, monkeypatch):
 
     QTest.keyClick(dialog.ui.lineEdit_1, Qt.Key.Key_Down)
 
-    assert dialog._history_menu.isVisible()
-    dialog._history_menu.hide()
+    menu = dialog._history_menu
+    assert menu is not None
+    assert menu.isVisible()
+    menu.hide()
     dialog.close()
     parent.close()

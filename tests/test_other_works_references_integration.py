@@ -6,6 +6,7 @@
 
 
 from types import SimpleNamespace
+from typing import cast
 
 # noinspection PyPackageRequirements
 from PySide6.QtWidgets import QPlainTextEdit
@@ -26,8 +27,9 @@ def _make_jump_window() -> tuple[SimpleNamespace, list[str], list[tuple[int, int
 def test_other_work_reference_activation_opens_reader_and_jumps(qapp):
     window, opened, jumped = _make_jump_window()
 
-    # noinspection PyTypeChecker
-    AbibModule.MainWindow._on_other_work_reference_activated(window, "C:\\Works\\Example.txt", 42, 9)
+    AbibModule.MainWindow._on_other_work_reference_activated(
+        cast(AbibModule.MainWindow, cast(object, window)), "C:\\Works\\Example.txt", 42, 9,
+    )
 
     assert opened == ["C:\\Works\\Example.txt"]
     assert jumped == [(42, 9)]
@@ -48,8 +50,9 @@ def test_other_work_reference_activation_queues_jump_for_loading_reader(qapp):
     window = SimpleNamespace(text_edit_window=reader)
     window.open_text_file_in_window = opened.append
 
-    # noinspection PyTypeChecker
-    AbibModule.MainWindow._on_other_work_reference_activated(window, "C:\\Works\\Example.txt", 42, 9)
+    AbibModule.MainWindow._on_other_work_reference_activated(
+        cast(AbibModule.MainWindow, cast(object, window)), "C:\\Works\\Example.txt", 42, 9,
+    )
 
     assert opened == ["C:\\Works\\Example.txt"]
     assert reader._pending_reference_offset == (42, 9)
@@ -60,8 +63,9 @@ def test_other_work_reference_activation_queues_jump_for_loading_reader(qapp):
 def test_other_work_text_search_activation_uses_reference_jump_path(qapp):
     window, opened, jumped = _make_jump_window()
 
-    # noinspection PyTypeChecker
-    AbibModule.MainWindow._on_other_work_text_search_activated(window, "C:\\Works\\Example.txt", 12, 5)
+    AbibModule.MainWindow._on_other_work_text_search_activated(
+        cast(AbibModule.MainWindow, cast(object, window)), "C:\\Works\\Example.txt", 12, 5,
+    )
 
     assert opened == ["C:\\Works\\Example.txt"]
     assert jumped == [(12, 5)]
@@ -79,8 +83,9 @@ def test_commentary_result_opens_gill_at_selected_reference(monkeypatch, tmp_pat
     )
     window = SimpleNamespace()
 
-    # noinspection PyTypeChecker
-    AbibModule.MainWindow._on_commentary_reference_activated(window, 43, 3, 16)
+    AbibModule.MainWindow._on_commentary_reference_activated(
+        cast(AbibModule.MainWindow, cast(object, window)), 43, 3, 16,
+    )
 
     assert opened == [(str(db_path), 43, 3, 16)]
 
@@ -102,12 +107,11 @@ def test_open_mhcc_for_current_verse_jumps_to_matching_passage(qapp, tmp_path):
     )
     window._on_other_work_reference_activated = (
         lambda path, start, length: AbibModule.MainWindow._on_other_work_reference_activated(
-            window, path, start, length,
+            cast(AbibModule.MainWindow, cast(object, window)), path, start, length,
         )
     )
 
-    # noinspection PyTypeChecker
-    AbibModule.MainWindow.open_mhcc_for_current_verse(window)
+    AbibModule.MainWindow.open_mhcc_for_current_verse(cast(AbibModule.MainWindow, cast(object, window)))
 
     assert opened == [str(work_path)]
     assert jumped == [(text.index("Verses 1-3"), len("Verses 1-3"))]
@@ -124,8 +128,7 @@ def test_open_mhcc_warns_when_text_is_not_available(qapp, monkeypatch):
         statusBar=SimpleNamespace(showMessage=lambda _message: None),
     )
 
-    # noinspection PyTypeChecker
-    AbibModule.MainWindow.open_mhcc_for_current_verse(window)
+    AbibModule.MainWindow.open_mhcc_for_current_verse(cast(AbibModule.MainWindow, cast(object, window)))
 
     assert warnings
     assert "MHCC.txt is not available" in warnings[0][1]
@@ -144,8 +147,7 @@ def test_open_other_works_text_search_includes_every_present_work(qapp, tmp_path
         _on_other_work_text_search_activated=lambda *_args: None,
     )
 
-    # noinspection PyTypeChecker
-    AbibModule.MainWindow.open_other_works_text_search(window)
+    AbibModule.MainWindow.open_other_works_text_search(cast(AbibModule.MainWindow, cast(object, window)))
 
     results = window.other_works_text_search_service.search("mercy")
 
@@ -163,12 +165,10 @@ def test_open_other_works_text_search_clears_previous_search(qapp, tmp_path):
         _on_other_work_text_search_activated=lambda *_args: None,
     )
 
-    # noinspection PyTypeChecker
-    AbibModule.MainWindow.open_other_works_text_search(window)
+    AbibModule.MainWindow.open_other_works_text_search(cast(AbibModule.MainWindow, cast(object, window)))
     window.other_works_text_search_window.set_query("mercy")
 
-    # noinspection PyTypeChecker
-    AbibModule.MainWindow.open_other_works_text_search(window)
+    AbibModule.MainWindow.open_other_works_text_search(cast(AbibModule.MainWindow, cast(object, window)))
 
     assert window.other_works_text_search_window.query_edit.text() == ""
     assert window.other_works_text_search_window.results_tree.topLevelItemCount() == 0
@@ -187,12 +187,10 @@ def test_open_other_works_references_clears_previous_search(qapp, tmp_path):
         _on_commentary_reference_activated=lambda *_args: None,
     )
 
-    # noinspection PyTypeChecker
-    AbibModule.MainWindow.open_other_works_references(window)
+    AbibModule.MainWindow.open_other_works_references(cast(AbibModule.MainWindow, cast(object, window)))
     window.other_works_references_window.set_reference("John 3:16")
 
-    # noinspection PyTypeChecker
-    AbibModule.MainWindow.open_other_works_references(window)
+    AbibModule.MainWindow.open_other_works_references(cast(AbibModule.MainWindow, cast(object, window)))
 
     assert window.other_works_references_window.reference_edit.text() == ""
     assert window.other_works_references_window.results_tree.topLevelItemCount() == 0
@@ -231,8 +229,7 @@ def test_study_current_verse_searches_canonical_reference_and_citing_work(qapp, 
             lambda target=window: AbibModule.MainWindow.open_other_works_references(target)
         )
 
-        # noinspection PyTypeChecker
-        AbibModule.MainWindow.study_current_verse(window)
+        AbibModule.MainWindow.study_current_verse(cast(AbibModule.MainWindow, cast(object, window)))
 
         references_window = window.other_works_references_window
         assert references_window.reference_edit.text() == reference

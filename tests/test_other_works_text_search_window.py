@@ -7,6 +7,9 @@
 
 from pathlib import Path
 
+# noinspection PyPackageRequirements
+from PySide6.QtWidgets import QTreeWidgetItem
+
 from abib.services.other_works_text_search import OtherWorksTextSearchService
 from abib.ui.other_works_text_search_window import OtherWorksTextSearchWindow
 
@@ -22,6 +25,18 @@ def make_window(tmp_path: Path) -> OtherWorksTextSearchWindow:
     return OtherWorksTextSearchWindow(service)
 
 
+def _top(window: OtherWorksTextSearchWindow, index: int) -> QTreeWidgetItem:
+    item = window.results_tree.topLevelItem(index)
+    assert item is not None
+    return item
+
+
+def _child(window: OtherWorksTextSearchWindow, index: int, child: int) -> QTreeWidgetItem:
+    item = _top(window, index).child(child)
+    assert item is not None
+    return item
+
+
 def test_window_searches_and_groups_results(qapp, tmp_path):
     window = make_window(tmp_path)
 
@@ -29,9 +44,9 @@ def test_window_searches_and_groups_results(qapp, tmp_path):
 
     assert "3 occurrences" in window.summary_label.text()
     assert window.results_tree.topLevelItemCount() == 2
-    assert window.results_tree.topLevelItem(0).text(0) == "First (2)"
-    assert window.results_tree.topLevelItem(1).text(0) == "Second (1)"
-    assert "mercy" in window.results_tree.topLevelItem(0).child(0).text(2)
+    assert _top(window, 0).text(0) == "First (2)"
+    assert _top(window, 1).text(0) == "Second (1)"
+    assert "mercy" in _child(window, 0, 0).text(2)
 
 
 def test_window_shows_empty_state(qapp, tmp_path):
@@ -94,7 +109,6 @@ def test_window_emits_occurrence_payload(qapp, tmp_path):
     window.occurrenceActivated.connect(lambda path, start, length: activations.append((path, start, length)))
 
     window.set_query("tender mercy")
-    item = window.results_tree.topLevelItem(0).child(0)
-    window._activate_item(item)
+    window._activate_item(_child(window, 0, 0))
 
     assert activations == [(str(tmp_path / "Second.txt"), 11, 12)]

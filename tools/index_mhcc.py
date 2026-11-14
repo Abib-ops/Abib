@@ -9,7 +9,6 @@
 import argparse
 import hashlib
 import json
-import re
 from pathlib import Path
 from typing import Any
 
@@ -17,14 +16,6 @@ from project_setup import PROJECT_ROOT
 
 DATA_DIR = PROJECT_ROOT / "src" / "abib" / "data"
 DEFAULT_INPUT = DATA_DIR / "Other Works" / "MHCC.txt"
-BOOK_RULE_RE = re.compile(r"^\s*_{10,}\s*$")
-CHAPTER_RE = re.compile(r"^Chapter\s+(\d+)\s*$", re.IGNORECASE)
-SECTION_RE = re.compile(r"^Verses?\s+([\d\s,–—-]+)\s*$", re.IGNORECASE)
-VERSE_TOKEN_RE = re.compile(r"(\d+)(?:\s*[-–—]\s*(\d+))?")
-
-
-def _normalise_book_title(title: str) -> str:
-    return re.sub(r"[^a-z0-9]", "", title.casefold())
 
 
 def _line_text(line: str) -> str:
@@ -43,45 +34,29 @@ def _chapter_data(data_path: Path) -> tuple[list[str], dict[str, dict[str, Any]]
 
 
 def _parse_verse_label(label: str) -> tuple[int, int, list[list[int]]] | None:
-    match = SECTION_RE.fullmatch(label)
-    if match is None:
+    from abib.services.mhcc_index import parse_section_label
+
+    parsed = parse_section_label(label)
+    if parsed is None:
         return None
-    value = match.group(1).strip()
-    tokens = re.split(r"\s*,\s*", value)
-    ranges: list[list[int]] = []
-    for token in tokens:
-        token_match = VERSE_TOKEN_RE.fullmatch(token.strip())
-        if token_match is None:
-            return None
-        first = int(token_match.group(1))
-        last = int(token_match.group(2) or first)
-        if first > last:
-            first, last = last, first
-        ranges.append([first, last])
+    ranges = [[first, last] for first, last in parsed]
     return min(item[0] for item in ranges), max(item[1] for item in ranges), ranges
 
 
 def _book_titles(lines: list[str], names: list[str]) -> dict[int, tuple[int, str, str]]:
-    from abib.core.shared import bibledict
-    aliases = {key: value for key, value in bibledict.items()}
+    from abib.services.mhcc_index import find_book_titles
+
     canonical_names = {number: name for number, name in enumerate(names, start=1)}
     candidates: dict[int, tuple[int, str, str]] = {}
-    for index, line in enumerate(lines):
-        if not BOOK_RULE_RE.fullmatch(_line_text(line)):
-            continue
-        title_index = index + 1
-        while title_index < len(lines) and not _line_text(lines[title_index]).strip():
-            title_index += 1
-        if title_index >= len(lines):
-            continue
-        title = _line_text(lines[title_index]).strip()
-        number = aliases.get(_normalise_book_title(title))
+    for title_index, (number, title) in find_book_titles(lines).items():
         if number is not None and number in canonical_names:
             candidates[title_index] = (number, canonical_names[number], title)
     return candidates
 
 
 def build_index(source_path: Path, bible_path: Path) -> dict[str, Any]:
+    from abib.services.mhcc_index import parse_chapter_heading
+
     try:
         raw_text = source_path.read_text(encoding="utf-8")
     except (OSError, UnicodeError) as exc:
@@ -129,9 +104,8 @@ def build_index(source_path: Path, bible_path: Path) -> dict[str, Any]:
         if current_book is None:
             continue
         stripped = _line_text(line).strip()
-        chapter_match = CHAPTER_RE.fullmatch(stripped)
-        if chapter_match is not None:
-            chapter_number = int(chapter_match.group(1))
+        chapter_number = parse_chapter_heading(stripped)
+        if chapter_number is not None:
             chapter_map = current_book["_chapter_map"]
             if chapter_number in chapter_map:
                 problems.append({

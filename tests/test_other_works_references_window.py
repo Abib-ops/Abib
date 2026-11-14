@@ -6,8 +6,12 @@
 
 
 from pathlib import Path
+from typing import cast
 
-from abib.services.commentary_lookup import CommentaryEntry
+# noinspection PyPackageRequirements
+from PySide6.QtWidgets import QTreeWidgetItem
+
+from abib.services.commentary_lookup import CommentaryEntry, CommentaryLookup
 from abib.services.other_works_reference_index import (
     OtherWorkReferenceGroup,
     OtherWorkReferenceOccurrence,
@@ -28,6 +32,18 @@ def make_window(tmp_path: Path) -> OtherWorksReferencesWindow:
     return OtherWorksReferencesWindow(service)
 
 
+def _top(window: OtherWorksReferencesWindow, index: int) -> QTreeWidgetItem:
+    item = window.results_tree.topLevelItem(index)
+    assert item is not None
+    return item
+
+
+def _child(window: OtherWorksReferencesWindow, index: int, child: int) -> QTreeWidgetItem:
+    item = _top(window, index).child(child)
+    assert item is not None
+    return item
+
+
 def test_window_searches_and_groups_results(qapp, tmp_path):
     window = make_window(tmp_path)
 
@@ -35,9 +51,9 @@ def test_window_searches_and_groups_results(qapp, tmp_path):
 
     assert "2 occurrences" in window.summary_label.text()
     assert window.results_tree.topLevelItemCount() == 2
-    assert window.results_tree.topLevelItem(0).text(0) == "First (1)"
-    assert window.results_tree.topLevelItem(1).text(0) == "Second (1)"
-    assert "John 3:16" in window.results_tree.topLevelItem(0).child(0).text(2)
+    assert _top(window, 0).text(0) == "First (1)"
+    assert _top(window, 1).text(0) == "Second (1)"
+    assert "John 3:16" in _child(window, 0, 0).text(2)
 
 
 def test_window_title_and_default_size_are_readable(qapp, tmp_path):
@@ -74,8 +90,7 @@ def test_window_emits_occurrence_payload(qapp, tmp_path):
     window.occurrenceActivated.connect(lambda path, start, length: activations.append((path, start, length)))
 
     window.set_reference("Jude 5")
-    item = window.results_tree.topLevelItem(0).child(0)
-    window._activate_item(item)
+    window._activate_item(_child(window, 0, 0))
 
     assert activations == [(str(tmp_path / "Second.txt"), 29, 6)]
 
@@ -108,54 +123,58 @@ def _commentary_entries(tmp_path: Path) -> tuple[CommentaryEntry, CommentaryEntr
     )
 
 
+def _commentary_window(
+    group: OtherWorkReferenceGroup | None, entries: tuple[CommentaryEntry, ...],
+) -> OtherWorksReferencesWindow:
+    """Build the window around the stand-in services, typed as the real ones for the checker."""
+    return OtherWorksReferencesWindow(
+        cast(OtherWorksReferenceIndex, cast(object, _ReferenceService(group))),
+        commentary=cast(CommentaryLookup, cast(object, _CommentaryService(entries))),
+    )
+
+
 def test_window_places_commentaries_before_other_works(qapp, tmp_path):
     occurrence = OtherWorkReferenceOccurrence(
         "Ordinary", str(tmp_path / "Ordinary.txt"), (43, 3, 16), "John 3:16", "John 3:16", 0, 10, "work snippet",
     )
     group = OtherWorkReferenceGroup("John 3:16", (occurrence,))
-    window = OtherWorksReferencesWindow(
-        _ReferenceService(group), commentary=_CommentaryService(_commentary_entries(tmp_path)),
-    )
+    window = _commentary_window(group, _commentary_entries(tmp_path))
 
     window.set_reference("John 3:16")
 
     assert window.results_tree.topLevelItemCount() == 2
-    assert window.results_tree.topLevelItem(0).text(0) == "Commentaries on John 3:16 (2)"
-    assert window.results_tree.topLevelItem(1).text(0) == "Ordinary (1)"
+    assert _top(window, 0).text(0) == "Commentaries on John 3:16 (2)"
+    assert _top(window, 1).text(0) == "Ordinary (1)"
     assert "Gill, Matthew Henry" in window.summary_label.text()
 
 
 def test_window_shows_commentaries_without_other_work_mentions(qapp, tmp_path):
-    window = OtherWorksReferencesWindow(
-        _ReferenceService(None), commentary=_CommentaryService(_commentary_entries(tmp_path)),
-    )
+    window = _commentary_window(None, _commentary_entries(tmp_path))
 
     window.set_reference("John 3:16")
 
     assert window.results_tree.topLevelItemCount() == 1
-    assert window.results_tree.topLevelItem(0).text(0) == "Commentaries on John 3:16 (2)"
+    assert _top(window, 0).text(0) == "Commentaries on John 3:16 (2)"
     assert "Gill, Matthew Henry" in window.summary_label.text()
 
 
 def test_window_activates_gill_reference(qapp, tmp_path):
-    entries = _commentary_entries(tmp_path)
-    window = OtherWorksReferencesWindow(_ReferenceService(None), commentary=_CommentaryService(entries))
+    window = _commentary_window(None, _commentary_entries(tmp_path))
     activations: list[tuple[int, int, int]] = []
     window.commentaryActivated.connect(lambda book, chapter, verse: activations.append((book, chapter, verse)))
     window.set_reference("John 3:16")
 
-    window._activate_item(window.results_tree.topLevelItem(0).child(0))
+    window._activate_item(_child(window, 0, 0))
 
     assert activations == [(43, 3, 16)]
 
 
 def test_window_activates_mhcc_reader_offset(qapp, tmp_path):
-    entries = _commentary_entries(tmp_path)
-    window = OtherWorksReferencesWindow(_ReferenceService(None), commentary=_CommentaryService(entries))
+    window = _commentary_window(None, _commentary_entries(tmp_path))
     activations: list[tuple[str, int, int]] = []
     window.occurrenceActivated.connect(lambda path, start, length: activations.append((path, start, length)))
     window.set_reference("John 3:16")
 
-    window._activate_item(window.results_tree.topLevelItem(0).child(1))
+    window._activate_item(_child(window, 0, 1))
 
     assert activations == [(str(tmp_path / "MHCC.txt"), 25, 12)]

@@ -2,12 +2,14 @@ This project is licensed under GPL‑3.0‑or‑later
 
 # Abib Bible Reader
 
-A compact and fast Bible reader for your desktop or laptop.
-Abib helps you follow Scripture while listening to an online sermon or during personal study.
+Free, offline KJV Bible reader for Windows/Linux/macOS with Gill's and Matthew Henry's commentaries, Strong's, cross-references and Puritan classics.
+
+Compact and fast, Abib helps you follow Scripture while listening to an online sermon or during personal study.
 It takes little room and has separate windows for the various parts.
 
 
 ![Abib screenshot](src/abib/images/Screenshot.jpg)
+![Abib screenshot 2](src/abib/images/Screenshot2.jpg)
 
 ## What's to like in Abib
 - Quick: jump to any verse instantly with abbreviated book names and chapter verse like jo3.16

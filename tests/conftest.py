@@ -6,6 +6,7 @@
 
 
 import os
+from types import SimpleNamespace
 
 import pytest
 
@@ -29,3 +30,40 @@ def qapp():
         widget.deleteLater()
     app.processEvents()
     app.quit()
+
+
+class NavigationRecorder:
+    """Records what a main-window jump does to Abib's history and display."""
+
+    def __init__(self) -> None:
+        self.history: list[tuple[object, int]] = []
+        self.cleared: list[bool] = []
+        self.displayed: list[int] = []
+        self.window = SimpleNamespace(
+            get_line_number=lambda: 4,
+            display_verse_from_history=self.displayed.append,
+        )
+
+    def assert_navigated_to(self, position: int) -> None:
+        assert self.history == [(self.window, 4)]
+        assert self.cleared == [True]
+        assert self.displayed == [position]
+
+
+@pytest.fixture
+def navigation_recorder(monkeypatch) -> NavigationRecorder:
+    """Replace Abib's back/forward history with recorders and provide a fake window at verse 4."""
+    from abib import Abib as AbibModule
+
+    recorder = NavigationRecorder()
+    monkeypatch.setattr(
+        AbibModule, "forward", SimpleNamespace(clear=lambda: recorder.cleared.append(True))
+    )
+    monkeypatch.setattr(
+        AbibModule,
+        "history",
+        SimpleNamespace(
+            back_push=lambda owner, position: recorder.history.append((owner, position))
+        ),
+    )
+    return recorder

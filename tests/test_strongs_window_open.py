@@ -7,7 +7,7 @@
 
 import sys
 from types import ModuleType, SimpleNamespace
-from typing import cast
+from typing import Any, cast
 
 from abib import Abib as AbibModule
 from tests._window_open_helpers import make_window_open_env
@@ -44,9 +44,10 @@ def test_open_strongs_window_uses_current_bible_line(monkeypatch, tmp_path):
         def activateWindow(self) -> None:
             pass
 
-    fake_service_mod = ModuleType("abib.services.strongs_service")
+    # Typed as Any so the stand-in classes can be added to the module objects.
+    fake_service_mod: Any = ModuleType("abib.services.strongs_service")
     fake_service_mod.StrongsService = FakeStrongsService
-    fake_window_mod = ModuleType("abib.ui.strongs_window")
+    fake_window_mod: Any = ModuleType("abib.ui.strongs_window")
     fake_window_mod.StrongsWindow = FakeStrongsWindow
     monkeypatch.setitem(sys.modules, "abib.services.strongs_service", fake_service_mod)
     monkeypatch.setitem(sys.modules, "abib.ui.strongs_window", fake_window_mod)

@@ -79,8 +79,7 @@ def test_non_windows_check_uses_release_page_without_exe_asset(monkeypatch):
         raising=False,
     )
     monkeypatch.setattr(
-        updater.requests,
-        "get",
+        "abib.core.updater.requests.get",
         MagicMock(return_value=_ReleaseResponse({"tag_name": "v417.52", "html_url": release_url})),
     )
     monkeypatch.setattr(updater.fcs, "compare_versions", MagicMock(return_value=-1))
@@ -101,8 +100,7 @@ def test_non_windows_check_falls_back_to_releases_page(monkeypatch):
         raising=False,
     )
     monkeypatch.setattr(
-        updater.requests,
-        "get",
+        "abib.core.updater.requests.get",
         MagicMock(return_value=_ReleaseResponse({"tag_name": "417.52"})),
     )
     monkeypatch.setattr(updater.fcs, "compare_versions", MagicMock(return_value=-1))
@@ -123,9 +121,9 @@ def test_non_windows_perform_update_opens_browser_without_downloading(monkeypatc
         raising=False,
     )
     browser = MagicMock()
-    monkeypatch.setattr(updater, "QDesktopServices", browser, raising=False)
-    download = MagicMock(return_value=False)
-    monkeypatch.setattr(updater, "download_upgrade", download, raising=False)
+    monkeypatch.setattr("abib.core.updater.QDesktopServices", browser)
+    fake_windows = SimpleNamespace(perform_update=MagicMock())
+    monkeypatch.setitem(sys.modules, "abib.core.updater_windows", fake_windows)
 
     updater.perform_update("417.52", "https://example.test/releases/417.52")
 
@@ -133,7 +131,7 @@ def test_non_windows_perform_update_opens_browser_without_downloading(monkeypatc
     opened_url = browser.openUrl.call_args.args[0]
     assert isinstance(opened_url, QUrl)
     assert opened_url.toString() == "https://example.test/releases/417.52"
-    download.assert_not_called()
+    fake_windows.perform_update.assert_not_called()
 
 
 def test_updater_module_imports_with_non_windows_platform(monkeypatch):
@@ -148,7 +146,7 @@ def test_updater_module_imports_with_non_windows_platform(monkeypatch):
 
 def test_windows_check_returns_installer_url(monkeypatch):
     monkeypatch.setattr(updater, "plat", SimpleNamespace(is_windows=lambda: True))
-    monkeypatch.setattr(updater.requests, "get", MagicMock(return_value=_Response()))
+    monkeypatch.setattr("abib.core.updater.requests.get", MagicMock(return_value=_Response()))
     monkeypatch.setattr(updater.fcs, "compare_versions", MagicMock(return_value=-1))
     question = MagicMock(return_value=QMessageBox.StandardButton.Yes)
     monkeypatch.setattr(QMessageBox, "question", question)
@@ -162,8 +160,7 @@ def test_windows_check_returns_installer_url(monkeypatch):
 def test_windows_check_warns_when_release_has_no_exe(monkeypatch):
     monkeypatch.setattr(updater, "plat", SimpleNamespace(is_windows=lambda: True))
     monkeypatch.setattr(
-        updater.requests,
-        "get",
+        "abib.core.updater.requests.get",
         MagicMock(return_value=_ReleaseResponse({"tag_name": "417.52", "html_url": "https://example.test"})),
     )
     warning = MagicMock()
@@ -179,7 +176,7 @@ def test_windows_perform_update_dispatches_to_windows_module(monkeypatch):
     monkeypatch.setitem(sys.modules, "abib.core.updater_windows", fake_windows)
     monkeypatch.setattr("abib.core.updater_windows", fake_windows, raising=False)
     browser = MagicMock()
-    monkeypatch.setattr(updater, "QDesktopServices", browser)
+    monkeypatch.setattr("abib.core.updater.QDesktopServices", browser)
 
     updater.perform_update("417.52", "https://example.test/setup.exe")
 
@@ -190,8 +187,7 @@ def test_windows_perform_update_dispatches_to_windows_module(monkeypatch):
 def test_non_windows_declined_prompt_returns_no_update(monkeypatch):
     monkeypatch.setattr(updater, "plat", SimpleNamespace(is_windows=lambda: False))
     monkeypatch.setattr(
-        updater.requests,
-        "get",
+        "abib.core.updater.requests.get",
         MagicMock(return_value=_ReleaseResponse({"tag_name": "417.52"})),
     )
     monkeypatch.setattr(updater.fcs, "compare_versions", MagicMock(return_value=-1))

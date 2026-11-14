@@ -51,15 +51,15 @@ def test_concordance_reference_activation_syncs_highlight_state():
             self.yend = -1
             self.dlg = None
 
-        _sync_concordance_state_for_result = AbibModule.MainWindow._sync_concordance_state_for_result
-
     win = DummyWindow()
     # Test verse position 2 (Gen 1:3), term 'light'
-    win._sync_concordance_state_for_result(2, "light")
+    AbibModule.MainWindow._sync_concordance_state_for_result(
+        cast(AbibModule.MainWindow, cast(object, win)), 2, "light")
 
     assert win.key == "light"
     assert win.occurs == [2]
     assert len(win.occur[0]) == 2
     assert win.y == win.occur[0][0][0]
     assert win.yend == win.occur[0][0][1]
+    assert win.dlg is not None
     assert win.dlg.checks[0] == 3

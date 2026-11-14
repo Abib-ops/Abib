@@ -26,6 +26,7 @@ from abib.services.cross_references import (
     CrossReference,
     CrossReferenceService,
 )
+from abib.services.settings import SettingsService
 from abib.ui.cross_references_window import CrossReferencesWindow
 
 
@@ -160,6 +161,7 @@ class _MemorySettingsService:
         self.settings = data
         self.saves += 1
 
+    # noinspection PyMethodMayBeStatic
     def get_window_geometry(self, _window_name: str) -> tuple[int, int, int, int]:
         return 120, 120, 560, 520
 
@@ -181,7 +183,10 @@ def _window(tmp_path, settings: dict[str, Any] | None = None, rows=None):
     )
     settings_service = _MemorySettingsService(settings)
     window = CrossReferencesWindow(
-        service, _verse_text, _format_range, settings_service=cast(Any, settings_service)
+        service,
+        _verse_text,
+        _format_range,
+        settings_service=cast(SettingsService, cast(object, settings_service)),
     )
     return window, settings_service
 
@@ -299,6 +304,7 @@ class _Host(QWidget):
         self.update_calls = 0
         self.activated: list[int] = []
 
+    # noinspection PyMethodMayBeStatic
     def get_line_number(self) -> int:
         return 0
 
@@ -377,22 +383,7 @@ def test_missing_dataset_offers_update_other_works(qapp, tmp_path, monkeypatch):
     assert host.cross_references_window is None
 
 
-def test_cross_reference_activation_records_history(monkeypatch):
-    history: list[tuple[object, int]] = []
-    cleared: list[bool] = []
-    displayed: list[int] = []
-    monkeypatch.setattr(AbibModule, "forward", SimpleNamespace(clear=lambda: cleared.append(True)))
-    monkeypatch.setattr(
-        AbibModule.history,
-        "back_push",
-        lambda window, position: history.append((window, position)),
-    )
-    window = SimpleNamespace(get_line_number=lambda: 4, display_verse_from_history=displayed.append)
+def test_cross_reference_activation_records_history(navigation_recorder):
+    AbibModule.MainWindow._on_cross_reference_activated(navigation_recorder.window, 9)
 
-    AbibModule.MainWindow._on_cross_reference_activated(
-        cast(AbibModule.MainWindow, cast(object, window)), 9,
-    )
-
-    assert history == [(window, 4)]
-    assert cleared == [True]
-    assert displayed == [9]
+    navigation_recorder.assert_navigated_to(9)
