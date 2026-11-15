@@ -84,6 +84,15 @@ Wayland does not let applications restore exact window positions, so on Linux
 Abib sets `QT_QPA_PLATFORM=xcb;wayland` when you have not set it yourself. Window
 positions are then restored through Xwayland. A value you set is left unchanged.
 
+The KJB italics are Unicode mathematical italic letters, which Cascadia Mono does
+not include. On Linux, Abib ships and uses Noto Sans Math for them, plus a tiny
+"Abib Italic h" font so the italic *h* matches the other italic letters. For
+other symbols, it is still worth installing the system fallback fonts:
+
+```bash
+sudo pacman -S noto-fonts ttf-dejavu
+```
+
 Settings are stored in `~/.config/Abib` on Linux and
 `~/Library/Application Support/Abib` on macOS.
 

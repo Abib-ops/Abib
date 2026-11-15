@@ -10,6 +10,38 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
+Abib v417.55
+
+- New feature: Matthew Henry button. The main window now has a "Matthew
+  Henry" button beside the Other Works controls. It opens Matthew Henry's
+  Concise Commentary at the passage covering the current verse, the same as
+  Study → Matthew Henry on This Verse or Ctrl+Shift+M.
+- The Strong's Lookup button has moved to the bottom-right corner of the
+  main window, beside Search Work. Its shortcut is still Ctrl+Shift+S.
+- Linux: Matching italics. The KJB italic words use Unicode mathematical
+  italic letters, which Cascadia Mono does not include, so on Linux they could
+  be drawn in a mix of whatever fonts were installed and the italic 'h' looked
+  out of place. Abib now ships Noto Sans Math (SIL Open Font Licence) for the
+  italic letters, and a tiny "Abib Italic h" font so that the italic 'h'
+  matches the other italic letters. The Bible text and search are unchanged.
+  This applies on screen and when printing; Windows rendering is unchanged.
+- Bible text: In the title of Psalm 18 ("in the day that"), one italic 'h'
+  used a different character from every other italic 'h'. It now uses the
+  same one as the rest of the text.
+- Help and documentation: HELP.txt describes the Matthew Henry button and
+  the new place of the Strong's Lookup button. The Linux section of README.md
+  explains the bundled fonts and recommends installing the system fallback
+  fonts with "sudo pacman -S noto-fonts ttf-dejavu" on Arch Linux.
+- Tests: New tests cover the main window button positions, clicks and
+  shortcuts, the Linux font fallback, the bundled italic 'h' font, and the
+  corrected Psalm 18 italic 'h'.
+- Package, lockfile, help text and Windows installer version information was
+  updated to v417.55.
+
+This release adds a Matthew Henry button to the main window, moves the
+Strong's Lookup button to the bottom-right corner, makes the KJB italics
+display consistently on Linux, and corrects one italic letter in Psalm 18.
+
 Abib v417.54
 
 - Maintenance: Matthew Henry index consistency. The MHCC indexing tool now

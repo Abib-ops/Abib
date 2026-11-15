@@ -45,7 +45,7 @@ def _get_version() -> str:
             continue
             
     # 2. Hardcoded fallback (should be updated per release)
-    return "417.54"
+    return "417.55"
 
 CURRENT_VERSION = _get_version()
 
@@ -88,6 +88,11 @@ icon_path: Path = images_dir / "abib_icon0.ico"
 # instead of being substituted with a font that lacks those glyphs.
 font_dir: Path = package_directory / "font"
 font_path: Path = font_dir / "CascadiaMono.ttf"
+# Linux fallback fonts for the Mathematical Italic letters (Cascadia Mono has
+# none). "Abib Italic h" only maps U+1D4BD (the KJB text's italic 'h') to Noto
+# Sans Math's italic h glyph; see tools/build_italic_h_font.py.
+math_font_path: Path = font_dir / "NotoSansMath-Regular.ttf"
+italic_h_font_path: Path = font_dir / "AbibItalicH.ttf"
 if not icon_path.is_file():
     # Fallback to images in package_directory if needed, but we moved it to src/abib/images
     pass

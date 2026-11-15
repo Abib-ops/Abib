@@ -20,7 +20,7 @@ from PySide6.QtCore import (
 )
 
 # noinspection PyPackageRequirements
-from PySide6.QtGui import QColor, QFontDatabase, QIcon, QPixmap
+from PySide6.QtGui import QColor, QFont, QFontDatabase, QIcon, QPixmap
 
 # noinspection PyPackageRequirements
 from PySide6.QtWidgets import QApplication, QSplashScreen
@@ -173,6 +173,39 @@ def _register_bundled_font() -> None:
         pass
 
 
+LINUX_FALLBACK_FAMILIES: list[str] = ["Abib Italic h", "Noto Sans Math", "DejaVu Sans"]
+
+
+def _configure_linux_font_fallback(app: QApplication) -> None:
+    """Set fallback fonts for Unicode glyphs missing from Cascadia Mono on Linux.
+
+    Cascadia Mono has no Mathematical Italic letters, so without a fixed list
+    fontconfig picks a font for each of them, and the italic 'h' (U+1D4BD,
+    a script h) ends up in a different style. The bundled Noto Sans Math draws
+    all italic letters and "Abib Italic h" draws U+1D4BD as its matching
+    italic h, ahead of Noto Sans Math's own script h.
+    """
+    if not plat.is_linux():
+        return
+
+    for path in (sh.italic_h_font_path, sh.math_font_path):
+        try:
+            if path.is_file():
+                QFontDatabase.addApplicationFont(str(path))
+        except (OSError, RuntimeError, AttributeError, TypeError):
+            pass
+
+    families = ", ".join(f"'{family}'" for family in ["Cascadia Mono", *LINUX_FALLBACK_FAMILIES])
+    fallback_style = f"QLabel, QTextEdit, QPlainTextEdit {{ font-family: {families}, sans-serif; }}"
+    try:
+        stylesheet = app.styleSheet()
+        if fallback_style not in stylesheet:
+            app.setStyleSheet("\n".join(filter(None, (stylesheet, fallback_style))))
+        QFont.insertSubstitutions("Cascadia Mono", LINUX_FALLBACK_FAMILIES)
+    except (AttributeError, RuntimeError, TypeError):
+        pass
+
+
 def _configure_qt_platform() -> None:
     """Set a Linux Qt platform default that supports window positioning."""
     if plat.is_linux() and "QT_QPA_PLATFORM" not in os.environ:
@@ -206,6 +239,7 @@ def run() -> None:
     # Make the bundled Cascadia Mono font available so text (and printouts)
     # render with the correct glyphs even when the font is not installed.
     _register_bundled_font()
+    _configure_linux_font_fallback(app)
 
     # Initialise settings service and load settings
     settings_service = SettingsService()

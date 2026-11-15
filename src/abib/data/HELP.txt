@@ -8,7 +8,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 ABIB HELP:
 **********
 
-Abib Bible Reader v417.54
+Abib Bible Reader v417.55
 
 *************************
 ATTRIBUTION & LICENSE:
@@ -51,14 +51,14 @@ You can start from the beginning and follow the instructions below.
 
 First, uninstall any previous version of the program.
 
-Get the "Abib_setup_417.54_win.exe" file from 'Abib-ops' on GitHub,
+Get the "Abib_setup_417.55_win.exe" file from 'Abib-ops' on GitHub,
 find it in the 'Abib' repository.
 
 **************************************************
 * See: https://github.com/Abib-ops/Abib/releases *
 **************************************************
 
-Next, double-click the "Abib_setup_417.54_win.exe" installer and follow
+Next, double-click the "Abib_setup_417.55_win.exe" installer and follow
 the instructions, mostly click Next a few times, agree to the
 licence, and Abib will install. Please ignore any negative windows that
 claim that Abib is from an unknown author.
@@ -208,11 +208,11 @@ Matthew Henry's Concise Commentary
 ----------------------------------
 
 To look up Matthew Henry's comments on the Bible verse currently selected in
-the main window, choose Study → Matthew Henry on This Verse or press
-Ctrl+Shift+M. Abib opens the matching passage in the Other Works reader. Since
-MHCC often discusses several verses together, the reader opens the section
-that covers the selected verse. If MHCC.txt is not installed, download it
-through Study → Update Other Works.
+the main window, click the Matthew Henry button, choose Study → Matthew Henry
+on This Verse, or press Ctrl+Shift+M. Abib opens the matching passage in the
+Other Works reader. Since MHCC often discusses several verses together, the
+reader opens the section that covers the selected verse. If MHCC.txt is not
+installed, download it through Study → Update Other Works.
 
 When you search a verse in Other Works Scripture reference search, available
 Gill and Matthew Henry comments also appear in a Commentaries group. Select
@@ -265,9 +265,9 @@ Strong's number can be looked up to see its original-language lemma,
 transliteration, pronunciation, and a short and long definition.
 
 How to open
-- Click the “Strong's Lookup” button on the main window, or press
-  Ctrl+Shift+S. The window opens as an independent (top‑level) window,
-  so you can place it anywhere.
+- Click the “Strong's Lookup” button in the bottom-right corner of the main
+  window, or press Ctrl+Shift+S. The window opens as an independent
+  (top‑level) window, so you can place it anywhere.
 
 What you’ll see
 - The top panel lists the tagged words of the current verse as clickable

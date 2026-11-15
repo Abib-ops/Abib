@@ -112,3 +112,92 @@ def test_configure_qt_platform_no_op_on_non_linux(monkeypatch):
     _configure_qt_logging()
     assert "QT_QPA_PLATFORM" not in os.environ
     assert "QT_LOGGING_RULES" not in os.environ
+
+
+def test_configure_linux_font_fallback_adds_stylesheet_and_substitutions(monkeypatch):
+    from abib import app as app_module
+
+    class _App:
+        stylesheet = "QWidget { color: red; }"
+
+        def styleSheet(self):
+            return self.stylesheet
+
+        def setStyleSheet(self, stylesheet):
+            self.stylesheet = stylesheet
+
+    monkeypatch.setattr(sys, "platform", "linux")
+    substitutions = []
+    registered = []
+    monkeypatch.setattr(
+        app_module.QFont,
+        "insertSubstitutions",
+        lambda family, fallback: substitutions.append((family, fallback)),
+    )
+    monkeypatch.setattr(
+        app_module.QFontDatabase,
+        "addApplicationFont",
+        lambda path: registered.append(path) or 0,
+    )
+    app = _App()
+
+    app_module._configure_linux_font_fallback(app)
+    app_module._configure_linux_font_fallback(app)
+
+    assert app.stylesheet.startswith("QWidget { color: red; }")
+    assert app.stylesheet.count("QLabel, QTextEdit, QPlainTextEdit") == 1
+    assert (
+        "'Cascadia Mono', 'Abib Italic h', 'Noto Sans Math', 'DejaVu Sans', sans-serif"
+        in app.stylesheet
+    )
+    fallback = ["Abib Italic h", "Noto Sans Math", "DejaVu Sans"]
+    assert substitutions == [("Cascadia Mono", fallback), ("Cascadia Mono", fallback)]
+    assert registered[:2] == [
+        str(app_module.sh.italic_h_font_path),
+        str(app_module.sh.math_font_path),
+    ]
+
+
+def test_configure_linux_font_fallback_is_no_op_on_windows(monkeypatch):
+    from abib import app as app_module
+
+    class _App:
+        stylesheet = "QWidget { color: red; }"
+
+        def styleSheet(self):
+            return self.stylesheet
+
+        def setStyleSheet(self, stylesheet):
+            self.stylesheet = stylesheet
+
+    monkeypatch.setattr(sys, "platform", "win32")
+    app = _App()
+
+    app_module._configure_linux_font_fallback(app)
+
+    assert app.stylesheet == "QWidget { color: red; }"
+
+
+def test_bundled_italic_h_font_draws_the_kjb_italic_h():
+    # noinspection PyPackageRequirements
+    from PySide6.QtGui import QFontDatabase, QRawFont
+
+    from abib.core import shared as sh
+
+    font_id = QFontDatabase.addApplicationFont(str(sh.italic_h_font_path))
+    assert "Abib Italic h" in QFontDatabase.applicationFontFamilies(font_id)
+    italic_h = QRawFont(str(sh.italic_h_font_path), 12)
+    math = QRawFont(str(sh.math_font_path), 12)
+    assert italic_h.supportsCharacter(0x1D4BD)
+    # The script h is drawn with Noto Sans Math's italic h (U+210E) outline.
+    assert (
+        italic_h.pathForGlyph(italic_h.glyphIndexesForString("\U0001D4BD")[0]).boundingRect()
+        == math.pathForGlyph(math.glyphIndexesForString("\u210e")[0]).boundingRect()
+    )
+
+
+def test_kjb_text_uses_one_italic_h():
+    from abib.core import shared as sh
+
+    for name in ("KJB_PCE.txt", "KJB_PCE_stripped.txt"):
+        assert "\U0001D629" not in (sh.package_directory / "data" / name).read_text(encoding="utf-8")

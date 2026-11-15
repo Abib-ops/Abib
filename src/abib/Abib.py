@@ -31,7 +31,7 @@ Third-party materials and attributions:
 - Pure Cambridge Edition of the KJV — see source and terms at bibleprotector.com
 - Spurgeon resources — see spurgeon.org and Eternal Life Ministries for terms
 
-RELEASE DATE: 14/11/2026
+RELEASE DATE: 15/11/2026
 """
 
 import logging
@@ -287,6 +287,7 @@ class MainWindow(QMainWindow):
         self.buttonf12: Any = None
         self.buttonf13: Any = None
         self.buttonf14: Any = None
+        self.buttonf15: Any = None
         self.other_works_combo: QComboBox | None = None
         # Predeclare UI elements that are instantiated in init_ui to satisfy linters
         self.last_work_btn: QPushButton | None = None
@@ -1190,7 +1191,7 @@ class MainWindow(QMainWindow):
         self.buttonf6.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         grid.addWidget(self.buttonf6, 3, 3)
 
-        # Row 4: Book- (col 0), Book+ (col 1), Chapter- (col 2), Chapter+ (col 3)
+        # Row 4: Book- (col 0), Book+ (col 1), Chapter- (col 2), Chapter+ (col 3), Matthew Henry (col 4)
         self.buttonf7 = QPushButton("Book-")
         self.buttonf7.setStyleSheet("QPushButton { text-align: left; padding-left: 6px; background-color: #ffffcc; color: #000000; }")
         self.buttonf7.clicked.connect(self.earlier_book)
@@ -1264,13 +1265,20 @@ class MainWindow(QMainWindow):
         self.buttonf14.clicked.connect(self.open_strongs_window)
         self.buttonf14.setToolTip("Open Strong's / original-language lookup (Ctrl+Shift+S)")
         self.buttonf14.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        grid.addWidget(self.buttonf14, 4, 4)
+        grid.addWidget(self.buttonf14, 5, 4)
 
         try:
             shortcut_strongs = QShortcut(QKeySequence("Ctrl+Shift+S"), self)
             shortcut_strongs.activated.connect(self.open_strongs_window)
         except (RuntimeError, TypeError, AttributeError):
             logger.debug("Could not create Ctrl+Shift+S Strong's shortcut", exc_info=True)
+
+        self.buttonf15 = QPushButton("Matthew Henry")
+        self.buttonf15.setStyleSheet("QPushButton { text-align: left; padding-left: 6px; }")
+        self.buttonf15.clicked.connect(self.open_mhcc_for_current_verse)
+        self.buttonf15.setToolTip("Open Matthew Henry's Concise Commentary at the current verse (Ctrl+Shift+M)")
+        self.buttonf15.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        grid.addWidget(self.buttonf15, 4, 4)
 
         try:
             self._normalize_control_heights()
@@ -1299,6 +1307,7 @@ class MainWindow(QMainWindow):
         self.search_work_btn.clicked.connect(self._open_reader_search)  # type: ignore[attr-defined]
         self.search_work_btn.setEnabled(False)
 
+        # Row 5: Other Works controls (cols 0-3) and Strong's Lookup (col 4)
         assert self.other_works_combo is not None
         grid.addWidget(self.other_works_combo, 5, 0, 1, 2)
         assert self.last_work_btn is not None
@@ -1311,7 +1320,7 @@ class MainWindow(QMainWindow):
         controls = [
             'comboBox_1', 'comboBox_2', 'comboBox_3', 'display_verse_input', 'okButton', 'buttonTheme',
             'buttonf3', 'buttonf4', 'buttonf5', 'buttonf6', 'buttonf7', 'buttonf8', 'buttonf9',
-            'buttonf10', 'buttonf11', 'buttonf12', 'buttonf13', 'buttonf14', 'other_works_combo', 'last_work_btn', 'search_work_btn'
+            'buttonf10', 'buttonf11', 'buttonf12', 'buttonf13', 'buttonf14', 'buttonf15', 'other_works_combo', 'last_work_btn', 'search_work_btn'
         ]
         for name in controls:
             wdg = getattr(self, name, None)
