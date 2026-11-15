@@ -608,6 +608,15 @@ class MainWindow(QMainWindow):
         if current_line != current_position:
             forward.clear()
             history.back_push(self, current_line)
+
+        dock = getattr(self, "search_results_window", None)
+        result = dock.result_for_position(current_position) if dock is not None else None
+        tagged_ranges = getattr(result, "tagged_ranges", None)
+        if tagged_ranges is not None:
+            self.display_verse_from_history(current_position)
+            self._apply_tagged_highlights(current_position, tagged_ranges)
+            return
+
         self._sync_search_state_for_result(current_position)
         self.display_verse_from_history(current_position)
 
@@ -2328,6 +2337,25 @@ class MainWindow(QMainWindow):
         except ValueError:
             logger.debug("Could not compute multi-highlight for line %r", ln, exc_info=True)
 
+    def _apply_tagged_highlights(
+            self, position: int, ranges: tuple[tuple[int, int], ...]) -> None:
+        """Apply Strong's tag ranges to the displayed Bible line."""
+        from abib.ui.search_results import block_highlight_spans
+
+        try:
+            line_number = int(Amap[position])
+            line = str(KJV[line_number]).rstrip("\r\n")
+        except (IndexError, TypeError, ValueError):
+            return
+
+        spans = block_highlight_spans(line, ranges)
+        fmt = QTextCharFormat()
+        assert linehighlightcolor is not None
+        assert linetextcolor is not None
+        fmt.setBackground(QColor(linehighlightcolor))
+        fmt.setForeground(QColor(linetextcolor))
+        self.hiLita.set_line_highlights(line_number, spans, fmt)
+
     def display_verse_from_history(self, current_position: int) -> None:
         """Display Bible text in textEditor after a back or forward pop."""
 
@@ -2539,8 +2567,9 @@ class MainWindow(QMainWindow):
         """
         from abib.ui.search_results import (
             SearchResult,
+            find_tagged_word_ranges,
             format_reference,
-            highlight_tagged_words,
+            render_highlighted,
             result_verse_text,
         )
 
@@ -2574,8 +2603,15 @@ class MainWindow(QMainWindow):
             # so identically spelled words tagged with a different Strong's
             # number are not spuriously highlighted. Falls back to plain
             # escaped text when no tag data is available.
-            html_text = highlight_tagged_words(verse_text, tag_pairs, code)
-            results.append(SearchResult(position, reference, verse_text, html_text))
+            tagged_ranges = find_tagged_word_ranges(verse_text, tag_pairs, code)
+            html_text = render_highlighted(verse_text, tagged_ranges)
+            results.append(SearchResult(
+                position,
+                reference,
+                verse_text,
+                html_text,
+                tagged_ranges=tuple(tagged_ranges),
+            ))
 
         if not results:
             dock.clear_results()

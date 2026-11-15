@@ -146,6 +146,7 @@ def test_show_strongs_occurrences_populates_results(monkeypatch):
     assert dock.results is not None
     assert [r.position for r in dock.results] == [0, 1]
     assert dock.results[0].reference == "Genesis 1:1"
+    assert dock.results[0].tagged_ranges == ((17, 20),)
     # Verse 0 tagged word is highlighted; verse 1 (no tags) is plain escaped text.
     assert "background-color" in dock.results[0].html_text
     assert "background-color" not in dock.results[1].html_text

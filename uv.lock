@@ -8,7 +8,7 @@ resolution-markers = [
 
 [[package]]
 name = "abib"
-version = "417.55"
+version = "417.56"
 source = { editable = "." }
 dependencies = [
     { name = "pyside6-essentials" },

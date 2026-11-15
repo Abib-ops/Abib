@@ -41,6 +41,14 @@ class SyntaxHighlighter(QSyntaxHighlighter):
             self._multi_highlights[line_num] = []
         self._multi_highlights[line_num].append((pos, length))
 
+    def set_line_highlights(
+            self, line_num: int, spans: list[tuple[int, int]], fmt: QTextCharFormat) -> None:
+        """Replace a line's multi-highlight ranges and apply their format."""
+        if not isinstance(line_num, int) or line_num < 0 or not isinstance(fmt, QTextCharFormat):
+            return
+        self._multi_highlights[line_num] = list(spans)
+        self.highlight_line(line_num, fmt)
+
     def clear_highlight(self) -> None:
         """Clear highlight."""
 

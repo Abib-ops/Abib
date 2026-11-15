@@ -10,6 +10,26 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
+Abib v417.56
+
+- Fix: Strong's occurrence highlighting. When a result from Strong's "Find
+  all occurrences" was clicked, the main window reused the highlighting from
+  the last text search, so it could mark the wrong word or place. This showed
+  when the KJV translates a Strong's number with different English words, for
+  example H5521 (סֻכָּה) as "tabernacles", "booths" or "pavilion". Clicking a
+  result now highlights exactly the word or words marked in the Occurrences
+  list, including in verses that contain italic words. Ordinary search
+  results are highlighted as before.
+- Tests: New tests cover finding the tagged words in a verse, converting
+  their positions for verses with italic letters and verse numbers, finding a
+  result by its verse, and highlighting after clicking both Strong's and
+  ordinary search results.
+- Package, lockfile, help text and Windows installer version information was
+  updated to v417.56.
+
+This release makes the main window highlight the same words as the Strong's
+Occurrences list when a result is clicked.
+
 Abib v417.55
 
 - New feature: Matthew Henry button. The main window now has a "Matthew

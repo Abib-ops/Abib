@@ -5,7 +5,11 @@
 # -*- coding: utf-8 -*-
 
 from abib.ui.search_results import (
+    SearchResult,
+    SearchResultsWindow,
+    block_highlight_spans,
     find_highlight_ranges,
+    find_tagged_word_ranges,
     format_reference,
     highlight_result_text,
     highlight_tagged_words,
@@ -108,3 +112,30 @@ def test_highlight_tagged_words_no_matches_returns_plain_escaped_text():
 
     assert "background-color" not in html
     assert "&lt;ever&gt;" in html
+
+
+def test_find_tagged_word_ranges_returns_only_matching_tag_occurrences():
+    text = "the tabernacle and tabernacles"
+    tags = [
+        ("the", "H0001"),
+        ("tabernacle", "H5521"),
+        ("and", "H0000"),
+        ("tabernacles", "H5521"),
+    ]
+
+    assert find_tagged_word_ranges(text, tags, "H5521") == [(4, 14), (19, 30)]
+
+
+def test_block_highlight_spans_accounts_for_prefix_and_surrogate_pairs():
+    line = "12 𝑠𝒽𝑎𝑙𝑙 of tabernacles\r\n"
+
+    assert block_highlight_spans(line, [(6, 20)]) == [(14, 14)]
+
+
+def test_search_results_window_finds_result_by_verse_position(qapp):
+    result = SearchResult(7, "Genesis 1:8", "verse text", "verse text")
+    window = SearchResultsWindow()
+    window.set_results([result], "query")
+
+    assert window.result_for_position(7) is result
+    assert window.result_for_position(8) is None

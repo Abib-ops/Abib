@@ -34,6 +34,7 @@ class SearchResult:
     reference: str
     text: str
     html_text: str
+    tagged_ranges: tuple[tuple[int, int], ...] | None = None
 
 
 def format_reference(
@@ -85,6 +86,12 @@ def highlight_tagged_words(text: str, tags: Sequence[tuple[str, str]], code: str
     *different* Strong's number (or untagged) is therefore left unmarked,
     avoiding spurious highlights in the search results.
     """
+    ranges = find_tagged_word_ranges(text, tags, code)
+    return render_highlighted(text, ranges)
+
+
+def find_tagged_word_ranges(text: str, tags: Sequence[tuple[str, str]], code: str) -> list[tuple[int, int]]:
+    """Find text ranges for words tagged with *code*, in reading order."""
     ranges: list[tuple[int, int]] = []
     cursor = 0
     lowered = text.lower()
@@ -101,7 +108,30 @@ def highlight_tagged_words(text: str, tags: Sequence[tuple[str, str]], code: str
         if strongs == code:
             ranges.append((idx, end))
         cursor = end
-    return render_highlighted(text, ranges)
+    return ranges
+
+
+def block_highlight_spans(line: str, ranges: Sequence[tuple[int, int]]) -> list[tuple[int, int]]:
+    """Convert result-text ranges to Qt UTF-16 positions in a full Bible line."""
+    line_text = line.rstrip("\r\n")
+    prefix_match = re.match(r"^\d+\s+", line_text)
+    prefix = prefix_match.group(0) if prefix_match is not None else ""
+    display_text = line_text[len(prefix):]
+
+    spans: list[tuple[int, int]] = []
+    for start, end in ranges:
+        if start < 0 or end <= start or start >= len(display_text):
+            continue
+        end = min(end, len(display_text))
+        qt_start = _utf16_length(prefix + display_text[:start])
+        qt_end = _utf16_length(prefix + display_text[:end])
+        spans.append((qt_start, qt_end - qt_start))
+    return spans
+
+
+def _utf16_length(text: str) -> int:
+    """Return the number of UTF-16 code units in *text*."""
+    return sum(2 if ord(character) > 0xFFFF else 1 for character in text)
 
 
 def result_verse_text(position: int, kjv: Sequence[str], amap: Sequence[int | str]) -> str:
@@ -186,6 +216,10 @@ class SearchResultsWindow(QWidget):
         self._results = []
         self.setWindowTitle("Search Results")
         self.list_widget.clear()
+
+    def result_for_position(self, position: int) -> SearchResult | None:
+        """Return the stored result for a verse position, if present."""
+        return next((result for result in self._results if result.position == position), None)
 
     def _apply_filter(self) -> None:
         filter_text = self.filter_edit.text().casefold()
