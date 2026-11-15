@@ -12,6 +12,10 @@ Windows-10 heuristic, the version APIs) to each operating system.
 """
 
 import sys
+from typing import cast
+
+# noinspection PyPackageRequirements
+from PySide6.QtWidgets import QApplication
 
 from abib.utils import platform as plat
 
@@ -127,22 +131,23 @@ def test_configure_linux_font_fallback_adds_stylesheet_and_substitutions(monkeyp
             self.stylesheet = stylesheet
 
     monkeypatch.setattr(sys, "platform", "linux")
-    substitutions = []
-    registered = []
+    substitutions: list[tuple[str, list[str]]] = []
+    registered: list[str] = []
+
+    def _add_application_font(path: str) -> int:
+        registered.append(path)
+        return 0
+
     monkeypatch.setattr(
         app_module.QFont,
         "insertSubstitutions",
         lambda family, fallback: substitutions.append((family, fallback)),
     )
-    monkeypatch.setattr(
-        app_module.QFontDatabase,
-        "addApplicationFont",
-        lambda path: registered.append(path) or 0,
-    )
+    monkeypatch.setattr(app_module.QFontDatabase, "addApplicationFont", _add_application_font)
     app = _App()
 
-    app_module._configure_linux_font_fallback(app)
-    app_module._configure_linux_font_fallback(app)
+    app_module._configure_linux_font_fallback(cast(QApplication, cast(object, app)))
+    app_module._configure_linux_font_fallback(cast(QApplication, cast(object, app)))
 
     assert app.stylesheet.startswith("QWidget { color: red; }")
     assert app.stylesheet.count("QLabel, QTextEdit, QPlainTextEdit") == 1
@@ -150,8 +155,11 @@ def test_configure_linux_font_fallback_adds_stylesheet_and_substitutions(monkeyp
         "'Cascadia Mono', 'Abib Italic h', 'Noto Sans Math', 'DejaVu Sans', sans-serif"
         in app.stylesheet
     )
-    fallback = ["Abib Italic h", "Noto Sans Math", "DejaVu Sans"]
-    assert substitutions == [("Cascadia Mono", fallback), ("Cascadia Mono", fallback)]
+    expected_fallback = ["Abib Italic h", "Noto Sans Math", "DejaVu Sans"]
+    assert substitutions == [
+        ("Cascadia Mono", expected_fallback),
+        ("Cascadia Mono", expected_fallback),
+    ]
     assert registered[:2] == [
         str(app_module.sh.italic_h_font_path),
         str(app_module.sh.math_font_path),
@@ -173,7 +181,7 @@ def test_configure_linux_font_fallback_is_no_op_on_windows(monkeypatch):
     monkeypatch.setattr(sys, "platform", "win32")
     app = _App()
 
-    app_module._configure_linux_font_fallback(app)
+    app_module._configure_linux_font_fallback(cast(QApplication, cast(object, app)))
 
     assert app.stylesheet == "QWidget { color: red; }"
 

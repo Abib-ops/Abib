@@ -4,9 +4,16 @@
 
 # -*- coding: utf-8 -*-
 
+from typing import cast
+
+# noinspection PyPackageRequirements
 from PySide6.QtCore import Qt
+
+# noinspection PyPackageRequirements
 from PySide6.QtGui import QShortcut
-from PySide6.QtWidgets import QComboBox, QGridLayout, QLineEdit, QWidget
+
+# noinspection PyPackageRequirements
+from PySide6.QtWidgets import QComboBox, QGridLayout, QLineEdit, QPushButton, QWidget
 
 from abib.Abib import MainWindow
 
@@ -51,14 +58,22 @@ class _MainWindowButtonHarness(QWidget):
         pass
 
 
+def _button_at(grid: QGridLayout, row: int, column: int) -> QPushButton:
+    item = grid.itemAtPosition(row, column)
+    assert item is not None
+    button = item.widget()
+    assert isinstance(button, QPushButton)
+    return button
+
+
 def test_study_and_strongs_buttons_occupy_bottom_right_cells(qapp):
     window = _MainWindowButtonHarness()
     grid = QGridLayout()
 
-    MainWindow._layout_widgets(window, grid)
+    MainWindow._layout_widgets(cast(MainWindow, cast(QWidget, window)), grid)
 
-    mhcc_button = grid.itemAtPosition(4, 4).widget()
-    strongs_button = grid.itemAtPosition(5, 4).widget()
+    mhcc_button = _button_at(grid, 4, 4)
+    strongs_button = _button_at(grid, 5, 4)
     assert mhcc_button.text() == "Matthew Henry"
     assert strongs_button.text() == "Strong's Lookup"
     assert mhcc_button.focusPolicy() == Qt.FocusPolicy.NoFocus
