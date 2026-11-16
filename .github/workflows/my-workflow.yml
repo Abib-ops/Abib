@@ -19,13 +19,13 @@ concurrency:
 jobs:
   pr-summary:
     name: Comment a PR summary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
 
       - name: Post a summary comment on the pull request
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const pr = context.payload.pull_request;

@@ -112,17 +112,14 @@ class BookmarkStore:
 
     def _write(self, bookmarks: list[Bookmark]) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        temporary_file = tempfile.NamedTemporaryFile(
-            mode="w",
-            encoding="utf-8",
+        file_descriptor, temporary_name = tempfile.mkstemp(
             dir=self.path.parent,
             prefix=f"{self.path.name}.",
             suffix=".tmp",
-            delete=False,
         )
-        temporary_path = Path(temporary_file.name)
+        temporary_path = Path(temporary_name)
         try:
-            with temporary_file:
+            with os.fdopen(file_descriptor, "w", encoding="utf-8") as temporary_file:
                 json.dump(
                     {"bookmarks": [bookmark.__dict__ for bookmark in bookmarks]},
                     temporary_file,
