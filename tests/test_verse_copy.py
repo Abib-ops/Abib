@@ -15,6 +15,7 @@ from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QApplication, QPlainTextEdit
 
 from abib import Abib as AbibModule
+from abib.core import shared as sh
 from abib.services.verse_copy import (
     clean_verse_text,
     format_citation,
@@ -73,8 +74,8 @@ def test_copy_current_verse_and_selected_verses(qapp, monkeypatch):
     lines = ("CHAPTER 3\n", "16 ¶ For God so loved\n", "17 ¶ that he gave\n")
     monkeypatch.setattr(AbibModule, "KJV", lines)
     monkeypatch.setattr(AbibModule, "Amap_rev", {1: 0, 2: 1})
-    monkeypatch.setattr(AbibModule.sh, "Info", ((42, 2, 15), (42, 2, 16)))
-    monkeypatch.setattr(AbibModule.sh, "onechapterbooks", set())
+    monkeypatch.setattr(sh, "Info", ((42, 2, 15), (42, 2, 16)))
+    monkeypatch.setattr(sh, "onechapterbooks", set())
     window = _copy_window("".join(lines))
 
     cursor = window.textEditor.textCursor()
@@ -95,8 +96,8 @@ def test_copy_partial_selection_preserves_leading_content_number(qapp, monkeypat
     line = "1 5 things endure"
     monkeypatch.setattr(AbibModule, "KJV", (line,))
     monkeypatch.setattr(AbibModule, "Amap_rev", {0: 0})
-    monkeypatch.setattr(AbibModule.sh, "Info", ((42, 2, 15),))
-    monkeypatch.setattr(AbibModule.sh, "onechapterbooks", set())
+    monkeypatch.setattr(sh, "Info", ((42, 2, 15),))
+    monkeypatch.setattr(sh, "onechapterbooks", set())
     window = _copy_window(line)
     cursor = window.textEditor.textCursor()
     cursor.setPosition(2)
@@ -111,8 +112,8 @@ def test_copy_partial_selection_preserves_leading_content_number(qapp, monkeypat
 def test_copy_skips_non_bible_text_without_changing_clipboard(qapp, monkeypatch):
     monkeypatch.setattr(AbibModule, "KJV", ("1 Bible verse",))
     monkeypatch.setattr(AbibModule, "Amap_rev", {0: 0})
-    monkeypatch.setattr(AbibModule.sh, "Info", ((42, 2, 15),))
-    monkeypatch.setattr(AbibModule.sh, "onechapterbooks", set())
+    monkeypatch.setattr(sh, "Info", ((42, 2, 15),))
+    monkeypatch.setattr(sh, "onechapterbooks", set())
     window = _copy_window("Text from another file")
     QApplication.clipboard().setText("previous clipboard")
 

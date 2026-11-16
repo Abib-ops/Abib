@@ -40,7 +40,7 @@ import sqlite3
 import sys
 import time
 import webbrowser
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -122,11 +122,11 @@ VERSE_LINE_SEARCH_RADIUS: int = 12
 
 # ---- Module-level placeholders (populated at runtime by app.run) ----
 # These keep static analysis quiet and preserve runtime assignment from app.py
-KJV: tuple | list = ()
-Amap: list = []
+KJV: tuple[str, ...] | list[str] = ()
+Amap: list[Any] = []
 Amap_rev: dict[int, int] = {}
 Ps119: list[int] = []
-P119: list = []
+P119: list[Any] = []
 book_bounds: list[int] = []
 starts_with_italics: list[int] = []
 KJB_PCE_LASTLINE: int = 0
@@ -140,8 +140,8 @@ height: int = 0
 half_width: float = 0.0
 half_height: float = 0.0
 # Colours
-linehighlightcolor = None
-linetextcolor = None
+linehighlightcolor: QColor | None = None
+linetextcolor: QColor | None = None
 
 CURRENT_VERSION = sh.CURRENT_VERSION
 
@@ -163,10 +163,21 @@ def get_next_occurrence() -> int:
     return search_service.get_next_occurrence(w)
 
 
-def find_whole_word_any(x1: int, x2: int, _set: sh.WordSet, r_list: list, win: MainWindow) -> None:
+def find_whole_word_any(x1: int, x2: int, _set: sh.WordSet, r_list: Sequence[str], win: MainWindow) -> None:
     """Match any word."""
 
     search_service.find_whole_word_any(x1, x2, _set, r_list, win)
+
+
+def line_highlight_format() -> QTextCharFormat:
+    """Return the character format used to highlight the current Bible line."""
+
+    fmt = QTextCharFormat()
+    if linehighlightcolor is not None:
+        fmt.setBackground(QColor(linehighlightcolor))
+    if linetextcolor is not None:
+        fmt.setForeground(QColor(linetextcolor))
+    return fmt
 
 
 def make_offset(ln: int) -> int:
@@ -186,7 +197,7 @@ def make_offset(ln: int) -> int:
     except (IndexError, TypeError, ValueError):
         # Fallbacks if Amap not ready; use known Psalms start or zero
         try:
-            lx: int = int(Amap[13940]) - 1
+            lx = int(Amap[13940]) - 1
         except (IndexError, TypeError, ValueError):
             lx = 0
     ec: int = 2
@@ -234,7 +245,7 @@ def reset_attributes() -> None:
 class MainWindow(QMainWindow):
     """MainWindow class."""
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialise."""
         settings_service = kwargs.pop("settings_service", None)
         super().__init__(*args, **kwargs)
@@ -259,11 +270,11 @@ class MainWindow(QMainWindow):
             logger.debug("Could not restore main window geometry state", exc_info=True)
 
         # self.feature = None
-        self.text_edit_window = None
-        self.text_edit = None
-        self.history_index = None
-        self.command_history = None
-        self.about_window = None
+        self.text_edit_window: Any = None
+        self.text_edit: Any = None
+        self.history_index: Any = None
+        self.command_history: Any = None
+        self.about_window: Any = None
         # Use SettingsService-managed settings dict
         self.settings = self.settings_service.settings
         # self.textEditor: None = None
@@ -304,7 +315,7 @@ class MainWindow(QMainWindow):
         # self.textEditor: QPlainTextEdit = QPlainTextEdit()
         self.textEditor: Any = NoZoomPlainTextEdit()
         # Predeclare actions bundle to satisfy linters (assigned in init_ui)
-        self.actions_bundle = None
+        self.actions_bundle: Any = None
         self.search_results_window: Any = None
         self.bookmark_store: Any = None
         self.bookmarks_window: Any = None
@@ -324,7 +335,7 @@ class MainWindow(QMainWindow):
         # Guard flag to avoid recursive move/resize while repositioning the
         # separate Search Results window relative to the main window.
         self.positioning_search_results: bool = False
-        
+
         # Theme manager (extract dark mode logic)
         # Initialise 'ThemeManager' based on persisted settings
         from abib.ui.themes import ThemeManager, ThemeState  # local import (deferred)
@@ -393,12 +404,12 @@ class MainWindow(QMainWindow):
         self.nav = NavigationCore(self)
 
         # Services (lazy-initialised on first use to improve startup time)
-        self._audio = None
-        self._printing = None
-        self._reading_plans = None
+        self._audio: Any = None
+        self._printing: Any = None
+        self._reading_plans: Any = None
 
         # Store a reference to the secondary window to manage its lifecycle
-        self.secondary_window = None
+        self.secondary_window: Any = None
 
         # Create keyboard shortcuts via the centralised helper (local import to defer)
         from abib.ui.actions import setup_shortcuts  # local import (deferred)
@@ -446,21 +457,21 @@ class MainWindow(QMainWindow):
         # Search and runtime state
         self.occurring: int = 0
         self.occurrence: int = 0
-        self.occur: list = []
-        self.occurs: list = []
-        self.count: list = []
+        self.occur: list[Any] = []
+        self.occurs: list[int] = []
+        self.count: list[int] = []
         self.key: str = ' '
         self.keym: str = ''
         self.message: str = ''
         self.store: str = ' '
-        self.gent: Iterator | None = None
+        self.gent: Iterator[tuple[int, int, int]] | None = None
         self.no_f3_yet: int = 0
         self.yend: int = 0
         self.finding: int = 0
         self.verse: int = 0
-        self.PCE_text: str | list = []
+        self.PCE_text: str | list[str] = []
         self.otherFileFlag: bool = True
-        self.y: int = 0
+        self.y: int = 0  # type: ignore[assignment]  # Intentional legacy search state shadows QWidget.y().
 
         self.init_ui()
 
@@ -521,8 +532,8 @@ class MainWindow(QMainWindow):
 
         self._setup_input_fields()
         self._setup_comboboxes()
-        
-        self.hiLita: SyntaxHighlighter = SyntaxHighlighter(self.textEditor.document())
+
+        self.hiLita = SyntaxHighlighter(self.textEditor.document())
 
         grid: QGridLayout = QGridLayout()
         grid.setSpacing(2)
@@ -1088,7 +1099,7 @@ class MainWindow(QMainWindow):
         MainWindow._on_other_work_reference_activated(self, work_path, abs_start, length)
 
     def _setup_input_fields(self) -> None:
-        self.display_verse_input: QLineEdit = QLineEdit()
+        self.display_verse_input = QLineEdit()
         self.display_verse_input.setToolTip("F2, Enter or OK to search for a verse.")
         self.display_verse_input.setStyleSheet("QLineEdit { background-color: #e6f4e6; color: #000000; }")
         self.display_verse_input.setGeometry(QRect(50, 50, 200, 25))
@@ -1120,21 +1131,21 @@ class MainWindow(QMainWindow):
         # Pale green shade to visually group the Book/Chapter/Verse selectors.
         combo_style = "QComboBox { background-color: #e6f4e6; color: #000000; padding-left: 6px; }"
 
-        self.comboBox_1: QComboBox = QComboBox()
+        self.comboBox_1 = QComboBox()
         self.comboBox_1.addItems(self.nwin)
         self.comboBox_1.setCurrentIndex(0)
         self.comboBox_1.setStyleSheet(combo_style)
         self._align_combo_text(self.comboBox_1)
         self.comboBox_1.activated.connect(self.goto_book)
 
-        self.comboBox_2: QComboBox = QComboBox()
+        self.comboBox_2 = QComboBox()
         self.comboBox_2.addItems(self.nchapters)
         self.comboBox_2.setCurrentIndex(0)
         self.comboBox_2.setStyleSheet(combo_style)
         self._align_combo_text(self.comboBox_2)
         self.comboBox_2.activated.connect(self.goto_chapter)
 
-        self.comboBox_3: QComboBox = QComboBox()
+        self.comboBox_3 = QComboBox()
         self.comboBox_3.addItems(self.nverses)
         self.comboBox_3.setCurrentIndex(0)
         self.comboBox_3.setStyleSheet(combo_style)
@@ -1304,14 +1315,14 @@ class MainWindow(QMainWindow):
         self.last_work_btn.setStyleSheet("QPushButton { text-align: left; padding-left: 6px; background-color: #ffe6ee; color: #000000; }")
         self.last_work_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.last_work_btn.setToolTip("Open the last read book (Ctrl+L)")
-        self.last_work_btn.clicked.connect(self._select_last_other_work)  # type: ignore[attr-defined]
+        self.last_work_btn.clicked.connect(self._select_last_other_work)
 
         self.search_work_btn = QPushButton("Search Work")
         assert self.search_work_btn is not None
         self.search_work_btn.setStyleSheet("QPushButton { text-align: left; padding-left: 6px; background-color: #ffe6ee; color: #000000; }")
         self.search_work_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.search_work_btn.setToolTip("Search in the opened Other Works text (Ctrl+F)")
-        self.search_work_btn.clicked.connect(self._open_reader_search)  # type: ignore[attr-defined]
+        self.search_work_btn.clicked.connect(self._open_reader_search)
         self.search_work_btn.setEnabled(False)
 
         # Row 5: Other Works controls (cols 0-3) and Strong's Lookup (col 4)
@@ -1354,18 +1365,18 @@ class MainWindow(QMainWindow):
                 self.other_works_combo.setCurrentText("Pilgrims-Progress")
 
         assert self.other_works_combo is not None
-        self.other_works_combo.currentTextChanged.connect(self._open_other_work)  # type: ignore[attr-defined]
+        self.other_works_combo.currentTextChanged.connect(self._open_other_work)
         def _on_activated(index: int) -> None:
             if self.other_works_combo:
                 self._open_other_work(self.other_works_combo.itemText(index))
 
-        self.other_works_combo.activated.connect(_on_activated)  # type: ignore[attr-defined]
+        self.other_works_combo.activated.connect(_on_activated)
 
         try:
             self.shortcut_last_work = QShortcut(QKeySequence("Ctrl+L"), self)
             assert self.shortcut_last_work is not None
             self.shortcut_last_work.setContext(Qt.ShortcutContext.WindowShortcut)
-            self.shortcut_last_work.activated.connect(self._select_last_other_work)  # type: ignore[attr-defined]
+            self.shortcut_last_work.activated.connect(self._select_last_other_work)
         except (RuntimeError, AttributeError, TypeError):
             logger.debug("Could not create Ctrl+L last-work shortcut", exc_info=True)
 
@@ -1396,7 +1407,7 @@ class MainWindow(QMainWindow):
         finally:
             self.other_works_combo.blockSignals(False)
 
-    def on_content_sync_finished(self, summary: dict) -> None:
+    def on_content_sync_finished(self, summary: dict[str, Any]) -> None:
         """GUI-thread slot: delegate to the content-sync controller."""
         self.content_sync.on_content_sync_finished(summary)
 
@@ -1412,14 +1423,15 @@ class MainWindow(QMainWindow):
         """GUI-thread slot: delegate to the content-sync controller."""
         self.content_sync.on_download_progress(done, total)
 
-    def on_download_finished(self, _summary: dict) -> None:
+    def on_download_finished(self, _summary: dict[str, Any]) -> None:
         """GUI-thread slot: delegate to the content-sync controller."""
         self.content_sync.on_download_finished(_summary)
 
-    def eventFilter(self, source: QObject, event: QEvent) -> bool:
+    def eventFilter(self, source: QObject | None, event: QEvent) -> bool:
         """Custom event filter to handle key events on QLineEdit."""
         if source is None:
             return super().eventFilter(source, event)  # type: ignore[arg-type]
+        watched: QObject = source
 
         if source == self.display_verse_input and event.type() == QEvent.Type.KeyPress and isinstance(event, QKeyEvent):
             if event.key() == Qt.Key.Key_Up:  # Handle Up Arrow
@@ -1466,9 +1478,9 @@ class MainWindow(QMainWindow):
                     except (RuntimeError, AttributeError):
                         pos = None
                     if pos is None:
-                        return super().eventFilter(source, event)  # type: ignore[arg-type]
+                        return super().eventFilter(watched, event)
                     try:
-                        # event.position() (PySide6 6.11+) returns QPointF; 
+                        # event.position() (PySide6 6.11+) returns QPointF;
                         # cursorForPosition requires QPoint.
                         point = pos.toPoint() if hasattr(pos, 'toPoint') else pos
                         assert isinstance(point, QPoint)
@@ -1476,7 +1488,7 @@ class MainWindow(QMainWindow):
                         block = cursor.block()
                         line_no = int(block.blockNumber())
                     except (RuntimeError, AttributeError, TypeError, ValueError, AssertionError):
-                        return super().eventFilter(source, event)  # type: ignore[arg-type]
+                        return super().eventFilter(watched, event)
 
                     # Resolve the clicked line to the verse index (current_position)
                     # Prefer the nearest verse start at or before the clicked line.
@@ -1531,7 +1543,7 @@ class MainWindow(QMainWindow):
                 logger.debug("Unexpected error handling editor mouse click", exc_info=True)
 
         # Pass the event to the parent class
-        return super().eventFilter(source, event)  # type: ignore[arg-type]
+        return super().eventFilter(watched, event)
 
     def _reposition_search_results_window(self) -> None:
         """Delegate to the Search Results window manager."""
@@ -1627,7 +1639,7 @@ class MainWindow(QMainWindow):
                 cross_references_window.close()
         except (AttributeError, RuntimeError, TypeError, ValueError):
             logger.debug("Could not close Cross References window on close", exc_info=True)
-        
+
         # Explicitly close secondary windows to ensure they trigger their own closeEvent/save logic
         try:
             gill: Any = getattr(self, "gill_win", None)
@@ -1642,14 +1654,14 @@ class MainWindow(QMainWindow):
                 strongs.close()
         except (RuntimeError, AttributeError):
             logger.debug("Could not close Strong's window on close", exc_info=True)
-            
+
         try:
             reader: Any = getattr(self, "text_edit_window", None)
             if reader is not None:
                 reader.close()
         except (RuntimeError, AttributeError):
             logger.debug("Could not close reader window on close", exc_info=True)
-            
+
         try:
             secondary: Any = getattr(self, "secondary_window", None)
             if secondary is not None:
@@ -1753,7 +1765,7 @@ class MainWindow(QMainWindow):
         webbrowser.open("https://github.com/Abib-ops/Abib/releases")
 
     def open_text_file_in_window(self, path: str) -> None:
-        """Open the ExternalTextDocumentWindow with the given file path 
+        """Open the ExternalTextDocumentWindow with the given file path
            or update existing, then focus it."""
         # Normalise the incoming path for consistent comparisons
         try:
@@ -1789,7 +1801,7 @@ class MainWindow(QMainWindow):
             self.theme.apply_widget(win)
             win_to_show = win
         else:
-            win: Any = reader
+            win = reader
             # If the reader is currently loading the same stem/path,
             # then prevent it re-issuing the load.
             try:
@@ -2044,7 +2056,7 @@ class MainWindow(QMainWindow):
                     self._aux_origin_saved = False
             except (RuntimeError, AttributeError, TypeError, ValueError):
                 logger.debug("Could not restore geometry when reloading the Bible view", exc_info=True)
-            # Signal to Back handler that we just restored the Bible view, 
+            # Signal to Back handler that we just restored the Bible view,
             # so the very next Back press should be ignored to preserve
             # the restored verse position.
             try:
@@ -2080,7 +2092,7 @@ class MainWindow(QMainWindow):
         """Spaghetti Junction (delegates to SearchController)."""
         self.search_ctrl.find_next()
 
-    def make_key_whole(self, _key: str, _dict: dict, _set: sh.WordSet) -> tuple[int, str]:
+    def make_key_whole(self, _key: str, _dict: dict[str, Any], _set: sh.WordSet) -> tuple[int, str]:
         """Delegate to the search engine."""
 
         return search_service.make_key_whole(self, _key, _dict, _set)
@@ -2094,7 +2106,7 @@ class MainWindow(QMainWindow):
         """Find function (delegates to SearchController)."""
         self.search_ctrl.find_in_range(x_start, x_end)
 
-    def iterate_regex(self, r: tuple, x1: int, x2: int) -> None:
+    def iterate_regex(self, r: Sequence[str], x1: int, x2: int) -> None:
         """Delegate to the search engine."""
 
         search_service.iterate_regex(self, r, x1, x2)
@@ -2114,7 +2126,7 @@ class MainWindow(QMainWindow):
 
         return search_service.find_whole_word(self, x1, x2)
 
-    def find_whole_word_single(self, x1: int, x2: int, _set: sh.WordSet, r_list: list) -> None:
+    def find_whole_word_single(self, x1: int, x2: int, _set: sh.WordSet, r_list: Sequence[str]) -> None:
         """Delegate to the search engine."""
 
         search_service.find_whole_word_single(self, x1, x2, _set, r_list)
@@ -2132,7 +2144,7 @@ class MainWindow(QMainWindow):
         """Repeat find frontend for Whole words (delegates to SearchController)."""
         self.search_ctrl.find_f4_alt()
 
-    def gen(self, key: str, x1: int, x2: int):
+    def gen(self, key: str, x1: int, x2: int) -> Iterator[tuple[int, int, int]]:
         """Delegate to the search engine."""
 
         return search_service.gen(self, key, x1, x2)
@@ -2297,11 +2309,7 @@ class MainWindow(QMainWindow):
     def on_text_changed(self, ln: int) -> None:
         """Highlighting."""
 
-        fmt = QTextCharFormat()
-        assert linehighlightcolor is not None
-        assert linetextcolor is not None
-        fmt.setBackground(QColor(linehighlightcolor))
-        fmt.setForeground(QColor(linetextcolor))
+        fmt = line_highlight_format()
 
         win: Any = self
 
@@ -2319,7 +2327,7 @@ class MainWindow(QMainWindow):
                         and win.occurs[win.verse] == current_position):
                     should_highlight = True
                     win.hiLita.clear = False
-                    keys = sorted(win.occur[win.verse])
+                    keys: list[Sequence[int]] = sorted(win.occur[win.verse])
                     for i in keys:
                         assert isinstance(i, (list, tuple))
                         win.key = '+' * (i[1] - i[0])
@@ -2347,12 +2355,7 @@ class MainWindow(QMainWindow):
             return
 
         spans = block_highlight_spans(line, ranges)
-        fmt = QTextCharFormat()
-        assert linehighlightcolor is not None
-        assert linetextcolor is not None
-        fmt.setBackground(QColor(linehighlightcolor))
-        fmt.setForeground(QColor(linetextcolor))
-        self.hiLita.set_line_highlights(line_number, spans, fmt)
+        self.hiLita.set_line_highlights(line_number, spans, line_highlight_format())
 
     def display_verse_from_history(self, current_position: int) -> None:
         """Display Bible text in textEditor after a back or forward pop."""
@@ -2677,7 +2680,7 @@ class MainWindow(QMainWindow):
         assert w is not None
         win: Any = w
 
-        inf: list = sh.Info[current_line]
+        inf = sh.Info[current_line]
         current_chapter: int = inf[1]
         current_verse = inf[2]
 
@@ -2771,7 +2774,7 @@ class MainWindow(QMainWindow):
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """Key trapping routine."""
 
-        qtcore_keys_dict = {
+        qtcore_keys_dict: dict[Any, Callable[[], object]] = {
             Qt.Key.Key_F2: self.navigate_to_verse,
             Qt.Key.Key_F3: self.search_current_word,
             Qt.Key.Key_F4: self.repeat_find_forward,
@@ -2943,7 +2946,7 @@ class MainWindow(QMainWindow):
 
                 if text_data is None:
                     # Generic read path (other files or fallback), use a large buffer
-                    with open(path1, "r", encoding="utf-8", buffering=(1 << 20)) as f_open:
+                    with open(path1, encoding="utf-8", buffering=(1 << 20)) as f_open:
                         text_data = f_open.read()
 
                 win.PCE_text = text_data
@@ -3106,6 +3109,7 @@ class MainWindow(QMainWindow):
         """
 
         try:
+            sme_text: str
             sme_text, sme_ref = self.reading_plans.get_devotional_entry(adjustment)
         except (KeyError, TypeError, ValueError) as err:
             # Narrow exception handling to expected data/parsing issues
@@ -3136,5 +3140,5 @@ if __name__ == '__main__':
     try:
         from abib.app import run
     except ImportError:
-        from app import run
+        from app import run  # type: ignore[no-redef, import-not-found]
     run()

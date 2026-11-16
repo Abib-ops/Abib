@@ -15,6 +15,7 @@ import tomllib
 from os import getenv
 from pathlib import Path
 from platform import system
+from typing import cast
 
 from abib.utils.files import readfile
 
@@ -27,13 +28,13 @@ def _get_version() -> str:
         Path(__file__).parent.parent.parent.parent / "pyproject.toml",
         Path.cwd() / "pyproject.toml",
     ]
-    
+
     if getattr(sys, 'frozen', False):
         # If running as a PyInstaller bundle, check the bundle directory
         meipass: str = getattr(sys, '_MEIPASS', '')
         if meipass:
             search_paths.insert(0, Path(meipass) / "abib" / "pyproject.toml")
-    
+
     for path in search_paths:
         try:
             if path.exists():
@@ -43,7 +44,7 @@ def _get_version() -> str:
                         return str(v)
         except (OSError, tomllib.TOMLDecodeError):
             continue
-            
+
     # 2. Hardcoded fallback (should be updated per release)
     return "417.57"
 
@@ -250,7 +251,7 @@ type WordSet = dict[str, set[int]]
 
 
 # Read Info.txt
-Inf: list = readfile("Info.txt", EOF_INFO)
+Inf: list[int | str] = readfile("Info.txt", EOF_INFO)
 # Skip the first 17 lines and parse each verse index [book, chapter, verse].
 # Manual string slicing and splitting is faster than json.loads for this simple format.
-Info = tuple(tuple(int(x) for x in line[1:-1].split(',')) for line in Inf[17:EOF_INFO])
+Info = tuple(tuple(int(x) for x in cast(str, line)[1:-1].split(',')) for line in Inf[17:EOF_INFO])

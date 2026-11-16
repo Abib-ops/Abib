@@ -6,10 +6,15 @@
 
 
 import sys
+from pathlib import Path
 from types import ModuleType, SimpleNamespace
 from typing import Any, cast
 
+# noinspection PyPackageRequirements
+from PySide6.QtWidgets import QMessageBox
+
 from abib import Abib as AbibModule
+from abib.core import shared as sh
 from tests._window_open_helpers import make_window_open_env
 
 
@@ -21,11 +26,11 @@ def test_open_strongs_window_uses_current_bible_line(monkeypatch, tmp_path):
     positions: list[int] = []
 
     class FakeStrongsService:
-        def __init__(self, path) -> None:
+        def __init__(self, path: Path) -> None:
             self.path = path
 
     class FakeStrongsWindow:
-        def __init__(self, **kwargs) -> None:
+        def __init__(self, **kwargs: Any) -> None:
             pass
 
         # noinspection PyMethodMayBeStatic
@@ -65,9 +70,9 @@ def test_open_strongs_window_uses_current_bible_line(monkeypatch, tmp_path):
 def test_open_strongs_window_missing_db_warns(monkeypatch, tmp_path):
     # No strongs.sqlite present -> should warn and not create a window.
     warnings: list[str] = []
-    monkeypatch.setattr(AbibModule.sh, "str_cwd", str(tmp_path))
+    monkeypatch.setattr(sh, "str_cwd", str(tmp_path))
     monkeypatch.setattr(
-        AbibModule.QMessageBox, "warning",
+        QMessageBox, "warning",
         staticmethod(lambda *args, **kwargs: warnings.append(args[-1])),
     )
 
@@ -82,13 +87,13 @@ def test_open_strongs_window_missing_db_warns(monkeypatch, tmp_path):
 
 class _FakeDock:
     def __init__(self) -> None:
-        self.results = None
-        self.search_text = None
+        self.results: Any = None
+        self.search_text: str | None = None
         self.shown = False
         self.cleared = False
         self._positioning = False
 
-    def set_results(self, results, search_text) -> None:
+    def set_results(self, results: Any, search_text: str) -> None:
         self.results = results
         self.search_text = search_text
 
@@ -119,8 +124,8 @@ def _make_results_window(dock):
 
 
 def test_show_strongs_occurrences_populates_results(monkeypatch):
-    monkeypatch.setattr(AbibModule.sh, "Info", [[0, 0, 0], [0, 0, 1]])
-    monkeypatch.setattr(AbibModule.sh, "onechapterbooks", ())
+    monkeypatch.setattr(sh, "Info", [[0, 0, 0], [0, 0, 1]])
+    monkeypatch.setattr(sh, "onechapterbooks", ())
     monkeypatch.setattr(
         AbibModule, "KJV",
         ["1 In the beginning God created the heaven and the earth.",
@@ -143,18 +148,19 @@ def test_show_strongs_occurrences_populates_results(monkeypatch):
 
     assert dock.shown is True
     assert dock.search_text == "H0430"
-    assert dock.results is not None
-    assert [r.position for r in dock.results] == [0, 1]
-    assert dock.results[0].reference == "Genesis 1:1"
-    assert dock.results[0].tagged_ranges == ((17, 20),)
+    results = dock.results
+    assert results is not None
+    assert [r.position for r in results] == [0, 1]
+    assert results[0].reference == "Genesis 1:1"
+    assert results[0].tagged_ranges == ((17, 20),)
     # Verse 0 tagged word is highlighted; verse 1 (no tags) is plain escaped text.
-    assert "background-color" in dock.results[0].html_text
-    assert "background-color" not in dock.results[1].html_text
+    assert "background-color" in results[0].html_text
+    assert "background-color" not in results[1].html_text
 
 
 def test_show_strongs_occurrences_empty_hides_and_warns(monkeypatch):
-    monkeypatch.setattr(AbibModule.sh, "Info", [[0, 0, 0]])
-    monkeypatch.setattr(AbibModule.sh, "onechapterbooks", ())
+    monkeypatch.setattr(sh, "Info", [[0, 0, 0]])
+    monkeypatch.setattr(sh, "onechapterbooks", ())
     monkeypatch.setattr(AbibModule, "KJV", ["1 In the beginning."])
     monkeypatch.setattr(AbibModule, "Amap", [0])
 

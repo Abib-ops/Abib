@@ -13,6 +13,7 @@ Qt window — demonstrating the testability gained by moving the Find logic out 
 """
 
 import types
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -28,7 +29,7 @@ def _make_window() -> MagicMock:
     return win
 
 
-def _patch_history(monkeypatch) -> None:
+def _patch_history(monkeypatch: Any) -> None:
     """Replace the module-level history/forward/back stacks."""
     monkeypatch.setattr(AbibModule, "history", MagicMock())
     monkeypatch.setattr(AbibModule, "forward", [])

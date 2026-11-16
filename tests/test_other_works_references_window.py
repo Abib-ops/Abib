@@ -34,7 +34,7 @@ def make_window(tmp_path: Path) -> OtherWorksReferencesWindow:
 
 def _top(window: OtherWorksReferencesWindow, index: int) -> QTreeWidgetItem:
     item = window.results_tree.topLevelItem(index)
-    assert item is not None
+    assert isinstance(item, QTreeWidgetItem)
     return item
 
 
@@ -111,7 +111,7 @@ class _CommentaryService:
     def __init__(self, entries: tuple[CommentaryEntry, ...]) -> None:
         self.entries = entries
 
-    def lookup(self, _key) -> tuple[CommentaryEntry, ...]:
+    def lookup(self, _key: tuple[int, int, int]) -> tuple[CommentaryEntry, ...]:
         return self.entries
 
 

@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 class NavigationCore:
     """Core logic for Bible navigation."""
-    
+
     def __init__(self, main_window: MainWindow) -> None:
         self.w = main_window
 
@@ -44,20 +44,20 @@ class NavigationCore:
         """Constructs a status bar message for a given Bible index."""
         if index < 0 or index > sh.LAST_VERSE_IN_BIBLE:
             return ""
-            
+
         info = sh.Info[index]
         book_id = info[0]
         chapter = info[1] + 1
         verse = info[2] + 1
         book_name = self.w.nwin[book_id]
-        
+
         # Occurrence info if currently searching
         occ_msg = ""
         if hasattr(self.w, 'keym') and self.w.keym:
              occ_msg = f'Occurrence {self.w.occurrence}/{self.w.occurring} of "{self.w.keym}"  -  '
 
         end_msg = "..." if getattr(self.w, 'occurrence', 0) != getattr(self.w, 'occurring', 0) else "."
-        
+
         if getattr(self.w, 'occurrence', 0) == getattr(self.w, 'occurring', 0):
              self.w.no_f3_yet = 0
 

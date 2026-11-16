@@ -5,10 +5,12 @@
 # -*- coding: utf-8 -*-
 
 
+from pathlib import Path
+
 from abib.services.other_works_text_search import OtherWorksTextSearchService
 
 
-def make_service(tmp_path) -> OtherWorksTextSearchService:
+def make_service(tmp_path: Path) -> OtherWorksTextSearchService:
     first = tmp_path / "First.txt"
     first.write_text("Alpha mercy. MERCY again.\r\nA tender mercy phrase.", encoding="utf-8")
     second = tmp_path / "Second.txt"

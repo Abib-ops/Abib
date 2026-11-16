@@ -31,7 +31,7 @@ def perform_update(version: str, exe_url: str) -> None:
     """
     path_to_setup_exe = Path.home() / "Downloads" / f"Abib_setup_{version}_win.exe"
     print("Update process started...")
-    
+
     if not download_upgrade(version, exe_url):
         print("Update aborted: Could not download upgrade.")
         return
@@ -39,11 +39,11 @@ def perform_update(version: str, exe_url: str) -> None:
     # Create a batch script to perform the update after we exit.
     # This avoids file-locking issues with Abib.exe.
     updater_bat = Path.home() / "Downloads" / "abib_updater.bat"
-    
+
     # We want the uninstaller to run, then the installer.
     # We use a loop to wait for Abib.exe to close.
     # 'tasklist' is used to check if Abib.exe is still running.
-    
+
     bat_content = f"""@echo off
 setlocal
 echo Waiting for Abib to close...

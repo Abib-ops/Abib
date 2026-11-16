@@ -5,13 +5,14 @@
 # -*- coding: utf-8 -*-
 
 from types import SimpleNamespace
+from typing import Any
 
 from abib import Abib as AbibModule
 from abib.ui.search_results import SearchResult
 
 
 def _activate_result(
-        navigation_recorder, result: SearchResult
+        navigation_recorder: Any, result: SearchResult
 ) -> tuple[list[tuple[int, tuple[tuple[int, int], ...]]], list[int]]:
     """Activate *result* on the stub window and record which highlight path ran."""
     window = navigation_recorder.window

@@ -32,7 +32,7 @@ except ImportError:  # pragma: no cover - allow import without Qt
 class EditorPrinter(Protocol):
     """Protocol for editors/widgets that support Qt printing via print_."""
 
-    def print_(self, printer) -> None: ...
+    def print_(self, printer: Any) -> None: ...
 
 
 class PrintingService:

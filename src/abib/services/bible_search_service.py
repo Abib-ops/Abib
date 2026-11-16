@@ -16,18 +16,18 @@ if TYPE_CHECKING:
 
 class BibleSearchService:
     """Service to coordinate Bible searches and result state."""
-    
+
     def __init__(self, kjv_data: Sequence[str], set_dict: WordSet) -> None:
         self.kjv_data = kjv_data
         self.set_dict = set_dict
-        
+
         # Search state
         self.last_results: list[tuple[int, int, int]] = []
         self.occurrence_index: int = 0
         self.occurrences_total: int = 0
         self.search_key: str = ""
 
-    def run_regex_search(self, patterns: tuple, start_line: int, end_line: int) -> int:
+    def run_regex_search(self, patterns: Sequence[str], start_line: int, end_line: int) -> int:
         """Run regex search and update the state. Returns total found."""
         self.last_results = search_domain.iterate_regex(patterns, start_line, end_line, self.kjv_data)
         self.occurrences_total = len(self.last_results)

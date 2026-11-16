@@ -13,6 +13,7 @@ of ``MainWindow``.
 """
 
 import types
+from typing import Any
 from unittest.mock import MagicMock
 
 import abib.Abib as AbibModule
@@ -27,7 +28,7 @@ def _make_window() -> MagicMock:
     return win
 
 
-def _patch_module_state(monkeypatch) -> None:
+def _patch_module_state(monkeypatch: Any) -> None:
     """Replace the module-level history/forward and reset_attributes helpers."""
     fake_history = MagicMock()
     fake_forward = MagicMock()

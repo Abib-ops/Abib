@@ -101,7 +101,7 @@ class FindDialog(QDialog):
             radios = (rb1, rb2, rb3, rb4)
 
             # Apply only the left text to the radio buttons
-            for rb, (left, _right) in zip(radios, pairs):
+            for rb, (left, _right) in zip(radios, pairs, strict=False):
                 rb.setText(left)
 
             # Compute the x where the right labels should start
@@ -124,7 +124,7 @@ class FindDialog(QDialog):
 
             # Create right-hand labels and position them; keep references for show/hide
             self._right_labels: list[QLabel] = []
-            for rb, (_left, right) in zip(radios, pairs):
+            for rb, (_left, right) in zip(radios, pairs, strict=False):
                 lbl = QLabel(self)
                 lbl.setText(right)
                 lbl.setFont(prop_font)
@@ -224,7 +224,7 @@ class FindDialog(QDialog):
             if cb2.count() > 0:
                 cb2.setCurrentIndex(cb2.count() - 1)
 
-        # Enforce range rules dynamically: start (comboBox_1) must be <= end (comboBox_2), 
+        # Enforce range rules dynamically: start (comboBox_1) must be <= end (comboBox_2),
         # and the end dropdown must reflect this by disabling invalid items.
         # Connect handlers and initialise once.
         cb1.currentIndexChanged.connect(self._on_start_changed)
@@ -280,7 +280,7 @@ class FindDialog(QDialog):
             text_start_x = radios_x + max(0, indicator_w) + max(0, spacing)
             column_x = int(text_start_x + max_left_px + gutter_px + extra_pad_px)
             # Move labels
-            for rb, lbl in zip(radios, self._right_labels):
+            for rb, lbl in zip(radios, self._right_labels, strict=False):
                 # Use local references with type hints to satisfy strict static analysis
                 # and avoid 'Never' type narrowing in the loop.
                 r_obj: Any = rb

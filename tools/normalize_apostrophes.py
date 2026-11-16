@@ -17,37 +17,37 @@ def normalize_apostrophes(text):
     # Support both straight and curly apostrophes
     apos = "['\u2019]"
     changes = []
-    
+
     # We'll process line by line to track changes better
     lines = text.splitlines()
     new_lines = []
-    
+
     for i, line in enumerate(lines):
         original_line = line
-        
+
         # Layer 1: Core apostrophe-space fixes (specifically for 's' or 'S')
         # Rule: WORD' S -> WORD'S (single letter S/s)
         # Avoid fixing if preceded by s/S to protect plural possessives like "Jesus' "
         # but the single-letter check (?=\s|$) already protects "Jesus' sake"
-        
+
         # Layer 3: False-positive protection
-        # We use a pattern that requires a letter before the apostrophe, 
+        # We use a pattern that requires a letter before the apostrophe,
         # but NOT an 's' or 'S' if we want to be extremely conservative.
         # Actually, let's allow any letter but keep it to single 'S'/'s' after.
-        
+
         # Rule 1: [Letter]' S  -> [Letter]'S
         line = re.sub(rf"([A-Za-z])\s*({apos})\s+([Ss])(?=\s|$)", r"\1\2\3", line)
-        
+
         # Layer 2: Capital-letter edge cases / Opening apostrophes
         # Rule 2: ' SWORD -> 'SWORD
         # Preceded by start of line or space/dash
         line = re.sub(rf"(^|[\s\-])({apos})\s+([A-Za-z]+)", r"\1\2\3", line)
-        
+
         if line != original_line:
             changes.append((i + 1, original_line.strip(), line.strip()))
-        
+
         new_lines.append(line)
-        
+
     return "\n".join(new_lines), changes
 
 def process_file(filepath):
@@ -73,11 +73,11 @@ def process_file(filepath):
         return 'continue'
 
     print(f"Found {len(changes)} potential changes in {file_path.name}.")
-    
+
     final_lines = content.splitlines()
     applied_count = 0
     apply_all_in_file = False
-    
+
     for line_num, old, new in changes:
         idx = line_num - 1
         if not apply_all_in_file:
@@ -111,7 +111,7 @@ def process_file(filepath):
             print("Save cancelled.")
     else:
         print("No changes applied.")
-    
+
     return 'continue'
 
 def main():
@@ -128,7 +128,7 @@ def main():
         process_file(path)
     elif path.is_dir():
         files = sorted(f for f in path.iterdir() if f.is_file())
-        
+
         print(f"Found {len(files)} files in folder: {path}")
         for filepath in files:
             result = process_file(filepath)

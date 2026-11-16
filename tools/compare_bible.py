@@ -33,16 +33,16 @@ def get_bible_json_data(json_path):
     data = {}
     current_book = None
     current_chapter = None
-    
+
     book_re = re.compile(r'^\s+"([^"]+)":\s+\{$')
     chapter_re = re.compile(r'^\s+"(\d+)":\s+\{$')
     # Match verse: "17": "text", or "17": "text"
     verse_re = re.compile(r'^\s+"(\d+)":\s+"(.*)"(,?)$')
-    
-    with open(json_path, 'r', encoding='utf-8') as f:
+
+    with open(json_path, encoding='utf-8') as f:
         for i, line in enumerate(f, 1):
             line = line.strip('\n')
-            
+
             # Match verse
             m_verse = verse_re.match(line)
             if m_verse:
@@ -51,13 +51,13 @@ def get_bible_json_data(json_path):
                 v_text = v_text.replace('\\"', '"')
                 data[(current_book, current_chapter, v_num)] = (v_text, i)
                 continue
-                
+
             # Match chapter
             m_chapter = chapter_re.match(line)
             if m_chapter:
                 current_chapter = m_chapter.group(1)
                 continue
-                
+
             # Match book
             m_book = book_re.match(line)
             if m_book:
@@ -65,7 +65,7 @@ def get_bible_json_data(json_path):
                 if not name.isdigit():
                     current_book = name
                     current_chapter = None
-                    
+
     return data
 
 
@@ -74,28 +74,28 @@ def main():
     json_path = data_dir / "bible_data.json"
     txt_path_kjb = data_dir / "KJB_PCE.txt"
     txt_path_kjv = data_dir / "KJV_PCE.txt"
-    
+
     if txt_path_kjv.exists():
         txt_path = txt_path_kjv
     else:
         txt_path = txt_path_kjb
-    
+
     if not json_path.exists():
         print(f"Error: {json_path} not found")
         return
     if not txt_path.exists():
         print(f"Error: {txt_path} not found")
         return
-        
+
     print(f"Loading {json_path.name}...")
     json_data = get_bible_json_data(json_path)
-    
+
     print(f"Parsing {txt_path.name}...")
     pce_data = parse_pce_text(txt_path)
-    
+
     print("Comparing verses...")
     diff_count = 0
-    
+
     # Track which PCE verses we've seen to find extras later if needed
     pce_seen = set()
 
@@ -103,10 +103,10 @@ def main():
         if key in pce_data:
             pce_seen.add(key)
             pce_text = pce_data[key]
-            
+
             norm_json = normalize_text(json_text)
             norm_pce = normalize_text(pce_text)
-            
+
             if norm_json != norm_pce:
                 diff_count += 1
                 book, chap, verse = key

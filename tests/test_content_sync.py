@@ -7,6 +7,7 @@
 import hashlib
 import json
 import re
+from typing import Any
 
 import pytest
 import requests
@@ -48,7 +49,7 @@ class _FakeResponse:
             yield self._content[i:i + chunk_size]
 
 
-def _make_fake_get(files: dict[str, bytes], manifest: dict):
+def _make_fake_get(files: dict[str, bytes], manifest: dict[str, Any]) -> Any:
     """Return a fake requests.get serving the manifest and file contents."""
     def fake_get(url, timeout=None, stream=False):
         _ = (timeout, stream)  # Accept requests.get's signature; unused in the fake.
@@ -65,7 +66,7 @@ def _make_fake_get(files: dict[str, bytes], manifest: dict):
     return fake_get
 
 
-def _manifest(entries: dict[str, bytes], version: str = "2026.01.01") -> dict:
+def _manifest(entries: dict[str, bytes], version: str = "2026.01.01") -> dict[str, Any]:
     return {
         "content_version": version,
         "files": [

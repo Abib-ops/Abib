@@ -16,7 +16,7 @@ from typing import Any, cast
 from PySide6.QtCore import Qt
 
 # noinspection PyPackageRequirements
-from PySide6.QtWidgets import QPlainTextEdit, QWidget
+from PySide6.QtWidgets import QMessageBox, QPlainTextEdit, QWidget
 
 from abib import Abib as AbibModule
 from abib.core import shared as sh
@@ -121,8 +121,8 @@ def test_invalid_positions_return_nothing(tmp_path):
     service = CrossReferenceService(_make_db(tmp_path / DATASET_FILENAME, _ROWS))
 
     for position in (None, -1, sh.LAST_VERSE_IN_BIBLE + 1, "10", True):
-        assert service.lookup(position) == []  # type: ignore[arg-type]
-        assert service.count(position) == 0  # type: ignore[arg-type]
+        assert service.lookup(position) == []
+        assert service.count(position) == 0
 
 
 def test_file_can_be_deleted_right_after_lookup(tmp_path):
@@ -177,7 +177,11 @@ def _format_range(start: int, end: int) -> str:
     return f"V{start}" if start == end else f"V{start}-{end}"
 
 
-def _window(tmp_path, settings: dict[str, Any] | None = None, rows=None):
+def _window(
+    tmp_path: Path,
+    settings: dict[str, Any] | None = None,
+    rows: list[tuple[int, int, int, int]] | None = None,
+) -> tuple[CrossReferencesWindow, _MemorySettingsService]:
     service = CrossReferenceService(
         _make_db(tmp_path / DATASET_FILENAME, _ROWS if rows is None else rows, attribution="Credit")
     )
@@ -315,9 +319,9 @@ class _Host(QWidget):
         self.activated.append(position)
 
 
-def _patch_bible(monkeypatch) -> None:
-    monkeypatch.setattr(AbibModule.sh, "Info", ((42, 2, 15), (42, 2, 16), (0, 0, 0)))
-    monkeypatch.setattr(AbibModule.sh, "onechapterbooks", set())
+def _patch_bible(monkeypatch: Any) -> None:
+    monkeypatch.setattr(sh, "Info", ((42, 2, 15), (42, 2, 16), (0, 0, 0)))
+    monkeypatch.setattr(sh, "onechapterbooks", set())
     monkeypatch.setattr(
         AbibModule, "KJV", ("16 For God so loved\n", "17 For God sent not\n", "In the beginning\n")
     )
@@ -364,13 +368,13 @@ def test_open_cross_references_shows_current_verse(qapp, tmp_path, monkeypatch):
 def test_missing_dataset_offers_update_other_works(qapp, tmp_path, monkeypatch):
     _patch_bible(monkeypatch)
     questions: list[str] = []
-    answers = [AbibModule.QMessageBox.StandardButton.No, AbibModule.QMessageBox.StandardButton.Yes]
+    answers = [QMessageBox.StandardButton.No, QMessageBox.StandardButton.Yes]
 
     def fake_question(_parent, _title, text, *_args):
         questions.append(text)
         return answers.pop(0)
 
-    monkeypatch.setattr(AbibModule.QMessageBox, "question", fake_question)
+    monkeypatch.setattr(QMessageBox, "question", fake_question)
     host = _Host(CrossReferenceService(tmp_path / "missing.sqlite"), "16 For God so loved", 0)
 
     _open(host)

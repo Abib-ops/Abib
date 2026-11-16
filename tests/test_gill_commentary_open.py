@@ -23,7 +23,7 @@ def test_open_commentary_window_uses_current_bible_line_not_stale_context(monkey
     references: list[tuple[int, int, int]] = []
 
     class FakeGillCommentaryWindow:
-        def __init__(self, **kwargs) -> None:
+        def __init__(self, **kwargs: Any) -> None:
             pass
 
         @staticmethod

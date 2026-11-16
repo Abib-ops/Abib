@@ -436,7 +436,7 @@ def find_scripture_references(text: str) -> list[dict[str, Any]]:
                             is_chapter_only = True
                         except ValueError:
                             pass
-            
+
             seg_full = m2.group(0)
             seg_lstripped = seg_full.lstrip()
             seg_lead = len(seg_full) - len(seg_lstripped)

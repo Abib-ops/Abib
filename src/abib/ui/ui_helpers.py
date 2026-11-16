@@ -140,7 +140,7 @@ class SimpleScripturePopup:
                     pass
             except (RuntimeError, AttributeError, TypeError, ValueError):
                 pass
-            
+
             self._scroll.setWidget(self._text)
             lay.addWidget(self._scroll)
         elif parent_win is not None and self._widget.parentWidget() != parent_win:
@@ -158,7 +158,7 @@ class SimpleScripturePopup:
         if self._is_dark == is_dark:
             return
         self._is_dark = is_dark
-        
+
         if is_dark:
             # Match ThemeManager dark palette: Window/Base #121212, WindowText/Text #f0f0f0, Highlight #2a5adf
             bg = "#121212"
@@ -186,7 +186,7 @@ class SimpleScripturePopup:
     def show(self, host_editor: QWidget, text: str, pos: QPoint, font, is_dark: bool | None = None) -> None:
         self.ensure_created(host_editor)
         assert self._widget is not None and self._text is not None and self._scroll is not None
-        
+
         # Determine theme if not provided
         if is_dark is None:
             try:
@@ -196,7 +196,7 @@ class SimpleScripturePopup:
                 is_dark = bg.lightness() < 128
             except (RuntimeError, AttributeError):
                 is_dark = False
-        
+
         self.apply_theme(is_dark)
 
         # Only update text if it changed to avoid layout churn
@@ -217,7 +217,7 @@ class SimpleScripturePopup:
             self._widget.setFixedWidth(w)
         except (RuntimeError, AttributeError, TypeError, ValueError):
             w = 400  # Default fallback width
-            
+
         # Limit height to avoid covering too much screen (max 60% of screen height)
         max_h = SimpleScripturePopup._calculate_max_height(host_editor)
 
@@ -233,7 +233,7 @@ class SimpleScripturePopup:
 
             # Account for 2px border on top and bottom (total 4px)
             needed_h = hfw + 4
-            
+
             target_h = int(min(needed_h, max_h))
             self._widget.setFixedHeight(target_h)
             final_h = target_h
@@ -318,17 +318,17 @@ class SimpleScripturePopup:
     def predict_geometry(self, host_editor: QWidget, text: str, pos: QPoint, font) -> tuple[int, int, int, int]:
         """Calculate where the popup would be positioned and its size without showing it."""
         self.ensure_created(host_editor)
-        
+
         # 1. Calculate width matched to the editor
         try:
             w = host_editor.width()
         except (RuntimeError, AttributeError, TypeError, ValueError):
             w = 400
-            
+
         # 2. Calculate height based on content
         try:
             max_h = SimpleScripturePopup._calculate_max_height(host_editor)
-            
+
             # Temporarily set text/font to measure
             if self._text:
                 old_text = self._text.text()
@@ -346,7 +346,7 @@ class SimpleScripturePopup:
                 popup_h = 200
         except (RuntimeError, AttributeError, TypeError, ValueError):
             popup_h = 200
-            
+
         # 3. Calculate position
         popup_x, popup_y = SimpleScripturePopup._calculate_position(host_editor, pos, popup_h)
         return popup_x, popup_y, w, popup_h
@@ -387,7 +387,7 @@ class SimpleScripturePopup:
             except (RuntimeError, AttributeError):
                 pass
             # Do not delete this; reuse across hovers
-            
+
     def is_visible(self) -> bool:
         """Return True if the popup widget exists and is currently visible."""
         try:

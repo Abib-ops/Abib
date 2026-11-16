@@ -293,17 +293,17 @@ class TextDocumentWindow(QDialog):
             # Fallback timer placeholder
             self._highlight_debounce = None  # type: ignore
         self.text_edit.verticalScrollBar().valueChanged.connect(self._on_scrollbar_value_changed)
-        
+
         # Auto-scrolling state for scripture popups
         self._auto_scroll_timer = QTimer(self)
         self._auto_scroll_timer.setInterval(20) # ~50 FPS
         self._auto_scroll_timer.timeout.connect(self._do_auto_scroll)
-        
+
         self._auto_scroll_delay_timer = QTimer(self)
         self._auto_scroll_delay_timer.setSingleShot(True)
-        self._auto_scroll_delay_timer.setInterval(600) 
+        self._auto_scroll_delay_timer.setInterval(600)
         self._auto_scroll_delay_timer.timeout.connect(self._start_auto_scroll)
-        
+
         self._scrolling_reference = None
         self._last_mouse_char_pos = -1
 
@@ -653,14 +653,14 @@ class TextDocumentWindow(QDialog):
                 pass
             # Release the guard but keep the previous state intact
             self._is_loading = prev_loading
-        
+
         # Ensure the popup helper matches the new theme if it exists
         if hasattr(self, '_popup_helper') and isinstance(self._popup_helper, SimpleScripturePopup):
             try:
                 self._popup_helper.apply_theme(is_dark)
             except (RuntimeError, AttributeError):
                 pass
-        
+
         # Ensure the find dialog matches the new theme if it exists
         if hasattr(self, '_find_dlg') and self._find_dlg is not None:
             try:
@@ -1940,7 +1940,7 @@ class TextDocumentWindow(QDialog):
                 with gzip.open(path, "rt", encoding="utf-8") as f:
                     data = json.load(f)
             else:
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     data = json.load(f)
         except (OSError, ValueError, AttributeError, json.JSONDecodeError):
             return False
@@ -2087,7 +2087,7 @@ class TextDocumentWindow(QDialog):
                 self.setGeometry(gx, gy, gw, gh)
             except (RuntimeError, TypeError, ValueError, AttributeError):
                 pass
-            
+
             # Apply initial theme
             try:
                 self.apply_theme(
@@ -2626,13 +2626,13 @@ class TextDocumentWindow(QDialog):
         """Return the (top, bottom) global Y coordinates of the reference."""
         start = ref.get('abs_start', 0)
         length = ref.get('length', 0)
-        
+
         cursor = QTextCursor(self.text_edit.document())
         cursor.setPosition(start)
         rect_start = self.text_edit.cursorRect(cursor)
         cursor.setPosition(start + length)
         rect_end = self.text_edit.cursorRect(cursor)
-        
+
         viewport = self.text_edit.viewport()
         top = viewport.mapToGlobal(rect_start.topLeft()).y()
         bottom = viewport.mapToGlobal(rect_end.bottomLeft()).y()
@@ -2648,14 +2648,14 @@ class TextDocumentWindow(QDialog):
             # Lazily initialise if needed for prediction
             from abib.ui.ui_helpers import SimpleScripturePopup
             self._popup_helper = SimpleScripturePopup()
-            
+
         # Use a local reference with a type hint to satisfy the linter
         helper: Any = self._popup_helper
         _px, py, _pw, ph = helper.predict_geometry(
             self.text_edit, text, pos, self.text_edit.font()
         )
         ref_top, ref_bottom = self._get_ref_vertical_range(ref)
-        
+
         # Check the vertical intersection between popup range [py, py+ph] and ref range [ref_top, ref_bottom]
         return max(py, ref_top) < min(py + ph, ref_bottom)
 
@@ -2765,7 +2765,7 @@ class TextDocumentWindow(QDialog):
         # If over a valid reference, check for overlap before showing
         scriptures, canonical = self.get_scripture(hovered_reference)
         scriptur = scriptures + "\n" + canonical + " KJV"
-        
+
         if self._check_popup_overlap(hovered_reference, pos, scriptur):
             if not self._auto_scroll_timer.isActive() and not self._auto_scroll_delay_timer.isActive():
                 self._scrolling_reference = hovered_reference
@@ -2785,10 +2785,10 @@ class TextDocumentWindow(QDialog):
                     is_any_visible = self._popup_helper.is_visible()
                 except (RuntimeError, AttributeError):
                     pass
-            
+
             if not is_any_visible and self.popup_window and self.popup_window.isVisible():
                 is_any_visible = True
-                
+
             if is_any_visible:
                 self._move_popup_to_cursor(pos, y_offset=60)
                 return
@@ -2801,7 +2801,7 @@ class TextDocumentWindow(QDialog):
         # Use the shared popup helper for consistent behaviour and look
         if not hasattr(self, '_popup_helper') or not isinstance(self._popup_helper, SimpleScripturePopup):
             self._popup_helper = SimpleScripturePopup()
-        
+
         # Ensure the legacy popup is closed before showing the helper to avoid "double blue box"
         popup = getattr(self, "popup_window", None)
         if popup is not None:
@@ -2847,7 +2847,7 @@ class TextDocumentWindow(QDialog):
                 self._popup_helper.hide()
             except (RuntimeError, AttributeError):
                 pass
-        
+
         popup = getattr(self, "popup_window", None)
         if popup is not None:
             try:
@@ -2868,12 +2868,12 @@ class TextDocumentWindow(QDialog):
         if not self._scrolling_reference:
             self._stop_auto_scroll()
             return
-            
+
         vbar = self.text_edit.verticalScrollBar()
         old_val = vbar.value()
         # Scroll text UP (increase scroll value) to bring reference to the top
         vbar.setValue(old_val + 2)
-        
+
         if vbar.value() == old_val: # Reached the end
             self._stop_auto_scroll()
             return
@@ -2885,7 +2885,7 @@ class TextDocumentWindow(QDialog):
             new_rect = self.text_edit.cursorRect(cursor)
             new_global_pos = self.text_edit.viewport().mapToGlobal(new_rect.center())
             QCursor.setPos(new_global_pos)
-            
+
             # Check if the popup can now be shown
             pos_viewport = self.text_edit.viewport().mapFromGlobal(new_global_pos)
             scriptures, canonical = self.get_scripture(self._scrolling_reference)

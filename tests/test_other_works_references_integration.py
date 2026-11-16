@@ -9,9 +9,10 @@ from types import SimpleNamespace
 from typing import cast
 
 # noinspection PyPackageRequirements
-from PySide6.QtWidgets import QPlainTextEdit
+from PySide6.QtWidgets import QMessageBox, QPlainTextEdit
 
 from abib import Abib as AbibModule
+from abib.core import shared as sh
 from abib.services.other_works_reference_index import OtherWorksReferenceIndex
 
 
@@ -74,7 +75,7 @@ def test_other_work_text_search_activation_uses_reference_jump_path(qapp):
 def test_commentary_result_opens_gill_at_selected_reference(monkeypatch, tmp_path):
     db_path = tmp_path / "gill.cmt.sqlite"
     db_path.touch()
-    monkeypatch.setattr(AbibModule.sh, "str_cwd", str(tmp_path))
+    monkeypatch.setattr(sh, "str_cwd", str(tmp_path))
     opened: list[tuple[str, int, int, int]] = []
     monkeypatch.setattr(
         AbibModule.MainWindow,
@@ -120,8 +121,8 @@ def test_open_mhcc_for_current_verse_jumps_to_matching_passage(qapp, tmp_path):
 
 def test_open_mhcc_warns_when_text_is_not_available(qapp, monkeypatch):
     warnings: list[tuple[str, str]] = []
-    monkeypatch.setattr(AbibModule.QMessageBox, "warning", lambda _parent, title, text: warnings.append((title, text)))
-    monkeypatch.setattr(AbibModule.sh, "other_works_dirs", list)
+    monkeypatch.setattr(QMessageBox, "warning", lambda _parent, title, text: warnings.append((title, text)))
+    monkeypatch.setattr(sh, "other_works_dirs", list)
     window = SimpleNamespace(
         get_line_number=lambda: 0,
         other_works_map={},
@@ -199,7 +200,7 @@ def test_open_other_works_references_clears_previous_search(qapp, tmp_path):
 
 def test_study_current_verse_searches_canonical_reference_and_citing_work(qapp, tmp_path, monkeypatch):
     work_path = tmp_path / "Example.txt"
-    monkeypatch.setattr(AbibModule.sh, "str_cwd", str(tmp_path))
+    monkeypatch.setattr(sh, "str_cwd", str(tmp_path))
     cases = (
         (42, 2, 15, "John 3:16"),
         (64, 0, 2, "Jude 1:3"),
@@ -210,8 +211,8 @@ def test_study_current_verse_searches_canonical_reference_and_citing_work(qapp, 
         work_path.write_text(f"A reference to {reference}.", encoding="utf-8")
         monkeypatch.setattr(AbibModule, "KJV", ("Verse text\n",))
         monkeypatch.setattr(AbibModule, "Amap_rev", {0: 0})
-        monkeypatch.setattr(AbibModule.sh, "Info", ((book_index, chapter_index, verse_index),))
-        monkeypatch.setattr(AbibModule.sh, "onechapterbooks", {64})
+        monkeypatch.setattr(sh, "Info", ((book_index, chapter_index, verse_index),))
+        monkeypatch.setattr(sh, "onechapterbooks", {64})
         editor = QPlainTextEdit("Verse text")
         status_messages: list[str] = []
         window = SimpleNamespace(

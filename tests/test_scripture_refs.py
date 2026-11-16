@@ -49,7 +49,7 @@ class TestScriptureRefs(unittest.TestCase):
 
     def test_list_with_open_ended_first_unit(self):
         # Also handle lists; we take the very first verse number for navigation
-        book, chap, verse = resolve_reference(["Deuteronomy", "32", "29--, 31-33"]) 
+        book, chap, verse = resolve_reference(["Deuteronomy", "32", "29--, 31-33"])
         self.assertEqual((book, chap, verse), (5, 32, 29))
 
     def test_lookup_scripture_open_ended_range_is_discarded(self):

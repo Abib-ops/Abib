@@ -37,7 +37,7 @@ GITHUB_API_URL = "https://api.github.com/repos/Abib-ops/Abib/releases/latest"
 RELEASES_PAGE_URL = "https://github.com/Abib-ops/Abib/releases/latest"
 
 
-def check_for_updates(parent=None, *, notify_no_update: bool = True) -> tuple[bool, str, str] | None:
+def check_for_updates(parent: Any | None = None, *, notify_no_update: bool = True) -> tuple[bool, str, str] | None:
     """
     Check for updates on GitHub. Returns a tuple (update_available: bool, version: str, url: str)
     or None on network/format issues. If the user declines the update, returns (False, "", "").
@@ -47,11 +47,11 @@ def check_for_updates(parent=None, *, notify_no_update: bool = True) -> tuple[bo
     try:
         response = requests.get(GITHUB_API_URL, timeout=4)
         response.raise_for_status()
-        
+
         try:
             data = response.json()
-        except ValueError as e:
-            raise ValueError(f"Failed to parse JSON: {e}")
+        except ValueError as error:
+            raise ValueError(f"Failed to parse JSON: {error}") from error
 
         if not isinstance(data, dict):
             raise TypeError("Response data is not a dictionary")
@@ -60,7 +60,7 @@ def check_for_updates(parent=None, *, notify_no_update: bool = True) -> tuple[bo
         if latest_version is None:
             latest_version = ""
         latest_version = str(latest_version).strip()
-        
+
         latest_version = latest_version.removeprefix("v")
 
         windows = plat.is_windows()
@@ -88,8 +88,8 @@ def check_for_updates(parent=None, *, notify_no_update: bool = True) -> tuple[bo
             try:
                 # Use sh.CURRENT_VERSION directly to ensure we have the latest value
                 output: int = fcs.compare_versions(sh.CURRENT_VERSION, latest_version)
-            except (ValueError, TypeError, AttributeError) as e:
-                raise ValueError(f"Version comparison failed: {e}")
+            except (ValueError, TypeError, AttributeError) as error:
+                raise ValueError(f"Version comparison failed: {error}") from error
 
             if output == -1:
                 if windows:
@@ -169,7 +169,7 @@ def update_abib():
     perform_update(version, url)
 
 
-def update_abib_if_enabled(parent=None, settings: dict[str, Any] | None = None) -> None:
+def update_abib_if_enabled(parent: Any | None = None, settings: dict[str, Any] | None = None) -> None:
     """Check for updates at startup when the user has enabled it in Settings."""
     if settings is not None and not bool(settings.get("check_for_updates_on_startup", True)):
         return

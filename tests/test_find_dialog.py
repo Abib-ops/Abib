@@ -5,6 +5,9 @@
 # -*- coding: utf-8 -*-
 
 
+from pathlib import Path
+from typing import Any
+
 # noinspection PyPackageRequirements
 from PySide6.QtCore import Qt
 
@@ -19,7 +22,7 @@ from abib.services.settings import SettingsService
 from abib.ui.find_dialog import FindDialog
 
 
-def _settings_service(tmp_path, monkeypatch) -> SettingsService:
+def _settings_service(tmp_path: Path, monkeypatch: Any) -> SettingsService:
     monkeypatch.setattr(sh, "user_settings_dir", tmp_path)
     return SettingsService("search_history_settings.json")
 

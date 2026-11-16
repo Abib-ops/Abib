@@ -56,15 +56,16 @@ def _normalise_book_title(title: str) -> str:
 
 def _known_chapter_counts() -> dict[int, int]:
     global _CHAPTER_COUNTS
-    if _CHAPTER_COUNTS is None:
-        counts: dict[int, int] = {}
+    counts = _CHAPTER_COUNTS
+    if counts is None:
+        counts = {}
         for entry in sh.Info:
             if len(entry) >= 2:
                 book_number = int(entry[0]) + 1
                 chapter_number = int(entry[1]) + 1
                 counts[book_number] = max(counts.get(book_number, 0), chapter_number)
         _CHAPTER_COUNTS = counts
-    return _CHAPTER_COUNTS
+    return counts
 
 
 def parse_section_label(label: str) -> tuple[tuple[int, int], ...] | None:
@@ -86,7 +87,7 @@ def parse_section_label(label: str) -> tuple[tuple[int, int], ...] | None:
 
 
 def find_book_titles(lines: list[str]) -> dict[int, tuple[int, str]]:
-    """Find recognized book-title lines following MHCC separator rules."""
+    """Find recognised book-title lines following MHCC separator rules."""
     from abib.core.scripture import CANONICAL_BOOKS
 
     aliases = {_normalise_book_title(key): value for key, value in sh.bibledict.items()}
@@ -127,8 +128,9 @@ def _parse_text(text: str) -> dict[int, _Book]:
         if title_info is not None:
             book_number, title = title_info
             passage = MhccPassage(offset, len(clean_line), title, "book")
-            current_book = _Book(passage)
-            books[book_number] = current_book
+            book = _Book(passage)
+            books[book_number] = book
+            current_book = book
             current_chapter = None
             offset += len(line)
             continue
@@ -150,13 +152,16 @@ def _parse_text(text: str) -> dict[int, _Book]:
                 ranges = parse_section_label(label)
                 if ranges is not None:
                     passage = MhccPassage(offset, len(clean_line), label, "section")
-                    if current_chapter is None:
-                        current_chapter = current_book.chapters.get(1)
-                        if current_chapter is None:
+                    section_chapter = current_chapter
+                    if section_chapter is None:
+                        section_chapter = current_book.chapters.get(1)
+                        if section_chapter is None:
                             implicit_passage = MhccPassage(offset, len(clean_line), "Chapter 1", "chapter")
-                            current_chapter = _Chapter(implicit_passage, implicit=True)
-                            current_book.chapters[1] = current_chapter
-                    current_chapter.sections.append(_Section(ranges, passage))
+                            implicit_chapter = _Chapter(implicit_passage, implicit=True)
+                            current_book.chapters[1] = implicit_chapter
+                            section_chapter = implicit_chapter
+                        current_chapter = section_chapter
+                    section_chapter.sections.append(_Section(ranges, passage))
         offset += len(line)
     return books
 

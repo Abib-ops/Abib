@@ -5,11 +5,12 @@
 # -*- coding: utf-8 -*-
 
 import sqlite3
+from pathlib import Path
 
 from abib.services.commentary_lookup import CommentaryLookup
 
 
-def _create_gill_db(path, rows: list[tuple[int, int, int, int | None, str]]) -> None:
+def _create_gill_db(path: Path, rows: list[tuple[int, int, int, int | None, str]]) -> None:
     with sqlite3.connect(path) as connection:
         connection.execute("CREATE TABLE commentary (id, book, chapter, fromverse, toverse, data)")
         connection.executemany(

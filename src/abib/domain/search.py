@@ -13,9 +13,9 @@ if TYPE_CHECKING:
     from abib.core.shared import WordSet
 
 
-def iterate_regex(r: tuple, x1: int, x2: int, kjv: Sequence[str]) -> list[tuple[int, int, int]]:
+def iterate_regex(r: Sequence[str], x1: int, x2: int, kjv: Sequence[str]) -> list[tuple[int, int, int]]:
     """Iterate through the KJV list using a list of regex patterns and line range.
-    
+
     Returns a list of (line_index, start_pos, end_pos).
     """
     results = []
@@ -38,7 +38,7 @@ def find_words_any(_x1: int, _x2: int, _set_dict: WordSet, _kjv: Sequence[str]) 
 
 def count_occurrences(results: list[tuple[int, int, int]]) -> tuple[int, list[int], list[tuple[int, int]]]:
     """Count total occurrences and prepare lists for UI highlighting.
-    
+
     Returns (total_count, positions, starts_ends).
     """
     total = len(results)

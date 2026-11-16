@@ -7,6 +7,7 @@
 
 import os
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 
@@ -51,7 +52,7 @@ class NavigationRecorder:
 
 
 @pytest.fixture
-def navigation_recorder(monkeypatch) -> NavigationRecorder:
+def navigation_recorder(monkeypatch: Any) -> NavigationRecorder:
     """Replace Abib's back/forward history with recorders and provide a fake window at verse 4."""
     from abib import Abib as AbibModule
 

@@ -273,7 +273,7 @@ class AboutWindow(QMainWindow):
         label_main.setWordWrap(True)
         label_main.setText(main_content)
         label_main.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
+
         fontsize_main = 14
         font_main = QFont("Cascadia Mono", fontsize_main, QFont.Weight.Bold)
         label_main.setFont(font_main)
@@ -283,7 +283,7 @@ class AboutWindow(QMainWindow):
         label_license.setWordWrap(True)
         label_license.setText(license_notice)
         label_license.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
+
         fontsize_license = 9
         font_license = QFont("Segoe UI", fontsize_license) # Using a standard UI font for the smaller notice
         label_license.setFont(font_license)
@@ -294,10 +294,10 @@ class AboutWindow(QMainWindow):
         container = QWidget(self)
         layout = QVBoxLayout(container)
         layout.addWidget(label_main)
-        
-        # Add a separator line or space if desired? 
+
+        # Add a separator line or space if desired?
         # The current code has \n\n---\n\n in license_notice.
-        
+
         layout.addWidget(label_license)
         self.setCentralWidget(container)
 
@@ -307,13 +307,13 @@ class AboutWindow(QMainWindow):
         content: str = ""
         file_path = sh.base_dir / "ABOUT.txt"
         try:
-            with open(file_path, "r", encoding="utf-8") as file_about:
+            with open(file_path, encoding="utf-8") as file_about:
                 content = file_about.read()
         except FileNotFoundError:
             content = f"ABOUT.txt file not found (looked in {file_path})."
         except UnicodeDecodeError:
             content = "Error: Unable to decode ABOUT.txt. Please make sure the file encoding is UTF-8."
-        
+
         license_notice = (
             "---\n\n"
             "Abib Bible Reader\n"

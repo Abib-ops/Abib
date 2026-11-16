@@ -5,12 +5,14 @@
 # -*- coding: utf-8 -*-
 
 
+from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 
-from abib import Abib as AbibModule
+from abib.core import shared as sh
 
 
-def make_window_open_env(monkeypatch, tmp_path) -> SimpleNamespace:
+def make_window_open_env(monkeypatch: Any, tmp_path: Path) -> SimpleNamespace:
     """Set up the shared-state monkeypatches and a base fake window.
 
     Both the Strong's and Gill commentary window-opening tests rely on the
@@ -18,9 +20,9 @@ def make_window_open_env(monkeypatch, tmp_path) -> SimpleNamespace:
     the current/last position bookkeeping. Callers add the window-specific
     attributes (e.g. ``strongs_win`` / ``gill_win`` / ``nav``) afterwards.
     """
-    monkeypatch.setattr(AbibModule.sh, "str_cwd", str(tmp_path))
-    monkeypatch.setattr(AbibModule.sh, "LAST_VERSE_IN_BIBLE", 2)
-    monkeypatch.setattr(AbibModule.sh, "Info", [[0, 0, 0], [8, 0, 0], [9, 1, 2]])
+    monkeypatch.setattr(sh, "str_cwd", str(tmp_path))
+    monkeypatch.setattr(sh, "LAST_VERSE_IN_BIBLE", 2)
+    monkeypatch.setattr(sh, "Info", [[0, 0, 0], [8, 0, 0], [9, 1, 2]])
 
     window = SimpleNamespace()
     window.settings_service = SimpleNamespace()

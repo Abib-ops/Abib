@@ -28,6 +28,7 @@ When the file is missing or unreadable, every query returns an empty result.
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TypeGuard
 
 from abib.core import shared as sh
 
@@ -67,7 +68,7 @@ class CrossReferenceService:
             return None
 
     @staticmethod
-    def _valid_position(position: object) -> bool:
+    def _valid_position(position: object) -> TypeGuard[int]:
         return (
             isinstance(position, int)
             and not isinstance(position, bool)
@@ -87,7 +88,7 @@ class CrossReferenceService:
         finally:
             conn.close()
 
-    def lookup(self, position: int, min_votes: int | None = None) -> list[CrossReference]:
+    def lookup(self, position: object, min_votes: int | None = None) -> list[CrossReference]:
         """Return cross-references for *position*, strongest first.
 
         Rows are ordered by votes (highest first), then in Bible order. When
@@ -112,7 +113,7 @@ class CrossReferenceService:
             conn.close()
         return [CrossReference(int(start), int(end), int(votes)) for start, end, votes in rows]
 
-    def count(self, position: int) -> int:
+    def count(self, position: object) -> int:
         """Return the unfiltered number of cross-references for *position*."""
         if not self._valid_position(position):
             return 0

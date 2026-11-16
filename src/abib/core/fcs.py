@@ -88,7 +88,7 @@ def repeat_find_keyinc(rx: str, start: int, end: int) -> int:
     return sumb
 
 
-def readio(input_filename: str, file_length: int) -> list:
+def readio(input_filename: str, file_length: int) -> list[str]:
     """Read Bible files."""
     return utils.readio(input_filename, file_length, sh.base_dir)
 
@@ -98,7 +98,7 @@ def load_json_dict(file_dict: Any) -> Any:
     return utils.load_json_dict(file_dict, sh.base_dir)
 
 
-def load_list_set_dict(input_filename: str, ref_dict: Any) -> dict[Any, set]:
+def load_list_set_dict(input_filename: str, ref_dict: Any) -> dict[Any, set[Any]]:
     """Load a list_dict.txt/json file that is a dictionary of Bible words."""
     return utils.load_list_set_dict(input_filename, ref_dict, sh.base_dir)
 
@@ -188,7 +188,7 @@ def compare_versions(version1: str, version2: str) -> int:
     v2_parts = clean_and_split(version2)
 
     # Compare each part (major, minor, patch) in sequence
-    for v1, v2 in zip(v1_parts, v2_parts):
+    for v1, v2 in zip(v1_parts, v2_parts, strict=False):
         if v1 < v2:
             return -1  # version1 is older
         elif v1 > v2:
@@ -224,11 +224,11 @@ def clean_chap_prefix(reference_text: str) -> str:
     return reference_text
 
 
-def tidy(text: str, parts: list) ->  str:
+def tidy(text: str, parts: list[str]) -> str:
     """Tidy up the reference parts."""
 
-    abbr: list = ['d', 'c', 'l', 'm']
-    full_names: list = ['deuteronomy', 'colossians', 'leviticus', 'micah']
+    abbr: list[str] = ['d', 'c', 'l', 'm']
+    full_names: list[str] = ['deuteronomy', 'colossians', 'leviticus', 'micah']
 
     d: str = parts[0][0]
     # print(f"361 d: {d}")
@@ -238,9 +238,9 @@ def tidy(text: str, parts: list) ->  str:
         try:
             a: str = full_names[abbr.index(d)]
             # print(f"367 '{d}' is an abbreviation for '{a}'.")
-        except ValueError:
+        except ValueError as error:
             # print(f"369 '{d}' is not in the list.")
-            raise ValueError("ValueError")
+            raise ValueError("ValueError") from error
 
         text = f"{a}{text[1:]}"
         # print(f"373 text: {text}")
@@ -248,7 +248,7 @@ def tidy(text: str, parts: list) ->  str:
     return text
 
 
-def split_reference(reference_text: str) -> list:
+def split_reference(reference_text: str) -> list[str]:
     """
     Split a Bible reference into components based on the book, chapter, and verse,
     ensuring contiguous letters and numbers (e.g. 'g2.6') are split correctly.
@@ -449,7 +449,7 @@ def attach_book_name(reference_text: str, current_line: int) -> str:
     return f"{book_name} {reference_text}"
 
 
-def get_date_file(date_index: int = 0, adjustment: int = 0) -> tuple:
+def get_date_file(date_index: int = 0, adjustment: int = 0) -> tuple[str, str, int]:
     """
     Process the date into the desired format without using global variables.
 

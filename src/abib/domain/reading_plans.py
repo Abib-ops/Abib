@@ -50,7 +50,7 @@ class ReadingPlans:
     # ---- Private helpers ----
     def _load_data(self) -> None:
         try:
-            with open(self.sme_json_path, "r", encoding="utf-8") as fh:
+            with open(self.sme_json_path, encoding="utf-8") as fh:
                 self._sme_data = load(fh)
         except FileNotFoundError:
             # Keep empty; callers will get a friendly error text

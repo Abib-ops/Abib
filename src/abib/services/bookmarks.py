@@ -112,17 +112,17 @@ class BookmarkStore:
 
     def _write(self, bookmarks: list[Bookmark]) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        temporary_path: Path | None = None
+        temporary_file = tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=self.path.parent,
+            prefix=f"{self.path.name}.",
+            suffix=".tmp",
+            delete=False,
+        )
+        temporary_path = Path(temporary_file.name)
         try:
-            with tempfile.NamedTemporaryFile(
-                mode="w",
-                encoding="utf-8",
-                dir=self.path.parent,
-                prefix=f"{self.path.name}.",
-                suffix=".tmp",
-                delete=False,
-            ) as temporary_file:
-                temporary_path = Path(temporary_file.name)
+            with temporary_file:
                 json.dump(
                     {"bookmarks": [bookmark.__dict__ for bookmark in bookmarks]},
                     temporary_file,
@@ -134,5 +134,5 @@ class BookmarkStore:
                 os.fsync(temporary_file.fileno())
             temporary_path.replace(self.path)
         finally:
-            if temporary_path is not None and temporary_path.exists():
+            if temporary_path.exists():
                 temporary_path.unlink()

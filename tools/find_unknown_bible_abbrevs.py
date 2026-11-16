@@ -236,7 +236,7 @@ def main():
                 for file_path, line_no, snippet in data["examples"]:
                     writer.writerow([norm, raw_forms, data["count"], file_path, line_no, snippet])
             else:
-                writer.writerow([norm, raw_forms, data["count"], "", "", ""]) 
+                writer.writerow([norm, raw_forms, data["count"], "", "", ""])
 
     print(f"Report written to: {OUTPUT_CSV.resolve()}")
 

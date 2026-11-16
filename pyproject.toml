@@ -67,24 +67,43 @@ exclude_lines = [
 python_version = "3.14"
 platform = "win32"
 # The codebase is a large, historically untyped Qt application. Start with a
-# lenient baseline that still catches real errors on the already-modularised,
-# non-UI packages (core/domain/services/utils) and widen the scope
-# incrementally. The UI layer and the monolithic Abib.py are intentionally
-# left out for now: they are heavy PySide6 code slated for the planned
+# focused baseline for the already-modularised non-UI packages (core/domain/
+# services/utils), the main application entry point, and tests. The UI layer
+# remains excluded for now: it is heavy PySide6 code slated for the planned
 # MainWindow refactor and would otherwise flood the baseline with Qt-specific
-# noise. Re-add them (and drop the lenient flags) as each area is cleaned up.
+# noise. Expand the scope as each area is cleaned up.
 files = [
+    "src/abib/Abib.py",
     "src/abib/core",
     "src/abib/domain",
     "src/abib/services",
     "src/abib/utils",
     "tests",
 ]
-ignore_missing_imports = true
+ignore_missing_imports = false
 warn_redundant_casts = true
-warn_unused_ignores = false
+warn_unused_ignores = true
 no_implicit_optional = true
 check_untyped_defs = true
+strict_equality = true
+extra_checks = true
+disallow_untyped_decorators = true
+disallow_subclassing_any = true
+warn_unreachable = true
+warn_return_any = true
+no_implicit_reexport = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+
+[[tool.mypy.overrides]]
+module = "PySide6.QtMultimedia"
+ignore_missing_imports = true
+
+[tool.ruff.lint]
+# Ruff's pinned version is shared by local development and CI; extend its
+# default checks with whitespace, redundant-open-mode, exception-chain, and
+# explicit zip-length handling rules.
+extend-select = ["W", "UP015", "B904", "B905"]
 
 [tool.ruff.lint.per-file-ignores]
 # Abib.py is the main module, intentionally named in CamelCase; renaming it would break

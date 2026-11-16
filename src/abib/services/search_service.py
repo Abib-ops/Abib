@@ -6,7 +6,8 @@
 
 
 import re
-from typing import TYPE_CHECKING
+from collections.abc import Iterator, Sequence
+from typing import TYPE_CHECKING, Any
 
 from abib.core import fcs
 
@@ -69,7 +70,7 @@ def get_next_occurrence(win: MainWindow) -> int:
     """
 
     if win.dlg is not None and win.dlg.checks[0] in (3, 4):
-        current_position = win.occurs[win.verse]
+        current_position: int = win.occurs[win.verse]
         win.finding = 0
         if win.occur[win.verse]:
             win.occur[win.verse].sort(key=lambda _x: _x[0])
@@ -103,14 +104,14 @@ def get_next_occurrence(win: MainWindow) -> int:
     return current_position
 
 
-def make_key_whole(win: MainWindow, _key: str, _dict: dict, _set: WordSet) -> tuple[int, str]:
+def make_key_whole(win: MainWindow, _key: str, _dict: dict[str, Any], _set: WordSet) -> tuple[int, str]:
     """Make _key conform to Match whole word only.
 
     Return the number of whole words in the _key variable.
     """
 
     numstart, _key = fcs.split_strip(_key)
-    words: list = _key.split()
+    words: list[str] = _key.split()
     words = [item for item in words if item in _dict]
     _key = ''
     for i in words:
@@ -168,7 +169,7 @@ def prepare_key_for_find(win: MainWindow) -> None:
     win.key = line
 
 
-def iterate_regex(win: MainWindow, r: tuple, x1: int, x2: int) -> None:
+def iterate_regex(win: MainWindow, r: Sequence[str], x1: int, x2: int) -> None:
     """Iterate over R and find all the occurrences of key(s) in liszt."""
 
     win.occurring = 0
@@ -239,7 +240,7 @@ def find_raw(win: MainWindow, current_position: int, x1: int, x2: int, keylow: s
     return current_position
 
 
-def assign_values(win: MainWindow):
+def assign_values(win: MainWindow) -> tuple[int, WordSet, tuple[str, ...]]:
     """Resolve dictionaries/sources for the current match-case setting."""
 
     data = _data()
@@ -247,11 +248,11 @@ def assign_values(win: MainWindow):
     numwords: int
     win.verse = 0
     if win.dlg.checks[1] == 1:             # Match case.
-        dic = data.stripped_dict
+        dic: dict[str, Any] = data.stripped_dict
         key: str = win.key
         # set_ and set_dict are dictionaries of words in the KJV Bible.
         # For each word, there is a set of verse/line numbers where the word occurs.
-        set_: dict = data.set_dict
+        set_: WordSet = data.set_dict
         r_list = data.Rstp
     else:
         assert win.dlg.checks[1] == 0      # The Case isn't checked.
@@ -305,7 +306,7 @@ def find_whole_word(win: MainWindow, x1: int, x2: int) -> int:
     return current_position
 
 
-def find_whole_word_single(win: MainWindow, x1: int, x2: int, _set: WordSet, r_list: list | tuple) -> None:
+def find_whole_word_single(win: MainWindow, x1: int, x2: int, _set: WordSet, r_list: Sequence[str]) -> None:
     """Match the whole single word."""
 
     try:
@@ -335,13 +336,14 @@ def occurrent(win: MainWindow, x1: int, x2: int) -> int:
         win.gent = gen(win, win.key, x1, x2)
     gent = win.gent
     assert gent is not None
+    current_position: int
     current_position, win.y, win.occurrence = next(gent)
     win.statusBar.showMessage(win.nav.get_status_message(current_position))
 
     return current_position
 
 
-def gen(win: MainWindow, key: str, x1: int, x2: int):
+def gen(win: MainWindow, key: str, x1: int, x2: int) -> Iterator[tuple[int, int, int]]:
     """Return the next position of the searched for key using in-memory data."""
 
     data = _data()
@@ -367,14 +369,14 @@ def gen(win: MainWindow, key: str, x1: int, x2: int):
             yield current_position, win.y, d1
 
 
-def iterate_list(keywords: list[str], r_list: list | tuple, win: MainWindow) -> None:
+def iterate_list(keywords: list[str], r_list: Sequence[str], win: MainWindow) -> None:
     """Iterate over r_list and find all the occurrences of key(s) in keywords."""
     win.occurring = 0
     win.occur = []
-    
+
     # Pre-compile patterns to avoid redundant work in the loop
     patterns = [re.compile(fcs.create_pattern(key)) for key in keywords]
-    
+
     for i in win.occurs:
         coordinates = []
         text = r_list[i]
@@ -384,7 +386,7 @@ def iterate_list(keywords: list[str], r_list: list | tuple, win: MainWindow) -> 
                 coordinates.append((m.start(), m.end()))
         win.occur.append(coordinates)
 
-def find_whole_word_phrase(x1: int, x2: int, numwords: int, _set: WordSet, r_list: list | tuple, win: MainWindow) -> None:
+def find_whole_word_phrase(x1: int, x2: int, numwords: int, _set: WordSet, r_list: Sequence[str], win: MainWindow) -> None:
     """Whole words (phrase)."""
     liszt = win.key.split(' ')
     s = _set[liszt[0]] & _set[liszt[1]]
@@ -405,15 +407,15 @@ def find_whole_word_phrase(x1: int, x2: int, numwords: int, _set: WordSet, r_lis
     liszt = [win.key]
     iterate_list(liszt, r_list, win)
 
-def find_whole_word_all(x1: int, x2: int, numwords: int, _set: WordSet, r_list: list | tuple, win: MainWindow) -> None:
+def find_whole_word_all(x1: int, x2: int, numwords: int, _set: WordSet, r_list: Sequence[str], win: MainWindow) -> None:
     """Match all the words (phrase)."""
     liszt = win.key.split(' ')
     try:
         s = _set[liszt[0]] & _set[liszt[1]]
-    except KeyError:
+    except KeyError as error:
         print(f'liszt[0] {liszt[0]}')
         print(f'liszt[1] {liszt[1]}')
-        raise KeyError
+        raise KeyError from error
 
     if numwords > 2:
         for i in range(2, numwords):
@@ -427,7 +429,7 @@ def find_whole_word_all(x1: int, x2: int, numwords: int, _set: WordSet, r_list: 
     iterate_list(liszt, r_list, win)
     win.occurring = len(win.occurs)
 
-def find_whole_word_any(x1: int, x2: int, _set: WordSet, r_list: list | tuple, win: MainWindow) -> None:
+def find_whole_word_any(x1: int, x2: int, _set: WordSet, r_list: Sequence[str], win: MainWindow) -> None:
     """Find any of the words."""
     liszt = win.key.split(' ')
     s = set()
@@ -439,7 +441,7 @@ def find_whole_word_any(x1: int, x2: int, _set: WordSet, r_list: list | tuple, w
     check_count_sort(liszt, r_list, win)
     win.occurring = len(win.occurs)
 
-def check_count_sort(liszt: list[str], r_list: list | tuple, win: MainWindow) -> None:
+def check_count_sort(liszt: list[str], r_list: Sequence[str], win: MainWindow) -> None:
     """Check matched words are whole, count and sort win.occurs (Any)."""
     win.count = []
     iterate_list(liszt, r_list, win)
@@ -453,18 +455,18 @@ def check_count_sort(liszt: list[str], r_list: list | tuple, win: MainWindow) ->
         win.count.append(len(win.occur[i]))
 
     sorted_count, sorted_occurs, sorted_occur = zip(
-        *sorted(zip(win.count, win.occurs, win.occur), reverse=True))
+        *sorted(zip(win.count, win.occurs, win.occur, strict=False), reverse=True), strict=False)
 
     win.count = list(sorted_count)
     win.occur = list(sorted_occur)
     win.occurs = list(sorted_occurs)
 
-    newt: list = []
-    newts: list = []
+    newt: list[Any] = []
+    newts: list[Any] = []
     j = win.count[0]
     k = 0
-    t: list = []
-    ts: list = []
+    t: list[Any] = []
+    ts: list[Any] = []
     for i in win.count:
         if (i == j) and (k < lo):
             wok = win.occur[k]
@@ -485,7 +487,7 @@ def check_count_sort(liszt: list[str], r_list: list | tuple, win: MainWindow) ->
                 ts.append(win.occurs[k])
                 j = i
                 k += 1
-    
+
     if t: # handle last group
         t.reverse()
         ts.reverse()

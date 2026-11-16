@@ -123,8 +123,8 @@ def _parse_verse_component(val: object) -> int | None:
 
 def normalize_reference(reference_text: str, current_book: int = 0, current_chapter: int = 0) -> str:
     """Normalise a user-supplied reference text to 'book.chapter.verse' format.
-    
-    This function handles Roman numerals, book-name cleaning, and 
+
+    This function handles Roman numerals, book-name cleaning, and
     shorthand logic (e.g. numeric-only).
     """
     # Clean up prefixes like 'Chap' to prevent incorrect matching
@@ -172,7 +172,7 @@ def normalize_reference(reference_text: str, current_book: int = 0, current_chap
     if book_idx is not None and book_idx - 1 in sh.onechapterbooks and chapter_val != 1 and not input_verse:
         verse_val = chapter_val
         chapter_val = 1
-    
+
     return f"{book_str}.{chapter_val}.{verse_val}"
 
 def resolve_reference(bits: Bits) -> RefParts:

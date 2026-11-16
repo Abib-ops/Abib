@@ -16,7 +16,7 @@ SEARCH_HISTORY_LIMIT = 20
 
 class SettingsService:
     """Service to handle application settings persistence and migration."""
-    
+
     def __init__(self, filename: str = "settings.json") -> None:
         self.filename = filename
         self.settings_dir = Path(sh.user_settings_dir)
@@ -44,26 +44,26 @@ class SettingsService:
     def load(self) -> dict[str, Any]:
         """Load settings from the file with fallback to defaults."""
         defaults = SettingsService.get_default_settings()
-        
+
         if not self.user_settings_path.exists():
             print("Settings file does not exist. Using default settings.")
             return defaults
 
         try:
-            with open(self.user_settings_path, "r", encoding="utf-8") as f:
+            with open(self.user_settings_path, encoding="utf-8") as f:
                 content = f.read().strip()
                 if not content:
                     print("Settings file is empty. Falling back to default settings.")
                     return defaults
-                data = json.loads(content)
-                
+                data: dict[str, Any] = json.loads(content)
+
                 # Merge defaults into loaded data
                 SettingsService._merge_defaults(data, defaults)
-                
+
                 # Migrate and clean-up if needed
                 if SettingsService._migrate(data):
                     self.save(data)
-                    
+
                 return data
         except json.JSONDecodeError:
             print("Settings file is malformed. Overwriting with default settings.")
@@ -100,13 +100,13 @@ class SettingsService:
         if "pilgrims_progress_window" in data:
             del data["pilgrims_progress_window"]
             changed = True
-            
+
         if "gill_commentary_font_size" in data:
             if "gill_font_size" not in data:
                 data["gill_font_size"] = data["gill_commentary_font_size"]
             del data["gill_commentary_font_size"]
             changed = True
-            
+
         return changed
 
     def get_window_geometry(self, window_name: str) -> tuple[int, int, int, int]:
@@ -145,8 +145,8 @@ class SettingsService:
         # 1. Allow negative X/Y (secondary monitors to the left/top)
         # 2. Allow X/Y beyond primary width/height (secondary monitors to the right/bottom)
         # 3. Only clamp if the window is likely completely off-screen or excessively far.
-        VIRTUAL_LIMIT = 10000 
-        
+        VIRTUAL_LIMIT = 10000
+
         if not (-VIRTUAL_LIMIT < rx < VIRTUAL_LIMIT):
             rx = def_x
         if not (-VIRTUAL_LIMIT < ry < VIRTUAL_LIMIT):
@@ -155,7 +155,7 @@ class SettingsService:
             rw = def_w
         if rh <= 0 or rh > VIRTUAL_LIMIT:
             rh = def_h
-            
+
         return rx, ry, rw, rh
 
     def save_window_geometry(self, window_name: str, x: int, y: int, width: int, height: int) -> None:
@@ -228,7 +228,8 @@ class SettingsService:
 
     def get_last_bible_position(self) -> int:
         """Get the last bible position from settings."""
-        return self.settings.get("last_bible_position", 0)
+        position: int = self.settings.get("last_bible_position", 0)
+        return position
 
     def update_last_bible_position(self, position: int) -> None:
         """Save the last bible position to settings."""
@@ -260,7 +261,8 @@ class SettingsService:
 
     def get_bible_font_size(self) -> int:
         """Get the bible font size from settings."""
-        return self.settings.get("bible_font_size", 12)
+        size: int = self.settings.get("bible_font_size", 12)
+        return size
 
     def update_bible_font_size(self, size: int) -> None:
         """Update the bible font size in settings."""
@@ -270,7 +272,8 @@ class SettingsService:
 
     def get_devotional_font_size(self) -> int:
         """Get the devotional font size from settings."""
-        return self.settings.get("devotional_font_size", 12)
+        size: int = self.settings.get("devotional_font_size", 12)
+        return size
 
     def update_devotional_font_size(self, size: int) -> None:
         """Update the devotional font size in settings."""
@@ -280,7 +283,8 @@ class SettingsService:
 
     def get_commentary_font_size(self) -> int:
         """Get the commentary font size from settings."""
-        return self.settings.get("gill_font_size", 12)
+        size: int = self.settings.get("gill_font_size", 12)
+        return size
 
     def update_commentary_font_size(self, size: int) -> None:
         """Update the commentary font size in settings."""
@@ -290,7 +294,8 @@ class SettingsService:
 
     def get_reader_font_size(self) -> int:
         """Get the reader font size from settings."""
-        return self.settings.get("reader_font_size", 12)
+        size: int = self.settings.get("reader_font_size", 12)
+        return size
 
     def update_reader_font_size(self, size: int) -> None:
         """Update the reader font size in settings."""
@@ -300,7 +305,8 @@ class SettingsService:
 
     def get_strongs_font_size(self) -> int:
         """Get the Strong's window font size from settings."""
-        return self.settings.get("strongs_font_size", 12)
+        size: int = self.settings.get("strongs_font_size", 12)
+        return size
 
     def update_strongs_font_size(self, size: int) -> None:
         """Update the Strong's window font size in settings."""
@@ -310,7 +316,8 @@ class SettingsService:
 
     def get_gill_hover_delay_ms(self) -> int:
         """Get the Gill hover delay in milliseconds."""
-        return self.settings.get("gill_hover_delay_ms", 120)
+        delay: int = self.settings.get("gill_hover_delay_ms", 120)
+        return delay
 
     def set_gill_hover_delay_ms(self, delay: int) -> None:
         """Set the Gill hover delay in milliseconds."""
@@ -320,7 +327,8 @@ class SettingsService:
 
     def get_gill_hide_delay_ms(self) -> int:
         """Get the Gill hide delay in milliseconds."""
-        return self.settings.get("gill_hide_delay_ms", 160)
+        delay: int = self.settings.get("gill_hide_delay_ms", 160)
+        return delay
 
     def set_gill_hide_delay_ms(self, delay: int) -> None:
         """Set the Gill hide delay in milliseconds."""

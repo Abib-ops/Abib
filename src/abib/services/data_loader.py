@@ -12,6 +12,7 @@ from typing import Any
 
 from abib.core import fcs
 from abib.core import shared as sh
+from abib.utils.files import readfile
 
 
 @dataclass
@@ -42,7 +43,7 @@ class SearchData:
 @dataclass
 class SmeData:
     data: dict[str, dict[str, str]]
-    date_file: tuple
+    date_file: tuple[str, str, int]
 
 
 class DataLoader:
@@ -78,7 +79,7 @@ class DataLoader:
         KJV: tuple[str, ...] = tuple(KJV_lines[i_ + 1:])
 
         # Amap
-        Amap_raw = sh.readfile("Amap.txt", sh.EOF_AMAP, self.base_dir)
+        Amap_raw = readfile("Amap.txt", sh.EOF_AMAP, self.base_dir)
         Amap = Amap_raw[17:]
         Amap_rev = {int(ln): cp for cp, ln in enumerate(Amap)}
 
@@ -173,7 +174,7 @@ class DataLoader:
         data: dict[str, dict[str, str]] = {}
         sme_path = base / "morning_evening.json"
         try:
-            with open(sme_path, "r", encoding="utf-8") as fh:
+            with open(sme_path, encoding="utf-8") as fh:
                 data = load(fh)
         except FileNotFoundError:
             data = {}

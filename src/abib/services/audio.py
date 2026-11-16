@@ -20,8 +20,8 @@ try:  # pragma: no cover - import guarded for environments without Qt
     # noinspection PyPackageRequirements
     from PySide6.QtMultimedia import QSoundEffect
 except ImportError:  # pragma: no cover
-    QSoundEffect = None  # type: ignore
-    QUrl = None  # type: ignore
+    QSoundEffect = None  # type: ignore[assignment, unused-ignore]
+    QUrl = None  # type: ignore[assignment, misc, unused-ignore]
 
 
 @dataclass
@@ -72,7 +72,7 @@ class AudioService:
             except (TypeError, ValueError, AttributeError):
                 # Older bindings may use int 0–100; attempt fallback
                 try:
-                    effect.setVolume(int(self.config.volume * 100))  # type: ignore[arg-type]
+                    effect.setVolume(int(self.config.volume * 100))
                 except (TypeError, ValueError, AttributeError):
                     pass
             # Keep a persistent instance so the backend stays initialised
@@ -96,7 +96,7 @@ class AudioService:
             if self._effect is not None:
                 # Restart the effect if it is already playing to ensure a fresh clicky beep
                 try:
-                    if getattr(self._effect, "isPlaying", None) and self._effect.isPlaying():  # type: ignore[func-returns-value]
+                    if getattr(self._effect, "isPlaying", None) and self._effect.isPlaying():
                         self._effect.stop()
                 except (AttributeError, RuntimeError, TypeError):
                     # isPlaying() may not be present or may throw if the backend is missing

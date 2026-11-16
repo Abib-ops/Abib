@@ -10,7 +10,9 @@ from types import SimpleNamespace
 from abib.core.history import History
 
 
-def _window_with_highlight_state(position: int, occurs: list[int], occur: list[list[tuple[int, int]]]):
+def _window_with_highlight_state(
+    position: int, occurs: list[int], occur: list[list[tuple[int, int]]]
+) -> SimpleNamespace:
     return SimpleNamespace(
         current_position=position,
         y=5,

@@ -32,7 +32,7 @@ class TestSettingsService(unittest.TestCase):
         # Mock sh.user_settings_dir
         self.sh_patcher = patch('abib.core.shared.user_settings_dir', '/tmp/abib_test')
         self.sh_patcher.start()
-        
+
         self.service = SettingsService("test_settings.json")
         # Mock load/save to avoid disk I/O
         load_patcher = patch.object(self.service, "load", return_value=self.mock_defaults.return_value.copy())
@@ -324,7 +324,7 @@ class TestThemes(unittest.TestCase):
         new_state = tm.toggle()
         self.assertTrue(new_state)
         self.assertTrue(tm.state.is_dark_mode)
-        
+
         new_state = tm.toggle()
         self.assertFalse(new_state)
         self.assertFalse(tm.state.is_dark_mode)
@@ -379,7 +379,7 @@ class TestUIHelpers(unittest.TestCase):
             w, h = fit_to_screen(1000, 1000)
             self.assertEqual(w, int(800 * 0.95))
             self.assertEqual(h, int(600 * 0.95))
-            
+
             # Fits
             w, h = fit_to_screen(400, 400)
             self.assertEqual(w, 400)
@@ -421,17 +421,17 @@ class TestUIHelpers(unittest.TestCase):
     def test_simple_scripture_popup_theme(self):
         from abib.ui.ui_helpers import SimpleScripturePopup
         popup = SimpleScripturePopup()
-        
+
         # Mock the widgets
         widget = MagicMock()
         popup._widget = widget
         popup._text = MagicMock()
-        
+
         popup.apply_theme(is_dark=True)
         widget.setStyleSheet.assert_called()
         args, _ = widget.setStyleSheet.call_args
         self.assertIn("background-color: #121212", args[0])
-        
+
         popup.apply_theme(is_dark=False)
         args, _ = widget.setStyleSheet.call_args
         self.assertIn("background-color: #ffffff", args[0])

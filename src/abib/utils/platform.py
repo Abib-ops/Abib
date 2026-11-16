@@ -51,8 +51,11 @@ def is_windows_10() -> bool:
     if build and build < 22000:
         return True
 
+    getwindowsversion = getattr(sys, "getwindowsversion", None)
+    if getwindowsversion is None:
+        return False
     try:
-        winver = sys.getwindowsversion()  # type: ignore[attr-defined]
+        winver = getwindowsversion()
     except (AttributeError, RuntimeError):
         return False
     return getattr(winver, "major", 0) == 10 and getattr(winver, "build", 0) < 22000

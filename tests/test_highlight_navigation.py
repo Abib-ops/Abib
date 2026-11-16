@@ -6,7 +6,7 @@
 
 
 from types import SimpleNamespace
-from typing import cast
+from typing import Any, cast
 
 # noinspection PyPep8Naming
 from abib import Abib as app
@@ -27,7 +27,7 @@ class FakeHighlighter:
     def add_multi_highlight(self, line_num: int, pos: int, length: int) -> None:
         self.ranges.append((line_num, pos, length))
 
-    def highlight_line(self, line_num, _fmt) -> None:
+    def highlight_line(self, line_num: int, _fmt: Any) -> None:
         self.lines.append(line_num)
 
 
@@ -108,7 +108,7 @@ def test_raw_result_click_recomputes_highlight_offsets(monkeypatch):
         class MoveOperation:
             End = 0
 
-        def __init__(self, _block=None) -> None:
+        def __init__(self, _block: Any = None) -> None:
             pass
 
     # noinspection PyUnresolvedReferences
@@ -162,7 +162,7 @@ def test_whole_word_history_restores_match_span_before_adjusting_highlight(monke
         class MoveOperation:
             End = 0
 
-        def __init__(self, _block=None) -> None:
+        def __init__(self, _block: Any = None) -> None:
             pass
 
     # noinspection PyUnresolvedReferences
@@ -188,13 +188,15 @@ def test_whole_word_history_restores_match_span_before_adjusting_highlight(monke
         y=window.y,
         yend=window.yend,
         hiLita=window.hiLita,
-        adjust_highlighting=lambda ln, current_position: calls.append(
-            (ln, current_position, fake_self.y, fake_self.yend)
-        ),
         on_text_changed=lambda ln: None,
         ref_to_statusbar=lambda current_position: None,
         _notify_strongs_position=lambda current_position: None,
     )
+
+    def record_adjust_highlighting(ln: int, current_position: int) -> None:
+        calls.append((ln, current_position, fake_self.y, fake_self.yend))
+
+    fake_self.adjust_highlighting = record_adjust_highlighting
 
     dispatch = cast(app.MainWindow, cast(object, fake_self))
     app.MainWindow.display_verse_from_history(dispatch, 1)

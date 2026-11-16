@@ -51,7 +51,7 @@ for r in refs:
             "kind": "book-not-found",
             "book": book, "chapter": chap, "verses": vers,
             "span": (r["start"], r["length"]),
-			"text": r["text"],
+            "text": r["text"],
         })
     elif any(line.startswith("Verse ") and line.endswith(" not found.") for line in looked_up.splitlines()):
         missing = [line for line in looked_up.splitlines() if line.startswith("Verse ") and line.endswith(" not found.")]

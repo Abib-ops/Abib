@@ -11,12 +11,17 @@ helpers are tested here by monkeypatching ``sys.platform`` (and, for the
 Windows-10 heuristic, the version APIs) to each operating system.
 """
 
+import platform
 import sys
 from typing import cast
 
 # noinspection PyPackageRequirements
+from PySide6.QtGui import QFont, QFontDatabase
+
+# noinspection PyPackageRequirements
 from PySide6.QtWidgets import QApplication
 
+from abib.core import shared as sh
 from abib.utils import platform as plat
 
 
@@ -53,13 +58,13 @@ def test_is_windows_10_false_off_windows(monkeypatch):
 
 def test_is_windows_10_true_for_old_build(monkeypatch):
     monkeypatch.setattr(sys, "platform", "win32")
-    monkeypatch.setattr(plat._platform, "version", lambda: "10.0.19045")
+    monkeypatch.setattr(platform, "version", lambda: "10.0.19045")
     assert plat.is_windows_10() is True
 
 
 def test_is_windows_10_false_for_windows_11_build(monkeypatch):
     monkeypatch.setattr(sys, "platform", "win32")
-    monkeypatch.setattr(plat._platform, "version", lambda: "10.0.22631")
+    monkeypatch.setattr(platform, "version", lambda: "10.0.22631")
 
     # The build-number branch returns False; the getwindowsversion() fallback
     # must also report a Windows-11-era build to keep the overall result False.
@@ -139,11 +144,11 @@ def test_configure_linux_font_fallback_adds_stylesheet_and_substitutions(monkeyp
         return 0
 
     monkeypatch.setattr(
-        app_module.QFont,
+        QFont,
         "insertSubstitutions",
         lambda family, fallback: substitutions.append((family, fallback)),
     )
-    monkeypatch.setattr(app_module.QFontDatabase, "addApplicationFont", _add_application_font)
+    monkeypatch.setattr(QFontDatabase, "addApplicationFont", _add_application_font)
     app = _App()
 
     app_module._configure_linux_font_fallback(cast(QApplication, cast(object, app)))
@@ -161,8 +166,8 @@ def test_configure_linux_font_fallback_adds_stylesheet_and_substitutions(monkeyp
         ("Cascadia Mono", expected_fallback),
     ]
     assert registered[:2] == [
-        str(app_module.sh.italic_h_font_path),
-        str(app_module.sh.math_font_path),
+        str(sh.italic_h_font_path),
+        str(sh.math_font_path),
     ]
 
 
@@ -188,9 +193,7 @@ def test_configure_linux_font_fallback_is_no_op_on_windows(monkeypatch):
 
 def test_bundled_italic_h_font_draws_the_kjb_italic_h():
     # noinspection PyPackageRequirements
-    from PySide6.QtGui import QFontDatabase, QRawFont
-
-    from abib.core import shared as sh
+    from PySide6.QtGui import QRawFont
 
     font_id = QFontDatabase.addApplicationFont(str(sh.italic_h_font_path))
     assert "Abib Italic h" in QFontDatabase.applicationFontFamilies(font_id)
@@ -205,7 +208,5 @@ def test_bundled_italic_h_font_draws_the_kjb_italic_h():
 
 
 def test_kjb_text_uses_one_italic_h():
-    from abib.core import shared as sh
-
     for name in ("KJB_PCE.txt", "KJB_PCE_stripped.txt"):
         assert "\U0001D629" not in (sh.package_directory / "data" / name).read_text(encoding="utf-8")

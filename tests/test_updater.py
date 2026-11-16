@@ -15,7 +15,7 @@ from PySide6.QtCore import QUrl
 # noinspection PyPackageRequirements
 from PySide6.QtWidgets import QMessageBox
 
-from abib.core import updater
+from abib.core import fcs, updater
 
 
 class _Response:
@@ -49,7 +49,7 @@ class _ReleaseResponse:
 def test_automatic_update_check_does_not_show_up_to_date_message(monkeypatch):
     information = MagicMock()
     monkeypatch.setattr("abib.core.updater.requests.get", MagicMock(return_value=_Response()))
-    monkeypatch.setattr(updater.fcs, "compare_versions", MagicMock(return_value=0))
+    monkeypatch.setattr(fcs, "compare_versions", MagicMock(return_value=0))
     monkeypatch.setattr(QMessageBox, "information", information)
 
     result = updater.check_for_updates(notify_no_update=False)
@@ -82,7 +82,7 @@ def test_non_windows_check_uses_release_page_without_exe_asset(monkeypatch):
         "abib.core.updater.requests.get",
         MagicMock(return_value=_ReleaseResponse({"tag_name": "v417.52", "html_url": release_url})),
     )
-    monkeypatch.setattr(updater.fcs, "compare_versions", MagicMock(return_value=-1))
+    monkeypatch.setattr(fcs, "compare_versions", MagicMock(return_value=-1))
     question = MagicMock(return_value=QMessageBox.StandardButton.Yes)
     monkeypatch.setattr(QMessageBox, "question", question)
 
@@ -103,7 +103,7 @@ def test_non_windows_check_falls_back_to_releases_page(monkeypatch):
         "abib.core.updater.requests.get",
         MagicMock(return_value=_ReleaseResponse({"tag_name": "417.52"})),
     )
-    monkeypatch.setattr(updater.fcs, "compare_versions", MagicMock(return_value=-1))
+    monkeypatch.setattr(fcs, "compare_versions", MagicMock(return_value=-1))
     monkeypatch.setattr(QMessageBox, "question", MagicMock(return_value=QMessageBox.StandardButton.Yes))
 
     assert updater.check_for_updates() == (
@@ -147,7 +147,7 @@ def test_updater_module_imports_with_non_windows_platform(monkeypatch):
 def test_windows_check_returns_installer_url(monkeypatch):
     monkeypatch.setattr(updater, "plat", SimpleNamespace(is_windows=lambda: True))
     monkeypatch.setattr("abib.core.updater.requests.get", MagicMock(return_value=_Response()))
-    monkeypatch.setattr(updater.fcs, "compare_versions", MagicMock(return_value=-1))
+    monkeypatch.setattr(fcs, "compare_versions", MagicMock(return_value=-1))
     question = MagicMock(return_value=QMessageBox.StandardButton.Yes)
     monkeypatch.setattr(QMessageBox, "question", question)
 
@@ -190,7 +190,7 @@ def test_non_windows_declined_prompt_returns_no_update(monkeypatch):
         "abib.core.updater.requests.get",
         MagicMock(return_value=_ReleaseResponse({"tag_name": "417.52"})),
     )
-    monkeypatch.setattr(updater.fcs, "compare_versions", MagicMock(return_value=-1))
+    monkeypatch.setattr(fcs, "compare_versions", MagicMock(return_value=-1))
     monkeypatch.setattr(QMessageBox, "question", MagicMock(return_value=QMessageBox.StandardButton.No))
 
     assert updater.check_for_updates() == (False, "", "")

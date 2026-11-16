@@ -7,15 +7,16 @@
 
 import sqlite3
 from collections.abc import Generator
-from typing import Any
+from pathlib import Path
 
 import pytest
 
+from abib.core import shared as sh
 from abib.services import strongs_service as ss
 from abib.services.strongs_service import StrongsEntry, StrongsService, WordTag
 
 
-def _build_db(path) -> None:
+def _build_db(path: Path) -> None:
     """Create a tiny strongs.sqlite mirroring the real schema."""
     conn = sqlite3.connect(path)
     try:
@@ -70,7 +71,7 @@ def _build_db(path) -> None:
 
 
 @pytest.fixture()
-def service(tmp_path) -> Generator[StrongsService, Any]:
+def service(tmp_path: Path) -> Generator[StrongsService]:
     db_path = tmp_path / "strongs.sqlite"
     _build_db(db_path)
     svc = StrongsService(db_path)
@@ -87,14 +88,14 @@ def test_normalise_code():
     assert ss.normalise_code("430") is None
     assert ss.normalise_code("strongs:H430") is None
     assert ss.normalise_code("") is None
-    assert ss.normalise_code(None) is None  # type: ignore[arg-type]
+    assert ss.normalise_code(None) is None
 
 
-def test_is_available_true(service: StrongsService):
+def test_is_available_true(service: StrongsService) -> None:
     assert service.is_available() is True
 
 
-def test_get_tags_for_verse(service: StrongsService):
+def test_get_tags_for_verse(service: StrongsService) -> None:
     tags = service.get_tags_for_verse(0)
     assert tags == [
         WordTag(0, 0, "In the beginning", "H7225"),
@@ -104,16 +105,16 @@ def test_get_tags_for_verse(service: StrongsService):
     # A verse with no tags returns an empty list, not an error.
     assert service.get_tags_for_verse(999) == []
     # A value that is not an integer is handled gracefully.
-    assert service.get_tags_for_verse("nope") == []  # type: ignore[arg-type]
+    assert service.get_tags_for_verse("nope") == []
 
 
-def test_tag_at(service: StrongsService):
+def test_tag_at(service: StrongsService) -> None:
     assert service.tag_at(0, 1) == WordTag(0, 1, "God", "H0430")
     assert service.tag_at(0, 99) is None
-    assert service.tag_at("x", 0) is None  # type: ignore[arg-type]
+    assert service.tag_at("x", 0) is None
 
 
-def test_lookup_strongs(service: StrongsService):
+def test_lookup_strongs(service: StrongsService) -> None:
     entry = service.lookup_strongs("H430")  # accepts unpadded form
     assert isinstance(entry, StrongsEntry)
     assert entry.strongs == "H0430"
@@ -129,7 +130,7 @@ def test_lookup_strongs(service: StrongsService):
     assert service.lookup_strongs("not-a-code") is None
 
 
-def test_find_verses_by_strongs(service: StrongsService):
+def test_find_verses_by_strongs(service: StrongsService) -> None:
     assert service.find_verses_by_strongs("H0430") == [0, 5]
     assert service.find_verses_by_strongs("h430") == [0, 5]
     assert service.find_verses_by_strongs("G3056") == [26046]
@@ -137,14 +138,14 @@ def test_find_verses_by_strongs(service: StrongsService):
     assert service.find_verses_by_strongs("bad") == []
 
 
-def test_count_occurrences(service: StrongsService):
+def test_count_occurrences(service: StrongsService) -> None:
     assert service.count_occurrences("H0430") == 2
     assert service.count_occurrences("H7225") == 1
     assert service.count_occurrences("H9999") == 0
     assert service.count_occurrences("bad") == 0
 
 
-def test_missing_db_degrades_gracefully(tmp_path):
+def test_missing_db_degrades_gracefully(tmp_path: Path) -> None:
     svc = StrongsService(tmp_path / "does_not_exist.sqlite")
     assert svc.is_available() is False
     assert svc.get_tags_for_verse(0) == []
@@ -158,7 +159,7 @@ def test_missing_db_degrades_gracefully(tmp_path):
 def test_default_path_uses_shared_cwd(tmp_path, monkeypatch):
     db_path = tmp_path / "strongs.sqlite"
     _build_db(db_path)
-    monkeypatch.setattr(ss.sh, "str_cwd", str(tmp_path))
+    monkeypatch.setattr(sh, "str_cwd", str(tmp_path))
     svc = StrongsService()
     try:
         assert svc.is_available() is True

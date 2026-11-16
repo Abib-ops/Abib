@@ -4,10 +4,12 @@
 
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
+
 from abib.services.mhcc_index import MhccIndex
 
 
-def _write_mhcc(path, text: str, newline: str = "\n") -> None:
+def _write_mhcc(path: Path, text: str, newline: str = "\n") -> None:
     path.write_bytes(text.replace("\n", newline).encode("utf-8"))
 
 

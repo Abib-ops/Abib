@@ -9,7 +9,7 @@ from types import MethodType, SimpleNamespace
 from typing import cast
 
 # noinspection PyPackageRequirements
-from PySide6.QtWidgets import QPlainTextEdit
+from PySide6.QtWidgets import QInputDialog, QPlainTextEdit
 
 from abib import Abib as AbibModule
 from abib.core import shared as sh
@@ -130,13 +130,13 @@ def _copy_window(text: str, position: int = 0) -> SimpleNamespace:
 
 
 def test_bookmark_current_verse_saves_note_and_refreshes_open_window(qapp, tmp_path, monkeypatch):
-    monkeypatch.setattr(AbibModule.sh, "user_settings_dir", tmp_path)
-    monkeypatch.setattr(AbibModule.sh, "Info", ((42, 2, 15),))
-    monkeypatch.setattr(AbibModule.sh, "onechapterbooks", set())
+    monkeypatch.setattr(sh, "user_settings_dir", tmp_path)
+    monkeypatch.setattr(sh, "Info", ((42, 2, 15),))
+    monkeypatch.setattr(sh, "onechapterbooks", set())
     monkeypatch.setattr(AbibModule, "KJV", ("CHAPTER 3\n", "16 For God so loved\n"))
     monkeypatch.setattr(AbibModule, "Amap_rev", {1: 0})
     monkeypatch.setattr(
-        AbibModule.QInputDialog,
+        QInputDialog,
         "getMultiLineText",
         lambda _parent, _title, label, initial: ("Prayer note", True)
         if "John 3:16" in label and initial == ""
@@ -160,12 +160,12 @@ def test_bookmark_current_verse_saves_note_and_refreshes_open_window(qapp, tmp_p
 
 
 def test_canceling_bookmark_dialog_does_not_save(qapp, tmp_path, monkeypatch):
-    monkeypatch.setattr(AbibModule.sh, "user_settings_dir", tmp_path)
-    monkeypatch.setattr(AbibModule.sh, "Info", ((42, 2, 15),))
-    monkeypatch.setattr(AbibModule.sh, "onechapterbooks", set())
+    monkeypatch.setattr(sh, "user_settings_dir", tmp_path)
+    monkeypatch.setattr(sh, "Info", ((42, 2, 15),))
+    monkeypatch.setattr(sh, "onechapterbooks", set())
     monkeypatch.setattr(AbibModule, "KJV", ("16 For God so loved\n",))
     monkeypatch.setattr(AbibModule, "Amap_rev", {0: 0})
-    monkeypatch.setattr(AbibModule.QInputDialog, "getMultiLineText", lambda *_args: ("", False))
+    monkeypatch.setattr(QInputDialog, "getMultiLineText", lambda *_args: ("", False))
     window = _copy_window("16 For God so loved")
 
     AbibModule.MainWindow.bookmark_current_verse(cast(AbibModule.MainWindow, cast(object, window)))

@@ -40,6 +40,7 @@ import re
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
+from typing import SupportsIndex, SupportsInt
 
 from abib.core import shared as sh
 
@@ -72,7 +73,7 @@ class StrongsEntry:
     language: str
 
 
-def normalise_code(code: str) -> str | None:
+def normalise_code(code: object) -> str | None:
     """Normalise a Strong's code to canonical ``H%04d`` / ``G%04d`` form.
 
     Returns ``None`` if *code* is not a recognisable Strong's number.
@@ -84,6 +85,13 @@ def normalise_code(code: str) -> str | None:
         return None
     letter = m.group(1).upper()
     return f"{letter}{int(m.group(2)):04d}"
+
+
+def _to_int(value: object) -> int:
+    """Convert *value* with :class:`int`, raising ``TypeError`` for unsupported types."""
+    if isinstance(value, (str, bytes, bytearray, SupportsInt, SupportsIndex)):
+        return int(value)
+    raise TypeError(f"cannot convert {type(value).__name__} to int")
 
 
 class StrongsService:
@@ -135,10 +143,10 @@ class StrongsService:
             self._conn = None
 
     # --------- Queries ---------
-    def get_tags_for_verse(self, verse_index: int) -> list[WordTag]:
+    def get_tags_for_verse(self, verse_index: object) -> list[WordTag]:
         """Return the Strong's-tagged words of *verse_index*, in reading order."""
         try:
-            vi = int(verse_index)
+            vi = _to_int(verse_index)
         except (TypeError, ValueError):
             return []
         conn = self._ensure_conn()
@@ -162,11 +170,11 @@ class StrongsService:
             for r in rows
         ]
 
-    def tag_at(self, verse_index: int, word_pos: int) -> WordTag | None:
+    def tag_at(self, verse_index: object, word_pos: object) -> WordTag | None:
         """Resolve a single ``(verse_index, word_pos)`` to its :class:`WordTag`."""
         try:
-            vi = int(verse_index)
-            wp = int(word_pos)
+            vi = _to_int(verse_index)
+            wp = _to_int(word_pos)
         except (TypeError, ValueError):
             return None
         conn = self._ensure_conn()

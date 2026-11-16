@@ -231,7 +231,7 @@ class GillCommentaryWindow(QWidget):
                 self.viewer.setStyleSheet("QTextEdit { background-color: #ffffff; color: #000000; }")
         except (RuntimeError, AttributeError):
             pass
-        
+
         # Ensure the popup helper matches the new theme if it exists
         if self._popup_helper is not None:
             try:
@@ -498,7 +498,7 @@ class GillCommentaryWindow(QWidget):
             pass
 
     # --------- Font size controls ---------
-    def apply_font_size(self, size: int) -> None:       
+    def apply_font_size(self, size: int) -> None:
         try:
             s = int(size)
         except (TypeError, ValueError):
