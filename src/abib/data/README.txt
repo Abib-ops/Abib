@@ -12,7 +12,26 @@ Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
 Abib v417.57
 
+- Fix: Concordance window restoration. When the window is minimised and then
+  restored, it is now brought back to the front.
+- Fix: Search history highlighting. Using Back or Forward to revisit a Raw or
+  Whole-word search result now highlights the correct match.
+- Fix: Other Works reader dark theme. The Find dialog now follows the dark
+  theme, and its checkbox labels are white in dark mode.
+- Maintenance: Stricter type checking and linting. mypy now checks Abib.py
+  with additional strict checks, and Ruff includes extra rules. Related type
+  clean-ups cover bookmarks, the Matthew Henry index, Strong's, line
+  highlighting and the Windows 10 check; whitespace in tools was also tidied.
+- CI: Workflows now use ubuntu-26.04 and Node 24-compatible releases of
+  setup-uv, upload-artifact and github-script.
+- Tests: Added coverage for Concordance window restoration, search history
+  highlighting and the Other Works Find dialog in dark mode.
+- Package, lockfile, help text and Windows installer version information was
+  updated to v417.57.
 
+This release fixes Concordance window restoration, search history
+highlighting and the Other Works Find dialog in dark mode. It also tightens
+type checking and linting and updates the CI workflows.
 
 Abib v417.56
 
