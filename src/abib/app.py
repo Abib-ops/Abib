@@ -196,7 +196,7 @@ def _configure_linux_font_fallback(app: QApplication) -> None:
             pass
 
     families = ", ".join(f"'{family}'" for family in ["Cascadia Mono", *LINUX_FALLBACK_FAMILIES])
-    fallback_style = f"QLabel, QTextEdit, QPlainTextEdit {{ font-family: {families}, sans-serif; }}"
+    fallback_style = f"QLabel, QTextEdit, QPlainTextEdit, QListWidget {{ font-family: {families}, sans-serif; }}"
     try:
         stylesheet = app.styleSheet()
         if fallback_style not in stylesheet:

@@ -150,7 +150,7 @@ def test_configure_linux_font_fallback_adds_stylesheet_and_substitutions(monkeyp
     app_module._configure_linux_font_fallback(cast(QApplication, cast(object, app)))
 
     assert app.stylesheet.startswith("QWidget { color: red; }")
-    assert app.stylesheet.count("QLabel, QTextEdit, QPlainTextEdit") == 1
+    assert app.stylesheet.count("QLabel, QTextEdit, QPlainTextEdit, QListWidget") == 1
     assert (
         "'Cascadia Mono', 'Abib Italic h', 'Noto Sans Math', 'DejaVu Sans', sans-serif"
         in app.stylesheet

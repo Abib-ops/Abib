@@ -235,6 +235,34 @@ class TestReaderFind(unittest.TestCase):
         cursor.setPosition(0)
         window.text_edit.setTextCursor(cursor)
 
+    def test_find_dialog_initial_theme_uses_settings(self):
+        from abib.ui.text_window import TextDocumentWindow
+        service = SettingsService("test_reader_find_dark_settings.json")
+        service.settings["theme"] = "Dark"
+        window = TextDocumentWindow(settings_service=service)
+        try:
+            window.show_find_dialog()
+            dlg = window._find_dlg
+            self.assertIsNotNone(dlg)
+            assert dlg is not None
+            self.assertIn("#121212", dlg.styleSheet())
+        finally:
+            window.close()
+            window.deleteLater()
+
+    def test_find_dialog_uses_theme_applied_before_opening(self):
+        window = self._make_reader()
+        try:
+            window.apply_theme(True)
+            window.show_find_dialog()
+            dlg = window._find_dlg
+            self.assertIsNotNone(dlg)
+            assert dlg is not None
+            self.assertIn("#121212", dlg.styleSheet())
+        finally:
+            window.close()
+            window.deleteLater()
+
     def test_build_flags_returns_qt_find_flag(self):
         # Regression: build_flags previously returned a plain int (0), which
         # newer PySide6 rejects for QPlainTextEdit.find(), raising TypeError.
@@ -459,29 +487,33 @@ class TestUIHelpers(unittest.TestCase):
 
         from abib.ui.ui_helpers import SimpleScripturePopup
 
+        mock_screen = MagicMock()
+        mock_screen.size.return_value = QSize(1440, 900)
+
+        class ScreenStubEditor(QPlainTextEdit):
+            def screen(self):
+                return mock_screen
+
         parent_window = QDialog()
         parent_window.resize(600, 800)
-        editor = QPlainTextEdit(parent_window)
+        editor = ScreenStubEditor(parent_window)
         editor.setPlainText("In the beginning God created the heaven and the earth.\nGenesis 1:1")
         editor.resize(500, 700)
 
-        mock_screen = MagicMock()
-        mock_screen.size.return_value = QSize(1440, 900)
-        with patch.object(editor, "screen", return_value=mock_screen):
-            popup = SimpleScripturePopup()
-            _x, _y, width, height = popup.predict_geometry(
-                editor, "Genesis 1:1 KJV\nIn the beginning", QPoint(10, 10), QFont()
-            )
-            self.assertEqual(width, 500)
-            self.assertGreater(height, 0)
-            self.assertLessEqual(height, int(900 * 0.6))
-            assert popup._widget is not None
-            self.assertEqual(popup._widget.parentWidget(), parent_window)
+        popup = SimpleScripturePopup()
+        _x, _y, width, height = popup.predict_geometry(
+            editor, "Genesis 1:1 KJV\nIn the beginning", QPoint(10, 10), QFont()
+        )
+        self.assertEqual(width, 500)
+        self.assertGreater(height, 0)
+        self.assertLessEqual(height, int(900 * 0.6))
+        assert popup._widget is not None
+        self.assertEqual(popup._widget.parentWidget(), parent_window)
 
-            popup.show(editor, "Genesis 1:1 KJV\nIn the beginning", QPoint(10, 10), QFont(), is_dark=False)
-            self.assertEqual(popup._widget.parentWidget(), parent_window)
-            self.assertEqual(popup._widget.width(), 500)
-            self.assertLessEqual(popup._widget.height(), int(900 * 0.6))
+        popup.show(editor, "Genesis 1:1 KJV\nIn the beginning", QPoint(10, 10), QFont(), is_dark=False)
+        self.assertEqual(popup._widget.parentWidget(), parent_window)
+        self.assertEqual(popup._widget.width(), 500)
+        self.assertLessEqual(popup._widget.height(), int(900 * 0.6))
 
 
 class TestWindowGeometryPersistence(unittest.TestCase):

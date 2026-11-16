@@ -33,6 +33,19 @@ def test_concordance_reference_activation_navigates_like_search_result(monkeypat
     assert displayed == [7]
 
 
+def test_open_concordance_bring_existing_window_to_front():
+    brought_to_front: list[bool] = []
+    concordance_window = SimpleNamespace(bring_to_front=lambda: brought_to_front.append(True))
+    window = SimpleNamespace(
+        concordance_service=object(),
+        concordance_window=concordance_window,
+    )
+
+    AbibModule.MainWindow.open_concordance(cast(AbibModule.MainWindow, cast(object, window)))
+
+    assert brought_to_front == [True]
+
+
 def test_concordance_reference_activation_syncs_highlight_state():
     search_service.set_search_data(DataLoader().load_search())
 

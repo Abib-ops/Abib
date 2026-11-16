@@ -140,6 +140,7 @@ class TextDocumentWindow(QDialog):
         self.text_edit.setReadOnly(True)
         # Ensure readable colours regardless of global theme settings
         is_dark = self.settings.get("theme", "Light") == "Dark"
+        self._is_dark_mode = is_dark
         if is_dark:
             self.text_edit.setStyleSheet("QPlainTextEdit { background-color: #121212; color: #ffffff; }")
             pal = self.text_edit.palette()
@@ -568,6 +569,7 @@ class TextDocumentWindow(QDialog):
         Also ensures the document text colour updates immediately without needing reload.
         Scroll position is preserved and not saved while theming is applied.
         """
+        self._is_dark_mode = bool(is_dark)
         # Preserve scroll and suppress saving while applying theme formatting
         sb = self.text_edit.verticalScrollBar()
         try:
@@ -2088,7 +2090,13 @@ class TextDocumentWindow(QDialog):
             
             # Apply initial theme
             try:
-                self.apply_theme(parent.settings.get("dark_mode", False) if isinstance(parent.settings, dict) else False)
+                self.apply_theme(
+                    getattr(
+                        parent,
+                        "_is_dark_mode",
+                        parent.settings.get("theme") == "Dark" if isinstance(parent.settings, dict) else False,
+                    )
+                )
             except (AttributeError, RuntimeError, TypeError):
                 pass
 
@@ -2098,8 +2106,8 @@ class TextDocumentWindow(QDialog):
                 self.setStyleSheet("QDialog { background-color: #121212; color: #ffffff; }")
                 # User preference: search box in dark mode should remain white with black text to stand out.
                 self.edit.setStyleSheet("QLineEdit { background-color: #ffffff; color: #000000; border: 1px solid #3a3a3a; }")
-                self.case_box.setStyleSheet("")
-                self.whole_box.setStyleSheet("")
+                self.case_box.setStyleSheet("QCheckBox { color: #ffffff; }")
+                self.whole_box.setStyleSheet("QCheckBox { color: #ffffff; }")
                 self.prev_btn.setStyleSheet("")
                 self.next_btn.setStyleSheet("")
             else:

@@ -31,7 +31,7 @@ Third-party materials and attributions:
 - Pure Cambridge Edition of the KJV — see source and terms at bibleprotector.com
 - Spurgeon resources — see spurgeon.org and Eternal Life Ministries for terms
 
-RELEASE DATE: 15/11/2026
+RELEASE DATE: 16/11/2026
 """
 
 import logging
@@ -635,9 +635,7 @@ class MainWindow(QMainWindow):
             )
             self.concordance_window.referenceActivated.connect(self._on_concordance_reference_activated)
 
-        self.concordance_window.show()
-        self.concordance_window.raise_()
-        self.concordance_window.activateWindow()
+        self.concordance_window.bring_to_front()
 
     def _get_bookmark_store(self):
         from abib.services.bookmarks import BookmarkStore
@@ -2383,11 +2381,25 @@ class MainWindow(QMainWindow):
         elif (self.dlg is not None and self.dlg.checks[0] in (1, 2)
               and self.dlg.checks[2] != 6 and current_position in win.occurs):
             # Single-highlight search modes (Raw / Whole words) store match
-            # positions as search-text indices. When a result is reached via the
-            # results panel or history navigation, recompute the display-text
-            # highlight offsets for the current win.y, mirroring the find path
-            # (goto_line_find -> adjust_highlighting). Without this the highlight
-            # reuses stale lineinc/keyinc and starts at the wrong character.
+            # positions as search-text indices. Restore the selected match before
+            # recomputing display-text offsets, since history navigation may leave
+            # win.y pointing at a different search result.
+            try:
+                occurrence_index = win.occurs.index(current_position)
+                spans = win.occur[occurrence_index]
+                if spans:
+                    finding = getattr(win, "finding", -1)
+                    verse = getattr(win, "verse", None)
+                    span_index = (
+                        finding
+                        if occurrence_index == verse
+                        and isinstance(finding, int)
+                        and 0 <= finding < len(spans)
+                        else 0
+                    )
+                    win.y, win.yend = spans[span_index]
+            except (ValueError, IndexError, AttributeError, TypeError):
+                pass
             self.adjust_highlighting(ln, current_position)
 
         self.textEditor.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)

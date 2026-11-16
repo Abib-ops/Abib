@@ -10,7 +10,7 @@ from abib.services.concordance_service import ConcordanceService
 from abib.ui.concordance_window import ConcordanceWindow
 
 
-def make_window() -> ConcordanceWindow:
+def make_window(window_class: type[ConcordanceWindow] = ConcordanceWindow) -> ConcordanceWindow:
     service = ConcordanceService(
         (
             "God is light, and in him is no darkness at all.",
@@ -23,7 +23,7 @@ def make_window() -> ConcordanceWindow:
     )
     settings_service = MagicMock()
     settings_service.get_window_geometry.return_value = (100, 100, 640, 500)
-    return ConcordanceWindow(service, settings_service=settings_service)
+    return window_class(service, settings_service=settings_service)
 
 
 def test_window_lists_entries_and_filters_words(qapp):
@@ -58,3 +58,36 @@ def test_window_emits_position_and_term_when_reference_activates(qapp):
     window._activate_reference(window.reference_list.item(0))
 
     assert activations == [(1, "lord")]
+
+
+def test_bring_to_front_restores_minimized_window_and_defers_raise(qapp):
+    raise_calls: list[ConcordanceWindow] = []
+    activate_calls: list[ConcordanceWindow] = []
+
+    class RecordingConcordanceWindow(ConcordanceWindow):
+        def raise_(self) -> None:
+            raise_calls.append(self)
+            super().raise_()
+
+        def activateWindow(self) -> None:
+            activate_calls.append(self)
+            super().activateWindow()
+
+    window = make_window(RecordingConcordanceWindow)
+
+    window.showMinimized()
+    qapp.processEvents()
+    assert window.isMinimized()
+
+    window.bring_to_front()
+    immediate_raise_count = len(raise_calls)
+    immediate_activate_count = len(activate_calls)
+
+    assert window.isVisible()
+    assert not window.isMinimized()
+
+    qapp.processEvents()
+
+    assert len(raise_calls) > immediate_raise_count
+    assert len(activate_calls) > immediate_activate_count
+    assert all(called_window is window for called_window in raise_calls + activate_calls)

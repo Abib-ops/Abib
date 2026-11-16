@@ -5,7 +5,7 @@
 # -*- coding: utf-8 -*-
 
 # noinspection PyPackageRequirements
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, QTimer, Signal
 
 # noinspection PyPackageRequirements
 from PySide6.QtWidgets import (
@@ -90,6 +90,25 @@ class ConcordanceWindow(QWidget):
         """Reload entries from the service and apply the current filter."""
         self._entries = self._service.entries()
         self._apply_filter()
+
+    def bring_to_front(self) -> None:
+        """Show, restore, and activate the window after a menu action."""
+        try:
+            state = self.windowState() & ~Qt.WindowState.WindowMinimized
+            self.setWindowState(state | Qt.WindowState.WindowActive)
+            self.show()
+            self.raise_()
+            self.activateWindow()
+            QTimer.singleShot(0, self._raise_and_activate)
+        except (RuntimeError, AttributeError, TypeError):
+            pass
+
+    def _raise_and_activate(self) -> None:
+        try:
+            self.raise_()
+            self.activateWindow()
+        except (RuntimeError, AttributeError, TypeError):
+            pass
 
     def _apply_filter(self) -> None:
         filter_text = self.filter_edit.text().strip()

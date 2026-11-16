@@ -143,6 +143,66 @@ def test_raw_result_click_recomputes_highlight_offsets(monkeypatch):
     assert calls == [(200, 1)]
 
 
+def test_whole_word_history_restores_match_span_before_adjusting_highlight(monkeypatch):
+    window = SimpleNamespace()
+    window.dlg = SimpleNamespace(checks=[2, 1, 5])
+    window.occurs = [1]
+    window.occur = [[(7, 12), (42, 47)]]
+    window.verse = 0
+    window.finding = 1
+    window.y = 2
+    window.yend = 8
+    window.hiLita = FakeHighlighter()
+
+    monkeypatch.setattr(app, "Amap", [100, 200])
+    monkeypatch.setattr(app, "starts_with_italics", [])
+    monkeypatch.setattr(app, "make_offset", lambda ln: ln)
+
+    class FakeCursor:
+        class MoveOperation:
+            End = 0
+
+        def __init__(self, _block=None) -> None:
+            pass
+
+    # noinspection PyUnresolvedReferences
+    monkeypatch.setattr(app, "QTextCursor", FakeCursor)
+
+    calls: list[tuple[int, int, int, int]] = []
+    block = SimpleNamespace()
+    document = SimpleNamespace(findBlockByLineNumber=lambda ln: block)
+    text_editor = SimpleNamespace(
+        setLineWrapMode=lambda mode: None,
+        document=lambda: document,
+        moveCursor=lambda op: None,
+        setTextCursor=lambda cursor: None,
+    )
+
+    fake_self = SimpleNamespace(
+        dlg=window.dlg,
+        textEditor=text_editor,
+        occurs=window.occurs,
+        occur=window.occur,
+        verse=window.verse,
+        finding=window.finding,
+        y=window.y,
+        yend=window.yend,
+        hiLita=window.hiLita,
+        adjust_highlighting=lambda ln, current_position: calls.append(
+            (ln, current_position, fake_self.y, fake_self.yend)
+        ),
+        on_text_changed=lambda ln: None,
+        ref_to_statusbar=lambda current_position: None,
+        _notify_strongs_position=lambda current_position: None,
+    )
+
+    dispatch = cast(app.MainWindow, cast(object, fake_self))
+    app.MainWindow.display_verse_from_history(dispatch, 1)
+    app.MainWindow.display_verse_from_history(dispatch, 1)
+
+    assert calls == [(200, 1, 42, 47), (200, 1, 42, 47)]
+
+
 def test_find_next_history_uses_top_verse_shown_in_main_window(monkeypatch):
     window = SimpleNamespace()
     window.dlg = SimpleNamespace(checks=[3, 0, 5])

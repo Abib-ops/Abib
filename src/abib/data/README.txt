@@ -10,6 +10,10 @@ ABIB README:
 
 Abib is on GitHub, https://github.com/Abib-ops/Abib/releases
 
+Abib v417.57
+
+
+
 Abib v417.56
 
 - Fix: Strong's occurrence highlighting. When a result from Strong's "Find
